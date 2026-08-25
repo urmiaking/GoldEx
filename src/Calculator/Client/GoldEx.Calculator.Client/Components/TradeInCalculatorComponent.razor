@@ -1,0 +1,255 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.ViewModels
+@using GoldEx.Shared.Enums
+@inherits GoldExComponentBase
+
+<MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
+    <MudGrid Spacing="3">
+        <!-- طلای کهنه مشتری (Used Gold In) -->
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 h-100 rounded-lg">
+                <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                    <MudIcon Icon="@Icons.Material.Filled.AssignmentReturn" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">۱. طلای کهنه/مستعمل (دریافتی از مشتری)</MudText>
+                </div>
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_model.UsedItemName"
+                                      Label="عنوان طلای کهنه"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.UsedGramPrice"
+                                         Label="نرخ هر گرم طلای ۱۸"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="@_currencyTitle"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.UsedWeight"
+                                         Label="وزن طلای کهنه (گرم)"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="گرم"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.UsedFineness"
+                                         Label="عیار طلا"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <div class="d-flex align-center gap-2">
+                            <MudNumericField T="decimal"
+                                             @bind-Value="_model.UsedFinenessDeduction"
+                                             Label="کسر خط عیار"
+                                             Format="0.###"
+                                             HideSpinButtons="true"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             dir="ltr"
+                                             Style="max-width: 140px;" />
+
+                            <span class="text-secondary" style="font-size: 0.8rem;">
+                                عیار مبنای محاسبه: <b>@((_model.UsedFineness - _model.UsedFinenessDeduction).ToString("0.###"))</b>
+                            </span>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+
+                <div class="mt-3 pa-3 rounded-lg" style="background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4);">
+                    <div class="d-flex justify-space-between align-center mb-1">
+                        <span class="text-secondary" style="font-size: 0.85rem;">وزن معادل ۷۵۰ (طلای ۱۸):</span>
+                        <span class="font-weight-bold">@_model.UsedEquivalent750Weight.ToString("0.###") گرم</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="font-weight-bold" style="color: #d97706;">ارزش کل طلای کهنه:</span>
+                        <span class="font-weight-black" style="color: #d97706; font-size: 1.1rem; direction: ltr;">
+                            @_model.UsedTotalValue.ToString("N0") @_currencyTitle
+                        </span>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <!-- طلای نو تحویلی (New Gold Out) -->
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 h-100 rounded-lg">
+                <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Color="Color.Info" />
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">۲. طلای نو (فروخته شده به مشتری)</MudText>
+                </div>
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_model.NewItemName"
+                                      Label="عنوان طلای نو"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.NewGramPrice"
+                                         Label="نرخ هر گرم طلای ۱۸"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="@_currencyTitle"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.NewWeight"
+                                         Label="وزن طلای نو (گرم)"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="گرم"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.NewFineness"
+                                         Label="عیار طلا"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="_model.NewWage"
+                                         Label="اجرت ساخت"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudSelect T="WageType?"
+                                   @bind-Value="_model.NewWageType"
+                                   Label="نوع اجرت"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Dense="true">
+                            <MudSelectItem Value="@((WageType?)WageType.Percent)">درصدی (%)</MudSelectItem>
+                            <MudSelectItem Value="@((WageType?)WageType.Fixed)">مبلغ ثابت (تومان)</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.NewProfitPercent"
+                                         Label="درصد سود طلافروش"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="%"
+                                         dir="ltr" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_model.NewTaxPercent"
+                                         Label="درصد مالیات ارزش افزوده"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="%"
+                                         dir="ltr" />
+                    </MudItem>
+                </MudGrid>
+
+                <div class="mt-3 pa-3 rounded-lg" style="background: rgba(2, 132, 199, 0.08); border: 1px dashed rgba(2, 132, 199, 0.4);">
+                    <div class="d-flex justify-space-between align-center mb-1">
+                        <span class="text-secondary" style="font-size: 0.85rem;">وزن طلای نو:</span>
+                        <span class="font-weight-bold">@_model.NewWeight.ToString("0.###") گرم</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="font-weight-bold" style="color: #0284c7;">ارزش کل طلای نو:</span>
+                        <span class="font-weight-black" style="color: #0284c7; font-size: 1.1rem; direction: ltr;">
+                            @_model.NewTotalValue.ToString("N0") @_currencyTitle
+                        </span>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <!-- خلاصه تسویه و مابه‌التفاوت خالص (Net Settlement Card) -->
+        <MudItem xs="12">
+            <MudPaper Outlined="true" Class="pa-4 rounded-lg">
+                <div class="d-flex justify-space-between align-center flex-wrap gap-3">
+                    <div class="d-flex align-center gap-3">
+                        <MudAvatar Color="@(_model.NetDifference >= 0 ? Color.Success : Color.Info)" Size="Size.Large">
+                            <MudIcon Icon="@(_model.NetDifference >= 0 ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)" />
+                        </MudAvatar>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">
+                                @(_model.NetDifference >= 0 ? "مبلغ قابل پرداخت توسط مشتری:" : "مبلغ قابل بازپرداخت به مشتری توسط طلافروش:")
+                            </MudText>
+                            <MudText Typo="Typo.h4" Color="@(_model.NetDifference >= 0 ? Color.Success : Color.Info)" Class="font-weight-black" Style="direction: ltr; text-align: right;">
+                                @(Math.Abs(_model.NetDifference).ToString("N0")) <span style="font-size: 1rem; font-weight: normal;">@_currencyTitle</span>
+                            </MudText>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column align-end gap-1">
+                        <span style="font-size: 0.85rem; color: #71717a;">
+                            اختلاف وزنی خالص:
+                            <b style="direction: ltr; display: inline-block;">
+                                @(_model.NetWeightDifference >= 0 ? "+" : "")@_model.NetWeightDifference.ToString("0.###") گرم
+                            </b>
+                        </span>
+                        <span style="font-size: 0.82rem; color: #a1a1aa;">
+                            (ارزش طلای نو: @_model.NewTotalValue.ToString("N0") — ارزش طلای کهنه: @_model.UsedTotalValue.ToString("N0"))
+                        </span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                                   OnClick="AddTradeInToBasketAsync">
+                            ثبت در فاکتور
+                        </MudButton>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudCard>

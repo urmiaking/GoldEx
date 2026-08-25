@@ -1,21 +1,25 @@
-﻿@using GoldEx.Shared.Routings
+@using GoldEx.Shared.Routings
 @using ClientRoutes = GoldEx.Shared.Routings.ClientRoutes
 
 @inherits GoldExComponentBase
 
 @if (_loggedIn)
 {
-    <MudIconButton Icon="@Icons.Material.Filled.Logout"
-                   Class="@($"p-0 {Class}")"
-                   Color="Color.Inherit"
-                   Href="@ApiUrls.Account.Logout(_currentUrl)" />
+    <MudTooltip Text="خروج از حساب کاربری" Arrow="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Logout"
+                       Color="Color.Inherit"
+                       Title="خروج از حساب"
+                       Href="@ApiUrls.Account.Logout(_currentUrl)" />
+    </MudTooltip>
 }
 else
 {
-    <MudIconButton Icon="@Icons.Material.Filled.Key"
-                   Class="@($"p-0 {Class}")"
-                   Color="Color.Inherit"
-                   Href="@ClientRoutes.Accounts.Login" />
+    <MudTooltip Text="ورود به حساب کاربری" Arrow="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Login"
+                       Color="Color.Inherit"
+                       Title="ورود به حساب"
+                       Href="@ClientRoutes.Accounts.Login" />
+    </MudTooltip>
 }
 
 @code {

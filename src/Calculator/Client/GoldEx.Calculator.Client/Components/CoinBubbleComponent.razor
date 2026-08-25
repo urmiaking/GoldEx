@@ -1,0 +1,114 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.ViewModels
+@inherits GoldExComponentBase
+
+<MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
+    <div class="d-flex justify-space-between align-center flex-wrap gap-3 mb-4 pb-2 border-b">
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Warning" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.h6" Class="font-weight-bold">پارامترهای پایه محاسبه حباب سکه</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">محاسبه ارزش ذاتی بر مبنای نرخ جهانی انس طلا و دلار آزاد</MudText>
+            </div>
+        </div>
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="LoadLiveRatesAsync">
+            به‌روزرسانی نرخ‌ها
+        </MudButton>
+    </div>
+
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal"
+                             @bind-Value="_model.OuncePriceUsd"
+                             Label="انس جهانی طلا (دلار)"
+                             Format="#,##0.##"
+                             HideSpinButtons="true"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Adornment="Adornment.End"
+                             AdornmentText="دلار"
+                             dir="ltr" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal"
+                             @bind-Value="_model.UsdRateToman"
+                             Label="نرخ دلار آزاد (تومان)"
+                             Format="#,##0.##"
+                             HideSpinButtons="true"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Adornment="Adornment.End"
+                             AdornmentText="تومان"
+                             dir="ltr" />
+        </MudItem>
+    </MudGrid>
+
+    <MudDivider Class="my-4" />
+
+    <MudGrid Spacing="3">
+        @foreach (var coin in _model.Coins)
+        {
+            var intrinsic = coin.CalculateIntrinsicValue(_model.OuncePriceUsd, _model.UsdRateToman);
+            var bubbleAmount = coin.GetBubbleAmount(_model.OuncePriceUsd, _model.UsdRateToman);
+            var bubblePct = coin.GetBubblePercent(_model.OuncePriceUsd, _model.UsdRateToman);
+
+            <MudItem xs="12" sm="6" lg="4">
+                <MudPaper Outlined="true" Class="pa-4 h-100 d-flex flex-column justify-space-between rounded-lg">
+                    <div>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@coin.Title</MudText>
+                            <span class="@GetBubbleBadgeClass(bubblePct)">
+                                حباب: @(bubblePct > 0 ? "+" : "")@bubblePct.ToString("F1")%
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-space-between align-center text-secondary mb-3" style="font-size: 0.82rem;">
+                            <span>وزن: <b>@coin.WeightGrams.ToString("0.###") گرم</b></span>
+                            <span>عیار: <b>@coin.Fineness (۲۱.۶)</b></span>
+                        </div>
+
+                        <MudNumericField T="decimal"
+                                         @bind-Value="coin.MarketPrice"
+                                         Label="قیمت بازار سکه"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="تومان"
+                                         dir="ltr"
+                                         Class="mb-3" />
+
+                        <div class="pa-2 rounded-lg mb-2" style="background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.06);">
+                            <div class="d-flex justify-space-between align-center mb-1" style="font-size: 0.85rem;">
+                                <span class="text-secondary">ارزش ذاتی (طلای خالص):</span>
+                                <span class="font-weight-bold">@intrinsic.ToString("N0") تومان</span>
+                            </div>
+                            <div class="d-flex justify-space-between align-center" style="font-size: 0.85rem;">
+                                <span class="text-secondary">مبلغ حباب:</span>
+                                <span class="font-weight-bold" style="color: @(bubbleAmount > 0 ? "#ef4444" : "#10b981"); direction: ltr;">
+                                    @(bubbleAmount > 0 ? "+" : "")@bubbleAmount.ToString("N0") تومان
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-end mt-2">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.BookmarkAdd"
+                                   OnClick="() => SaveCoinToHistoryAsync(coin, intrinsic, bubbleAmount, bubblePct)">
+                            ذخیره در تاریخچه
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudCard>

@@ -1,0 +1,102 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.Services
+@using GoldEx.Calculator.Client.ViewModels
+@inject CalculationHistoryStore HistoryStore
+@inject ISnackbar Snackbar
+
+<MudDrawer @bind-Open="IsOpen" Anchor="Anchor.End" Elevation="16" Variant="DrawerVariant.Temporary" Width="360px">
+    <MudDrawerHeader Class="d-flex justify-space-between align-center border-b pa-4">
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Primary" />
+            <MudText Typo="Typo.h6" Class="font-weight-bold">تاریخچه محاسبات اخیر</MudText>
+        </div>
+        <div class="d-flex align-center gap-1">
+            @if (_historyItems.Count > 0)
+            {
+                <MudTooltip Text="پاکسازی تاریخچه">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Color="Color.Error" Size="Size.Small" OnClick="ClearHistoryAsync" />
+                </MudTooltip>
+            }
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="() => IsOpen = false" />
+        </div>
+    </MudDrawerHeader>
+
+    <div class="pa-3 overflow-y-auto" style="height: calc(100vh - 80px);">
+        @if (_historyItems.Count == 0)
+        {
+            <div class="d-flex flex-column align-center justify-center py-12 text-center">
+                <MudIcon Icon="@Icons.Material.Outlined.HistoryEdu" Size="Size.Large" Color="Color.Default" Class="mb-2" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">هنوز هیچ محاسبه‌ای ثبت نشده است.</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Default" Class="mt-1">محاسبات انجام شده به صورت خودکار در این قسمت ذخیره می‌شوند.</MudText>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var item in _historyItems)
+                {
+                    <MudCard Elevation="2" Class="pa-3 border rounded-lg hover-card">
+                        <div class="d-flex justify-space-between align-center mb-1">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text" Class="ma-0 pa-0 font-weight-bold">
+                                @item.Category
+                            </MudChip>
+                            <span style="font-size: 0.72rem; color: #71717a;">
+                                @item.Timestamp.ToString("HH:mm:ss")
+                            </span>
+                        </div>
+
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold my-1">
+                            @item.Title
+                        </MudText>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.82rem;">
+                            @item.SummaryText
+                        </MudText>
+
+                        <div class="d-flex justify-space-between align-center mt-2 pt-2 border-t">
+                            <span style="font-size: 0.78rem; color: #71717a;">نتیجه:</span>
+                            <span class="font-weight-black" style="color: var(--mud-palette-primary); direction: ltr;">
+                                @item.ResultValue @item.Unit
+                            </span>
+                        </div>
+                    </MudCard>
+                }
+            </div>
+        }
+    </div>
+</MudDrawer>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private List<CalculationHistoryItem> _historyItems = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen)
+        {
+            await LoadHistoryAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        HistoryStore.Changed += async (_, _) => await LoadHistoryAsync();
+        await LoadHistoryAsync();
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        _historyItems = await HistoryStore.GetAllAsync();
+        StateHasChanged();
+    }
+
+    private async Task ClearHistoryAsync()
+    {
+        await HistoryStore.ClearAsync();
+        _historyItems.Clear();
+        Snackbar.Add("تاریخچه محاسبات پاک شد", Severity.Info);
+        StateHasChanged();
+    }
+}

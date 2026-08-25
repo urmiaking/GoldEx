@@ -1,30 +1,31 @@
-﻿@inherits GoldExComponentBase
+@namespace GoldEx.Calculator.Client.Layout.Components
+@inherits GoldExComponentBase
 
 @code {
     [Parameter] public string? Class { get; set; }
 }
 
-<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@Class">
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0; border-top: 1px solid var(--gex-accent-border, rgba(212, 175, 55, 0.2));" ToolBarClass="mobile-navbar" Class="@Class">
     <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
-            محاسبه گر
+        <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Warning">
+            طلا
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.TradeIn" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SwapHorizontalCircle" IconColor="Color.Primary">
+            تعویض
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.CoinBubble" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Success">
+            سکه
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.Assay" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Science" IconColor="Color.Info">
+            عیارسنجی
         </MudNavLink>
         <AuthorizeView>
             <Authorized>
                 <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
-                            Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Primary">
+                            Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Secondary">
                     فاکتورها
                 </MudNavLink>
             </Authorized>
         </AuthorizeView>
-        <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
-            تبدیل ارز
-        </MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Calculator.Reverse" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SwapHoriz" IconColor="Color.Success">
-            ارز به طلا
-        </MudNavLink>
-        <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
-            درباره
-        </MudNavLink>
     </MudNavMenu>
 </MudAppBar>

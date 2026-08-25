@@ -1,0 +1,362 @@
+/* ==========================================================================
+   GoldEx Mini / Calculator - Luxury Gold & Modern Fintech Design System
+   ========================================================================== */
+
+:root {
+    --gex-gold-primary: #D4AF37;
+    --gex-gold-light: #F5D061;
+    --gex-gold-dark: #997A15;
+    --gex-gold-gradient: linear-gradient(135deg, #FFDF78 0%, #D4AF37 50%, #997A15 100%);
+    --gex-gold-glow: 0 8px 32px rgba(212, 175, 55, 0.22);
+    --gex-surface-glass: rgba(255, 255, 255, 0.85);
+    --gex-surface-glass-border: rgba(212, 175, 55, 0.25);
+    --gex-ticker-bg: rgba(20, 20, 24, 0.95);
+    --gex-radius-xl: 18px;
+    --gex-radius-pill: 9999px;
+}
+
+/* Theme Variations */
+[data-calc-theme="royal-gold"] {
+    --gex-accent: #D4AF37;
+    --gex-accent-light: #F5D061;
+    --gex-accent-bg: rgba(212, 175, 55, 0.12);
+    --gex-accent-border: rgba(212, 175, 55, 0.35);
+}
+
+[data-calc-theme="rose-gold"] {
+    --gex-accent: #E0A99A;
+    --gex-accent-light: #F7D2C9;
+    --gex-accent-bg: rgba(224, 169, 154, 0.12);
+    --gex-accent-border: rgba(224, 169, 154, 0.35);
+}
+
+[data-calc-theme="emerald-gold"] {
+    --gex-accent: #2ECC71;
+    --gex-accent-light: #E5C07B;
+    --gex-accent-bg: rgba(46, 204, 113, 0.10);
+    --gex-accent-border: rgba(46, 204, 113, 0.30);
+}
+
+[data-calc-theme="diamond-platinum"] {
+    --gex-accent: #4A90E2;
+    --gex-accent-light: #70A6FF;
+    --gex-accent-bg: rgba(74, 144, 226, 0.12);
+    --gex-accent-border: rgba(74, 144, 226, 0.30);
+}
+
+/* Glassmorphic & Modern Cards */
+.calc-glass-card {
+    background: var(--mud-palette-surface) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--gex-accent-border, rgba(212, 175, 55, 0.25)) !important;
+    border-radius: var(--gex-radius-xl) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calc-glass-card:hover {
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12), var(--gex-gold-glow) !important;
+}
+
+/* Live Price Ticker In AppBar */
+.calc-appbar-ticker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 9999px;
+    height: 32px;
+    padding: 0 16px;
+    width: auto;
+    max-width: 100%;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mud-theme-dark .calc-appbar-ticker {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.calc-appbar-ticker:hover {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: rgba(212, 175, 55, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+.ticker-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    animation: tickerSmoothSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes tickerSmoothSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ticker-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--mud-palette-text-secondary);
+    letter-spacing: -0.2px;
+}
+
+.mud-theme-dark .ticker-title {
+    color: #e4e4e7;
+}
+
+.ticker-value {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--mud-palette-primary);
+    direction: ltr;
+    font-family: inherit;
+}
+
+.mud-theme-dark .ticker-value {
+    color: #fde047;
+}
+
+.ticker-unit {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--mud-palette-text-secondary);
+    opacity: 0.85;
+}
+
+.ticker-loading,
+.ticker-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: var(--mud-palette-text-secondary);
+    white-space: nowrap;
+}
+
+@media (max-width: 599.98px) {
+    .calc-appbar-ticker {
+        height: 28px;
+        padding: 0 10px;
+    }
+
+    .ticker-content {
+        gap: 4px;
+    }
+
+    .ticker-title {
+        font-size: 0.72rem;
+    }
+
+    .ticker-value {
+        font-size: 0.8rem;
+    }
+
+    .ticker-unit {
+        font-size: 0.66rem;
+    }
+}
+
+/* ==========================================================================
+   Smooth Page & Tab Transition System
+   ========================================================================== */
+.calc-page-transition-container {
+    width: 100%;
+    position: relative;
+}
+
+.animate-page-enter {
+    animation: pageSmoothEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes pageSmoothEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mud-tab-panel {
+    animation: tabSmoothFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes tabSmoothFade {
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Segmented Modern Tab Controller */
+.calc-segmented-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--gex-radius-pill, 9999px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    max-width: 100%;
+}
+
+.mud-theme-dark .calc-segmented-nav {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calc-segmented-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.calc-segmented-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--gex-radius-pill, 9999px);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--mud-palette-text-secondary);
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+
+.calc-segmented-item:hover:not(.active) {
+    color: var(--mud-palette-text-primary);
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.calc-segmented-item.active {
+    background: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-text, #ffffff) !important;
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Financial Breakdown Proportion Bar */
+.calc-breakdown-bar {
+    height: 10px;
+    border-radius: 9999px;
+    overflow: hidden;
+    display: flex;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 12px 0;
+}
+
+.calc-breakdown-segment {
+    height: 100%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calc-breakdown-gold {
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.calc-breakdown-wage {
+    background: linear-gradient(90deg, #3B82F6, #2563EB);
+}
+
+.calc-breakdown-profit {
+    background: linear-gradient(90deg, #10B981, #059669);
+}
+
+.calc-breakdown-tax {
+    background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
+.calc-breakdown-stone {
+    background: linear-gradient(90deg, #8B5CF6, #7C3AED);
+}
+
+/* Coin Gauge & Cards */
+.coin-card {
+    border-radius: 14px;
+    border: 1px solid var(--mud-palette-lines-default);
+    padding: 14px;
+    transition: all 0.25s ease;
+}
+
+.coin-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--mud-palette-primary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bubble-badge-fair {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+.bubble-badge-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+.bubble-badge-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+/* Animations */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.97) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-calc-enter {
+    animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}

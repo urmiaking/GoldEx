@@ -1,0 +1,184 @@
+@namespace GoldEx.Calculator.Client.Components
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+@if (FinalPrice > 0)
+{
+    <MudCard Elevation="8" Class="calc-glass-card pa-4 mt-4 animate-calc-enter">
+        <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Primary" Size="Size.Large" />
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">مبلغ نهایی فاکتور</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary" Class="font-weight-black" Style="direction: ltr; text-align: right;">
+                        @FinalPrice.ToString("N0") <span style="font-size: 1rem; font-weight: normal;">@CurrencyTitle</span>
+                    </MudText>
+                </div>
+            </div>
+
+            <div class="d-flex align-center gap-2">
+                <MudTooltip Text="کپی مبلغ نهایی" Arrow="true">
+                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                                   Size="Size.Medium"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   OnClick="CopyPriceToClipboard" />
+                </MudTooltip>
+
+                <MudTooltip Text="@(_showDetails ? "بستن جزئیات" : "مشاهده جزئیات تفکیک شده")" Arrow="true">
+                    <MudIconButton Icon="@(_showDetails ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                   Size="Size.Medium"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="() => _showDetails = !_showDetails" />
+                </MudTooltip>
+            </div>
+        </div>
+
+        @* Visual Proportion Bar *@
+        @{
+            var total = FinalPrice > 0 ? FinalPrice : 1m;
+            var goldPct = Math.Clamp((RawGoldPrice / total) * 100m, 0m, 100m);
+            var wagePct = Math.Clamp((WagePrice / total) * 100m, 0m, 100m);
+            var profitPct = Math.Clamp((ProfitPrice / total) * 100m, 0m, 100m);
+            var taxPct = Math.Clamp((TaxPrice / total) * 100m, 0m, 100m);
+            var stonePct = Math.Clamp((StonePrice / total) * 100m, 0m, 100m);
+        }
+
+        <div class="calc-breakdown-bar">
+            @if (goldPct > 0)
+            {
+                <div class="calc-breakdown-segment calc-breakdown-gold" style="width: @goldPct.ToString("F1")%;" title="طلای خام: @goldPct.ToString("F1")%"></div>
+            }
+            @if (wagePct > 0)
+            {
+                <div class="calc-breakdown-segment calc-breakdown-wage" style="width: @wagePct.ToString("F1")%;" title="اجرت ساخت: @wagePct.ToString("F1")%"></div>
+            }
+            @if (profitPct > 0)
+            {
+                <div class="calc-breakdown-segment calc-breakdown-profit" style="width: @profitPct.ToString("F1")%;" title="سود فروش: @profitPct.ToString("F1")%"></div>
+            }
+            @if (taxPct > 0)
+            {
+                <div class="calc-breakdown-segment calc-breakdown-tax" style="width: @taxPct.ToString("F1")%;" title="مالیات: @taxPct.ToString("F1")%"></div>
+            }
+            @if (stonePct > 0)
+            {
+                <div class="calc-breakdown-segment calc-breakdown-stone" style="width: @stonePct.ToString("F1")%;" title="قیمت سنگ: @stonePct.ToString("F1")%"></div>
+            }
+        </div>
+
+        @* Legend Indicators *@
+        <div class="d-flex flex-wrap align-center justify-space-between gap-2 mt-1 mb-2" style="font-size: 0.78rem;">
+            <div class="d-flex align-center gap-1">
+                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#F59E0B;"></span>
+                <span>طلای خام: <b>@RawGoldPrice.ToString("N0")</b> (@goldPct.ToString("F0")%)</span>
+            </div>
+            @if (WagePrice > 0)
+            {
+                <div class="d-flex align-center gap-1">
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#3B82F6;"></span>
+                    <span>اجرت: <b>@WagePrice.ToString("N0")</b> (@wagePct.ToString("F0")%)</span>
+                </div>
+            }
+            @if (ProfitPrice > 0)
+            {
+                <div class="d-flex align-center gap-1">
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10B981;"></span>
+                    <span>سود: <b>@ProfitPrice.ToString("N0")</b> (@profitPct.ToString("F0")%)</span>
+                </div>
+            }
+            @if (TaxPrice > 0)
+            {
+                <div class="d-flex align-center gap-1">
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#EF4444;"></span>
+                    <span>مالیات: <b>@TaxPrice.ToString("N0")</b> (@taxPct.ToString("F0")%)</span>
+                </div>
+            }
+            @if (StonePrice > 0)
+            {
+                <div class="d-flex align-center gap-1">
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#8B5CF6;"></span>
+                    <span>سنگ: <b>@StonePrice.ToString("N0")</b> (@stonePct.ToString("F0")%)</span>
+                </div>
+            }
+        </div>
+
+        @* Expandable Detailed Breakdown *@
+        <MudCollapse Expanded="_showDetails">
+            <MudDivider Class="my-3" />
+            <div class="d-flex flex-column gap-2" style="font-size: 0.88rem;">
+                @if (Weight750 > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">وزن معادل ۷۵۰ (به شرط):</span>
+                        <span class="font-weight-bold">@Weight750.ToString("F3") گرم</span>
+                    </div>
+                }
+                @if (RawGoldPrice > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">قیمت طلای خام (وزن × نرخ روز):</span>
+                        <span class="font-weight-bold">@RawGoldPrice.ToString("N0") @CurrencyTitle</span>
+                    </div>
+                }
+                @if (WagePrice > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">اجرت ساخت:</span>
+                        <span class="font-weight-bold">@WagePrice.ToString("N0") @CurrencyTitle</span>
+                    </div>
+                }
+                @if (ProfitPrice > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">سود فروش:</span>
+                        <span class="font-weight-bold">@ProfitPrice.ToString("N0") @CurrencyTitle</span>
+                    </div>
+                }
+                @if (TaxPrice > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">مالیات ارزش افزوده:</span>
+                        <span class="font-weight-bold">@TaxPrice.ToString("N0") @CurrencyTitle</span>
+                    </div>
+                }
+                @if (ExtraCosts > 0)
+                {
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-secondary">هزینه‌های جانبی:</span>
+                        <span class="font-weight-bold">@ExtraCosts.Value.ToString("N0") @CurrencyTitle</span>
+                    </div>
+                }
+            </div>
+        </MudCollapse>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public decimal FinalPrice { get; set; }
+    [Parameter] public decimal RawGoldPrice { get; set; }
+    [Parameter] public decimal WagePrice { get; set; }
+    [Parameter] public decimal ProfitPrice { get; set; }
+    [Parameter] public decimal TaxPrice { get; set; }
+    [Parameter] public decimal StonePrice { get; set; }
+    [Parameter] public decimal? ExtraCosts { get; set; }
+    [Parameter] public decimal Weight750 { get; set; }
+    [Parameter] public string CurrencyTitle { get; set; } = "تومان";
+
+    private bool _showDetails;
+
+    private async Task CopyPriceToClipboard()
+    {
+        try
+        {
+            var text = $"{FinalPrice:N0} {CurrencyTitle}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("مبلغ نهایی در کلیپ‌بورد کپی شد", Severity.Success);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+}

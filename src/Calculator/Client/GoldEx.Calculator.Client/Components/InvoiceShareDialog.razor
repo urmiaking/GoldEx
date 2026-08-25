@@ -1,0 +1,282 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.ViewModels
+@using GoldEx.Client.Components.Calculator.ViewModels
+@using System.Text.Json
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true">
+    <DialogContent>
+        <div class="d-flex flex-column gap-3">
+            <!-- پیش‌نمایش گرافیکی و رسمی فاکتور طلا و جواهر -->
+            <div id="invoice-preview-card" class="pa-4 rounded-xl shadow-sm" style="background: #ffffff; color: #1f2937; border: 2px solid #D4AF37; font-family: 'IRANSans', Tahoma, sans-serif;">
+                <!-- سربرگ فاکتور -->
+                <div class="d-flex justify-space-between align-center border-b pb-3 mb-3" style="border-color: rgba(212, 175, 55, 0.4) !important;">
+                    <div class="d-flex align-center gap-3">
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.Diamond" />
+                        </MudAvatar>
+                        <div>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: #997A15;">
+                                @(Invoice.CompanyName ?? "گالری طلا و جواهر")
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @(!string.IsNullOrWhiteSpace(Invoice.CompanyPhone) ? $"تلفن: {Invoice.CompanyPhone}" : "") 
+                                @(!string.IsNullOrWhiteSpace(Invoice.CompanyAddress) ? $" | {Invoice.CompanyAddress}" : "")
+                            </MudText>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column align-end">
+                        <span class="pa-1 px-3 rounded-pill font-weight-bold" style="background: rgba(212, 175, 55, 0.15); color: #997A15; font-size: 0.82rem; direction: ltr;">
+                            شماره فاکتور: @Invoice.InvoiceNumber
+                        </span>
+                        <span class="text-secondary mt-1" style="font-size: 0.78rem;">
+                            تاریخ: @Invoice.DateTime
+                        </span>
+                    </div>
+                </div>
+
+                <!-- اطلاعات مشتری -->
+                <div class="d-flex justify-space-between align-center pa-2 px-3 rounded-lg mb-3" style="background: rgba(0, 0, 0, 0.03); font-size: 0.85rem;">
+                    <span>خریدار محترم: <b>@(string.IsNullOrWhiteSpace(Invoice.CustomerName) ? "مشتری گرامی" : Invoice.CustomerName)</b></span>
+                    <span>شماره تماس: <b style="direction: ltr; display: inline-block;">@(!string.IsNullOrWhiteSpace(Invoice.CustomerPhone) ? Invoice.CustomerPhone : "—")</b></span>
+                </div>
+
+                <!-- جدول اقلام طلا و جواهر -->
+                <div class="table-responsive">
+                    <table class="w-100 mb-3" style="font-size: 0.82rem; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: rgba(212, 175, 55, 0.15); border-bottom: 2px solid #D4AF37;">
+                                <th class="pa-2" style="width: 30px;">#</th>
+                                <th class="pa-2 text-right">شرح کالا</th>
+                                <th class="pa-2 text-center">وزن</th>
+                                <th class="pa-2 text-center">عیار</th>
+                                <th class="pa-2 text-center">اجرت / سود</th>
+                                <th class="pa-2 text-left">مبلغ نهایی</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var idx = 1;
+                                decimal grandTotal = 0;
+                            }
+                            @foreach (var item in Invoice.Items)
+                            {
+                                decimal.TryParse(item.FinalPrice.Replace(",", "").Replace("تومان", "").Trim(), out var linePrice);
+                                grandTotal += linePrice;
+
+                                <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.12);">
+                                    <td class="pa-2">@idx</td>
+                                    <td class="pa-2 font-weight-bold">@(item.ProductName ?? item.ProductType)</td>
+                                    <td class="pa-2 text-center" style="direction: ltr;">@item.Weight</td>
+                                    <td class="pa-2 text-center">@item.Fineness</td>
+                                    <td class="pa-2 text-center text-secondary">
+                                        @(!string.IsNullOrWhiteSpace(item.Wage) ? item.Wage : "—")
+                                        @(!string.IsNullOrWhiteSpace(item.WageType) ? $" ({item.WageType})" : "")
+                                    </td>
+                                    <td class="pa-2 text-left font-weight-bold" style="color: @(linePrice < 0 ? "#ef4444" : "#10b981"); direction: ltr;">
+                                        @item.FinalPrice
+                                    </td>
+                                </tr>
+                                idx++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- جمع کل فاکتور -->
+                <div class="d-flex justify-space-between align-center pa-3 rounded-lg" style="background: rgba(212, 175, 55, 0.18); border: 1px solid rgba(212, 175, 55, 0.5);">
+                    <span class="font-weight-bold" style="font-size: 0.95rem;">جمع کل قابل پرداخت:</span>
+                    <span class="font-weight-black" style="font-size: 1.25rem; color: #997A15; direction: ltr;">
+                        @grandTotal.ToString("N0") تومان
+                    </span>
+                </div>
+
+                <div class="mt-3 text-center text-secondary" style="font-size: 0.72rem;">
+                    * ارائه فاکتور هنگام تعویض یا فروش طلا الزامی است. از حسن اعتماد و خرید شما سپاسگزاریم.
+                </div>
+            </div>
+
+            <!-- گزینه‌های اشتراک‌گذاری و چاپ سریع -->
+            <div class="d-flex flex-column gap-2 mt-2">
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">ارسال و اشتراک‌گذاری فاکتور:</MudText>
+
+                <div class="d-flex flex-wrap gap-2 justify-center">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Description"
+                               OnClick="PrintA5">
+                        چاپ فاکتور رسمی (A5)
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Dark"
+                               StartIcon="@Icons.Material.Filled.Receipt"
+                               OnClick="PrintThermal">
+                        چاپ فیش حرارتی (۸۰mm)
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Chat"
+                               OnClick="ShareWhatsApp">
+                        ارسال به واتساپ
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.Send"
+                               OnClick="ShareBale">
+                        ارسال به بله
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Warning"
+                               StartIcon="@Icons.Material.Filled.Forum"
+                               OnClick="ShareEitaa">
+                        ارسال به ایتا
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Sms"
+                               OnClick="ShareSms">
+                        ارسال با پیامک
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="Close">بستن</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ContentCopy" OnClick="CopyTextToClipboard">
+            کپی متن صورتحساب
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public QuickInvoice Invoice { get; set; } = default!;
+
+    private async Task PrintA5()
+    {
+        var payload = Invoice.ToPayload();
+        var json = JsonSerializer.Serialize(payload, QuickInvoicePayload.JsonOptions);
+        await JSRuntime.InvokeVoidAsync("quickInvoice.printFromPayload", json);
+    }
+
+    private async Task PrintThermal()
+    {
+        var payload = Invoice.ToPayload();
+        var json = JsonSerializer.Serialize(payload, QuickInvoicePayload.JsonOptions);
+        await JSRuntime.InvokeVoidAsync("quickInvoice.printThermalFromPayload", json);
+    }
+
+    private async Task CopyTextToClipboard()
+    {
+        try
+        {
+            var text = GenerateFormattedReceipt();
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("متن فاکتور در کلیپ‌بورد کپی شد", Severity.Success);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private async Task ShareWhatsApp()
+    {
+        var text = GenerateFormattedReceipt();
+        var phone = CleanPhone(Invoice.CustomerPhone);
+        var encoded = Uri.EscapeDataString(text);
+        var url = string.IsNullOrEmpty(phone)
+            ? $"https://api.whatsapp.com/send?text={encoded}"
+            : $"https://api.whatsapp.com/send?phone={phone}&text={encoded}";
+
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task ShareBale()
+    {
+        var text = GenerateFormattedReceipt();
+        var encoded = Uri.EscapeDataString(text);
+        var url = $"https://web.bale.ai/#/im?text={encoded}";
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task ShareEitaa()
+    {
+        var text = GenerateFormattedReceipt();
+        var encoded = Uri.EscapeDataString(text);
+        var url = $"https://eitaa.com/share/url?text={encoded}";
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task ShareSms()
+    {
+        var text = GenerateFormattedReceipt();
+        var phone = Invoice.CustomerPhone ?? string.Empty;
+        var encoded = Uri.EscapeDataString(text);
+        var url = $"sms:{phone}?body={encoded}";
+        await JSRuntime.InvokeVoidAsync("open", url, "_self");
+    }
+
+    private string GenerateFormattedReceipt()
+    {
+        if (Invoice == null) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"⚜️ {Invoice.CompanyName ?? "گالری طلا و جواهر"} ⚜️");
+        if (!string.IsNullOrWhiteSpace(Invoice.CompanyPhone))
+            sb.AppendLine($"📞 تماس: {Invoice.CompanyPhone}");
+        if (!string.IsNullOrWhiteSpace(Invoice.CompanyAddress))
+            sb.AppendLine($"📍 آدرس: {Invoice.CompanyAddress}");
+        sb.AppendLine("───────────────────");
+        sb.AppendLine($"📄 فاکتور شماره: {Invoice.InvoiceNumber}");
+        sb.AppendLine($"📅 تاریخ: {Invoice.DateTime}");
+        sb.AppendLine($"👤 خریدار: {Invoice.CustomerName ?? "مشتری گرامی"}");
+        if (!string.IsNullOrWhiteSpace(Invoice.CustomerPhone))
+            sb.AppendLine($"📱 شماره تماس: {Invoice.CustomerPhone}");
+        sb.AppendLine("───────────────────");
+        sb.AppendLine("📋 اقلام فاکتور:");
+
+        decimal grandTotal = 0;
+        var idx = 1;
+        foreach (var item in Invoice.Items)
+        {
+            sb.AppendLine($"{idx}. {item.ProductName ?? item.ProductType}");
+            sb.AppendLine($"   ▫️ وزن: {item.Weight} | عیار: {item.Fineness}");
+            if (!string.IsNullOrWhiteSpace(item.Wage))
+                sb.AppendLine($"   ▫️ اجرت: {item.Wage}");
+            sb.AppendLine($"   💰 مبلغ: {item.FinalPrice}");
+
+            decimal.TryParse(item.FinalPrice.Replace(",", "").Replace("تومان", "").Trim(), out var val);
+            grandTotal += val;
+            idx++;
+        }
+
+        sb.AppendLine("───────────────────");
+        sb.AppendLine($"💎 جمع کل: {grandTotal:N0} تومان");
+        sb.AppendLine("───────────────────");
+        sb.AppendLine("با تشکر از حسن انتخاب شما ✨");
+
+        return sb.ToString();
+    }
+
+    private static string CleanPhone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return string.Empty;
+        var cleaned = new string(phone.Where(char.IsDigit).ToArray());
+        if (cleaned.StartsWith("09"))
+        {
+            cleaned = "98" + cleaned[1..];
+        }
+        return cleaned;
+    }
+
+    private void Close() => MudDialog.Close();
+}
