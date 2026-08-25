@@ -24,6 +24,25 @@ public partial class App
     private string? SplashLogoUrl { get; set; }
     private bool IsStoreTitle { get; set; }
 
+    private static readonly HashSet<string> ReservedSegments = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "api", "_content", "_framework", "Account", "oauth", "mcp", ".well-known",
+        "serilog-ui", "swagger", "health", "Error", "__test", "uploads", "shared",
+        "assets", "fonts", "css", "js", "invoices", "products", "finances", "base-info",
+        "settings", "quick-invoice", "ssr", "favicon.ico", "manifest.webmanifest",
+        "app.js", "sw.js"
+    };
+
+    private bool IsVitrineRoute()
+    {
+        var path = HttpContext.Request.Path.Value ?? "";
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0) return false;
+
+        var firstSegment = segments[0];
+        return !ReservedSegments.Contains(firstSegment);
+    }
+
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : GetRenderMode();
@@ -35,25 +54,39 @@ public partial class App
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
 
+        if (IsVitrineRoute())
+            return new InteractiveWebAssemblyRenderMode(prerender: true);
+
         return new InteractiveWebAssemblyRenderMode(prerender: false);
     }
 
     /// <summary>
-    /// Shows the loading splash screen only when prerendering is disabled.
-    /// This ensures reversibility: switching back to InteractiveAutoRenderMode(true)
-    /// automatically hides the splash without any other code change.
+    /// Shows the loading splash screen only for admin/internal app when prerendering is disabled.
+    /// Vitrine routes are prerendered and never show a splash screen.
     /// </summary>
-    private bool ShowSplash => RenderModeForPage switch
+    private bool ShowSplash
     {
-        InteractiveWebAssemblyRenderMode { Prerender: false } => true,
-        InteractiveAutoRenderMode { Prerender: false } => true,
-        _ => false
-    };
+        get
+        {
+            if (IsVitrineRoute())
+                return false;
+
+            return RenderModeForPage switch
+            {
+                InteractiveWebAssemblyRenderMode { Prerender: false } => true,
+                InteractiveAutoRenderMode { Prerender: false } => true,
+                _ => false
+            };
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await GetLicenseAsync();
-        await LoadSplashTitleAsync();
+        if (!IsVitrineRoute())
+        {
+            await LoadSplashTitleAsync();
+        }
         await base.OnInitializedAsync();
     }
 

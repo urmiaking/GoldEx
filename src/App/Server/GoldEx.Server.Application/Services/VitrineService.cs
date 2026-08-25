@@ -33,41 +33,51 @@ internal class VitrineService(
     IInventoryStockRepository inventoryStockRepository,
     ILogger<VitrineService> logger) : IVitrineService
 {
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+
     public async Task<VitrineStoreInfoDto?> GetStoreInfoAsync(string storeSlug, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(storeSlug))
             return null;
 
-        var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
+        await _semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
 
-        var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
 
-        if (store == null)
-            return null;
+            if (store == null)
+                return null;
 
-        var setting = await settingRepository.Get(new SettingsByStoreIdSpecification(store.Id))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(cancellationToken);
+            var setting = await settingRepository.Get(new SettingsByStoreIdSpecification(store.Id))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        var liveGoldPrice18K = await GetLive18KGoldPriceAsync(cancellationToken);
+            var liveGoldPrice18K = await GetLive18KGoldPriceAsync(cancellationToken);
 
-        return new VitrineStoreInfoDto(
-            Name: store.Name,
-            Slug: store.Slug,
-            LogoUrl: store.LogoUrl,
-            BackgroundImageUrl: store.BackgroundImageUrl,
-            Address: setting?.Address,
-            PhoneNumber: setting?.PhoneNumber,
-            InstagramUrl: setting?.InstagramUrl,
-            TelegramUrl: setting?.TelegramUrl,
-            BaleUrl: setting?.BaleUrl,
-            WhatsAppNumber: setting?.WhatsAppNumber,
-            AboutText: setting?.AboutText,
-            LiveGoldPrice18K: liveGoldPrice18K);
+            return new VitrineStoreInfoDto(
+                Name: store.Name,
+                Slug: store.Slug,
+                LogoUrl: store.LogoUrl,
+                BackgroundImageUrl: store.BackgroundImageUrl,
+                Address: setting?.Address,
+                PhoneNumber: setting?.PhoneNumber,
+                InstagramUrl: setting?.InstagramUrl,
+                TelegramUrl: setting?.TelegramUrl,
+                BaleUrl: setting?.BaleUrl,
+                WhatsAppNumber: setting?.WhatsAppNumber,
+                AboutText: setting?.AboutText,
+                LiveGoldPrice18K: liveGoldPrice18K);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task<IReadOnlyList<VitrineCategoryDto>> GetCategoriesAsync(string storeSlug, CancellationToken cancellationToken = default)
@@ -75,40 +85,48 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug))
             return [];
 
-        var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
+        await _semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
 
-        var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
 
-        if (store == null)
-            return [];
+            if (store == null)
+                return [];
 
-        var categories = await categoryRepository.Get(new ProductCategoriesByStoreIdSpecification(store.Id))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .ToListAsync(cancellationToken);
+            var categories = await categoryRepository.Get(new ProductCategoriesByStoreIdSpecification(store.Id))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .ToListAsync(cancellationToken);
 
-        var vitrineProducts = await productRepository.Get(new ProductsForVitrineSpecification(store.Id.Value))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .Select(p => p.ProductCategoryId)
-            .ToListAsync(cancellationToken);
+            var vitrineProducts = await productRepository.Get(new ProductsForVitrineSpecification(store.Id.Value))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Select(p => p.ProductCategoryId)
+                .ToListAsync(cancellationToken);
 
-        var countsByCategory = vitrineProducts
-            .Where(cid => cid.HasValue)
-            .GroupBy(cid => cid!.Value)
-            .ToDictionary(g => g.Key, g => g.Count());
+            var countsByCategory = vitrineProducts
+                .Where(cid => cid.HasValue)
+                .GroupBy(cid => cid!.Value)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-        return categories
-            .Select(c => new VitrineCategoryDto(
-                Id: c.Id.Value,
-                Title: c.Title,
-                PrefixCode: c.PrefixCode,
-                ProductCount: countsByCategory.GetValueOrDefault(c.Id, 0)))
-            .Where(c => c.ProductCount > 0)
-            .ToList();
+            return categories
+                .Select(c => new VitrineCategoryDto(
+                    Id: c.Id.Value,
+                    Title: c.Title,
+                    PrefixCode: c.PrefixCode,
+                    ProductCount: countsByCategory.GetValueOrDefault(c.Id, 0)))
+                .Where(c => c.ProductCount > 0)
+                .ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task<IReadOnlyList<VitrineProductSummaryDto>> GetVitrineProductsAsync(
@@ -120,69 +138,77 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug))
             return [];
 
-        var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
-
-        var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
-
-        if (store == null)
-            return [];
-
-        var spec = new ProductsForVitrineSpecification(store.Id.Value);
-        var query = productRepository.Get(spec)
-            .AsNoTracking()
-            .IgnoreQueryFilters();
-
-        if (categoryId.HasValue)
+        await _semaphore.WaitAsync(cancellationToken);
+        try
         {
-            var pCatId = new ProductCategoryId(categoryId.Value);
-            query = query.Where(p => p.ProductCategoryId == pCatId);
-        }
+            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
 
-        if (isFeatured.HasValue && isFeatured.Value)
-        {
-            query = query.Where(p => p.IsFeatured);
-        }
+            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
 
-        var products = await query.ToListAsync(cancellationToken);
-        var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
+            if (store == null)
+                return [];
 
-        var productIds = products.Select(p => p.Id).ToList();
-        var stockQuantities = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .Where(s => s.StoreId == store.Id && s.ProductId != null && productIds.Contains(s.ProductId.Value))
-            .GroupBy(s => s.ProductId!.Value)
-            .Select(g => new
+            var spec = new ProductsForVitrineSpecification(store.Id.Value);
+            var query = productRepository.Get(spec)
+                .AsNoTracking()
+                .IgnoreQueryFilters();
+
+            if (categoryId.HasValue)
             {
-                ProductId = g.Key,
-                TotalQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
-            })
-            .ToDictionaryAsync(x => x.ProductId, x => x.TotalQuantity, cancellationToken);
+                var pCatId = new ProductCategoryId(categoryId.Value);
+                query = query.Where(p => p.ProductCategoryId == pCatId);
+            }
 
-        return products.Select(p =>
+            if (isFeatured.HasValue && isFeatured.Value)
+            {
+                query = query.Where(p => p.IsFeatured);
+            }
+
+            var products = await query.ToListAsync(cancellationToken);
+            var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
+
+            var productIds = products.Select(p => p.Id).ToList();
+            var stockQuantities = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Where(s => s.StoreId == store.Id && s.ProductId != null && productIds.Contains(s.ProductId.Value))
+                .GroupBy(s => s.ProductId!.Value)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                })
+                .ToDictionaryAsync(x => x.ProductId, x => x.TotalQuantity, cancellationToken);
+
+            return products.Select(p =>
+            {
+                var mainImage = p.Images?.OrderByDescending(x => x.IsMain).ThenBy(x => x.DisplayOrder).FirstOrDefault()?.Url;
+                var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
+                var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
+                var priceBreakdown = CalculateVitrinePrice(p, gramPrice750, effectiveWeight);
+
+                return new VitrineProductSummaryDto(
+                    Id: p.Id.Value,
+                    Barcode: p.Barcode,
+                    Name: p.Name,
+                    Weight: effectiveWeight,
+                    Fineness: p.Fineness,
+                    ProductType: p.ProductType,
+                    CategoryId: p.ProductCategoryId?.Value,
+                    CategoryTitle: p.ProductCategory?.Title,
+                    MainImageUrl: mainImage,
+                    EstimatedPrice: priceBreakdown.EstimatedPrice,
+                    IsFeatured: p.IsFeatured,
+                    IsAvailable: isAvailable);
+            }).ToList();
+        }
+        finally
         {
-            var mainImage = p.Images?.OrderByDescending(x => x.IsMain).ThenBy(x => x.DisplayOrder).FirstOrDefault()?.Url;
-            var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
-            var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
-            var priceBreakdown = CalculateVitrinePrice(p, gramPrice750, effectiveWeight);
-
-            return new VitrineProductSummaryDto(
-                Id: p.Id.Value,
-                Barcode: p.Barcode,
-                Name: p.Name,
-                Weight: effectiveWeight,
-                Fineness: p.Fineness,
-                ProductType: p.ProductType,
-                CategoryId: p.ProductCategoryId?.Value,
-                CategoryTitle: p.ProductCategory?.Title,
-                MainImageUrl: mainImage,
-                EstimatedPrice: priceBreakdown.EstimatedPrice,
-                IsFeatured: p.IsFeatured,
-                IsAvailable: isAvailable);
-        }).ToList();
+            _semaphore.Release();
+        }
     }
 
     public async Task<VitrineProductDetailDto?> GetProductDetailAsync(
@@ -193,73 +219,81 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug) || string.IsNullOrWhiteSpace(barcode))
             return null;
 
-        var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
+        await _semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
 
-        var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
 
-        if (store == null)
-            return null;
+            if (store == null)
+                return null;
 
-        var spec = new ProductForVitrineByBarcodeSpecification(barcode.Trim(), store.Id.Value);
-        var product = await productRepository.Get(spec)
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(cancellationToken);
+            var spec = new ProductForVitrineByBarcodeSpecification(barcode.Trim(), store.Id.Value);
+            var product = await productRepository.Get(spec)
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        if (product == null)
-            return null;
+            if (product == null)
+                return null;
 
-        var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
+            var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
 
-        var quantity = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .Where(s => s.StoreId == store.Id && s.ProductId == product.Id)
-            .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
+            var quantity = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Where(s => s.StoreId == store.Id && s.ProductId == product.Id)
+                .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
 
-        var isAvailable = quantity > 0.0001m;
-        var effectiveWeight = product.Weight > 0 ? product.Weight : (quantity > 0 ? quantity : 0m);
-        var priceBreakdown = CalculateVitrinePrice(product, gramPrice750, effectiveWeight);
+            var isAvailable = quantity > 0.0001m;
+            var effectiveWeight = product.Weight > 0 ? product.Weight : (quantity > 0 ? quantity : 0m);
+            var priceBreakdown = CalculateVitrinePrice(product, gramPrice750, effectiveWeight);
 
-        var imageUrls = product.Images?
-            .OrderByDescending(x => x.IsMain)
-            .ThenBy(x => x.DisplayOrder)
-            .Select(x => x.Url)
-            .ToList() ?? [];
+            var imageUrls = product.Images?
+                .OrderByDescending(x => x.IsMain)
+                .ThenBy(x => x.DisplayOrder)
+                .Select(x => x.Url)
+                .ToList() ?? [];
 
-        var gemstones = product.GemStones?
-            .Select(s => new VitrineGemStoneDto(
-                Type: s.Type,
-                Color: s.Color,
-                Carat: s.Carat,
-                Cost: s.Cost))
-            .ToList() ?? [];
+            var gemstones = product.GemStones?
+                .Select(s => new VitrineGemStoneDto(
+                    Type: s.Type,
+                    Color: s.Color,
+                    Carat: s.Carat,
+                    Cost: s.Cost))
+                .ToList() ?? [];
 
-        return new VitrineProductDetailDto(
-            Id: product.Id.Value,
-            Barcode: product.Barcode,
-            Name: product.Name,
-            Weight: effectiveWeight,
-            Wage: product.Wage,
-            WageType: product.WageType,
-            Fineness: product.Fineness,
-            ProductType: product.ProductType,
-            CategoryId: product.ProductCategoryId?.Value,
-            CategoryTitle: product.ProductCategory?.Title,
-            Description: product.VitrineDescription,
-            ImageUrls: imageUrls,
-            GemStones: gemstones,
-            EstimatedPrice: priceBreakdown.EstimatedPrice,
-            RawGoldPrice: priceBreakdown.RawGoldPrice,
-            WageAmount: priceBreakdown.WageAmount,
-            ProfitAmount: priceBreakdown.ProfitAmount,
-            TaxAmount: priceBreakdown.TaxAmount,
-            GramPrice750: gramPrice750,
-            UpdatedAt: DateTime.Now,
-            IsAvailable: isAvailable);
+            return new VitrineProductDetailDto(
+                Id: product.Id.Value,
+                Barcode: product.Barcode,
+                Name: product.Name,
+                Weight: effectiveWeight,
+                Wage: product.Wage,
+                WageType: product.WageType,
+                Fineness: product.Fineness,
+                ProductType: product.ProductType,
+                CategoryId: product.ProductCategoryId?.Value,
+                CategoryTitle: product.ProductCategory?.Title,
+                Description: product.VitrineDescription,
+                ImageUrls: imageUrls,
+                GemStones: gemstones,
+                EstimatedPrice: priceBreakdown.EstimatedPrice,
+                RawGoldPrice: priceBreakdown.RawGoldPrice,
+                WageAmount: priceBreakdown.WageAmount,
+                ProfitAmount: priceBreakdown.ProfitAmount,
+                TaxAmount: priceBreakdown.TaxAmount,
+                GramPrice750: gramPrice750,
+                UpdatedAt: DateTime.Now,
+                IsAvailable: isAvailable);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task UpdateProductVitrineAsync(
@@ -267,20 +301,28 @@ internal class VitrineService(
         UpdateProductVitrineRequest request,
         CancellationToken cancellationToken = default)
     {
-        var spec = new ProductsByIdSpecification(new ProductId(productId));
-        var product = await productRepository.Get(spec)
-            .FirstOrDefaultAsync(cancellationToken)
-            ?? throw new NotFoundException("محصول مورد نظر یافت نشد.");
-
-        product.SetVitrineOptions(request.ShowInVitrine, request.IsFeatured, request.VitrineDescription);
-
-        if (request.Images != null)
+        await _semaphore.WaitAsync(cancellationToken);
+        try
         {
-            var images = request.Images.Select(x => ProductImage.Create(x.Url, x.IsMain, x.DisplayOrder)).ToList();
-            product.SetImages(images);
-        }
+            var spec = new ProductsByIdSpecification(new ProductId(productId));
+            var product = await productRepository.Get(spec)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("محصول مورد نظر یافت نشد.");
 
-        await productRepository.UpdateAsync(product, cancellationToken);
+            product.SetVitrineOptions(request.ShowInVitrine, request.IsFeatured, request.VitrineDescription);
+
+            if (request.Images != null)
+            {
+                var images = request.Images.Select(x => ProductImage.Create(x.Url, x.IsMain, x.DisplayOrder)).ToList();
+                product.SetImages(images);
+            }
+
+            await productRepository.UpdateAsync(product, cancellationToken);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     #region Helper Methods

@@ -1,14 +1,33 @@
 @page "/{StoreSlug}/p/{Barcode}"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
+@implements IDisposable
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
+@inject PersistentComponentState ApplicationState
 
 <PageTitle>@(_product?.Name ?? "جزئیات قطعه طلا") - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
+
+<HeadContent>
+    @if (_product != null)
+    {
+        <meta name="description" content="@($"مشخصات و قیمت روز {_product.Name} با وزن {_product.Weight:G29} گرم، عیار {_product.Fineness:G29} در {(_storeInfo?.Name ?? "گالری طلا")}")" />
+        <meta property="og:title" content="@($"{_product.Name} | {(_storeInfo?.Name ?? "گالری طلا")}")" />
+        <meta property="og:description" content="@($"خرید و استعلام آنلاین {_product.Name} - وزن: {_product.Weight:G29} گرم - عیار: {_product.Fineness:G29} - قیمت با مظنه روز: {_product.EstimatedPrice:N0} تومان")" />
+        <meta property="og:type" content="product" />
+        @if (_product.ImageUrls.Count > 0)
+        {
+            <meta property="og:image" content="@_product.ImageUrls[0]" />
+        }
+        <meta property="product:price:amount" content="@_product.EstimatedPrice" />
+        <meta property="product:price:currency" content="IRT" />
+        <meta property="product:availability" content="@(_product.IsAvailable ? "in stock" : "out of stock")" />
+    }
+</HeadContent>
 
 <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
     <!-- Breadcrumb -->
@@ -250,10 +269,38 @@
 
     private VitrineProductDetailDto? _product;
     private bool _isLoading = true;
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistProductData);
+
+        if (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{StoreSlug}_{Barcode}", out var restored) && restored != null)
+        {
+            _product = restored;
+            _isLoading = false;
+        }
+        else
+        {
+            await LoadProductAsync();
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadProductAsync();
+        if (_product == null && !_isLoading)
+        {
+            await LoadProductAsync();
+        }
+    }
+
+    private Task PersistProductData()
+    {
+        if (_product != null)
+        {
+            ApplicationState.PersistAsJson($"vitrine_product_{StoreSlug}_{Barcode}", _product);
+        }
+        return Task.CompletedTask;
     }
 
     private async Task LoadProductAsync()
@@ -271,6 +318,11 @@
         {
             _isLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _persistingSubscription.Dispose();
     }
 
     private string GetWhatsAppInquiryUrl()

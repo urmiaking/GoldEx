@@ -1,10 +1,22 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
+@inject PersistentComponentState ApplicationState
+
+<HeadContent>
+    <meta name="robots" content="index, follow" />
+    <meta property="og:site_name" content="@(_storeInfo?.Name ?? "ویترین آنلاین طلا و جواهر")" />
+    <meta property="og:type" content="website" />
+    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+    {
+        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    }
+</HeadContent>
 
 <link href="/assets/fontawesome/css/all.min.css?v=6.5.1" rel="stylesheet" />
 <link href="@($"/assets/vitrine/css/vitrine.css?v={_cssVersion}")" rel="stylesheet" />
@@ -251,11 +263,40 @@
     private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
     private string StoreSlug = "default";
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ResolveStoreSlug();
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistStoreInfo);
+
+        if (ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out var restored) && restored != null)
+        {
+            _storeInfo = restored;
+        }
+        else
+        {
+            await LoadStoreInfoAsync();
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
+        var oldSlug = StoreSlug;
         ResolveStoreSlug();
-        await LoadStoreInfoAsync();
+        if (_storeInfo == null || !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase))
+        {
+            await LoadStoreInfoAsync();
+        }
+    }
+
+    private Task PersistStoreInfo()
+    {
+        if (_storeInfo != null)
+        {
+            ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
+        }
+        return Task.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -309,5 +350,10 @@
         var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
         var expected = string.IsNullOrEmpty(subPath) ? StoreSlug : $"{StoreSlug}/{subPath}";
         return pathOnly.Equals(expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        _persistingSubscription.Dispose();
     }
 }
