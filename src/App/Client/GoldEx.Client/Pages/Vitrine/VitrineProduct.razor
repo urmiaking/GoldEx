@@ -7,8 +7,10 @@
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
 @using GoldEx.Shared.Routings
+@using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
 @inject PersistentComponentState ApplicationState
 
 <PageTitle>@(_product != null ? $"{_product.Name} (عیار {(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")}) - {(_storeInfo?.Name ?? "گالری طلا")}" : "جزئیات قطعه طلا")</PageTitle>
@@ -313,9 +315,9 @@
                         </a>
                     }
 
-                    <button type="button" class="btn-gisu btn-gisu-outline" onclick="goldexVitrine.copyShareLink('@_product.Name')">
+                    <button id="vitrineShareBtn" type="button" class="btn-gisu btn-gisu-outline" @onclick="OnShareClickedAsync" style="padding: 14px;">
                         <i class="fa-solid fa-share-nodes"></i>
-                        <span>کپی لینک و اشتراک‌گذاری این کار</span>
+                        <span>اشتراک‌گذاری کالا</span>
                     </button>
                 </div>
             </div>
@@ -512,5 +514,31 @@
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         });
+    }
+
+    private async Task OnShareClickedAsync()
+    {
+        if (_product == null) return;
+
+        var mainImg = _product.ImageUrls.Count > 0 ? _product.ImageUrls[0] : "";
+        if (!string.IsNullOrEmpty(mainImg) && !mainImg.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            mainImg = Navigation.ToAbsoluteUri(mainImg).ToString();
+        }
+
+        var shareData = new
+        {
+            productName = _product.Name,
+            barcode = _product.Barcode,
+            categoryTitle = _product.CategoryTitle,
+            weight = _product.Weight.ToString("G29"),
+            fineness = _product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750",
+            priceFormatted = _product.EstimatedPrice.ToString("N0"),
+            imageUrl = mainImg,
+            storeName = _storeInfo?.Name ?? "گالری طلا و جواهر",
+            url = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{Barcode}").ToString()
+        };
+
+        await JsRuntime.InvokeVoidAsync("goldexVitrine.shareProduct", shareData);
     }
 }
