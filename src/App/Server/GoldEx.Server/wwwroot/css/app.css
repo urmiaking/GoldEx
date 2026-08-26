@@ -889,6 +889,8 @@ h1:focus {
     background: rgba(218, 165, 32, 0.15);
     border-radius: 4px;
     overflow: hidden;
+    direction: ltr !important;
+    position: relative;
 }
 
 .splash-progress-bar {
@@ -896,6 +898,9 @@ h1:focus {
     height: 100%;
     background: linear-gradient(90deg, #b8860b 0%, #daa520 50%, #ffd700 100%);
     border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
     animation: splash-progress 1.8s ease-in-out infinite;
 }
 

@@ -1,8 +1,10 @@
-﻿@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
+@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
 
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[typeof(BaseLayout).Assembly]" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
+            <Authorizing>
+            </Authorizing>
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
