@@ -268,7 +268,8 @@ public static class ClientRoutes
             "serilog-ui", "swagger", "health", "Error", "__test", "uploads", "shared",
             "assets", "fonts", "css", "js", "invoices", "products", "finances", "base-info",
             "settings", "quick-invoice", "ssr", "favicon.ico", "manifest.webmanifest",
-            "app.js", "sw.js", "register-product", "user-accounts", "dashboard", "blogs"
+            "app.js", "sw.js", "register-product", "user-accounts", "dashboard", "blogs",
+            "robots.txt", "sitemap.xml", "sitemap.xsl"
         };
 
         public static bool IsReservedSegment(string? segment)

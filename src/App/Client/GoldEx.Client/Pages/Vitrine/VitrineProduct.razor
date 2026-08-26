@@ -11,22 +11,56 @@
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
 
-<PageTitle>@(_product?.Name ?? "جزئیات قطعه طلا") - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
+<PageTitle>@(_product != null ? $"{_product.Name} (عیار {(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")}) - {(_storeInfo?.Name ?? "گالری طلا")}" : "جزئیات قطعه طلا")</PageTitle>
 
 <HeadContent>
     @if (_product != null)
     {
-        <meta name="description" content="@($"مشخصات و قیمت روز {_product.Name} با وزن {_product.Weight:G29} گرم، عیار {_product.Fineness:G29} در {(_storeInfo?.Name ?? "گالری طلا")}")" />
-        <meta property="og:title" content="@($"{_product.Name} | {(_storeInfo?.Name ?? "گالری طلا")}")" />
-        <meta property="og:description" content="@($"خرید و استعلام آنلاین {_product.Name} - وزن: {_product.Weight:G29} گرم - عیار: {_product.Fineness:G29} - قیمت با مظنه روز: {_product.EstimatedPrice:N0} تومان")" />
+        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{Barcode}").ToString();
+        var mainImage = _product.ImageUrls.Count > 0 ? Navigation.ToAbsoluteUri(_product.ImageUrls[0]).ToString() : null;
+        var storeName = _storeInfo?.Name ?? "گالری طلا";
+        var finenessText = _product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750";
+        var pageTitle = $"{_product.Name} (عیار {finenessText}) | {storeName}";
+        var pageDesc = !string.IsNullOrWhiteSpace(_product.Description)
+            ? _product.Description
+            : $"خرید و استعلام آنلاین {_product.Name} با وزن {_product.Weight:G29} گرم و عیار {finenessText} در {storeName}. محاسبه زنده قیمت با مظنه روز طلا: {_product.EstimatedPrice:N0} تومان.";
+
+        <link rel="canonical" href="@canonicalUrl" />
+        <meta name="description" content="@pageDesc" />
+        <meta name="keywords" content="@($"{_product.Name}, طلا {finenessText}, طلا 18 عیار, خرید {_product.CategoryTitle ?? "طلا"}, {storeName}, قیمت طلا")" />
+
+        <!-- Open Graph -->
+        <meta property="og:site_name" content="@storeName" />
         <meta property="og:type" content="product" />
-        @if (_product.ImageUrls.Count > 0)
+        <meta property="og:locale" content="fa_IR" />
+        <meta property="og:url" content="@canonicalUrl" />
+        <meta property="og:title" content="@pageTitle" />
+        <meta property="og:description" content="@pageDesc" />
+        @if (!string.IsNullOrWhiteSpace(mainImage))
         {
-            <meta property="og:image" content="@_product.ImageUrls[0]" />
+            <meta property="og:image" content="@mainImage" />
+            <meta property="og:image:alt" content="@($"{_product.Name} - {storeName}")" />
         }
         <meta property="product:price:amount" content="@_product.EstimatedPrice" />
         <meta property="product:price:currency" content="IRT" />
         <meta property="product:availability" content="@(_product.IsAvailable ? "in stock" : "out of stock")" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@pageTitle" />
+        <meta name="twitter:description" content="@pageDesc" />
+        @if (!string.IsNullOrWhiteSpace(mainImage))
+        {
+            <meta name="twitter:image" content="@mainImage" />
+        }
+
+        <!-- JSON-LD Structured Data for Google Rich Results -->
+        <script type="application/ld+json">
+        @((MarkupString)GetProductJsonLd(canonicalUrl, mainImage, storeName, pageDesc, finenessText))
+        </script>
+        <script type="application/ld+json">
+        @((MarkupString)GetBreadcrumbJsonLd(canonicalUrl, storeName))
+        </script>
     }
 </HeadContent>
 
@@ -100,7 +134,7 @@
                 <div class="vitrine-gallery-main">
                     @if (_product.ImageUrls.Count > 0)
                     {
-                        <img id="vitrineMainImage" src="@_product.ImageUrls[0]" alt="@_product.Name" />
+                        <img id="vitrineMainImage" src="@_product.ImageUrls[0]" alt="@($"{_product.Name} عیار {(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")} وزن {_product.Weight:G29} گرم - {(_storeInfo?.Name ?? "گالری طلا")}")" fetchpriority="high" />
                     }
                     else
                     {
@@ -378,5 +412,105 @@
             ? $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}"
             : $"سلام وقت بخیر، قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین به عنوان فروخته‌شده ثبت شده است. آیا امکان سفارش ساخت مجدد این مدل وجود دارد؟\n{currentUrl}";
         return $"https://wa.me/{phone}?text={Uri.EscapeDataString(text)}";
+    }
+
+    private string GetProductJsonLd(string canonicalUrl, string? mainImage, string storeName, string pageDesc, string finenessText)
+    {
+        if (_product == null) return "{}";
+
+        var images = _product.ImageUrls
+            .Select(img => Navigation.ToAbsoluteUri(img).ToString())
+            .ToArray();
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org/",
+            ["@type"] = "Product",
+            ["name"] = _product.Name,
+            ["image"] = images.Length > 0 ? images : (mainImage != null ? new[] { mainImage } : Array.Empty<string>()),
+            ["description"] = pageDesc,
+            ["sku"] = _product.Barcode,
+            ["category"] = _product.CategoryTitle ?? "طلا و جواهر",
+            ["material"] = $"طلا {finenessText} (۱۸ عیار)",
+            ["brand"] = new Dictionary<string, object>
+            {
+                ["@type"] = "Brand",
+                ["name"] = storeName
+            },
+            ["offers"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "Offer",
+                ["url"] = canonicalUrl,
+                ["priceCurrency"] = "IRT",
+                ["price"] = _product.EstimatedPrice.ToString("F0"),
+                ["availability"] = _product.IsAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                ["itemCondition"] = "https://schema.org/NewCondition",
+                ["priceValidUntil"] = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd"),
+                ["seller"] = new Dictionary<string, object>
+                {
+                    ["@type"] = "JewelryStore",
+                    ["name"] = storeName
+                }
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
+
+    private string GetBreadcrumbJsonLd(string canonicalUrl, string storeName)
+    {
+        if (_product == null) return "{}";
+
+        var items = new List<object>
+        {
+            new Dictionary<string, object>
+            {
+                ["@type"] = "ListItem",
+                ["position"] = 1,
+                ["name"] = storeName,
+                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString()
+            },
+            new Dictionary<string, object>
+            {
+                ["@type"] = "ListItem",
+                ["position"] = 2,
+                ["name"] = "کاتالوگ طلا",
+                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog").ToString()
+            }
+        };
+
+        if (!string.IsNullOrEmpty(_product.CategoryTitle) && _product.CategoryId.HasValue)
+        {
+            items.Add(new Dictionary<string, object>
+            {
+                ["@type"] = "ListItem",
+                ["position"] = items.Count + 1,
+                ["name"] = _product.CategoryTitle,
+                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog?categoryId={_product.CategoryId}").ToString()
+            });
+        }
+
+        items.Add(new Dictionary<string, object>
+        {
+            ["@type"] = "ListItem",
+            ["position"] = items.Count + 1,
+            ["name"] = _product.Name,
+            ["item"] = canonicalUrl
+        });
+
+        var jsonObject = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "BreadcrumbList",
+            ["itemListElement"] = items
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
     }
 }

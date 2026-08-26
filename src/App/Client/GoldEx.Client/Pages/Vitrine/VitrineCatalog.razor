@@ -14,13 +14,47 @@
 <PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
 
 <HeadContent>
-    <meta name="description" content="@($"کاتالوگ رسمی طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه آنلاین قیمت روز، مشاهده وزن، عیار و استعلام فوری")" />
-    <meta property="og:title" content="کاتالوگ طلا و جواهرات | @(_storeInfo?.Name ?? "گالری طلا")" />
-    <meta property="og:description" content="@($"مشاهده تمام مصنوعات طلا، النگو، دستبند، انگشتر، گردنبند و سرویس‌های طلا در {(_storeInfo?.Name ?? "گالری طلا")}")" />
-    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
-    {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    @{
+        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog").ToString();
+        var storeName = _storeInfo?.Name ?? "گالری طلا";
+        var pageTitle = $"کاتالوگ طلا و جواهرات | {storeName}";
+        var pageDesc = $"کاتالوگ رسمی طلا و جواهرات {storeName} با محاسبه آنلاین قیمت روز، مشاهده وزن، عیار ۷۵۰، فیلتر وزن و استعلام فوری کالاها.";
+        var logoUrl = !string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl) ? Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString() : null;
     }
+
+    <link rel="canonical" href="@canonicalUrl" />
+    <meta name="description" content="@pageDesc" />
+    <meta name="keywords" content="@($"کاتالوگ طلا, محصولات طلا, {storeName}, خرید دستبند طلا, خرید انگشتر طلا, النگو طلا, گردنبند طلا, طلا 18 عیار")" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="@storeName" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta property="og:image" content="@logoUrl" />
+        <meta property="og:image:alt" content="@storeName" />
+    }
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta name="twitter:image" content="@logoUrl" />
+    }
+
+    <!-- JSON-LD Structured Data: CollectionPage & BreadcrumbList -->
+    <script type="application/ld+json">
+    @((MarkupString)GetCatalogJsonLd(canonicalUrl, storeName, pageDesc))
+    </script>
+    <script type="application/ld+json">
+    @((MarkupString)GetCatalogBreadcrumbJsonLd(canonicalUrl, storeName))
+    </script>
 </HeadContent>
 
 <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
@@ -771,5 +805,67 @@
 
             return result.ToList();
         }
+    }
+
+    private string GetCatalogJsonLd(string canonicalUrl, string storeName, string pageDesc)
+    {
+        var items = VisibleProducts.Take(12).Select((p, idx) => new Dictionary<string, object?>
+        {
+            ["@type"] = "ListItem",
+            ["position"] = idx + 1,
+            ["url"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{p.Barcode}").ToString(),
+            ["name"] = p.Name,
+            ["image"] = !string.IsNullOrWhiteSpace(p.MainImageUrl) ? Navigation.ToAbsoluteUri(p.MainImageUrl).ToString() : null
+        }).ToList();
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "CollectionPage",
+            ["name"] = $"کاتالوگ طلا و جواهرات {storeName}",
+            ["url"] = canonicalUrl,
+            ["description"] = pageDesc,
+            ["mainEntity"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "ItemList",
+                ["itemListElement"] = items
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
+
+    private string GetCatalogBreadcrumbJsonLd(string canonicalUrl, string storeName)
+    {
+        var jsonObject = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "BreadcrumbList",
+            ["itemListElement"] = new List<object>
+            {
+                new Dictionary<string, object>
+                {
+                    ["@type"] = "ListItem",
+                    ["position"] = 1,
+                    ["name"] = storeName,
+                    ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString()
+                },
+                new Dictionary<string, object>
+                {
+                    ["@type"] = "ListItem",
+                    ["position"] = 2,
+                    ["name"] = "کاتالوگ طلا و جواهرات",
+                    ["item"] = canonicalUrl
+                }
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
     }
 }

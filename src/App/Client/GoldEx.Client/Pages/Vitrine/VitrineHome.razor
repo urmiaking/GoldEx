@@ -14,13 +14,44 @@
 <PageTitle>ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
 <HeadContent>
-    <meta name="description" content="@(_storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه زنده قیمت روز و عیار ۷۵۰")" />
-    <meta property="og:title" content="ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")" />
-    <meta property="og:description" content="@(_storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه زنده قیمت روز و عیار ۷۵۰")" />
-    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
-    {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    @{
+        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString();
+        var storeName = _storeInfo?.Name ?? "گالری طلا و جواهر";
+        var pageTitle = $"ویترین آنلاین طلا و جواهرات {storeName}";
+        var pageDesc = _storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {storeName} با محاسبه زنده قیمت روز، عیار استاندارد ۷۵۰ و استعلام سریع.";
+        var logoUrl = !string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl) ? Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString() : null;
     }
+
+    <link rel="canonical" href="@canonicalUrl" />
+    <meta name="description" content="@pageDesc" />
+    <meta name="keywords" content="@($"ویترین طلا, گالری طلا, {storeName}, خرید آنلاین طلا, قیمت طلا 18 عیار, طلا 750, طلا و جواهر")" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="@storeName" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta property="og:image" content="@logoUrl" />
+        <meta property="og:image:alt" content="@storeName" />
+    }
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta name="twitter:image" content="@logoUrl" />
+    }
+
+    <!-- JSON-LD Structured Data: JewelryStore -->
+    <script type="application/ld+json">
+    @((MarkupString)GetStoreJsonLd(canonicalUrl, logoUrl, storeName, pageDesc))
+    </script>
 </HeadContent>
 
 <div class="vitrine-container">
@@ -441,5 +472,43 @@
         if (title.Contains("سکه")) return "fa-solid fa-coins";
         if (title.Contains("جواهر")) return "fa-solid fa-diamond";
         return "fa-solid fa-gem";
+    }
+
+    private string GetStoreJsonLd(string canonicalUrl, string? logoUrl, string storeName, string pageDesc)
+    {
+        var sameAsList = new List<string>();
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.InstagramUrl)) sameAsList.Add(_storeInfo.InstagramUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.TelegramUrl)) sameAsList.Add(_storeInfo.TelegramUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl)) sameAsList.Add(_storeInfo.BaleUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber)) sameAsList.Add($"https://wa.me/{_storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+')}");
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "JewelryStore",
+            ["name"] = storeName,
+            ["url"] = canonicalUrl,
+            ["logo"] = logoUrl,
+            ["image"] = logoUrl,
+            ["description"] = pageDesc,
+            ["telephone"] = _storeInfo?.PhoneNumber,
+            ["priceRange"] = "$$$$",
+            ["currenciesAccepted"] = "IRT",
+            ["paymentAccepted"] = "Cash, Credit Card, Bank Transfer",
+            ["address"] = !string.IsNullOrWhiteSpace(_storeInfo?.Address)
+                ? new Dictionary<string, object>
+                {
+                    ["@type"] = "PostalAddress",
+                    ["streetAddress"] = _storeInfo.Address,
+                    ["addressCountry"] = "IR"
+                }
+                : null,
+            ["sameAs"] = sameAsList.Count > 0 ? sameAsList : null
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
     }
 }
