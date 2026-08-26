@@ -1,5 +1,6 @@
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Vitrine;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -7,10 +8,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Vitrine.Base)]
+[EnableRateLimiting(RateLimitPolicies.Vitrine)]
 public class VitrineController(
     IVitrineService service,
     IWebHostEnvironment hostEnvironment) : ApiControllerBase

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -7,6 +7,7 @@ using GoldEx.Sdk.Server.Application.Exceptions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Application.Extensions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.UserAccounts;
 using GoldEx.Shared.DTOs.UserAccounts;
 using GoldEx.Shared.Services.Abstractions;
@@ -28,14 +29,12 @@ internal sealed class UserAccountService(
     IUserStore<AppUser> userStore,
     ILogger<UserAccountService> logger,
     ITransactionContext transactionContext,
-    IMemoryCache cache,
     ISmsSender smsSender,
+    ISmsSecurityService smsSecurityService,
     IUserContext userContext,
     IHttpContextAccessor httpContextAccessor,
     IMapper mapper) : IUserAccountService
 {
-    private readonly TimeSpan _cooldown = TimeSpan.FromMinutes(2);
-
     public async Task<GetUserAccountResponse> GetCurrentUserInfoAsync(CancellationToken cancellationToken = default)
     {
         var userId = userContext.GetUserId() ?? throw new UnauthorizedAccessException();
@@ -83,16 +82,14 @@ internal sealed class UserAccountService(
     public async Task SendVerificationTokenAsync(SendVerificationCodeRequest request,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"phone:smsCooldown:{request.OldPhoneNumber}";
-
-        if (cache.TryGetValue(cacheKey, out _))
+        var clientIp = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        var rateCheck = smsSecurityService.CheckCanSendSms(request.OldPhoneNumber, clientIp);
+        if (!rateCheck.Allowed)
         {
-#if !DEBUG
             throw new ValidationException([
                 new ValidationFailure(nameof(request.NewPhoneNumber),
-                    $"لطفاً بعد از {_cooldown.TotalMinutes} دقیقه دوباره تلاش کنید")
+                    rateCheck.ErrorMessage ?? "امکان ارسال پیامک در حال حاضر وجود ندارد.")
             ]);
-#endif
         }
 
         if (!userManager.SupportsUserPhoneNumber)
@@ -109,8 +106,6 @@ internal sealed class UserAccountService(
             throw new ValidationException([
                 new ValidationFailure(nameof(request.NewPhoneNumber), "خطا در ارسال کد تایید")
             ]);
-
-        cache.Set(cacheKey, true, _cooldown);
     }
 
     public async Task UpdateUserEmailAsync(UpdateUserEmailRequest request, CancellationToken cancellationToken = default)

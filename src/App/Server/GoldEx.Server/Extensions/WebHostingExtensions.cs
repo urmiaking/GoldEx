@@ -127,6 +127,7 @@ public static class WebHostingExtensions
 
             app.UseRouting();
             app.UseCors("McpCorsPolicy");
+            app.UseRateLimiter();
 
             app.UseAuthentication();
             app.UseMiddleware<ApiKeyAuthenticationMiddleware>();

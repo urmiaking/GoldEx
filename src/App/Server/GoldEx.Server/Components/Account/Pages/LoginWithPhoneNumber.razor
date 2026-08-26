@@ -1,8 +1,8 @@
-﻿@attribute [Route(ClientRoutes.Accounts.LoginWithPhoneNumber)]
+@attribute [Route(ClientRoutes.Accounts.LoginWithPhoneNumber)]
 
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
-@inject IMemoryCache MemoryCache
+@inject ISmsSecurityService SmsSecurityService
 @inject ISmsSender SmsSender
 @layout EmptyBoxLayout
 
@@ -22,8 +22,8 @@
     <MudGrid>
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                Label="شماره تلفن" Placeholder="09123456789"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel" }, { "aria-required", "true" } } )" />
+                                Label="شماره تلفن همراه" Placeholder="09123456789"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel" }, { "aria-required", "true" }, { "dir", "ltr" } } )" />
         </MudItem>
         <MudItem xs="12" Class="m-0 p-0">
             <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
@@ -36,7 +36,7 @@
         }
 
         <MudItem xs="12" Class="mt-0">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ارسال کد ورود</MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>
@@ -69,35 +69,45 @@
 
     private async Task OnValidLoginSubmit()
     {
-        var user = await UserManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.PhoneNumber);
+        var phone = Input.PhoneNumber?.Trim() ?? "";
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        if (user is null)
+        // 1. Rate Limit and Security Check
+        var rateCheck = SmsSecurityService.CheckCanSendSms(phone, clientIp);
+        if (!rateCheck.Allowed)
         {
-            _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+            _errorMessage = rateCheck.ErrorMessage ?? "امکان ارسال پیامک در حال حاضر وجود ندارد.";
             return;
         }
 
-        var code = IntExtensions.GenerateRandomNumber();
+        var user = await UserManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phone);
 
-        MemoryCache.Set(user.Id, code, TimeSpan.FromMinutes(5));
+        if (user is null)
+        {
+            _errorMessage = "کاربری با این شماره تلفن یافت نشد.";
+            return;
+        }
 
-        var smsSent = await SmsSender.SendAsync(Input.PhoneNumber, $"کد ورود: {code}");
+        var code = await SmsSecurityService.GenerateAndStoreOtpAsync(phone, OtpPurpose.Login, clientIp);
+
+        var smsSent = await SmsSender.SendAsync(phone, $"کد ورود به سامانه گلدکس: {code}");
 
         if (smsSent)
         {
             RedirectManager.RedirectTo(ClientRoutes.Accounts.VerifyPhoneNumber,
-                 new Dictionary<string, object?> { ["phoneNumber"] = Input.PhoneNumber, ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+                 new Dictionary<string, object?> { ["phoneNumber"] = phone, ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else
         {
-            _errorMessage = "خطا: ارسال پیامک با خطا مواجه شد";
+            _errorMessage = "خطا: ارسال پیامک با خطا مواجه شد. لطفاً دقایقی دیگر مجدداً تلاش فرمایید.";
         }
     }
 
     private sealed class InputModel
     {
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [Phone]
+        [Display(Name = "شماره تلفن همراه")]
+        [RegularExpression(@"^09\d{9}$", ErrorMessage = "شماره تلفن همراه باید با 09 شروع شده و ۱۱ رقم باشد")]
         public string PhoneNumber { get; set; } = "";
 
         [Display(Name = "مرا بخاطر بسپار")]
