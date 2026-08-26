@@ -366,3 +366,10 @@ FodyWeavers.xsd
 /src/App/Server/GoldEx.Server/uploads/*
 /src/App/Server/GoldEx.Server/shared/*
 /src/App/Server/GoldEx.Server/backups/*
+
+**/appsettings.Development.json
+**/appsettings.development.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+**/.env
+**/*.env
