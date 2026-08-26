@@ -385,35 +385,52 @@ internal sealed class UserAccountService(
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.Equals(user.PhoneNumber, request.PhoneNumber, StringComparison.CurrentCultureIgnoreCase))
+                var normalizedPhone = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+                if (!string.Equals(user.PhoneNumber, normalizedPhone, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var result = await userManager.SetPhoneNumberAsync(user, request.PhoneNumber);
+                    var result = await userManager.SetPhoneNumberAsync(user, normalizedPhone);
 
                     if (!result.Succeeded)
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.Equals(user.Email, request.Email, StringComparison.CurrentCultureIgnoreCase))
+                var normalizedEmail = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim();
+                if (!string.Equals(user.Email, normalizedEmail, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var result = await userManager.SetEmailAsync(user, request.Email);
+                    var result = await userManager.SetEmailAsync(user, normalizedEmail);
 
                     if (!result.Succeeded)
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.IsNullOrEmpty(request.Password))
+                if (!string.IsNullOrWhiteSpace(request.Password))
                 {
-                    await userManager.RemovePasswordAsync(user);
+                    if (await userManager.HasPasswordAsync(user))
+                    {
+                        var removePassResult = await userManager.RemovePasswordAsync(user);
+                        if (!removePassResult.Succeeded)
+                            throw new InvalidOperationException(string.Join(",", removePassResult.Errors.Select(x => x.Description)));
+                    }
+
                     var passwordResult = await userManager.AddPasswordAsync(user, request.Password);
 
                     if (!passwordResult.Succeeded)
                         throw new InvalidOperationException(string.Join(",", passwordResult.Errors.Select(x => x.Description)));
                 }
 
-                if (user.UserRoles.All(x => x.Role.Name != request.Role))
+                var currentRoles = await userManager.GetRolesAsync(user);
+                if (!currentRoles.Contains(request.Role))
                 {
-                    await userManager.RemoveFromRoleAsync(user, user.UserRoles.FirstOrDefault()!.Role.Name!);
-                    await userManager.AddToRoleAsync(user, request.Role);
+                    if (currentRoles.Count > 0)
+                    {
+                        var removeRoleResult = await userManager.RemoveFromRolesAsync(user, currentRoles);
+                        if (!removeRoleResult.Succeeded)
+                            throw new InvalidOperationException(string.Join(",", removeRoleResult.Errors.Select(x => x.Description)));
+                    }
+
+                    var addRoleResult = await userManager.AddToRoleAsync(user, request.Role);
+                    if (!addRoleResult.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", addRoleResult.Errors.Select(x => x.Description)));
                 }
 
                 await dbTransaction.CommitAsync(cancellationToken);
