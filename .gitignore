@@ -362,6 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/App/Server/GoldEx.Server/appsettings.Development.json
+/src/Calculator/Server/GoldEx.Calculator.Server/appsettings.Development.json
 
 /src/App/Server/GoldEx.Server/uploads/*
 /src/App/Server/GoldEx.Server/shared/*
@@ -373,4 +374,3 @@ FodyWeavers.xsd
 **/appsettings.Production.json
 **/.env
 **/*.env
-/src/Calculator/Server/GoldEx.Calculator.Server/appsettings.Development.json
