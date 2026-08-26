@@ -373,3 +373,4 @@ FodyWeavers.xsd
 **/appsettings.Production.json
 **/.env
 **/*.env
+/src/Calculator/Server/GoldEx.Calculator.Server/appsettings.Development.json
