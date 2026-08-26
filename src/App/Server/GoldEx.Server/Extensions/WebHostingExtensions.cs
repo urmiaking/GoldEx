@@ -138,7 +138,14 @@ public static class WebHostingExtensions
             {
                 if (context.Request.Path.StartsWithSegments("/serilog-ui"))
                 {
-                    if (!context.User.Identity?.IsAuthenticated ?? !context.User.IsInRole(BuiltinRoles.Administrators))
+                    if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        var returnUrl = Uri.EscapeDataString(context.Request.Path + context.Request.QueryString);
+                        context.Response.Redirect($"{ClientRoutes.Accounts.Login}?returnUrl={returnUrl}");
+                        return;
+                    }
+
+                    if (!context.User.IsInRole(BuiltinRoles.Administrators))
                     {
                         context.Response.Redirect(ClientRoutes.Accounts.AccessDenied);
                         return;

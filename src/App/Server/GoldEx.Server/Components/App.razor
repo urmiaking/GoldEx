@@ -22,6 +22,11 @@
 
     <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.ico" />
+    @if (IsVitrineRoute())
+    {
+        <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />
+        <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css" />
+    }
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 

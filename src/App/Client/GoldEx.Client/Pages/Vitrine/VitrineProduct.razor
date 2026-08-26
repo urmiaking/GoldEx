@@ -1,14 +1,34 @@
 @page "/{StoreSlug}/p/{Barcode}"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
+@implements IDisposable
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
+@using GoldEx.Shared.Routings
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
+@inject PersistentComponentState ApplicationState
 
 <PageTitle>@(_product?.Name ?? "جزئیات قطعه طلا") - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
+
+<HeadContent>
+    @if (_product != null)
+    {
+        <meta name="description" content="@($"مشخصات و قیمت روز {_product.Name} با وزن {_product.Weight:G29} گرم، عیار {_product.Fineness:G29} در {(_storeInfo?.Name ?? "گالری طلا")}")" />
+        <meta property="og:title" content="@($"{_product.Name} | {(_storeInfo?.Name ?? "گالری طلا")}")" />
+        <meta property="og:description" content="@($"خرید و استعلام آنلاین {_product.Name} - وزن: {_product.Weight:G29} گرم - عیار: {_product.Fineness:G29} - قیمت با مظنه روز: {_product.EstimatedPrice:N0} تومان")" />
+        <meta property="og:type" content="product" />
+        @if (_product.ImageUrls.Count > 0)
+        {
+            <meta property="og:image" content="@_product.ImageUrls[0]" />
+        }
+        <meta property="product:price:amount" content="@_product.EstimatedPrice" />
+        <meta property="product:price:currency" content="IRT" />
+        <meta property="product:availability" content="@(_product.IsAvailable ? "in stock" : "out of stock")" />
+    }
+</HeadContent>
 
 <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
     <!-- Breadcrumb -->
@@ -48,6 +68,33 @@
     else
     {
         <div class="vitrine-product-layout animate-fade-in">
+            <!-- Mobile Header (Title First, Tags Below on Mobile) -->
+            <div class="d-block d-lg-none mb-3">
+                <h1 class="vitrine-product-title mb-2" style="font-size: 1.5rem;">@_product.Name</h1>
+                <div class="vitrine-product-tags mb-3">
+                    @if (!string.IsNullOrEmpty(_product.CategoryTitle))
+                    {
+                        <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
+                    }
+                    <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
+                    @if (_product.IsAvailable)
+                    {
+                        <span class="vitrine-tag tag-available">
+                            <i class="fa-solid fa-check"></i> موجود در گالری
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="vitrine-tag tag-sold">
+                            <i class="fa-solid fa-xmark"></i> فروخته شد (ناموجود)
+                        </span>
+                    }
+                    <span class="vitrine-tag tag-code">
+                        کد: @_product.Barcode
+                    </span>
+                </div>
+            </div>
+
             <!-- Gallery Column (Sticky Gallery) -->
             <div class="vitrine-gallery-sticky-wrapper">
                 <div class="vitrine-gallery-main">
@@ -90,32 +137,31 @@
 
             <!-- Specs, Price Breakdown & CTAs Column -->
             <div class="vitrine-info-box">
-                <!-- Title & Tags -->
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <!-- Desktop-Only Header (Title First, Tags Below) -->
+                <div class="d-none d-lg-block">
+                    <h1 class="vitrine-product-title mb-2">@_product.Name</h1>
+                    <div class="vitrine-product-tags">
                         @if (!string.IsNullOrEmpty(_product.CategoryTitle))
                         {
-                            <span class="product-badge" style="position: static;">@_product.CategoryTitle</span>
+                            <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
                         }
-                        <span class="product-badge" style="position: static;">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
+                        <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
                         @if (_product.IsAvailable)
                         {
-                            <span class="product-badge" style="position: static; background-color: #10b981; border-color: #10b981; color: #fff;">
-                                ✓ موجود در گالری
+                            <span class="vitrine-tag tag-available">
+                                <i class="fa-solid fa-check"></i> موجود در گالری
                             </span>
                         }
                         else
                         {
-                            <span class="product-badge sold-out" style="position: static;">
-                                ✕ فروخته شد (ناموجود)
+                            <span class="vitrine-tag tag-sold">
+                                <i class="fa-solid fa-xmark"></i> فروخته شد (ناموجود)
                             </span>
                         }
-                        <span style="font-size: 0.82rem; color: var(--gray-600); margin-right: auto; direction: ltr;">
+                        <span class="vitrine-tag tag-code">
                             کد: @_product.Barcode
                         </span>
                     </div>
-
-                    <h1 class="vitrine-product-title">@_product.Name</h1>
                 </div>
 
                 <!-- Description -->
@@ -250,10 +296,50 @@
 
     private VitrineProductDetailDto? _product;
     private bool _isLoading = true;
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            return;
+        }
+
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistProductData);
+
+        if (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{StoreSlug}_{Barcode}", out var restored) && restored != null)
+        {
+            _product = restored;
+            _isLoading = false;
+        }
+        else
+        {
+            await LoadProductAsync();
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadProductAsync();
+        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            return;
+        }
+
+        if (_product == null && !_isLoading)
+        {
+            await LoadProductAsync();
+        }
+    }
+
+    private Task PersistProductData()
+    {
+        if (_product != null)
+        {
+            ApplicationState.PersistAsJson($"vitrine_product_{StoreSlug}_{Barcode}", _product);
+        }
+        return Task.CompletedTask;
     }
 
     private async Task LoadProductAsync()
@@ -271,6 +357,11 @@
         {
             _isLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _persistingSubscription.Dispose();
     }
 
     private string GetWhatsAppInquiryUrl()
