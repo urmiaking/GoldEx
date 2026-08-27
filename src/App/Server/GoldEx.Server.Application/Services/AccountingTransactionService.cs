@@ -1102,13 +1102,13 @@ internal class AccountingTransactionService(
 
                         if (payment.PaymentSide == PaymentSide.Receive)
                         {
-                            // بدهکار کردن مشتری اصلی، بستانکار کردن حواله‌کرد
+                            // دریافت از مشتری اصلی: بستانکار کردن مشتری اصلی، بدهکار کردن طرف حواله‌دهنده
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
-                                TransactionType.Debit,
+                                TransactionType.Credit,
                                 customerReceivableAccount.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
@@ -1120,7 +1120,7 @@ internal class AccountingTransactionService(
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
-                                TransactionType.Credit,
+                                TransactionType.Debit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
@@ -1129,14 +1129,14 @@ internal class AccountingTransactionService(
                         }
                         else // PaymentSide.Pay
                         {
-                            // بدهکار کردن حواله‌کرد، بستانکار کردن مشتری اصلی
+                            // پرداخت به مشتری اصلی (عودت طلب/انتقال بستانکاری): بدهکار کردن مشتری اصلی، بستانکار کردن طرف حواله‌گیرنده
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
                                 TransactionType.Debit,
-                                endorserLedger.Id,
+                                customerReceivableAccount.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
                                 payment.Id,
@@ -1148,7 +1148,7 @@ internal class AccountingTransactionService(
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
                                 TransactionType.Credit,
-                                customerReceivableAccount.Id,
+                                endorserLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
                                 payment.Id,
