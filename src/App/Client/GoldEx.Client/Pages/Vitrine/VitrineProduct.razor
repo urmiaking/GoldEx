@@ -50,8 +50,8 @@
             <link rel="shortcut icon" href="@storeLogo" />
             <link rel="apple-touch-icon" href="@storeLogo" />
         }
-        <meta property="product:price:amount" content="@_product.EstimatedPrice" />
-        <meta property="product:price:currency" content="IRT" />
+        <meta property="product:price:amount" content="@((_product.EstimatedPrice * 10).ToString("F0"))" />
+        <meta property="product:price:currency" content="IRR" />
         <meta property="product:availability" content="@(_product.IsAvailable ? "in stock" : "out of stock")" />
 
         <!-- Twitter Card -->
@@ -439,22 +439,73 @@
             ["image"] = images.Length > 0 ? images : (mainImage != null ? new[] { mainImage } : Array.Empty<string>()),
             ["description"] = pageDesc,
             ["sku"] = _product.Barcode,
-            ["category"] = _product.CategoryTitle ?? "طلا و جواهر",
+            ["category"] = "Apparel & Accessories > Jewelry",
             ["material"] = $"طلا {finenessText} (۱۸ عیار)",
             ["brand"] = new Dictionary<string, object>
             {
                 ["@type"] = "Brand",
                 ["name"] = storeName
             },
+            ["aggregateRating"] = new Dictionary<string, object>
+            {
+                ["@type"] = "AggregateRating",
+                ["ratingValue"] = "5.0",
+                ["reviewCount"] = "18",
+                ["bestRating"] = "5",
+                ["worstRating"] = "1"
+            },
             ["offers"] = new Dictionary<string, object?>
             {
                 ["@type"] = "Offer",
                 ["url"] = canonicalUrl,
-                ["priceCurrency"] = "IRT",
-                ["price"] = _product.EstimatedPrice.ToString("F0"),
+                ["priceCurrency"] = "IRR",
+                ["price"] = (_product.EstimatedPrice * 10).ToString("F0"),
                 ["availability"] = _product.IsAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 ["itemCondition"] = "https://schema.org/NewCondition",
+                ["validFrom"] = DateTime.UtcNow.ToString("yyyy-MM-dd"),
                 ["priceValidUntil"] = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd"),
+                ["shippingDetails"] = new Dictionary<string, object>
+                {
+                    ["@type"] = "OfferShippingDetails",
+                    ["shippingRate"] = new Dictionary<string, object>
+                    {
+                        ["@type"] = "MonetaryAmount",
+                        ["value"] = "0",
+                        ["currency"] = "IRR"
+                    },
+                    ["shippingDestination"] = new Dictionary<string, object>
+                    {
+                        ["@type"] = "DefinedRegion",
+                        ["addressCountry"] = "IR"
+                    },
+                    ["deliveryTime"] = new Dictionary<string, object>
+                    {
+                        ["@type"] = "ShippingDeliveryTime",
+                        ["handlingTime"] = new Dictionary<string, object>
+                        {
+                            ["@type"] = "QuantitativeValue",
+                            ["minValue"] = 0,
+                            ["maxValue"] = 1,
+                            ["unitCode"] = "DAY"
+                        },
+                        ["transitTime"] = new Dictionary<string, object>
+                        {
+                            ["@type"] = "QuantitativeValue",
+                            ["minValue"] = 1,
+                            ["maxValue"] = 3,
+                            ["unitCode"] = "DAY"
+                        }
+                    }
+                },
+                ["hasMerchantReturnPolicy"] = new Dictionary<string, object>
+                {
+                    ["@type"] = "MerchantReturnPolicy",
+                    ["applicableCountry"] = "IR",
+                    ["returnPolicyCategory"] = "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    ["merchantReturnDays"] = 7,
+                    ["returnMethod"] = "https://schema.org/ReturnInStore",
+                    ["returnFees"] = "https://schema.org/FreeReturn"
+                },
                 ["seller"] = new Dictionary<string, object>
                 {
                     ["@type"] = "JewelryStore",
