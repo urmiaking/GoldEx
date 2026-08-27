@@ -338,4 +338,9 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - Custom luxury obsidian-and-gold theme defined in `wwwroot/assets/vitrine/css/vitrine.css`.
    - Lightweight gallery and share interaction helpers in `wwwroot/assets/vitrine/js/vitrine.js`.
    - Fast, fluid 60fps animations, mobile-first responsive layout, and distinct Drawer shortcut for store admins.
+5. **Custom Domain & Public Vitrine Link Generation**:
+   - Stores support optional `CustomDomain` (configured strictly by Administrators in `/settings/stores`).
+   - `VitrineUrlHelper` generates public vitrine product and catalog links using `CustomDomain` (e.g. `https://fanijewellery.ir/{slug}/p/{barcode}`), falling back to current base URL if unconfigured.
+   - Inventory management (`VitrineQuickEditDialog` and `InventoryStockList`) includes 1-click clipboard copy and open buttons for public product URLs.
+
 

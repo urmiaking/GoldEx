@@ -45,6 +45,18 @@
                                   HelperText="فقط حروف کوچک، اعداد و خط تیره (مثال: goldex-main)" />
                 </MudItem>
 
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.CustomDomain"
+                                  For="@(() => Model.CustomDomain)"
+                                  Label="دامنه اختصاصی ویترین آنلاین (اختیاری)"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="fanijewellery.ir"
+                                  HelperText="دامنه یا ساب‌دامینی که در DNS برای ویترین این فروشگاه ست شده است (مثال: fanijewellery.ir)"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Language" />
+                </MudItem>
+
                 <!-- Logo Section -->
                 <MudItem xs="12" md="6" Class="d-flex flex-column gap-2">
                     <MudText Typo="Typo.subtitle2">لوگو فروشگاه</MudText>

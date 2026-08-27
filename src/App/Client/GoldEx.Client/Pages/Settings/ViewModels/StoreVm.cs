@@ -23,6 +23,9 @@ public class StoreVm
     public string? BackgroundImageUrl { get; set; }
     public IBrowserFile? BackgroundImageFile { get; set; }
 
+    [StringLength(250, ErrorMessage = "دامنه اختصاصی حداکثر ۲۵۰ کاراکتر است")]
+    public string? CustomDomain { get; set; }
+
     public bool IsActive { get; set; } = true;
     public int Index { get; set; }
 }

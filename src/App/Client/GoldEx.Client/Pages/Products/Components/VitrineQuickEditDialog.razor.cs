@@ -1,10 +1,13 @@
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Stores;
 using GoldEx.Shared.DTOs.Vitrine;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
 using MudBlazor;
 using System.Net.Http.Json;
 
@@ -15,9 +18,38 @@ public partial class VitrineQuickEditDialog
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public ProductVm Model { get; set; } = new();
     [Inject] private HttpClient HttpClient { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     private bool _isUploading;
     private bool _isSaving;
+    private UserStoreDto? _currentStore;
+    private string PublicVitrineUrl { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var stores = await SendRequestAsync<IStoreService, List<UserStoreDto>>(
+            action: (service, token) => service.GetUserStoresAsync(token));
+
+        _currentStore = stores?.FirstOrDefault(s => s.IsCurrent) ?? stores?.FirstOrDefault();
+        UpdatePublicVitrineUrl();
+    }
+
+    private void UpdatePublicVitrineUrl()
+    {
+        if (Model == null || string.IsNullOrWhiteSpace(Model.Barcode)) return;
+        PublicVitrineUrl = VitrineUrlHelper.BuildProductVitrineUrl(
+            _currentStore?.CustomDomain,
+            Navigation.BaseUri,
+            _currentStore?.Slug ?? "default",
+            Model.Barcode);
+    }
+
+    private async Task CopyVitrineUrlAsync()
+    {
+        if (string.IsNullOrWhiteSpace(PublicVitrineUrl)) return;
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", PublicVitrineUrl);
+        AddSuccessToast($"لینک عمومی کالا کپی شد: {PublicVitrineUrl}");
+    }
 
     private void SetMainImage(ProductImageDto target)
     {

@@ -9,6 +9,7 @@ using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Settings.Barcodes;
+using GoldEx.Shared.DTOs.Stores;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
@@ -604,6 +605,29 @@ public partial class InventoryStockList
             context.Product.Images = updatedModel.Images;
             await RefreshAsync();
         }
+    }
+
+    private UserStoreDto? _currentStore;
+
+    private async Task OnCopyProductVitrineUrl(InventoryStockVm context)
+    {
+        if (context.Product is null || string.IsNullOrWhiteSpace(context.Product.Barcode)) return;
+
+        if (_currentStore == null)
+        {
+            var stores = await SendRequestAsync<IStoreService, List<UserStoreDto>>(
+                action: (service, token) => service.GetUserStoresAsync(token));
+            _currentStore = stores?.FirstOrDefault(s => s.IsCurrent) ?? stores?.FirstOrDefault();
+        }
+
+        var url = VitrineUrlHelper.BuildProductVitrineUrl(
+            _currentStore?.CustomDomain,
+            Navigation.BaseUri,
+            _currentStore?.Slug ?? "default",
+            context.Product.Barcode);
+
+        await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+        AddSuccessToast($"لینک عمومی کالا کپی شد: {url}");
     }
 
     private async Task OnEditProduct(InventoryStockVm context)

@@ -28,6 +28,9 @@ internal class StoreConfiguration : IEntityTypeConfiguration<Store>
         builder.Property(x => x.BackgroundImageUrl)
             .HasMaxLength(500);
 
+        builder.Property(x => x.CustomDomain)
+            .HasMaxLength(250);
+
         builder.HasIndex(x => x.Slug)
             .IsUnique();
     }

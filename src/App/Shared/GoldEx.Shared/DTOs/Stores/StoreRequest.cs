@@ -7,5 +7,6 @@ public record StoreRequest(
     string? LogoExtension,
     byte[]? BackgroundImageContent,
     string? BackgroundImageExtension,
-    bool IsActive
+    bool IsActive,
+    string? CustomDomain = null
 );

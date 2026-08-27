@@ -72,7 +72,8 @@ internal class VitrineService(
                 BaleUrl: setting?.BaleUrl,
                 WhatsAppNumber: setting?.WhatsAppNumber,
                 AboutText: setting?.AboutText,
-                LiveGoldPrice18K: liveGoldPrice18K);
+                LiveGoldPrice18K: liveGoldPrice18K,
+                CustomDomain: store.CustomDomain);
         }
         finally
         {
