@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.CoinInstances;
+using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 
@@ -76,7 +76,11 @@ public record InvoicePaymentDto(
     string? CheckSayadiCode,
     DateTime? CheckDueDate,
     byte[]? CheckImage,
-    string? CheckImageContentType);
+    string? CheckImageContentType,
+    Guid? CoinInstanceId = null,
+    int? CoinQuantity = null,
+    decimal? CoinUnitPrice = null,
+    CoinInstanceRequestDto? CoinInstance = null);
 
 public record InvoiceProductItemDto(
     Guid? Id,

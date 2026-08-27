@@ -291,6 +291,12 @@ internal class InvoiceService(
                 .ThenInclude(x => x.CheckPayment!.Issuer)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.CheckPayment!.IssuerFinancialAccount)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.Coin)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.CoinInstancePackage!.Issuer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var result = mapper.Map<GetInvoiceResponse>(item);

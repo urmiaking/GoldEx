@@ -1,8 +1,10 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -13,6 +15,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.CheckPayments;
+using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
@@ -29,6 +32,9 @@ internal class InvoicePaymentService(
     IInvoicePaymentRepository paymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     ICheckPaymentRepository checkPaymentRepository,
+    ICoinInstanceRepository coinInstanceRepository,
+    IBarcodeGeneratorService barcodeGenerator,
+    IServerBarcodeReservationService barcodeReservationService,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
     IServerLedgerAccountService ledgerAccountService)
@@ -56,7 +62,8 @@ internal class InvoicePaymentService(
         var sourcePaymentsToDelete = paymentsToDelete
             .Where(p =>
                 p.PaymentType == PaymentType.CustomerTransfer &&
-                p.SourcePaymentId == null)
+                p.SourcePaymentId == null &&
+                p.CustomerTransferVoucherId == null)
             .ToList();
 
         if (sourcePaymentsToDelete.Any())
@@ -79,6 +86,7 @@ internal class InvoicePaymentService(
             LedgerAccount? ledgerAccount = null;
             FinancialAccountId? financialAccountId = null;
             InvoiceId? targetInvoiceId = null;
+            CoinInstanceId? coinInstanceId = null;
             var priceUnitId = new PriceUnitId(paymentDto.PriceUnitId);
 
             switch (paymentDto.PaymentType)
@@ -103,6 +111,74 @@ internal class InvoicePaymentService(
                         .FirstOrDefaultAsync(cancellationToken);
                     ledgerAccountId = usedGoldAccount?.Id
                         ?? throw new NotFoundException("Used Product Inventory ledger account not found.");
+                    break;
+
+                case PaymentType.Coin:
+                    var coinAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                        .FirstOrDefaultAsync(cancellationToken);
+                    ledgerAccountId = coinAccount?.Id
+                        ?? throw new NotFoundException("Coin Inventory ledger account not found.");
+
+                    if (paymentDto.CoinInstanceId.HasValue)
+                    {
+                        coinInstanceId = new CoinInstanceId(paymentDto.CoinInstanceId.Value);
+                    }
+                    else if (paymentDto.CoinInstance != null)
+                    {
+                        if (paymentDto.CoinInstance.Id.HasValue)
+                        {
+                            coinInstanceId = new CoinInstanceId(paymentDto.CoinInstance.Id.Value);
+                        }
+                        else
+                        {
+                            CoinInstancePackage? package = null;
+                            if (paymentDto.CoinInstance is { PackageType: CoinPackageType.VacuumSealed, CoinPackage: not null })
+                            {
+                                package = CoinInstancePackage.Create(
+                                    paymentDto.CoinInstance.CoinPackage.VacuumedWeight,
+                                    paymentDto.CoinInstance.CoinPackage.CardColor,
+                                    paymentDto.CoinInstance.CoinPackage.StandardCode,
+                                    paymentDto.CoinInstance.CoinPackage.IssuerId.HasValue
+                                        ? new CustomerId(paymentDto.CoinInstance.CoinPackage.IssuerId.Value)
+                                        : null);
+                            }
+
+                            var barcode = paymentDto.CoinInstance.Barcode;
+                            if (string.IsNullOrWhiteSpace(barcode))
+                            {
+                                barcode = await barcodeGenerator.GenerateNextAsync(BarcodeType.Coin, null, null, cancellationToken);
+                            }
+                            else
+                            {
+                                await barcodeReservationService.CommitAsync(
+                                    BarcodeType.Coin,
+                                    barcode,
+                                    null,
+                                    cancellationToken);
+                            }
+
+                            var newCoinInstance = paymentDto.CoinInstance.PackageType == CoinPackageType.Open
+                                ? CoinInstance.CreateOpen(
+                                    barcode,
+                                    paymentDto.CoinInstance.MintYear,
+                                    paymentDto.CoinInstance.Weight,
+                                    paymentDto.CoinInstance.Fineness,
+                                    new CoinId(paymentDto.CoinInstance.CoinId),
+                                    paymentDto.CoinInstance.MintType)
+                                : CoinInstance.CreateVacuumed(
+                                    barcode,
+                                    paymentDto.CoinInstance.MintYear,
+                                    paymentDto.CoinInstance.Weight,
+                                    paymentDto.CoinInstance.Fineness,
+                                    new CoinId(paymentDto.CoinInstance.CoinId),
+                                    paymentDto.CoinInstance.MintType,
+                                    package!);
+
+                            await coinInstanceRepository.CreateAsync(newCoinInstance, cancellationToken);
+                            coinInstanceId = newCoinInstance.Id;
+                        }
+                    }
                     break;
 
                 case PaymentType.CustomerTransfer:
@@ -160,7 +236,12 @@ internal class InvoicePaymentService(
                     null,
                     paymentDto.TargetInvoiceId.HasValue ? new InvoiceId(paymentDto.TargetInvoiceId.Value) : null,
                     paymentDto.ReferenceNumber,
-                    paymentDto.Note
+                    paymentDto.Note,
+                    default,
+                    null,
+                    coinInstanceId,
+                    paymentDto.CoinQuantity,
+                    paymentDto.CoinUnitPrice
                 );
 
                 newPayment.SetInvoice(invoice);
@@ -200,6 +281,7 @@ internal class InvoicePaymentService(
                 existingPayment.SetPaymentDate(paymentDto.PaymentDate);
                 existingPayment.SetFinalAmount(paymentDto.Amount, paymentDto.GoldFineness);
                 existingPayment.SetPaymentVoucherId(paymentDto.VoucherId.HasValue ? new PaymentVoucherId(paymentDto.VoucherId.Value) : null);
+                existingPayment.SetCoinDetails(coinInstanceId, paymentDto.CoinQuantity, paymentDto.CoinUnitPrice);
 
                 paymentsToUpdate.Add(existingPayment);
 
@@ -312,6 +394,9 @@ internal class InvoicePaymentService(
 
         if (sourcePayment.SourcePaymentId != null)
             return; // prevent recursion
+
+        if (sourcePayment.CustomerTransferVoucherId != null)
+            return; // CustomerTransferVoucher manages its own payments on both source and destination invoices!
 
         var existingTargetPayment = await paymentRepository
             .Get(new InvoicePaymentsBySourcePaymentIdSpecification(sourcePayment.Id))

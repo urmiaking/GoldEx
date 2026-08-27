@@ -27,6 +27,9 @@
                         <MudButton Class="ml-4" Color="Color.Warning" EndIcon="@Icons.Material.Filled.Whatshot" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
                             <MudText Color="Color.Dark">طلای آبشده</MudText>
                         </MudButton>
+                        <MudButton Class="ml-4" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.MonetizationOn" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Coin)">
+                            <MudText>سکه</MudText>
+                        </MudButton>
                         @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
                         {
                             <MudButton Class="ml-4" Color="Color.Dark" EndIcon="@Icons.Material.Filled.Assignment" Variant="Variant.Filled" OnClick="OnApplyPrepaymentVouchers">
@@ -50,6 +53,9 @@
                         </MudTooltip>
                         <MudTooltip Color="Color.Warning" Text="طلای آبشده" Arrow="true">
                             <MudIconButton Color="@Color.Warning" Icon="@Icons.Material.Filled.Whatshot" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)" />
+                        </MudTooltip>
+                        <MudTooltip Color="Color.Secondary" Text="سکه" Arrow="true">
+                            <MudIconButton Color="@Color.Secondary" Icon="@Icons.Material.Filled.MonetizationOn" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Coin)" />
                         </MudTooltip>
                         @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
                         {

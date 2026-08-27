@@ -22,6 +22,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -341,6 +342,16 @@ internal class CustomerTransferVoucherService(
 
         if (existingPayments.Count > 0)
         {
+            var sourceIds = existingPayments.Select(p => p.Id).ToList();
+            var childPayments = await invoicePaymentRepository
+                .Get(new InvoicePaymentsBySourcePaymentIdsSpecification(sourceIds))
+                .ToListAsync(cancellationToken);
+
+            if (childPayments.Count > 0)
+            {
+                await invoicePaymentRepository.DeleteRangeAsync(childPayments, cancellationToken);
+            }
+
             await invoicePaymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
         }
     }

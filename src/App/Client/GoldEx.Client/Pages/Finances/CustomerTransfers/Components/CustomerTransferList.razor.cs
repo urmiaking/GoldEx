@@ -2,6 +2,7 @@ using GoldEx.Client.Pages.Finances.CustomerTransfers.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -221,7 +222,7 @@ public partial class CustomerTransferList
     private async Task OnDelete(GetCustomerTransferVoucherListResponse item)
     {
         var result = await DialogService.ShowMessageBoxAsync("حذف سند حواله",
-            $"آیا از حذف سند حواله شماره {item.VoucherNumber} به مبلغ/وزن {item.Amount} مطمئن هستید؟",
+            $"آیا از حذف سند حواله شماره {item.VoucherNumber} به مبلغ/وزن {item.Amount.ToCurrencyFormat(item.PriceUnitTitle)} مطمئن هستید؟",
             yesText: "حذف", noText: "انصراف");
 
         if (result is true)

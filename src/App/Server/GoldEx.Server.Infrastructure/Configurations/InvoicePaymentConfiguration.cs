@@ -1,3 +1,4 @@
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,6 +14,13 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value,
                 value => new InvoicePaymentId(value));
+
+        builder.Property(x => x.CoinInstanceId)
+            .HasConversion(id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? new CoinInstanceId(value.Value) : null);
+
+        builder.Property(x => x.CoinUnitPrice)
+            .HasPrecision(36, 10);
 
         builder.Property(x => x.Amount)
             .HasPrecision(36, 10)
@@ -37,6 +45,11 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
         builder.HasOne(x => x.PriceUnit)
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.CoinInstance)
+            .WithMany()
+            .HasForeignKey(x => x.CoinInstanceId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.PaymentVoucher)
@@ -76,5 +89,6 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
 
         builder.Navigation(x => x.PriceUnit).AutoInclude();
         builder.Navigation(x => x.CheckPayment).AutoInclude();
+        builder.Navigation(x => x.CoinInstance).AutoInclude();
     }
 }

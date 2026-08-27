@@ -20,28 +20,58 @@ namespace GoldEx.Server.Infrastructure.Repositories;
 [ScopedService]
 internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase<Transaction>(dbContext), ITransactionRepository
 {
-    public async Task RemoveByInvoiceIdAsync(InvoiceId invoiceId, CancellationToken cancellationToken = default)
+    private async Task SafeDeleteTransactionsAsync(List<Transaction> transactions, CancellationToken cancellationToken)
     {
-        var transactions = await Query
-            .Where(t => t.InvoiceId == invoiceId)
-            .ToListAsync(cancellationToken);
-
         if (transactions.Count == 0)
             return;
 
+        var transactionIds = transactions.Select(x => (TransactionId?)x.Id).ToList();
+
+        var referencing = await Query
+            .Where(t => t.ReverseTransactionId.HasValue && transactionIds.Contains(t.ReverseTransactionId))
+            .ToListAsync(cancellationToken);
+
+        var hasModified = false;
+
+        foreach (var refT in referencing)
+        {
+            refT.ClearReversal();
+            hasModified = true;
+        }
+
+        foreach (var t in transactions)
+        {
+            if (t.ReverseTransactionId.HasValue)
+            {
+                t.ClearReversal();
+                hasModified = true;
+            }
+        }
+
+        if (hasModified)
+        {
+            await SaveAsync(cancellationToken);
+        }
+
         await DeleteRangeAsync(transactions, cancellationToken);
+    }
+
+    public async Task RemoveByInvoiceIdAsync(InvoiceId invoiceId, CancellationToken cancellationToken = default)
+    {
+        var transactions = await Query
+            .Where(t => t.InvoiceId == invoiceId && t.CustomerTransferVoucherId == null)
+            .ToListAsync(cancellationToken);
+
+        await SafeDeleteTransactionsAsync(transactions, cancellationToken);
     }
 
     public async Task RemoveByPaymentVoucherIdAsync(PaymentVoucherId paymentVoucherId, CancellationToken cancellationToken = default)
     {
         var transactions = await Query
-            .Where(t => t.PaymentVoucherId == paymentVoucherId)
+            .Where(t => t.PaymentVoucherId == paymentVoucherId && t.CustomerTransferVoucherId == null)
             .ToListAsync(cancellationToken);
 
-        if (transactions.Count == 0)
-            return;
-
-        await DeleteRangeAsync(transactions, cancellationToken);
+        await SafeDeleteTransactionsAsync(transactions, cancellationToken);
     }
 
     public async Task RemoveByCustomerTransferVoucherIdAsync(CustomerTransferVoucherId customerTransferVoucherId, CancellationToken cancellationToken = default)
@@ -50,10 +80,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .Where(t => t.CustomerTransferVoucherId == customerTransferVoucherId)
             .ToListAsync(cancellationToken);
 
-        if (transactions.Count == 0)
-            return;
-
-        await DeleteRangeAsync(transactions, cancellationToken);
+        await SafeDeleteTransactionsAsync(transactions, cancellationToken);
     }
 
     public async Task RemoveByInvoicePaymentIdsAsync(List<InvoicePaymentId>? invoicePaymentIds,
@@ -66,10 +93,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .Where(t => t.InvoicePaymentId.HasValue && invoicePaymentIds.Contains(t.InvoicePaymentId.Value))
             .ToListAsync(cancellationToken);
 
-        if (transactions.Count == 0)
-            return;
-
-        await DeleteRangeAsync(transactions, cancellationToken);
+        await SafeDeleteTransactionsAsync(transactions, cancellationToken);
     }
 
     public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, PriceUnitId? priceUnitId, DateTime? untilDate = null,
@@ -615,6 +639,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 t.InvoiceId,
                 t.InvoicePaymentId,
                 t.PaymentVoucherId,
+                t.CustomerTransferVoucherId,
                 Role = t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable
                     ? LedgerAccountRole.Receivable
                     : LedgerAccountRole.Payable
@@ -644,7 +669,8 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                     BaseCurrencyAmount = t.BaseCurrencyAmount,
                     InvoiceId = t.InvoiceId?.Value,
                     InvoicePaymentId = t.InvoicePaymentId?.Value,
-                    PaymentVoucherId = t.PaymentVoucherId?.Value
+                    PaymentVoucherId = t.PaymentVoucherId?.Value,
+                    CustomerTransferVoucherId = t.CustomerTransferVoucherId?.Value
                 });
             }
 
@@ -673,7 +699,8 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 BaseCurrencyAmount = t.BaseCurrencyAmount,
                 InvoiceId = t.InvoiceId?.Value,
                 InvoicePaymentId = t.InvoicePaymentId?.Value,
-                PaymentVoucherId = t.PaymentVoucherId?.Value
+                PaymentVoucherId = t.PaymentVoucherId?.Value,
+                CustomerTransferVoucherId = t.CustomerTransferVoucherId?.Value
             });
         }
 

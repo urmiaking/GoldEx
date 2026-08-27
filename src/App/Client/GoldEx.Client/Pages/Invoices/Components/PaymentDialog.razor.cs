@@ -188,7 +188,9 @@ public partial class PaymentDialog
             PriceUnit = priceUnit,
             AmountAdornmentText = adornmentText,
             GoldFineness = fineness,
-            PaymentSide = defaultSide
+            PaymentSide = defaultSide,
+            CoinInstance = paymentType is PaymentType.Coin ? new CoinInstanceVm() : null,
+            CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
         };
 
         var parameters = new DialogParameters<PaymentEditor>

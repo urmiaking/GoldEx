@@ -917,6 +917,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasPrecision(38, 18)
                         .HasColumnType("decimal(38,18)");
 
+                    b.Property<Guid?>("CoinInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CoinQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("CoinUnitPrice")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
                     b.Property<decimal>("FinalAmount")
                         .HasPrecision(36, 10)
                         .HasColumnType("decimal(36,10)");
@@ -967,6 +977,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoinInstanceId");
 
                     b.HasIndex("CustomerTransferVoucherId");
 
@@ -3042,6 +3054,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", b =>
                 {
+                    b.HasOne("GoldEx.Server.Domain.CoinInstanceAggregate.CoinInstance", "CoinInstance")
+                        .WithMany()
+                        .HasForeignKey("CoinInstanceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("GoldEx.Server.Domain.CustomerTransferVoucherAggregate.CustomerTransferVoucher", "CustomerTransferVoucher")
                         .WithMany()
                         .HasForeignKey("CustomerTransferVoucherId")

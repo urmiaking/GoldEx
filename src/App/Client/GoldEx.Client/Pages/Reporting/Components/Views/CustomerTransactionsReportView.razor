@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
 
 @if (Items is null || IsLoading)
@@ -132,6 +132,15 @@ else
                                  Color="Color.Primary"
                                  Variant="Variant.Filled"
                                  OnClick="@(() => OnOpenReference.InvokeAsync((nameof(context.PaymentVoucherId), context.PaymentVoucherId.Value)))" />
+                    }
+                    @if (context.CustomerTransferVoucherId is not null)
+                    {
+                        <MudChip T="string"
+                                 Text="حواله مشتری"
+                                 Icon="@Icons.Material.Filled.SwapHoriz"
+                                 Size="Size.Small"
+                                 Color="Color.Warning"
+                                 Variant="Variant.Filled" />
                     }
                     @if (context.InvoicePaymentId is not null)
                     {

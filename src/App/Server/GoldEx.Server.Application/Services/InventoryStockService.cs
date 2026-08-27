@@ -24,6 +24,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
@@ -37,6 +38,7 @@ internal class InventoryStockService(
     ICoinInstanceRepository coinInstanceRepository,
     IPriceUnitRepository priceUnitRepository,
     ITransactionRepository transactionRepository,
+    IInvoicePaymentRepository paymentRepository,
     IServiceProvider serviceProvider,
     IMapper mapper,
     MeltUsedProductsValidator usedProductsValidator,
@@ -144,6 +146,22 @@ internal class InventoryStockService(
                 invoice.Id,
                 postingDate)));
 
+        // Coin payments
+        if (invoice.InvoicePayments != null)
+        {
+            foreach (var cp in invoice.InvoicePayments.Where(x => x.PaymentType == PaymentType.Coin && x.CoinInstanceId.HasValue))
+            {
+                var qty = cp.CoinQuantity.HasValue && cp.CoinQuantity.Value > 0 ? cp.CoinQuantity.Value : 1;
+                var payAction = cp.PaymentSide == PaymentSide.Receive ? WarehouseActionType.In : WarehouseActionType.Out;
+
+                list.Add(InventoryStock.CreateCoin(cp.CoinInstanceId!.Value,
+                    qty,
+                    payAction,
+                    invoice.Id,
+                    postingDate));
+            }
+        }
+
         return list;
     }
 
@@ -173,6 +191,14 @@ internal class InventoryStockService(
 
     public async Task CreateInvoiceInventoryAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
+        if (invoice.InvoicePayments == null)
+        {
+            var payments = await paymentRepository
+                .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
+                .ToListAsync(cancellationToken);
+            invoice.SetPayments(payments);
+        }
+
         var stocks = BuildStocksForInvoice(invoice, tickOffset: 0);
         if (stocks.Count > 0)
             await repository.CreateRangeAsync(stocks, cancellationToken);
@@ -181,6 +207,14 @@ internal class InventoryStockService(
     // Delta-based Replace (برای Update)
     public async Task ReplaceInventoryForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
+        if (invoice.InvoicePayments == null)
+        {
+            var payments = await paymentRepository
+                .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
+                .ToListAsync(cancellationToken);
+            invoice.SetPayments(payments);
+        }
+
         var active = await GetActiveStocksForInvoiceAsync(invoice, cancellationToken);
         var preview0 = BuildStocksForInvoice(invoice, tickOffset: 0);
 

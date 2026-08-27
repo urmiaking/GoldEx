@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.Enums;
 
@@ -51,6 +51,21 @@ public class InvoicePaymentValidator : AbstractValidator<InvoicePaymentVm>
             RuleFor(x => x.CheckSayadiCode)
                 .Must((model, sayadiCode) => !string.IsNullOrWhiteSpace(sayadiCode) || !string.IsNullOrWhiteSpace(model.CheckNumber))
                 .WithMessage("وارد کردن حداقل یکی از موارد (شماره چک یا کد صیادی) الزامی است.");
+        });
+
+        When(x => x.PaymentType is PaymentType.Coin, () =>
+        {
+            RuleFor(x => x.CoinInstance)
+                .NotNull().WithMessage("مشخصات سکه الزامی است");
+
+            RuleFor(x => x.CoinInstance!.Coin)
+                .NotNull().WithMessage("انتخاب سکه الزامی است");
+
+            RuleFor(x => x.CoinQuantity)
+                .GreaterThan(0).WithMessage("تعداد سکه باید بزرگتر از صفر باشد");
+
+            RuleFor(x => x.CoinUnitPrice)
+                .GreaterThan(0).WithMessage("قیمت واحد سکه باید بزرگتر از صفر باشد");
         });
 
         RuleFor(p => p.PriceUnit)

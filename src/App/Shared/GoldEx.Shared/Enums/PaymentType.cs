@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Shared.Enums;
 
@@ -20,7 +20,10 @@ public enum PaymentType
     TransferedPayment = 4,
 
     [Display(Name = "چک")]
-    Check = 5
+    Check = 5,
+
+    [Display(Name = "سکه")]
+    Coin = 6
 }
 
 public static class PaymentTypeExtensions
@@ -35,6 +38,7 @@ public static class PaymentTypeExtensions
             PaymentType.CustomerTransfer => "حواله مشتری",
             PaymentType.TransferedPayment => "حواله شده",
             PaymentType.Check => "پرداخت با چک",
+            PaymentType.Coin => "پرداخت با سکه",
             _ => throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null)
         };
     }

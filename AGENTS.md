@@ -343,4 +343,27 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - `VitrineUrlHelper` generates public vitrine product and catalog links using `CustomDomain` (e.g. `https://fanijewellery.ir/{slug}/p/{barcode}`), falling back to current base URL if unconfigured.
    - Inventory management (`VitrineQuickEditDialog` and `InventoryStockList`) includes 1-click clipboard copy and open buttons for public product URLs.
 
+---
+
+## Coin Payment & Trade-In Architecture (تهاتر و پرداخت با سکه در فاکتورها)
+
+GoldEx supports coin-based barter and payments (`PaymentType.Coin = 6`) across both Sell and Purchase invoices:
+
+1. **Domain & Storage Integration**:
+   - `InvoicePayment` aggregate holds `CoinInstanceId?`, `CoinQuantity?`, and `CoinUnitPrice?`.
+   - Linked to `CoinInstance` with `Restrict` foreign key behavior.
+2. **Double-Entry Accounting**:
+   - In `AccountingTransactionService`:
+     - Debits/Credits `SystemLedgerAccounts.CoinInventory` (کد معین کل موجودی سکه) vs Customer Accounts Receivable/Payable.
+     - Supports cross-currency settlement with exchange rate conversion when paying in a currency different from the invoice currency.
+3. **Inventory & Kardex Tracking**:
+   - In `InventoryStockService`:
+     - Sell Invoices (`PaymentSide.Receive`): Coin is received from customer $\rightarrow$ creates `WarehouseActionType.In` entry in stock and coin kardex.
+     - Purchase Invoices (`PaymentSide.Pay`): Coin is handed to seller $\rightarrow$ creates `WarehouseActionType.Out` entry in stock and coin kardex.
+4. **Friction-Free Instant Coin Entry**:
+   - `InvoicePaymentService` automatically resolves or generates unique barcodes/creates `CoinInstance` on the fly when instant coins are registered, removing the friction of needing prior warehouse stock definitions.
+5. **UI/UX & Live Price Synchronization**:
+   - `PaymentEditor.razor` loads coins list, fetches live market price via `ICoinService.GetPriceAsync`, and binds `CoinUnitPrice` and `CoinQuantity` with auto-computed total amounts, while offering full manual override for price, quantity, mint type, package type, and workshop issuer.
+
+
 

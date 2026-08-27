@@ -4,6 +4,7 @@ using GoldEx.Client.Pages.Finances.CustomerTransfers.Validators;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -20,6 +21,7 @@ public partial class CustomerTransferEditor
 
     [Inject] private ICustomerService CustomerService { get; set; } = null!;
     [Inject] private IInvoiceService InvoiceService { get; set; } = null!;
+    [Inject] private IPriceService PriceService { get; set; } = null!;
     [Inject] private ICustomerTransferVoucherService VoucherService { get; set; } = null!;
     [Inject] private CustomerTransferVoucherValidator Validator { get; set; } = null!;
 
@@ -44,6 +46,11 @@ public partial class CustomerTransferEditor
         if (Model.DestinationCustomer?.Id != null)
         {
             await LoadDestInvoicesAsync(Model.DestinationCustomer.Id.Value);
+        }
+
+        if (Model.ExchangeRate == null && Model.PriceUnit != null && !Model.PriceUnit.IsDefault)
+        {
+            await LoadExchangeRateAsync();
         }
     }
 
@@ -138,13 +145,32 @@ public partial class CustomerTransferEditor
         }
     }
 
-    private void OnPriceUnitChanged(GetPriceUnitTitleResponse? unit)
+    private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? unit)
     {
         Model.PriceUnit = unit;
-        if (unit != null && unit.IsDefault)
+        await LoadExchangeRateAsync();
+    }
+
+    private async Task LoadExchangeRateAsync()
+    {
+        var defaultPriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
+        if (defaultPriceUnit is null || Model.PriceUnit is null)
+            return;
+
+        if (Model.PriceUnit.Id == defaultPriceUnit.Id)
         {
             Model.ExchangeRate = null;
+            StateHasChanged();
+            return;
         }
+
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) => s.GetExchangeRateAsync(Model.PriceUnit.Id, defaultPriceUnit.Id, ct),
+            afterSend: response =>
+            {
+                Model.ExchangeRate = response.ExchangeRate;
+                StateHasChanged();
+            });
     }
 
     private async Task SubmitAsync()

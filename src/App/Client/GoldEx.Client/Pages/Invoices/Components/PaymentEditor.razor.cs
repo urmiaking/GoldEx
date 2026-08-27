@@ -5,6 +5,7 @@ using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Utilities;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -33,6 +35,24 @@ public partial class PaymentEditor
     private List<GetCustomerResponse>? _customers;
     private List<GetTinyInvoiceResponse>? _invoices;
     private List<FinancialAccountVm> _customerFinancialAccounts = [];
+    private List<GetCoinResponse> _coins = [];
+    private List<GetCustomerResponse> _workshopCustomers = [];
+    private MudColorPicker? _colorPicker;
+    private readonly MudColor[] _colorPalette =
+    [
+        "#424242", "#2196f3", "#00c853", "#ff9800", "#f44336",
+        "#f6f9fb", "#9df1fa", "#bdffcf", "#fff0a3", "#ffd254",
+        "#e6e9eb", "#27dbf5", "#7ef7a0", "#ffe273", "#ffb31f",
+        "#c9cccf", "#13b8e8", "#14dc71", "#fdd22f", "#ff9102",
+        "#858791", "#0989c2", "#1bbd66", "#ebb323", "#fe6800",
+        "#585b62", "#17698e", "#17a258", "#d9980d", "#dc3f11",
+        "#353940", "#113b53", "#127942", "#bf7d11", "#aa0000",  
+        Colors.Purple.Lighten5, Colors.Purple.Lighten4, Colors.Purple.Lighten3,
+        Colors.Purple.Lighten2, Colors.Purple.Lighten1, Colors.Purple.Default,
+        Colors.Purple.Darken1, Colors.Purple.Darken2, Colors.Purple.Darken3,
+        Colors.Purple.Darken4, Colors.Purple.Accent1, Colors.Purple.Accent2,
+        Colors.Purple.Accent3, Colors.Purple.Accent4
+    ];
     private MudForm _form = default!;
     private string? _checkImagePreviewUrl;
     private readonly InvoicePaymentValidator _paymentValidator = new();
@@ -110,6 +130,15 @@ public partial class PaymentEditor
         if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id && !Model.Id.HasValue)
             await LoadExchangeRateAsync();
 
+        if (Model.PaymentType is PaymentType.Coin)
+        {
+            Model.CoinInstance ??= new CoinInstanceVm();
+            if (!Model.CoinQuantity.HasValue || Model.CoinQuantity <= 0)
+                Model.CoinQuantity = 1;
+
+            await LoadCoinsAsync();
+        }
+
         await base.OnInitializedAsync();
     }
 
@@ -159,7 +188,7 @@ public partial class PaymentEditor
         if (Model.PaymentType is PaymentType.InternalCash)
             await LoadFinancialAccountsAsync();
 
-        if (Model.PaymentType is PaymentType.Check && Model.CheckIssuer != null)
+        if (Model.PaymentType is PaymentType.Check && Model.CheckIssuer?.Id != null)
             await LoadFinancialAccountsAsync(Model.CheckIssuer.Id.Value);
 
         if (Model.TargetInvoice != null)
@@ -428,4 +457,170 @@ public partial class PaymentEditor
 
         await base.DisposeAsync();
     }
+
+    #region Coin
+
+    private async Task LoadCoinsAsync()
+    {
+        await SendRequestAsync<ICoinService, List<GetCoinResponse>>(
+            action: (s, ct) => s.GetListAsync(true, ct),
+            afterSend: response =>
+            {
+                _coins = response;
+                StateHasChanged();
+            });
+    }
+
+    private async Task OnCoinChanged(GetCoinResponse? coin)
+    {
+        if (coin is null)
+            return;
+
+        Model.CoinInstance ??= new CoinInstanceVm();
+        Model.CoinInstance.Coin = coin;
+        Model.CoinInstance.Weight = coin.Weight;
+        Model.CoinInstance.Fineness = coin.Fineness;
+
+        if (Model.CoinInstance.MintYear.HasValue)
+        {
+            if (Model.CoinInstance.MintYear.Value.Year < coin.StartMintYear ||
+                (coin.EndMintYear.HasValue && Model.CoinInstance.MintYear.Value.Year > coin.EndMintYear.Value))
+                Model.CoinInstance.MintYear = null;
+        }
+
+        var targetUnitId = Model.PriceUnit?.IsDefault == true ? null : Model.PriceUnit?.Id;
+        await SendRequestAsync<ICoinService, GetExchangeRateResponse?>(
+            action: (s, ct) => s.GetPriceAsync(coin.Id, targetUnitId, ct),
+            afterSend: response =>
+            {
+                if (response is null)
+                    return;
+
+                Model.CoinUnitPrice = response.ExchangeRate ?? 0;
+                UpdateCoinTotalAmount();
+                StateHasChanged();
+            });
+    }
+
+    private void OnCoinMintTypeChanged(CoinMintType coinMintType)
+    {
+        Model.CoinInstance ??= new CoinInstanceVm();
+        Model.CoinInstance.MintType = coinMintType;
+    }
+
+    private void OnCoinPackageTypeChanged(CoinPackageType packageType)
+    {
+        Model.CoinInstance ??= new CoinInstanceVm();
+        Model.CoinInstance.PackageType = packageType;
+
+        if (packageType is CoinPackageType.VacuumSealed && Model.CoinInstance.CoinPackage is null)
+            Model.CoinInstance.CoinPackage = new CoinPackageSpecVm();
+        else
+            Model.CoinInstance.CoinPackage = null;
+    }
+
+    private void OnCoinQuantityChanged(int? qty)
+    {
+        Model.CoinQuantity = qty ?? 1;
+        UpdateCoinTotalAmount();
+    }
+
+    private void IncreaseCoinQuantity()
+    {
+        Model.CoinQuantity = (Model.CoinQuantity ?? 0) + 1;
+        UpdateCoinTotalAmount();
+    }
+
+    private void DecreaseCoinQuantity()
+    {
+        if ((Model.CoinQuantity ?? 1) > 1)
+        {
+            Model.CoinQuantity = (Model.CoinQuantity ?? 1) - 1;
+            UpdateCoinTotalAmount();
+        }
+    }
+
+    private void OnCoinUnitPriceChanged(decimal? unitPrice)
+    {
+        Model.CoinUnitPrice = unitPrice ?? 0;
+        UpdateCoinTotalAmount();
+    }
+
+    private void UpdateCoinTotalAmount()
+    {
+        var qty = Model.CoinQuantity ?? 1;
+        var unitPrice = Model.CoinUnitPrice ?? 0;
+        Model.Amount = qty * unitPrice;
+    }
+
+    private async Task<IEnumerable<CustomerVm>?> SearchWorkshopCustomers(string? customerName, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(customerName))
+            return null;
+
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: (s, ct) => s.GetByNameAsync(customerName, CustomerType.Workshop, ct),
+            afterSend: response =>
+            {
+                _workshopCustomers = response;
+            },
+            cancelPrevious: true);
+
+        return _workshopCustomers.Select(CustomerVm.CreateFrom);
+    }
+
+    private async Task OnAddWorkshopCustomer()
+    {
+        if (Model.CoinInstance?.CoinPackage is null)
+            return;
+
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var parameters = new DialogParameters<Customers.Components.Editor>
+        {
+            { x => x.ReturnModel, true },
+            { x => x.CustomerType, CustomerType.Workshop },
+            { x => x.ShowFinancialAccounts, false }
+        };
+
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن کارگاه جدید", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            Model.CoinInstance.CoinPackage.Issuer = customerVm;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenColorPicker()
+    {
+        if (_colorPicker is not null)
+            await _colorPicker.OpenAsync();
+    }
+
+    private DateTime? GetCoinMinDate()
+    {
+        if (Model.CoinInstance?.Coin is null)
+            return null;
+
+        if (Model.CoinInstance.Coin.StartMintYear is 0)
+            return null;
+
+        return new DateTime(Model.CoinInstance.Coin.StartMintYear, 3, 25);
+    }
+
+    private DateTime? GetCoinMaxDate()
+    {
+        if (Model.CoinInstance?.Coin is null)
+            return null;
+
+        if (Model.CoinInstance.Coin.EndMintYear is null or 0)
+            return DateTime.Now;
+
+        return new DateTime(Model.CoinInstance.Coin.EndMintYear.Value, 12, 31);
+    }
+
+    #endregion
 }

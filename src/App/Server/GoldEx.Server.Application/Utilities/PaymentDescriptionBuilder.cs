@@ -17,8 +17,25 @@ public static class PaymentDescriptionBuilder
             PaymentType.CustomerTransfer => GetCustomerTransferTitle(payment),
             PaymentType.TransferedPayment => GetTransferedPaymentTitle(payment),
             PaymentType.Check => GetCheckPaymentTitle(payment),
+            PaymentType.Coin => GetCoinPaymentTitle(payment),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    private static string GetCoinPaymentTitle(InvoicePayment payment)
+    {
+        var action = payment.PaymentSide == PaymentSide.Receive ? "دریافت" : "پرداخت";
+        var coinTitle = payment.CoinInstance?.Coin?.Title ?? "سکه";
+        var qty = payment.CoinQuantity ?? 1;
+
+        var text = $"{action} {qty} عدد {coinTitle}";
+
+        if (payment.CoinUnitPrice.HasValue && payment.CoinUnitPrice.Value > 0)
+        {
+            text += $" به ارزش واحد {payment.CoinUnitPrice.Value.ToCurrencyReportFormat(payment.PriceUnit?.Title)}";
+        }
+
+        return text;
     }
 
     private static string GetCheckPaymentTitle(InvoicePayment payment)

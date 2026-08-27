@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Models;
 
@@ -16,4 +16,5 @@ public class CustomerTransactionModel
     public Guid? InvoiceId { get; set; }
     public Guid? InvoicePaymentId { get; set; }
     public Guid? PaymentVoucherId { get; set; }
+    public Guid? CustomerTransferVoucherId { get; set; }
 }

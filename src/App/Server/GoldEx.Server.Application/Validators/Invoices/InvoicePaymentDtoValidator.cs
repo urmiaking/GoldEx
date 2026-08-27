@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
@@ -168,6 +168,18 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
                     }
 
                     break;
+
+                case PaymentType.Coin:
+                    if (!payment.CoinInstanceId.HasValue && payment.CoinInstance == null)
+                    {
+                        context.AddFailure(nameof(payment.CoinInstanceId), "انتخاب یا مشخصات سکه برای پرداخت با سکه الزامی است.");
+                    }
+                    if (payment.FinancialAccountId.HasValue)
+                    {
+                        context.AddFailure(nameof(payment.FinancialAccountId), "برای پرداخت با سکه، حساب مالی نباید انتخاب شود.");
+                    }
+                    break;
+
                 default:
                     context.AddFailure(nameof(payment.PaymentType), "نوع پرداخت نامعتبر است.");
                     break;

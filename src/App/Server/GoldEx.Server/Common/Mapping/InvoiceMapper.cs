@@ -100,7 +100,10 @@ internal class InvoiceMapper : IRegister
                             : (src.SourcePayment != null && src.SourcePayment.Invoice != null && src.SourcePayment.Invoice.Customer != null
                                 ? src.SourcePayment.Invoice.Customer
                                 : null))))
-            .Map(dest => dest.TargetInvoice, src => src.TargetInvoice);
+            .Map(dest => dest.TargetInvoice, src => src.TargetInvoice)
+            .Map(dest => dest.CoinInstance, src => src.CoinInstance)
+            .Map(dest => dest.CoinQuantity, src => src.CoinQuantity)
+            .Map(dest => dest.CoinUnitPrice, src => src.CoinUnitPrice);
 
         config.NewConfig<Invoice, GetTinyInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

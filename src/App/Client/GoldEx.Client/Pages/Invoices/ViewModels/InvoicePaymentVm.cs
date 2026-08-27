@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Attributes;
+using GoldEx.Client.Components.Attributes;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
@@ -95,6 +95,9 @@ public class InvoicePaymentVm
                        $"{(string.IsNullOrWhiteSpace(CheckNumber) ? $"صیادی {CheckSayadiCode}" : $"شماره {CheckNumber}")} " +
                        $"{(CheckDueDate.HasValue ? $"- سررسید {CheckDueDate.Value.ToShortDateString()}" : "")} " + 
                        $"{(CheckIssuer is not null ? $"- صادرکننده {CheckIssuer.FullName}" : "")}".TrimEnd(),
+
+                PaymentType.Coin when CoinInstance?.Coin is not null
+                    => $"{sideTitle} - {typeTitle} ({CoinQuantity ?? 1} عدد {CoinInstance.Coin.Title})",
 
                 _ => $"{sideTitle} - {typeTitle}"
             };
@@ -235,6 +238,21 @@ public class InvoicePaymentVm
 
     #endregion
 
+    #region Coin
+
+    [Display(Name = "سکه")]
+    public CoinInstanceVm? CoinInstance { get; set; }
+
+    public Guid? CoinInstanceId => CoinInstance?.Id;
+
+    [Display(Name = "تعداد سکه")]
+    public int? CoinQuantity { get; set; } = 1;
+
+    [Display(Name = "قیمت واحد سکه")]
+    public decimal? CoinUnitPrice { get; set; }
+
+    #endregion
+
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
@@ -269,7 +287,11 @@ public class InvoicePaymentVm
             item.CheckSayadiCode,
             item.CheckDueDate,
             item.CheckImage,
-            item.CheckImageContentType);
+            item.CheckImageContentType,
+            item.CoinInstanceId,
+            item.CoinQuantity,
+            item.CoinUnitPrice,
+            item.CoinInstance?.ToRequest());
     }
 
     public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
@@ -299,7 +321,10 @@ public class InvoicePaymentVm
             CheckIssuer = response.CheckPayment?.Issuer != null ? CustomerVm.CreateFrom(response.CheckPayment.Issuer) : null,
             CheckIssuerFinancialAccount = response.CheckPayment?.IssuerFinancialAccount != null ? FinancialAccountVm.CreateFrom(response.CheckPayment.IssuerFinancialAccount) : null,
             CheckSayadiCode = response.CheckPayment?.SayadiCode,
-            CheckImageUrl = response.CheckPayment?.ImageUrl
+            CheckImageUrl = response.CheckPayment?.ImageUrl,
+            CoinInstance = response.CoinInstance != null ? CoinInstanceVm.CreateFrom(response.CoinInstance) : null,
+            CoinQuantity = response.CoinQuantity,
+            CoinUnitPrice = response.CoinUnitPrice
         };
     }
 }
