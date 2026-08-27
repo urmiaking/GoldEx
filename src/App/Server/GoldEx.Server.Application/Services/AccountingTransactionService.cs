@@ -640,6 +640,9 @@ internal class AccountingTransactionService(
         {
             foreach (var payment in invoice.InvoicePayments)
             {
+                if (payment.CustomerTransferVoucherId.HasValue)
+                    continue;
+
                 var paymentGroupId = Guid.CreateVersion7();
 
                 long payLine = 0;
