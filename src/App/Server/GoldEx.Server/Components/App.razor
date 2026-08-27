@@ -10,8 +10,18 @@
 
     <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
 
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+    @if (IsVitrineRoute() && !string.IsNullOrWhiteSpace(StoreLogoUrl))
+    {
+        <link rel="shortcut icon" href="@StoreLogoUrl" />
+        <link rel="icon" type="image/png" href="@StoreLogoUrl" />
+        <link rel="apple-touch-icon" href="@StoreLogoUrl" />
+    }
+    else
+    {
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+        <link rel="icon" type="image/png" href="/favicon.ico" />
+    }
 
     <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
     <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
@@ -22,7 +32,6 @@
     <ImportMap />
 
     <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
-    <link rel="icon" type="image/png" href="favicon.ico" />
     @if (IsVitrineRoute())
     {
         <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />

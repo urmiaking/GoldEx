@@ -23,6 +23,8 @@ public partial class App
 
     private string SplashTitle { get; set; } = "GoldEx";
     private string? SplashLogoUrl { get; set; }
+    private string? StoreLogoUrl { get; set; }
+    private string? StoreName { get; set; }
     private bool IsStoreTitle { get; set; }
 
     private bool IsVitrineRoute()
@@ -75,14 +77,11 @@ public partial class App
     protected override async Task OnInitializedAsync()
     {
         await GetLicenseAsync();
-        if (!IsVitrineRoute())
-        {
-            await LoadSplashTitleAsync();
-        }
+        await LoadStoreMetadataAsync();
         await base.OnInitializedAsync();
     }
 
-    private async Task LoadSplashTitleAsync()
+    private async Task LoadStoreMetadataAsync()
     {
         if (IsLoggedIn && StoreContext.StoreId.HasValue)
         {
@@ -96,12 +95,14 @@ public partial class App
                 if (!string.IsNullOrWhiteSpace(store.Name))
                 {
                     SplashTitle = store.Name;
+                    StoreName = store.Name;
                     IsStoreTitle = true;
                 }
 
                 if (!string.IsNullOrWhiteSpace(store.LogoUrl))
                 {
                     SplashLogoUrl = store.LogoUrl;
+                    StoreLogoUrl = store.LogoUrl;
                 }
             }
         }
@@ -109,7 +110,7 @@ public partial class App
         {
             var path = HttpContext.Request.Path.Value ?? "";
             var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length > 0 && !segments[0].StartsWith("_") && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase) && !segments[0].Equals("Account", StringComparison.OrdinalIgnoreCase))
+            if (segments.Length > 0 && !ClientRoutes.Vitrine.IsReservedSegment(segments[0]))
             {
                 var slug = segments[0].ToLowerInvariant();
                 var store = await DbContext.Set<Store>()
@@ -122,12 +123,14 @@ public partial class App
                     if (!string.IsNullOrWhiteSpace(store.Name))
                     {
                         SplashTitle = store.Name;
+                        StoreName = store.Name;
                         IsStoreTitle = true;
                     }
 
                     if (!string.IsNullOrWhiteSpace(store.LogoUrl))
                     {
                         SplashLogoUrl = store.LogoUrl;
+                        StoreLogoUrl = store.LogoUrl;
                     }
                 }
             }

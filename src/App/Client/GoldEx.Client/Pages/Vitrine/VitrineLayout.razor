@@ -14,7 +14,11 @@
     <meta property="og:type" content="website" />
     @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
     {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+        var absLogoUrl = Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString();
+        <meta property="og:image" content="@absLogoUrl" />
+        <link rel="icon" type="image/png" href="@absLogoUrl" />
+        <link rel="shortcut icon" href="@absLogoUrl" />
+        <link rel="apple-touch-icon" href="@absLogoUrl" />
     }
 </HeadContent>
 

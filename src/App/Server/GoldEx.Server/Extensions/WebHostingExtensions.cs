@@ -76,14 +76,29 @@ public static class WebHostingExtensions
 
             app.Use((context, next) =>
             {
+                var headers = context.Response.Headers;
+
+                headers["X-Content-Type-Options"] = "nosniff";
+                headers["X-Frame-Options"] = "SAMEORIGIN";
+                headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=(), payment=()";
+                headers["X-XSS-Protection"] = "1; mode=block";
+
+                if (!app.Environment.IsDevelopment() && context.Request.IsHttps)
+                {
+                    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+                }
+
+                headers.Remove("X-Powered-By");
+
                 var path = context.Request.Path.Value ?? string.Empty;
                 if (!path.StartsWith("/oauth", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/mcp", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/.well-known", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
-                    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+                    headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+                    headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
                 }
                 return next.Invoke();
             });

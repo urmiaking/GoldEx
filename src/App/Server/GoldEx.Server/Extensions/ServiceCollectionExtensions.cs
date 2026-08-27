@@ -162,6 +162,8 @@ internal static class ServiceCollectionExtensions
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SameSite = SameSiteMode.Lax;
             });
 
             services.AddDatabaseDeveloperPageExceptionFilter();
@@ -302,10 +304,10 @@ internal static class ServiceCollectionExtensions
                 config.ExpireTimeSpan = TimeSpan.FromDays(90);
                 config.SlidingExpiration = true;
 
-                // Ensure we are configuring the scheme Identity uses
-                // (Optional if you just want to use the default 'Identity.Application')
-                // config.Cookie.Name = "GoldExToken"; 
                 config.Cookie.Name = "GoldExAuthCookie";
+                config.Cookie.HttpOnly = true;
+                config.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                config.Cookie.SameSite = SameSiteMode.Lax;
 
                 var defaultEvents = config.Events;
 
