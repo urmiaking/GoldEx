@@ -1881,6 +1881,44 @@ internal class AccountingTransactionService(
 
         var postingDate = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
 
+        Invoice? sourceInvoice = null;
+        if (voucher.SourceInvoiceId.HasValue)
+        {
+            sourceInvoice = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(voucher.SourceInvoiceId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        Invoice? destInvoice = null;
+        if (voucher.DestinationInvoiceId.HasValue)
+        {
+            destInvoice = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(voucher.DestinationInvoiceId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        TransactionType sourceTxType;
+        TransactionType destTxType;
+
+        if (destInvoice != null && destInvoice.InvoiceType == InvoiceType.Purchase)
+        {
+            // گیرنده فاکتور خرید دارد (ما به گیرنده بدهکار بودیم): با دریافت حواله، طلب گیرنده تسویه می‌شود (بدهکار)
+            destTxType = TransactionType.Debit;
+            sourceTxType = TransactionType.Credit;
+        }
+        else if (sourceInvoice != null && sourceInvoice.InvoiceType == InvoiceType.Sell)
+        {
+            // فرستنده فاکتور فروش دارد (فرستنده به ما بدهکار بود): با انتقال وجه، بدهی فاکتور فرستنده تسویه می‌شود (بستانکار)
+            sourceTxType = TransactionType.Credit;
+            destTxType = TransactionType.Debit;
+        }
+        else
+        {
+            // حالت پیش‌فرض (انتقال اعتبار از فرستنده به گیرنده، یا تسویه فاکتور فروش گیرنده، یا تسویه فاکتور خرید فرستنده)
+            sourceTxType = TransactionType.Debit;
+            destTxType = TransactionType.Credit;
+        }
+
         var sourceDesc = TransactionDescriptionBuilder.ForCustomerTransferSource(
             voucher.VoucherNumber, destinationCustomer.FullName, voucher.Description);
 
@@ -1894,7 +1932,7 @@ internal class AccountingTransactionService(
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Debit,
+                sourceTxType,
                 sourceLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,
@@ -1906,7 +1944,7 @@ internal class AccountingTransactionService(
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Credit,
+                destTxType,
                 destLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,

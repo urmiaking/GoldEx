@@ -3,9 +3,12 @@ using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.Validators;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -22,6 +25,7 @@ public partial class CustomerTransferEditor
     [Inject] private ICustomerService CustomerService { get; set; } = null!;
     [Inject] private IInvoiceService InvoiceService { get; set; } = null!;
     [Inject] private IPriceService PriceService { get; set; } = null!;
+    [Inject] private ITransactionService TransactionService { get; set; } = null!;
     [Inject] private ICustomerTransferVoucherService VoucherService { get; set; } = null!;
     [Inject] private CustomerTransferVoucherValidator Validator { get; set; } = null!;
 
@@ -30,6 +34,40 @@ public partial class CustomerTransferEditor
     private List<GetTinyInvoiceResponse> _destInvoices = [];
     private bool _loadingInvoices;
     private bool _processing;
+
+    private decimal? _sourceCurrentBalance;
+    private bool _loadingSourceBalance;
+
+    private decimal? _destCurrentBalance;
+    private bool _loadingDestBalance;
+
+    public bool IsDestinationPurchaseInvoice =>
+        Model.DestinationInvoice != null && Model.DestinationInvoice.InvoiceType == InvoiceType.Purchase;
+
+    public bool IsSourceSellInvoice =>
+        Model.SourceInvoice != null && Model.SourceInvoice.InvoiceType == InvoiceType.Sell;
+
+    public decimal? SourceProjectedBalance
+    {
+        get
+        {
+            if (!_sourceCurrentBalance.HasValue) return null;
+            if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
+                return _sourceCurrentBalance.Value - Model.Amount;
+            return _sourceCurrentBalance.Value + Model.Amount;
+        }
+    }
+
+    public decimal? DestProjectedBalance
+    {
+        get
+        {
+            if (!_destCurrentBalance.HasValue) return null;
+            if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
+                return _destCurrentBalance.Value + Model.Amount;
+            return _destCurrentBalance.Value - Model.Amount;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,12 +78,28 @@ public partial class CustomerTransferEditor
 
         if (Model.SourceCustomer?.Id != null)
         {
-            await LoadSourceInvoicesAsync(Model.SourceCustomer.Id.Value);
+            await Task.WhenAll(
+                LoadSourceInvoicesAsync(Model.SourceCustomer.Id.Value),
+                LoadSourceBalanceAsync()
+            );
+
+            if (Model.SourceInvoiceId.HasValue && Model.SourceInvoice == null)
+            {
+                Model.SourceInvoice = _sourceInvoices.FirstOrDefault(x => x.Id == Model.SourceInvoiceId.Value);
+            }
         }
 
         if (Model.DestinationCustomer?.Id != null)
         {
-            await LoadDestInvoicesAsync(Model.DestinationCustomer.Id.Value);
+            await Task.WhenAll(
+                LoadDestInvoicesAsync(Model.DestinationCustomer.Id.Value),
+                LoadDestBalanceAsync()
+            );
+
+            if (Model.DestinationInvoiceId.HasValue && Model.DestinationInvoice == null)
+            {
+                Model.DestinationInvoice = _destInvoices.FirstOrDefault(x => x.Id == Model.DestinationInvoiceId.Value);
+            }
         }
 
         if (Model.ExchangeRate == null && Model.PriceUnit != null && !Model.PriceUnit.IsDefault)
@@ -62,7 +116,14 @@ public partial class CustomerTransferEditor
 
         if (customer?.Id != null)
         {
-            await LoadSourceInvoicesAsync(customer.Id.Value);
+            await Task.WhenAll(
+                LoadSourceInvoicesAsync(customer.Id.Value),
+                LoadSourceBalanceAsync()
+            );
+        }
+        else
+        {
+            _sourceCurrentBalance = null;
         }
     }
 
@@ -74,8 +135,102 @@ public partial class CustomerTransferEditor
 
         if (customer?.Id != null)
         {
-            await LoadDestInvoicesAsync(customer.Id.Value);
+            await Task.WhenAll(
+                LoadDestInvoicesAsync(customer.Id.Value),
+                LoadDestBalanceAsync()
+            );
         }
+        else
+        {
+            _destCurrentBalance = null;
+        }
+    }
+
+    private async Task LoadSourceBalanceAsync()
+    {
+        if (Model.SourceCustomer?.Id == null || Model.PriceUnit == null)
+        {
+            _sourceCurrentBalance = null;
+            return;
+        }
+
+        try
+        {
+            _loadingSourceBalance = true;
+            StateHasChanged();
+            var balances = await TransactionService.GetCustomerRemainingListAsync(
+                Model.SourceCustomer.Id.Value, Model.PriceUnit.Id);
+            var item = balances.FirstOrDefault(b => b.PriceUnit.Id == Model.PriceUnit.Id);
+            _sourceCurrentBalance = item?.Amount ?? 0m;
+        }
+        catch (Exception)
+        {
+            _sourceCurrentBalance = null;
+        }
+        finally
+        {
+            _loadingSourceBalance = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDestBalanceAsync()
+    {
+        if (Model.DestinationCustomer?.Id == null || Model.PriceUnit == null)
+        {
+            _destCurrentBalance = null;
+            return;
+        }
+
+        try
+        {
+            _loadingDestBalance = true;
+            StateHasChanged();
+            var balances = await TransactionService.GetCustomerRemainingListAsync(
+                Model.DestinationCustomer.Id.Value, Model.PriceUnit.Id);
+            var item = balances.FirstOrDefault(b => b.PriceUnit.Id == Model.PriceUnit.Id);
+            _destCurrentBalance = item?.Amount ?? 0m;
+        }
+        catch (Exception)
+        {
+            _destCurrentBalance = null;
+        }
+        finally
+        {
+            _loadingDestBalance = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? unit)
+    {
+        Model.PriceUnit = unit;
+        await Task.WhenAll(
+            LoadExchangeRateAsync(),
+            LoadSourceBalanceAsync(),
+            LoadDestBalanceAsync()
+        );
+    }
+
+    private string GetBalanceLabel(decimal? balance)
+    {
+        if (!balance.HasValue) return "-";
+        var abs = Math.Abs(balance.Value);
+        var unitTitle = Model.PriceUnit?.Title ?? "";
+        var formatted = abs.ToCurrencyFormat(unitTitle);
+        if (balance.Value > 0)
+            return $"{formatted} (بدهکار)";
+        if (balance.Value < 0)
+            return $"{formatted} (بستانکار)";
+        return $"۰ {unitTitle} (تسویه)";
+    }
+
+    private Color GetBalanceColor(decimal? balance)
+    {
+        if (!balance.HasValue) return Color.Default;
+        if (balance.Value > 0) return Color.Error;
+        if (balance.Value < 0) return Color.Success;
+        return Color.Default;
     }
 
     private async Task LoadSourceInvoicesAsync(Guid customerId)
@@ -145,12 +300,6 @@ public partial class CustomerTransferEditor
         }
     }
 
-    private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? unit)
-    {
-        Model.PriceUnit = unit;
-        await LoadExchangeRateAsync();
-    }
-
     private async Task LoadExchangeRateAsync()
     {
         var defaultPriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
@@ -175,26 +324,84 @@ public partial class CustomerTransferEditor
 
     private async Task SubmitAsync()
     {
+        if (_processing)
+            return;
+
+        _processing = true;
+
         await _form.ValidateAsync();
 
         if (!_form.IsValid)
+        {
+            _processing = false;
             return;
+        }
 
         if (Model.SourceCustomer?.Id == Model.DestinationCustomer?.Id)
         {
             AddErrorToast("مشتری فرستنده و گیرنده نمی‌توانند یکسان باشند.");
+            _processing = false;
             return;
         }
 
-        _processing = true;
-        try
+        if (Model.SourceCustomer?.Id == null || Model.DestinationCustomer?.Id == null || Model.PriceUnit == null)
         {
-            MudDialog.Close(DialogResult.Ok(Model));
-        }
-        finally
-        {
+            AddErrorToast("لطفاً اطلاعات الزامی را کامل کنید.");
             _processing = false;
+            return;
         }
+
+        if (!Model.Id.HasValue)
+        {
+            var req = new CreateCustomerTransferVoucherRequest
+            {
+                TransferDate = DateOnly.FromDateTime(Model.TransferDate ?? DateTime.Now),
+                SourceCustomerId = Model.SourceCustomer.Id.Value,
+                DestinationCustomerId = Model.DestinationCustomer.Id.Value,
+                PriceUnitId = Model.PriceUnit.Id,
+                Amount = Model.Amount,
+                ExchangeRate = Model.ExchangeRate,
+                SourceInvoiceId = Model.SourceInvoice?.Id,
+                DestinationInvoiceId = Model.DestinationInvoice?.Id,
+                Description = Model.Description
+            };
+
+            await SendRequestAsync<ICustomerTransferVoucherService>(
+                action: (s, ct) => s.CreateAsync(req, ct),
+                afterSend: () =>
+                {
+                    AddSuccessToast("سند حواله با موفقیت ثبت شد.");
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
+        }
+        else
+        {
+            var req = new UpdateCustomerTransferVoucherRequest
+            {
+                Id = Model.Id.Value,
+                TransferDate = DateOnly.FromDateTime(Model.TransferDate ?? DateTime.Now),
+                SourceCustomerId = Model.SourceCustomer.Id.Value,
+                DestinationCustomerId = Model.DestinationCustomer.Id.Value,
+                PriceUnitId = Model.PriceUnit.Id,
+                Amount = Model.Amount,
+                ExchangeRate = Model.ExchangeRate,
+                SourceInvoiceId = Model.SourceInvoice?.Id,
+                DestinationInvoiceId = Model.DestinationInvoice?.Id,
+                Description = Model.Description
+            };
+
+            await SendRequestAsync<ICustomerTransferVoucherService>(
+                action: (s, ct) => s.UpdateAsync(Model.Id.Value, req, ct),
+                afterSend: () =>
+                {
+                    AddSuccessToast("سند حواله با موفقیت به روزرسانی شد.");
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
+        }
+
+        _processing = false;
     }
 
     private void Cancel() => MudDialog.Cancel();

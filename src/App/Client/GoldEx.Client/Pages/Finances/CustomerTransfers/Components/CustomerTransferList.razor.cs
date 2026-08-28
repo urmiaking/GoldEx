@@ -128,31 +128,9 @@ public partial class CustomerTransferList
         var dialog = await DialogService.ShowAsync<CustomerTransferEditor>("ثبت حواله جدید بین مشتریان", parameters, _dialogOptions);
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: CustomerTransferVoucherVm addedVm })
+        if (result is { Canceled: false })
         {
-            try
-            {
-                var req = new CreateCustomerTransferVoucherRequest
-                {
-                    TransferDate = DateOnly.FromDateTime(addedVm.TransferDate ?? DateTime.Now),
-                    SourceCustomerId = addedVm.SourceCustomer!.Id!.Value,
-                    DestinationCustomerId = addedVm.DestinationCustomer!.Id!.Value,
-                    PriceUnitId = addedVm.PriceUnit!.Id,
-                    Amount = addedVm.Amount,
-                    ExchangeRate = addedVm.ExchangeRate,
-                    SourceInvoiceId = addedVm.SourceInvoice?.Id,
-                    DestinationInvoiceId = addedVm.DestinationInvoice?.Id,
-                    Description = addedVm.Description
-                };
-
-                await VoucherService.CreateAsync(req);
-                AddSuccessToast("سند حواله با موفقیت ثبت شد.");
-                await _table.ReloadServerData();
-            }
-            catch (Exception ex)
-            {
-                AddErrorToast($"خطا در ثبت حواله: {ex.Message}");
-            }
+            await _table.ReloadServerData();
         }
     }
 
@@ -171,6 +149,8 @@ public partial class CustomerTransferList
                 Amount = fullItem.Amount,
                 ExchangeRate = fullItem.ExchangeRate,
                 Description = fullItem.Description,
+                SourceInvoiceId = fullItem.SourceInvoiceId,
+                DestinationInvoiceId = fullItem.DestinationInvoiceId,
                 SourceCustomer = new Customers.ViewModels.CustomerVm
                 {
                     Id = fullItem.SourceCustomerId,
@@ -192,24 +172,8 @@ public partial class CustomerTransferList
             var dialog = await DialogService.ShowAsync<CustomerTransferEditor>("ویرایش سند حواله", parameters, _dialogOptions);
             var result = await dialog.Result;
 
-            if (result is { Canceled: false, Data: CustomerTransferVoucherVm updatedVm })
+            if (result is { Canceled: false })
             {
-                var req = new UpdateCustomerTransferVoucherRequest
-                {
-                    Id = updatedVm.Id!.Value,
-                    TransferDate = DateOnly.FromDateTime(updatedVm.TransferDate ?? DateTime.Now),
-                    SourceCustomerId = updatedVm.SourceCustomer!.Id!.Value,
-                    DestinationCustomerId = updatedVm.DestinationCustomer!.Id!.Value,
-                    PriceUnitId = updatedVm.PriceUnit!.Id,
-                    Amount = updatedVm.Amount,
-                    ExchangeRate = updatedVm.ExchangeRate,
-                    SourceInvoiceId = updatedVm.SourceInvoice?.Id,
-                    DestinationInvoiceId = updatedVm.DestinationInvoice?.Id,
-                    Description = updatedVm.Description
-                };
-
-                await VoucherService.UpdateAsync(updatedVm.Id.Value, req);
-                AddSuccessToast("سند حواله با موفقیت به روزرسانی شد.");
                 await _table.ReloadServerData();
             }
         }
