@@ -30,20 +30,20 @@
                                     {
                                         <div class="mt-2 text-start px-2 py-1 rounded" style="background: rgba(0,0,0,0.03); font-size: 0.8rem;">
                                             <div class="d-flex justify-space-between align-center mb-1">
-                                                <span style="color: var(--mud-palette-text-secondary);">مانده فعلی:</span>
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "مانده قبل از این حواله:" : "مانده فعلی:")</span>
                                                 @if (_loadingSourceBalance)
                                                 {
                                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width: 14px; height: 14px;" />
                                                 }
                                                 else
                                                 {
-                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(_sourceCurrentBalance)" Style="font-weight: 600;">
-                                                        @GetBalanceLabel(_sourceCurrentBalance)
+                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(SourceBaseBalance)" Style="font-weight: 600;">
+                                                        @GetBalanceLabel(SourceBaseBalance)
                                                     </MudText>
                                                 }
                                             </div>
                                             <div class="d-flex justify-space-between align-center">
-                                                <span style="color: var(--mud-palette-text-secondary);">پس از ثبت حواله:</span>
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "پس از ویرایش حواله:" : "پس از ثبت حواله:")</span>
                                                 <MudText Typo="Typo.caption" Color="@GetBalanceColor(SourceProjectedBalance)" Style="font-weight: bold;">
                                                     @GetBalanceLabel(SourceProjectedBalance)
                                                 </MudText>
@@ -79,20 +79,20 @@
                                     {
                                         <div class="mt-2 text-start px-2 py-1 rounded" style="background: rgba(0,0,0,0.03); font-size: 0.8rem;">
                                             <div class="d-flex justify-space-between align-center mb-1">
-                                                <span style="color: var(--mud-palette-text-secondary);">مانده فعلی:</span>
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "مانده قبل از این حواله:" : "مانده فعلی:")</span>
                                                 @if (_loadingDestBalance)
                                                 {
                                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width: 14px; height: 14px;" />
                                                 }
                                                 else
                                                 {
-                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(_destCurrentBalance)" Style="font-weight: 600;">
-                                                        @GetBalanceLabel(_destCurrentBalance)
+                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(DestBaseBalance)" Style="font-weight: 600;">
+                                                        @GetBalanceLabel(DestBaseBalance)
                                                     </MudText>
                                                 }
                                             </div>
                                             <div class="d-flex justify-space-between align-center">
-                                                <span style="color: var(--mud-palette-text-secondary);">پس از ثبت حواله:</span>
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "پس از ویرایش حواله:" : "پس از ثبت حواله:")</span>
                                                 <MudText Typo="Typo.caption" Color="@GetBalanceColor(DestProjectedBalance)" Style="font-weight: bold;">
                                                     @GetBalanceLabel(DestProjectedBalance)
                                                 </MudText>

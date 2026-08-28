@@ -41,20 +41,49 @@ public partial class CustomerTransferEditor
     private decimal? _destCurrentBalance;
     private bool _loadingDestBalance;
 
+    public bool IsEditMode => Model.Id.HasValue;
+    private decimal _originalAmount;
+
     public bool IsDestinationPurchaseInvoice =>
         Model.DestinationInvoice != null && Model.DestinationInvoice.InvoiceType == InvoiceType.Purchase;
 
     public bool IsSourceSellInvoice =>
         Model.SourceInvoice != null && Model.SourceInvoice.InvoiceType == InvoiceType.Sell;
 
-    public decimal? SourceProjectedBalance
+    public decimal? SourceBaseBalance
     {
         get
         {
             if (!_sourceCurrentBalance.HasValue) return null;
+            if (!IsEditMode) return _sourceCurrentBalance.Value;
+
             if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
-                return _sourceCurrentBalance.Value - Model.Amount;
-            return _sourceCurrentBalance.Value + Model.Amount;
+                return _sourceCurrentBalance.Value + _originalAmount;
+            return _sourceCurrentBalance.Value - _originalAmount;
+        }
+    }
+
+    public decimal? DestBaseBalance
+    {
+        get
+        {
+            if (!_destCurrentBalance.HasValue) return null;
+            if (!IsEditMode) return _destCurrentBalance.Value;
+
+            if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
+                return _destCurrentBalance.Value - _originalAmount;
+            return _destCurrentBalance.Value + _originalAmount;
+        }
+    }
+
+    public decimal? SourceProjectedBalance
+    {
+        get
+        {
+            if (!SourceBaseBalance.HasValue) return null;
+            if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
+                return SourceBaseBalance.Value - Model.Amount;
+            return SourceBaseBalance.Value + Model.Amount;
         }
     }
 
@@ -62,15 +91,17 @@ public partial class CustomerTransferEditor
     {
         get
         {
-            if (!_destCurrentBalance.HasValue) return null;
+            if (!DestBaseBalance.HasValue) return null;
             if (IsDestinationPurchaseInvoice || IsSourceSellInvoice)
-                return _destCurrentBalance.Value + Model.Amount;
-            return _destCurrentBalance.Value - Model.Amount;
+                return DestBaseBalance.Value + Model.Amount;
+            return DestBaseBalance.Value - Model.Amount;
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        _originalAmount = Model.Id.HasValue ? Model.Amount : 0;
+
         if (!Model.PriceUnitId().HasValue && PriceUnits.Count > 0)
         {
             Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault) ?? PriceUnits.First();
