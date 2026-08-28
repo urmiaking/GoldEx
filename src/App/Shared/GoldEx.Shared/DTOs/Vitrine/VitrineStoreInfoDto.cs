@@ -13,4 +13,5 @@ public record VitrineStoreInfoDto(
     string? WhatsAppNumber,
     string? AboutText,
     decimal LiveGoldPrice18K = 0,
-    string? CustomDomain = null);
+    string? CustomDomain = null,
+    VitrineThemeDto? Theme = null);

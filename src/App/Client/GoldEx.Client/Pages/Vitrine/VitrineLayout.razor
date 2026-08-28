@@ -12,6 +12,7 @@
     <meta name="robots" content="index, follow" />
     <meta property="og:site_name" content="@(_storeInfo?.Name ?? "ویترین آنلاین طلا و جواهر")" />
     <meta property="og:type" content="website" />
+    <meta name="theme-color" content="@GetThemeColorMeta()" />
     @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
     {
         var absLogoUrl = Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString();
@@ -22,10 +23,12 @@
     }
 </HeadContent>
 
+<link href="/fonts/vazir/Vazirmatn-font-face.css" rel="stylesheet" />
+<link href="/fonts/IRANSANS/IRANSANS-font-face.css" rel="stylesheet" />
 <link href="/assets/fontawesome/css/all.min.css?v=6.5.1" rel="stylesheet" />
 <link href="@($"/assets/vitrine/css/vitrine.css?v={_cssVersion}")" rel="stylesheet" />
 
-<div class="vitrine-root">
+<div class="vitrine-root @GetThemeClassNames()" style="@GetDynamicThemeVariables()">
     <!-- Live Gold Ticker Top Bar -->
     <div class="vitrine-top-ticker">
         <div class="vitrine-container">
@@ -354,6 +357,50 @@
         var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
         var expected = string.IsNullOrEmpty(subPath) ? StoreSlug : $"{StoreSlug}/{subPath}";
         return pathOnly.Equals(expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetThemeClassNames()
+    {
+        var preset = _storeInfo?.Theme?.Preset ?? "royal-emerald";
+        var card = _storeInfo?.Theme?.CardStyle ?? "minimal";
+        var radius = _storeInfo?.Theme?.RadiusStyle ?? "rounded";
+        var font = _storeInfo?.Theme?.FontStyle ?? "vazirmatn";
+
+        return $"theme-{preset} card-{card} radius-{radius} font-{font}";
+    }
+
+    private string GetDynamicThemeVariables()
+    {
+        if (_storeInfo?.Theme == null) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.PrimaryColor))
+            sb.Append($"--primary-color: {_storeInfo.Theme.PrimaryColor}; --primary-dark: {_storeInfo.Theme.PrimaryColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.AccentColor))
+            sb.Append($"--accent-color: {_storeInfo.Theme.AccentColor}; --accent-hover: {_storeInfo.Theme.AccentColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.BackgroundColor))
+            sb.Append($"--light-color: {_storeInfo.Theme.BackgroundColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.SurfaceColor))
+            sb.Append($"--white: {_storeInfo.Theme.SurfaceColor}; ");
+
+        return sb.ToString();
+    }
+
+    private string GetThemeColorMeta()
+    {
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.Theme?.PrimaryColor))
+            return _storeInfo.Theme.PrimaryColor;
+
+        return (_storeInfo?.Theme?.Preset?.ToLowerInvariant()) switch
+        {
+            "persian-turquoise" or "turquoise" => "#0d6e6e",
+            "imperial-ruby" or "ruby" => "#3b0f19",
+            "yemeni-agate" or "agate" or "amber" => "#7c2d12",
+            "champagne-pearl" or "pearl" or "champagne" => "#2b2723",
+            "minimal-white" or "minimal" => "#111827",
+            "rose-gold" or "rosegold" => "#2f1d24",
+            _ => "#0f342e"
+        };
     }
 
     public void Dispose()

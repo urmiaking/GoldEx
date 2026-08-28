@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services.Abstractions;
@@ -58,5 +58,75 @@ public partial class BaseInfo
 
         await LoadSettingsAsync();
         StateHasChanged();
+    }
+
+    public record ThemePresetItem(
+        string Key,
+        string Title,
+        string Subtitle,
+        string PrimaryColor,
+        string AccentColor,
+        string BackgroundColor,
+        string SurfaceColor,
+        bool IsDark);
+
+    private static readonly IReadOnlyList<ThemePresetItem> ThemePresets =
+    [
+        new("royal-emerald", "زمرد سلطنتی کاخ", "سبز زمردی و طلای شامپاینی (پیش‌فرض)", "#0f342e", "#d5b267", "#fbf9f5", "#ffffff", false),
+        new("persian-turquoise", "فیروزه نیشابور", "فیروزه‌ای اصیل و طلای ناب ۱۸ عیار", "#0d6e6e", "#dfb260", "#f4fbfb", "#ffffff", false),
+        new("imperial-ruby", "یاقوت سرخ شاهانه", "زرشکی مخملی و طلای گرم", "#3b0f19", "#dfb260", "#faf6f6", "#ffffff", false),
+        new("yemeni-agate", "عقیق یمنی و کهربا", "عقیق کهربایی گرم و طلای خالص", "#7c2d12", "#e5b85a", "#fdf8f5", "#ffffff", false),
+        new("champagne-pearl", "مروارید و شامپاین", "عاجی مرواریدی و طلای عتیقه", "#2b2723", "#c99d52", "#faf8f5", "#ffffff", false),
+        new("minimal-white", "مدرن مینیمال سفید", "سفید استودیو و طلای ۷۵۰", "#111827", "#d4af37", "#ffffff", "#fbfbfb", false),
+        new("rose-gold", "رز گلد و بژ مخملی", "صورتی صدفی و رزگلد متالیک", "#2f1d24", "#d98c80", "#fcf9f9", "#ffffff", false)
+    ];
+
+    private void SelectPreset(ThemePresetItem preset)
+    {
+        _model.VitrineThemePreset = preset.Key;
+        _model.VitrinePrimaryColor = null;
+        _model.VitrineAccentColor = null;
+        _model.VitrineBackgroundColor = null;
+        _model.VitrineSurfaceColor = null;
+        StateHasChanged();
+    }
+
+    private ThemePresetItem GetCurrentPreset()
+    {
+        return ThemePresets.FirstOrDefault(p => p.Key.Equals(_model.VitrineThemePreset, StringComparison.OrdinalIgnoreCase))
+            ?? ThemePresets[0];
+    }
+
+    private string GetActivePrimaryColor()
+    {
+        if (!string.IsNullOrWhiteSpace(_model.VitrinePrimaryColor))
+            return _model.VitrinePrimaryColor;
+        return GetCurrentPreset().PrimaryColor;
+    }
+
+    private string GetActiveAccentColor()
+    {
+        if (!string.IsNullOrWhiteSpace(_model.VitrineAccentColor))
+            return _model.VitrineAccentColor;
+        return GetCurrentPreset().AccentColor;
+    }
+
+    private string GetActiveBackgroundColor()
+    {
+        if (!string.IsNullOrWhiteSpace(_model.VitrineBackgroundColor))
+            return _model.VitrineBackgroundColor;
+        return GetCurrentPreset().BackgroundColor;
+    }
+
+    private string GetActiveSurfaceColor()
+    {
+        if (!string.IsNullOrWhiteSpace(_model.VitrineSurfaceColor))
+            return _model.VitrineSurfaceColor;
+        return GetCurrentPreset().SurfaceColor;
+    }
+
+    private bool IsActiveDark()
+    {
+        return GetCurrentPreset().IsDark;
     }
 }

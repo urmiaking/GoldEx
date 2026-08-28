@@ -62,6 +62,43 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
         builder.Property(x => x.AboutText)
             .HasMaxLength(2000);
 
+        builder.Property(x => x.VitrineThemePreset)
+            .HasMaxLength(50)
+            .HasDefaultValue("royal-emerald")
+            .IsRequired();
+
+        builder.Property(x => x.VitrinePrimaryColor)
+            .HasMaxLength(30);
+
+        builder.Property(x => x.VitrineAccentColor)
+            .HasMaxLength(30);
+
+        builder.Property(x => x.VitrineBackgroundColor)
+            .HasMaxLength(30);
+
+        builder.Property(x => x.VitrineSurfaceColor)
+            .HasMaxLength(30);
+
+        builder.Property(x => x.VitrineCardStyle)
+            .HasMaxLength(30)
+            .HasDefaultValue("minimal")
+            .IsRequired();
+
+        builder.Property(x => x.VitrineRadiusStyle)
+            .HasMaxLength(30)
+            .HasDefaultValue("rounded")
+            .IsRequired();
+
+        builder.Property(x => x.VitrineFontStyle)
+            .HasMaxLength(30)
+            .HasDefaultValue("iransans")
+            .IsRequired();
+
+        builder.Property(x => x.VitrineHeaderStyle)
+            .HasMaxLength(30)
+            .HasDefaultValue("glass-sticky")
+            .IsRequired();
+
         builder.OwnsOne(x => x.BarcodePrintSettings, Configure);
     }
 

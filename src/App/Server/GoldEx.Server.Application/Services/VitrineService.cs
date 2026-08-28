@@ -60,6 +60,19 @@ internal class VitrineService(
 
             var liveGoldPrice18K = await GetLive18KGoldPriceAsync(cancellationToken);
 
+            var themeDto = setting != null
+                ? new VitrineThemeDto(
+                    Preset: setting.VitrineThemePreset ?? "royal-emerald",
+                    PrimaryColor: setting.VitrinePrimaryColor,
+                    AccentColor: setting.VitrineAccentColor,
+                    BackgroundColor: setting.VitrineBackgroundColor,
+                    SurfaceColor: setting.VitrineSurfaceColor,
+                    CardStyle: setting.VitrineCardStyle ?? "minimal",
+                    RadiusStyle: setting.VitrineRadiusStyle ?? "rounded",
+                    FontStyle: setting.VitrineFontStyle ?? "vazirmatn",
+                    HeaderStyle: setting.VitrineHeaderStyle ?? "glass-sticky")
+                : new VitrineThemeDto();
+
             return new VitrineStoreInfoDto(
                 Name: store.Name,
                 Slug: store.Slug,
@@ -73,7 +86,8 @@ internal class VitrineService(
                 WhatsAppNumber: setting?.WhatsAppNumber,
                 AboutText: setting?.AboutText,
                 LiveGoldPrice18K: liveGoldPrice18K,
-                CustomDomain: store.CustomDomain);
+                CustomDomain: store.CustomDomain,
+                Theme: themeDto);
         }
         finally
         {

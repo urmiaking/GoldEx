@@ -18,4 +18,13 @@ public record GetSettingResponse(
     string? TelegramUrl = null,
     string? BaleUrl = null,
     string? WhatsAppNumber = null,
-    string? AboutText = null);
+    string? AboutText = null,
+    string VitrineThemePreset = "royal-emerald",
+    string? VitrinePrimaryColor = null,
+    string? VitrineAccentColor = null,
+    string? VitrineBackgroundColor = null,
+    string? VitrineSurfaceColor = null,
+    string VitrineCardStyle = "minimal",
+    string VitrineRadiusStyle = "rounded",
+    string VitrineFontStyle = "iransans",
+    string VitrineHeaderStyle = "glass-sticky");

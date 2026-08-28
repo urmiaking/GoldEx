@@ -1,4 +1,5 @@
 using GoldEx.Client.Components.Services;
+using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.DTOs.Licenses;
@@ -26,6 +27,12 @@ public partial class App
     private string? StoreLogoUrl { get; set; }
     private string? StoreName { get; set; }
     private bool IsStoreTitle { get; set; }
+
+    private string VitrineThemePreset { get; set; } = "royal-emerald";
+    private string? VitrinePrimaryColor { get; set; }
+    private string? VitrineAccentColor { get; set; }
+    private string? VitrineBackgroundColor { get; set; }
+    private string? VitrineSurfaceColor { get; set; }
 
     private bool IsVitrineRoute()
     {
@@ -132,9 +139,40 @@ public partial class App
                         SplashLogoUrl = store.LogoUrl;
                         StoreLogoUrl = store.LogoUrl;
                     }
+
+                    var setting = await DbContext.Set<Setting>()
+                        .AsNoTracking()
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(s => s.StoreId == store.Id);
+
+                    if (setting != null)
+                    {
+                        VitrineThemePreset = setting.VitrineThemePreset ?? "royal-emerald";
+                        VitrinePrimaryColor = setting.VitrinePrimaryColor;
+                        VitrineAccentColor = setting.VitrineAccentColor;
+                        VitrineBackgroundColor = setting.VitrineBackgroundColor;
+                        VitrineSurfaceColor = setting.VitrineSurfaceColor;
+                    }
                 }
             }
         }
+    }
+
+    private string GetVitrineThemeColorMeta()
+    {
+        if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor))
+            return VitrinePrimaryColor;
+
+        return (VitrineThemePreset?.ToLowerInvariant()) switch
+        {
+            "persian-turquoise" or "turquoise" => "#0d6e6e",
+            "imperial-ruby" or "ruby" => "#3b0f19",
+            "yemeni-agate" or "agate" or "amber" => "#7c2d12",
+            "champagne-pearl" or "pearl" or "champagne" => "#2b2723",
+            "minimal-white" or "minimal" => "#111827",
+            "rose-gold" or "rosegold" => "#2f1d24",
+            _ => "#0f342e" // royal-emerald
+        };
     }
 
     private async Task GetLicenseAsync()

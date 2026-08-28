@@ -25,6 +25,7 @@
 
     <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
     <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
+    <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
     <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
     <link rel="stylesheet" href="@Assets["css/app.css"]" />
@@ -34,8 +35,20 @@
     <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
     @if (IsVitrineRoute())
     {
+        <meta name="theme-color" content="@GetVitrineThemeColorMeta()" />
         <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />
         <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css" />
+        @if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor) || !string.IsNullOrWhiteSpace(VitrineAccentColor) || !string.IsNullOrWhiteSpace(VitrineBackgroundColor) || !string.IsNullOrWhiteSpace(VitrineSurfaceColor))
+        {
+            <style>
+                .vitrine-root {
+                    @if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor)) { <text>--primary-color: @VitrinePrimaryColor; --primary-dark: @VitrinePrimaryColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineAccentColor)) { <text>--accent-color: @VitrineAccentColor; --accent-hover: @VitrineAccentColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineBackgroundColor)) { <text>--light-color: @VitrineBackgroundColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineSurfaceColor)) { <text>--white: @VitrineSurfaceColor; </text> }
+                }
+            </style>
+        }
     }
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>

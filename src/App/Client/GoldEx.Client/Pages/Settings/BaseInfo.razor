@@ -240,11 +240,177 @@
             </MudItem>
         </MudGrid>
 
+        <AuthorizeView Roles="@BuiltinRoles.Administrators" Context="authContext">
+            <!-- بخش طراحی و استایل ویترین آنلاین -->
+            <MudText Class="mt-8" Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Palette" Class="me-2" Color="Color.Primary" />
+                طراحی، پالت رنگی و استایل اختصاصی ویترین آنلاین
+            </MudText>
+            <hr />
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                تم، پالت رنگی، استایل کارت‌ها و فونت ویترین فروشگاه خود را انتخاب کنید. تغییرات بلافاصله در کادر پیش‌نمایش زیر نمایش داده می‌شوند.
+            </MudText>
+
+            <!-- ۱. انتخاب تم‌های آماده لوکس -->
+            <MudText Typo="Typo.subtitle2" Class="fw-bold mb-2">۱. انتخاب تم و پالت رنگی آماده (۷ پریست اختصاصی طلا و جواهر):</MudText>
+            <MudGrid Spacing="2" Class="mb-4">
+                @foreach (var preset in ThemePresets)
+                {
+                    var isSelected = _model.VitrineThemePreset.Equals(preset.Key, StringComparison.OrdinalIgnoreCase);
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <div @onclick="() => SelectPreset(preset)"
+                             style="border: 2px solid @(isSelected ? "var(--mud-palette-primary)" : "rgba(0,0,0,0.1)");
+                                    background: @(preset.IsDark ? "#14171a" : "#ffffff");
+                                    color: @(preset.IsDark ? "#f1f3f5" : "#1a1e1d");
+                                    border-radius: 14px;
+                                    padding: 14px;
+                                    cursor: pointer;
+                                    transition: all 0.25s ease;
+                                    box-shadow: @(isSelected ? "0 4px 16px rgba(0,0,0,0.15)" : "none");"
+                             class="d-flex flex-column gap-2 h-100 position-relative">
+                            @if (isSelected)
+                            {
+                                <span class="position-absolute top-0 end-0 m-2 badge bg-primary text-white rounded-circle p-1" style="font-size: 0.75rem;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Style="color: white;" />
+                                </span>
+                            }
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: @preset.PrimaryColor; border: 2px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></span>
+                                <span style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: @preset.AccentColor; border: 2px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></span>
+                                <strong style="font-size: 0.95rem;">@preset.Title</strong>
+                            </div>
+                            <small style="opacity: 0.8; font-size: 0.8rem;">@preset.Subtitle</small>
+                        </div>
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <!-- ۲. استایل کارت‌ها، شعاع گوشه‌ها و فونت -->
+            <MudGrid Spacing="3" Class="mb-4">
+                <MudItem xs="12" sm="4">
+                    <MudSelect @bind-Value="_model.VitrineCardStyle"
+                               Label="استایل نمایش کارت‌ها"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.ViewAgenda">
+                        <MudSelectItem Value="@("minimal")">کلاسیک مینیمال (Minimal Bordered)</MudSelectItem>
+                        <MudSelectItem Value="@("glass")">شیشه‌ای مات (Glassmorphism Frosted)</MudSelectItem>
+                        <MudSelectItem Value="@("elevated")">شناور برجسته (Elevated Shadow)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect @bind-Value="_model.VitrineRadiusStyle"
+                               Label="انحنای گوشه‌ها (Border Radius)"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.RoundedCorner">
+                        <MudSelectItem Value="@("sharp")">شارپ لوکس (Sharp - ۴px)</MudSelectItem>
+                        <MudSelectItem Value="@("rounded")">نرم متعادل (Rounded - ۱۲px)</MudSelectItem>
+                        <MudSelectItem Value="@("pill")">کپسولی گرد (Pill - ۲۴px)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect @bind-Value="_model.VitrineFontStyle"
+                               Label="فونت و تایپوگرافی ویترین"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.FontDownload">
+                        <MudSelectItem Value="@("vazirmatn")">وزیرمتن (Vazirmatn)</MudSelectItem>
+                        <MudSelectItem Value="@("iransans")">ایران‌سنس (IRANSans)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+
+            <!-- ۳. پیش‌نمایش زنده تعاملی (Live Interactive Preview Mockup) -->
+            <MudText Typo="Typo.subtitle2" Class="fw-bold mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Class="me-1" />
+                پیش‌نمایش زنده ظاهر ویترین فروشگاه شما:
+            </MudText>
+            <div style="background-color: @GetActiveBackgroundColor();
+                        color: @(IsActiveDark() ? "#f1f3f5" : "#1a1e1d");
+                        font-family: @(_model.VitrineFontStyle == "iransans" ? "IRANSans, sans-serif" : "Vazirmatn, sans-serif") !important;
+                        border: 2px dashed @GetActiveAccentColor();
+                        border-radius: 16px;
+                        padding: 24px;
+                        margin-bottom: 24px;
+                        transition: all 0.35s ease;">
+                
+                <!-- شبیه‌ساز نوار مظنه -->
+                <div style="background: @GetActivePrimaryColor();
+                            color: #ffffff;
+                            padding: 10px 16px;
+                            border-radius: @(_model.VitrineRadiusStyle == "sharp" ? "4px" : _model.VitrineRadiusStyle == "pill" ? "20px" : "10px");
+                            margin-bottom: 18px;"
+                     class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3dd598; box-shadow: 0 0 8px #3dd598;"></span>
+                        <span style="font-size: 0.85rem;">نرخ زنده هر گرم طلای ۱۸ عیار:</span>
+                        <strong style="color: @GetActiveAccentColor(); font-size: 0.95rem;">۵,۲۰۰,۰۰۰ تومان</strong>
+                    </div>
+                    <small style="opacity: 0.85; font-size: 0.8rem;">@_model.InstitutionName</small>
+                </div>
+
+                <!-- شبیه‌ساز کارت محصول -->
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <div style="background-color: @GetActiveSurfaceColor();
+                                    border: @(_model.VitrineCardStyle == "glass" ? $"1px solid {GetActiveAccentColor()}55" : _model.VitrineCardStyle == "minimal" ? "1px solid rgba(0,0,0,0.12)" : "1px solid transparent");
+                                    border-radius: @(_model.VitrineRadiusStyle == "sharp" ? "6px" : _model.VitrineRadiusStyle == "pill" ? "24px" : "14px");
+                                    box-shadow: @(_model.VitrineCardStyle == "elevated" ? "0 14px 30px rgba(0,0,0,0.12)" : "0 4px 14px rgba(0,0,0,0.05)");
+                                    padding: 18px;
+                                    backdrop-filter: @(_model.VitrineCardStyle == "glass" ? "blur(16px)" : "none");
+                                    -webkit-backdrop-filter: @(_model.VitrineCardStyle == "glass" ? "blur(16px)" : "none");"
+                             class="d-flex flex-column gap-3">
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge" style="background: @GetActiveAccentColor(); color: @(IsActiveDark() ? "#000000" : "#ffffff"); font-size: 0.75rem; border-radius: 6px; padding: 4px 8px;">
+                                    طلای ۱۸ عیار (۷۵۰)
+                                </span>
+                                <span style="font-size: 0.8rem; opacity: 0.7;">وزن: ۴.۲۵۰ گرم</span>
+                            </div>
+
+                            <div>
+                                <h6 style="color: @(IsActiveDark() ? "#ffffff" : "#1a1e1d"); font-weight: 700; margin-bottom: 4px;">
+                                    دستبند النگویی طرح کارتیه لاو
+                                </h6>
+                                <p style="font-size: 0.8rem; opacity: 0.75; margin: 0;">
+                                    کد بارکد: GEX-84920 | موجود در انبار گالری
+                                </p>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2" style="border-top: 1px solid rgba(0,0,0,0.08);">
+                                <div>
+                                    <small style="display: block; opacity: 0.7; font-size: 0.75rem;">قیمت نهایی لحظه‌ای:</small>
+                                    <strong style="color: @GetActiveAccentColor(); font-size: 1.1rem;">
+                                        ۲۵,۴۸۰,۰۰۰ تومان
+                                    </strong>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-sm"
+                                        style="background: @GetActivePrimaryColor();
+                                               color: #ffffff;
+                                               border-radius: @(_model.VitrineRadiusStyle == "sharp" ? "4px" : _model.VitrineRadiusStyle == "pill" ? "20px" : "8px");
+                                               padding: 6px 14px;
+                                               font-size: 0.8rem;
+                                               border: 1px solid @GetActiveAccentColor();">
+                                    <MudIcon Icon="@Icons.Custom.Brands.WhatsApp" Size="Size.Small" Class="me-1" />
+                                    استعلام و خرید
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AuthorizeView>
+
         <div class="d-flex justify-content-end">
             <MudButton Class="mt-4" ButtonType="ButtonType.Submit"
                        Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.Save"
-                       Color="Color.Primary">ذخیره</MudButton>
+                       Color="Color.Primary">ذخیره تنظیمات گالری و تم ویترین</MudButton>
         </div>
     </EditForm>
 </MudCard>
