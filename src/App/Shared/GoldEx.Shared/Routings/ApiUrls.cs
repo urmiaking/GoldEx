@@ -146,6 +146,28 @@ public class ApiUrls
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetLastCode);
     }
 
+    public class ProductAttributes
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.GetList);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.Get)
+            .FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.Update).FormatRoute(new { id });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.Delete).FormatRoute(new { id });
+
+        public static string GetCategoryAttributes(Guid categoryId) =>
+            BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.GetCategoryAttributes).FormatRoute(new { categoryId });
+
+        public static string SetCategoryAttributes() =>
+            BuildUrl(ApiRoutes.ProductAttributes.Base, ApiRoutes.ProductAttributes.SetCategoryAttributes);
+    }
+
     public class StoneTypes
     {
         public static string GetList(StoneTypeRequestFilter filter) => 

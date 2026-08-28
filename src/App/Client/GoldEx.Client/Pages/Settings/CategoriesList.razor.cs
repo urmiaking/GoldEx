@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Settings.Components.Categories;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -96,5 +96,18 @@ public partial class CategoriesList
             AddSuccessToast($"دسته {model.Title} با موفقیت حذف شد.");
             await LoadCategoriesAsync();
         }
+    }
+
+    private async Task OnManageAttributes(ProductCategoryVm model)
+    {
+        var parameters = new DialogParameters<CategoryAttributesDialog>
+        {
+            { x => x.CategoryId, model.Id },
+            { x => x.CategoryName, model.Title }
+        };
+
+        var dialogOptions = new DialogOptions { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Large };
+        var dialog = await DialogService.ShowAsync<CategoryAttributesDialog>($"ویژگی‌های دسته‌بندی {model.Title}", parameters, dialogOptions);
+        await dialog.Result;
     }
 }

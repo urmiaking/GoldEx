@@ -1,0 +1,115 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.ProductAttributes
+@using GoldEx.Shared.DTOs.ProductCategories
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Services.Abstractions
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Tune" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">مدیریت ویژگی‌های دسته‌بندی: <b>@CategoryName</b></MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+            ویژگی‌هایی که برای این دسته‌بندی فعال می‌کنید، در هنگام ثبت و مدیریت کالا در انبار و ویترین از متصدی خواسته می‌شوند و در صفحه کالا و فیلترهای کاتالوگ ویترین نمایش داده خواهند شد.
+        </MudText>
+
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-center p-4">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            </div>
+        }
+        else if (!_allAttributes.Any())
+        {
+            <MudAlert Severity="Severity.Info" Class="my-2">
+                هیچ ویژگی توصیفی در سیستم تعریف نشده است. لطفاً ابتدا از منوی 
+                <MudLink Href="@ClientRoutes.Settings.ProductAttributes">«ویژگی‌های توصیفی کالاها»</MudLink>
+                ویژگی‌های مورد نظر خود را تعریف کنید.
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable T="CategoryAttributeRowVm"
+                      Items="_attributeRows"
+                      Hover="true"
+                      Dense="true"
+                      Elevation="0"
+                      Outlined="true">
+                <HeaderContent>
+                    <MudTh Style="width: 50px;">فعال</MudTh>
+                    <MudTh>عنوان ویژگی</MudTh>
+                    <MudTh>واحد</MudTh>
+                    <MudTh>نوع داده</MudTh>
+                    <MudTh Style="width: 120px;">ورود اجباری؟</MudTh>
+                    <MudTh Style="width: 140px;">فیلتر در ویترین؟</MudTh>
+                    <MudTh Style="width: 100px;">ترتیب نمایش</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="فعال">
+                        <MudCheckBox @bind-Value="context.IsSelected" Color="Color.Primary" Dense="true" T="bool" />
+                    </MudTd>
+                    <MudTd DataLabel="عنوان">
+                        <MudText Typo="Typo.body2" Style="@(context.IsSelected ? "font-weight: 600;" : "opacity: 0.6;")">
+                            @context.Title
+                        </MudText>
+                    </MudTd>
+                    <MudTd DataLabel="واحد">
+                        @(string.IsNullOrWhiteSpace(context.Unit) ? "—" : context.Unit)
+                    </MudTd>
+                    <MudTd DataLabel="نوع داده">
+                        @switch (context.DataType)
+                        {
+                            case ProductAttributeDataType.Number:
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">عددی</MudChip>
+                                break;
+                            case ProductAttributeDataType.Select:
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">انتخابی</MudChip>
+                                break;
+                            default:
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">متنی</MudChip>
+                                break;
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="اجباری">
+                        <MudSwitch @bind-Value="context.IsRequired"
+                                   Color="Color.Error"
+                                   Disabled="@(!context.IsSelected)"
+                                   T="bool"
+                                   Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="فیلتر ویترین">
+                        <MudSwitch @bind-Value="context.ShowInFilter"
+                                   Color="Color.Success"
+                                   Disabled="@(!context.IsSelected)"
+                                   T="bool"
+                                   Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="ترتیب">
+                        <MudNumericField @bind-Value="context.DisplayOrder"
+                                         Disabled="@(!context.IsSelected)"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         Min="0"
+                                         Max="100" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">انصراف</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="SaveAsync"
+                   Disabled="_isSaving || _isLoading || !_allAttributes.Any()">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-2" />
+            }
+            ذخیره ویژگی‌های دسته
+        </MudButton>
+    </DialogActions>
+</MudDialog>

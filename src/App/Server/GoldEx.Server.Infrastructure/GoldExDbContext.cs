@@ -8,6 +8,8 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
+using GoldEx.Server.Domain.ProductAttributeAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -18,6 +20,8 @@ public class GoldExDbContext(
         options)
 {
     public DbSet<CustomerTransferVoucher> CustomerTransferVouchers => Set<CustomerTransferVoucher>();
+    public DbSet<ProductAttribute> ProductAttributes => Set<ProductAttribute>();
+    public DbSet<CategoryAttribute> CategoryAttributes => Set<CategoryAttribute>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(CustomerConfiguration).Assembly);

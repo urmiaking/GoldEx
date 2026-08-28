@@ -38,6 +38,64 @@
                               Placeholder="توضیحات جذاب درباره ظرافت ساخت، تراش، درخشش یا برند قطعه..." />
             </MudItem>
 
+            @if (_categoryAttributes.Any())
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="mb-1 d-flex align-center gap-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Color="Color.Primary" />
+                        مشخصات و ابعاد قطعه (ویژگی‌های دسته‌بندی @(Model.ProductCategoryTitle ?? "کالا"))
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+
+                    <MudGrid Spacing="2">
+                        @foreach (var attr in _categoryAttributes)
+                        {
+                            <MudItem xs="12" sm="6">
+                                @if (attr.DataType == ProductAttributeDataType.Number)
+                                {
+                                    <MudTextField @bind-Value="attr.Value"
+                                                  Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
+                                                  Adornment="@(string.IsNullOrWhiteSpace(attr.Unit) ? Adornment.None : Adornment.End)"
+                                                  AdornmentText="@attr.Unit"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Placeholder="@($"مثال: 3.5")"
+                                                  Required="@attr.IsRequired"
+                                                  RequiredError="@($"{attr.Title} الزامی است.")" />
+                                }
+                                else if (attr.DataType == ProductAttributeDataType.Select && !string.IsNullOrWhiteSpace(attr.Options))
+                                {
+                                    <MudSelect @bind-Value="attr.Value"
+                                               Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
+                                               Variant="Variant.Outlined"
+                                               Margin="Margin.Dense"
+                                               Clearable="true"
+                                               Required="@attr.IsRequired"
+                                               RequiredError="@($"{attr.Title} الزامی است.")"
+                                               T="string">
+                                        @foreach (var opt in attr.Options.Split(new[] { ',', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                        {
+                                            <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudTextField @bind-Value="attr.Value"
+                                                  Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
+                                                  Adornment="@(string.IsNullOrWhiteSpace(attr.Unit) ? Adornment.None : Adornment.End)"
+                                                  AdornmentText="@attr.Unit"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Required="@attr.IsRequired"
+                                                  RequiredError="@($"{attr.Title} الزامی است.")" />
+                                }
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudItem>
+            }
+
             @if (Model.ShowInVitrine && !string.IsNullOrWhiteSpace(PublicVitrineUrl))
             {
                 <MudItem xs="12">

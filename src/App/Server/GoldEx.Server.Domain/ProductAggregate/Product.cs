@@ -134,6 +134,9 @@ public class Product : EntityBase<ProductId>, IStoreFiltered
     private readonly List<ProductImage> _images = [];
     public IReadOnlyList<ProductImage> Images => _images;
 
+    private readonly List<ProductAttributeValue> _attributeValues = [];
+    public IReadOnlyList<ProductAttributeValue> AttributeValues => _attributeValues;
+
     public bool ShowInVitrine { get; private set; }
     public bool IsFeatured { get; private set; }
     public string? VitrineDescription { get; private set; }
@@ -234,6 +237,17 @@ public class Product : EntityBase<ProductId>, IStoreFiltered
         return this;
     }
     public void ClearImages() => _images.Clear();
+
+    public Product SetAttributeValues(IEnumerable<ProductAttributeValue>? attributeValues)
+    {
+        ClearAttributeValues();
+
+        if (attributeValues is not null)
+            _attributeValues.AddRange(attributeValues);
+
+        return this;
+    }
+    public void ClearAttributeValues() => _attributeValues.Clear();
 
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {

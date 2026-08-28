@@ -24,4 +24,5 @@ public record GetProductResponse(
     bool ShowInVitrine = false,
     bool IsFeatured = false,
     string? VitrineDescription = null,
-    List<ProductImageDto>? Images = null);
+    List<ProductImageDto>? Images = null,
+    List<ProductAttributeValueDto>? AttributeValues = null);

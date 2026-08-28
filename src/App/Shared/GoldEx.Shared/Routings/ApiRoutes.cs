@@ -79,6 +79,18 @@ public static class ApiRoutes
         public const string GetLastCode = "last-code";
     }
 
+    public class ProductAttributes
+    {
+        public const string Base = "/api/product-attributes";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetCategoryAttributes = "category/{categoryId}";
+        public const string SetCategoryAttributes = "category";
+    }
+
     public class StoneTypes
     {
         public const string Base = "/api/stone-types";

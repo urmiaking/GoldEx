@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.ProductAggregate;
 
 namespace GoldEx.Server.Infrastructure.Specifications.Products;
@@ -14,5 +14,6 @@ public class ProductsByBarcodeSpecification : SpecificationBase<Product>
         AddInclude(x => x.WagePriceUnit!);
         AddInclude(x => x.StonePriceUnit!);
         AddInclude(x => x.MoltenGold!.Assayer!);
+        AddInclude(x => x.AttributeValues);
     }
 }

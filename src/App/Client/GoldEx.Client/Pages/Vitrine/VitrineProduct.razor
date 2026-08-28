@@ -169,8 +169,8 @@
                     </div>
                 }
 
-                <!-- Trust Notice Under Gallery -->
-                <div class="p-3 rounded" style="background: var(--white); border: 1px solid var(--gray-200); display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-subtle);">
+                <!-- Trust Notice Under Gallery (Desktop Only) -->
+                <div class="d-none d-lg-flex p-3 rounded" style="background: var(--white); border: 1px solid var(--gray-200); align-items: center; gap: 14px; box-shadow: var(--shadow-subtle);">
                     <i class="fa-solid fa-shield-halved" style="font-size: 1.8rem; color: var(--accent-color);"></i>
                     <div style="font-size: 0.86rem; color: var(--gray-600); line-height: 1.6;">
                         کلیه طلاهای این گالری دارای عیار استاندارد ۷۵۰ بوده و همراه با فاکتور رسمی معتبر گالری تقدیم می‌گردد.
@@ -215,8 +215,8 @@
                     </div>
                 }
 
-                <!-- Real-Time Price Calculation Breakdown Card -->
-                <div class="vitrine-price-calculator-card">
+                <!-- Price Hero Card -->
+                <div style="background: var(--gray-100); border: 1px solid var(--accent-color); border-radius: var(--border-radius-sm); padding: 16px 20px; box-shadow: var(--shadow-subtle);">
                     @if (!_product.IsAvailable)
                     {
                         <div class="mb-3 p-3 rounded" style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.3); color: #dc2626; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
@@ -225,40 +225,47 @@
                         </div>
                     }
 
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <span style="font-size: 0.96rem; color: var(--primary-color); font-weight: 800;">
-                            <i class="fa-solid fa-coins" style="color: var(--accent-color); margin-left: 6px;"></i> محاسبه قیمت نهایی بر اساس نرخ روز طلا
-                        </span>
-                        <span class="vitrine-ticker-pulse"></span>
-                    </div>
-
-                    <div style="margin-bottom: 20px; background: var(--gray-100); padding: 18px 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--accent-color);">
-                        <div style="font-size: 0.82rem; color: var(--gray-600); margin-bottom: 4px;">قیمت نهایی با مظنه روز:</div>
-                        <div style="font-size: 2.2rem; font-weight: 900; color: var(--primary-color);">
-                            @_product.EstimatedPrice.ToString("N0") <small style="font-size: 1rem; color: var(--gray-600); font-weight: normal;">تومان</small>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div>
+                            <span style="font-size: 0.92rem; font-weight: 800; color: var(--primary-color); display: block;">قیمت نهایی قطعه:</span>
+                            <span style="font-size: 0.78rem; color: var(--gray-600); margin-top: 2px; display: block;">
+                                نرخ هر گرم: <strong>@_product.GramPrice750.ToString("N0") تومان</strong>
+                            </span>
+                        </div>
+                        <div style="font-size: 1.85rem; font-weight: 900; color: var(--primary-color); line-height: 1; white-space: nowrap; display: flex; align-items: baseline; gap: 5px;">
+                            <span>@_product.EstimatedPrice.ToString("N0")</span>
+                            <small style="font-size: 0.92rem; color: var(--gray-600); font-weight: 700;">تومان</small>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Breakdown Rows -->
+                <!-- Unified Product Specifications Card -->
+                <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius-sm); padding: 20px 24px; box-shadow: var(--shadow-subtle);">
+                    <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--primary-color); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-gem" style="color: var(--accent-color);"></i>
+                        <span>مشخصات و شناسنامه قطعه</span>
+                    </h4>
+
+                    <!-- وزن کل قطعه -->
                     <div class="vitrine-spec-row">
                         <span style="color: var(--gray-600);">وزن کل قطعه:</span>
-                        <strong style="color: var(--primary-color); font-size: 1.05rem;">@_product.Weight.ToString("G29") گرم</strong>
+                        <strong style="color: var(--primary-color); font-size: 1.02rem;">@_product.Weight.ToString("G29") گرم</strong>
                     </div>
+
+                    <!-- عیار استاندارد -->
                     <div class="vitrine-spec-row">
                         <span style="color: var(--gray-600);">عیار استاندارد:</span>
-                        <span style="font-weight: 700; color: var(--primary-color);">۷۵۰ (۱۸ عیار)</span>
+                        <span style="font-weight: 700; color: var(--primary-color);">@(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750 (۱۸ عیار)")</span>
                     </div>
-                    <div class="vitrine-spec-row">
-                        <span style="color: var(--gray-600);">نرخ روز هر گرم طلای ۱۸ عیار:</span>
-                        <span style="font-weight: 700; color: var(--primary-color);">@_product.GramPrice750.ToString("N0") تومان</span>
-                    </div>
+
+                    <!-- اجرت ساخت -->
                     @if (_product.Wage > 0)
                     {
                         <div class="vitrine-spec-row">
                             <span style="color: var(--gray-600);">اجرت ساخت:</span>
                             @if (_product.WageType == WageType.Percent)
                             {
-                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToString("G29")٪ (درصدی)</span>
+                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToString("G29")٪</span>
                             }
                             else
                             {
@@ -266,6 +273,26 @@
                             }
                         </div>
                     }
+
+                    <!-- ویژگی‌های توصیفی محصول -->
+                    @if (_product.Attributes != null && _product.Attributes.Any())
+                    {
+                        @foreach (var attr in _product.Attributes.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Title))
+                        {
+                            <div class="vitrine-spec-row">
+                                <span style="color: var(--gray-600);">@attr.Title:</span>
+                                <strong style="color: var(--primary-color); font-size: 1rem; display: inline-flex; align-items: baseline; gap: 4px;">
+                                    <span>@attr.Value</span>
+                                    @if (!string.IsNullOrWhiteSpace(attr.Unit))
+                                    {
+                                        <span style="font-size: 0.88rem; font-weight: 500; color: var(--gray-600);">@attr.Unit</span>
+                                    }
+                                </strong>
+                            </div>
+                        }
+                    }
+
+                    <!-- تعداد نگین‌ها (در صورت وجود) -->
                     @if (_product.GemStones.Count > 0)
                     {
                         <div class="vitrine-spec-row">
@@ -326,6 +353,14 @@
                         <i class="fa-solid fa-share-nodes"></i>
                         <span>اشتراک‌گذاری کالا</span>
                     </button>
+                </div>
+
+                <!-- Trust Notice Under Actions (Mobile Only) -->
+                <div class="d-flex d-lg-none p-3 rounded" style="background: var(--white); border: 1px solid var(--gray-200); align-items: center; gap: 14px; box-shadow: var(--shadow-subtle);">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 1.8rem; color: var(--accent-color);"></i>
+                    <div style="font-size: 0.86rem; color: var(--gray-600); line-height: 1.6;">
+                        کلیه طلاهای این گالری دارای عیار استاندارد ۷۵۰ بوده و همراه با فاکتور رسمی معتبر گالری تقدیم می‌گردد.
+                    </div>
                 </div>
             </div>
         </div>
@@ -513,6 +548,17 @@
                 }
             }
         };
+
+        if (_product.Attributes != null && _product.Attributes.Any())
+        {
+            jsonObject["additionalProperty"] = _product.Attributes.Select(attr => new Dictionary<string, object?>
+            {
+                ["@type"] = "PropertyValue",
+                ["name"] = attr.Title,
+                ["value"] = attr.Value,
+                ["unitText"] = attr.Unit
+            }).ToList();
+        }
 
         return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
         {

@@ -1,5 +1,6 @@
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Stores;
 using GoldEx.Shared.DTOs.Vitrine;
 using GoldEx.Shared.Helpers;
@@ -24,6 +25,7 @@ public partial class VitrineQuickEditDialog
     private bool _isSaving;
     private UserStoreDto? _currentStore;
     private string PublicVitrineUrl { get; set; } = string.Empty;
+    private List<ProductAttributeValueVm> _categoryAttributes = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,6 +34,34 @@ public partial class VitrineQuickEditDialog
 
         _currentStore = stores?.FirstOrDefault(s => s.IsCurrent) ?? stores?.FirstOrDefault();
         UpdatePublicVitrineUrl();
+
+        if (Model.ProductCategoryId.HasValue)
+        {
+            var assigned = await SendRequestAsync<IProductAttributeService, List<CategoryAttributeDto>>(
+                action: (s, ct) => s.GetCategoryAttributesAsync(Model.ProductCategoryId.Value, ct));
+
+            if (assigned != null && assigned.Any())
+            {
+                var existingValues = Model.AttributeValues.ToDictionary(x => x.AttributeId);
+
+                _categoryAttributes = assigned.Select(attr =>
+                {
+                    var hasVal = existingValues.TryGetValue(attr.AttributeId, out var existing);
+                    return new ProductAttributeValueVm
+                    {
+                        AttributeId = attr.AttributeId,
+                        Title = attr.Title,
+                        Unit = attr.Unit,
+                        DataType = attr.DataType,
+                        Options = attr.Options,
+                        IsRequired = attr.IsRequired,
+                        DisplayOrder = attr.DisplayOrder,
+                        Value = hasVal ? existing!.Value : string.Empty,
+                        NumericValue = hasVal ? existing!.NumericValue : null
+                    };
+                }).OrderBy(x => x.DisplayOrder).ToList();
+            }
+        }
     }
 
     private void UpdatePublicVitrineUrl()
@@ -106,6 +136,18 @@ public partial class VitrineQuickEditDialog
 
     private async Task SaveAsync()
     {
+        // Validate required attributes
+        var missingRequired = _categoryAttributes.FirstOrDefault(x => x.IsRequired && string.IsNullOrWhiteSpace(x.Value));
+        if (missingRequired != null)
+        {
+            AddErrorToast($"تکمیل ویژگی اجباری «{missingRequired.Title}» الزامی است.");
+            return;
+        }
+
+        // Sync back into Model.AttributeValues
+        Model.AttributeValues = new System.Collections.ObjectModel.ObservableCollection<ProductAttributeValueVm>(
+            _categoryAttributes.Where(x => !string.IsNullOrWhiteSpace(x.Value)));
+
         if (!Model.Id.HasValue)
         {
             MudDialog.Close(DialogResult.Ok(Model));
@@ -115,11 +157,14 @@ public partial class VitrineQuickEditDialog
         _isSaving = true;
         try
         {
+            var attrDtos = Model.AttributeValues.Select(x => x.ToDto()).ToList();
+
             var request = new UpdateProductVitrineRequest(
                 Model.ShowInVitrine,
                 Model.IsFeatured,
                 Model.VitrineDescription,
-                Model.Images);
+                Model.Images,
+                attrDtos);
 
             await SendRequestAsync<IVitrineService>(
                 action: (service, token) => service.UpdateProductVitrineAsync(Model.Id.Value, request, token),

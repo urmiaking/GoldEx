@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
@@ -205,6 +206,23 @@ internal class VitrineService(
                 var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
                 var priceBreakdown = CalculateVitrinePrice(p, gramPrice750, effectiveWeight);
 
+                var categoryAttrOrder = p.ProductCategory?.Attributes?
+                    .ToDictionary(a => a.ProductAttributeId.Value, a => a.DisplayOrder) ?? new();
+
+                var attributes = p.AttributeValues?
+                    .Where(v => v.Attribute != null)
+                    .Select(v => new VitrineAttributeValueDto(
+                        AttributeId: v.AttributeId.Value,
+                        Title: v.Attribute!.Title,
+                        Unit: v.Attribute.Unit,
+                        Value: v.Value,
+                        NumericValue: v.NumericValue,
+                        DataType: v.Attribute.DataType,
+                        DisplayOrder: categoryAttrOrder.TryGetValue(v.AttributeId.Value, out var order) ? order : 999))
+                    .OrderBy(x => x.DisplayOrder)
+                    .ThenBy(x => x.Title)
+                    .ToList();
+
                 return new VitrineProductSummaryDto(
                     Id: p.Id.Value,
                     Barcode: p.Barcode,
@@ -217,7 +235,8 @@ internal class VitrineService(
                     MainImageUrl: mainImage,
                     EstimatedPrice: priceBreakdown.EstimatedPrice,
                     IsFeatured: p.IsFeatured,
-                    IsAvailable: isAvailable);
+                    IsAvailable: isAvailable,
+                    Attributes: attributes);
             }).ToList();
         }
         finally
@@ -282,6 +301,23 @@ internal class VitrineService(
                     Cost: s.Cost))
                 .ToList() ?? [];
 
+            var categoryAttrOrder = product.ProductCategory?.Attributes?
+                .ToDictionary(a => a.ProductAttributeId.Value, a => a.DisplayOrder) ?? new();
+
+            var attributes = product.AttributeValues?
+                .Where(v => v.Attribute != null)
+                .Select(v => new VitrineAttributeValueDto(
+                    AttributeId: v.AttributeId.Value,
+                    Title: v.Attribute!.Title,
+                    Unit: v.Attribute.Unit,
+                    Value: v.Value,
+                    NumericValue: v.NumericValue,
+                    DataType: v.Attribute.DataType,
+                    DisplayOrder: categoryAttrOrder.TryGetValue(v.AttributeId.Value, out var order) ? order : 999))
+                .OrderBy(x => x.DisplayOrder)
+                .ThenBy(x => x.Title)
+                .ToList();
+
             return new VitrineProductDetailDto(
                 Id: product.Id.Value,
                 Barcode: product.Barcode,
@@ -303,7 +339,8 @@ internal class VitrineService(
                 TaxAmount: priceBreakdown.TaxAmount,
                 GramPrice750: gramPrice750,
                 UpdatedAt: DateTime.Now,
-                IsAvailable: isAvailable);
+                IsAvailable: isAvailable,
+                Attributes: attributes);
         }
         finally
         {
@@ -330,6 +367,20 @@ internal class VitrineService(
             {
                 var images = request.Images.Select(x => ProductImage.Create(x.Url, x.IsMain, x.DisplayOrder)).ToList();
                 product.SetImages(images);
+            }
+
+            if (request.AttributeValues != null && request.AttributeValues.Any())
+            {
+                var attrValues = request.AttributeValues.Select(v =>
+                    ProductAttributeValue.Create(
+                        new ProductAttributeId(v.AttributeId),
+                        v.Value,
+                        v.NumericValue ?? (decimal.TryParse(v.Value, out var n) ? n : null))).ToList();
+                product.SetAttributeValues(attrValues);
+            }
+            else if (request.AttributeValues != null)
+            {
+                product.ClearAttributeValues();
             }
 
             await productRepository.UpdateAsync(product, cancellationToken);

@@ -23,6 +23,20 @@ public class ProductVm : INotifyPropertyChanged
     private string? _name;
     private string? _barcode;
     private ObservableCollection<GemStoneVm>? _stones;
+    private ObservableCollection<ProductAttributeValueVm> _attributeValues = [];
+
+    public ObservableCollection<ProductAttributeValueVm> AttributeValues
+    {
+        get => _attributeValues;
+        set
+        {
+            if (_attributeValues != value)
+            {
+                _attributeValues = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     [Display(Name = "عنوان جنس")]
     public string? Name
@@ -240,6 +254,8 @@ public class ProductVm : INotifyPropertyChanged
             } : null,
             Stones = item.GemStones != null
                 ? new ObservableCollection<GemStoneVm>(item.GemStones.Select(GemStoneVm.CreateFrom)) : [],
+            AttributeValues = item.AttributeValues != null
+                ? new ObservableCollection<ProductAttributeValueVm>(item.AttributeValues.Select(ProductAttributeValueVm.CreateFrom)) : [],
             MoltenGold = item.ProductType is ProductType.MoltenGold ? MoltenGoldVm.CreateFrom(item.MoltenGold) : null
         };
     }
@@ -280,7 +296,8 @@ public class ProductVm : INotifyPropertyChanged
             item.ShowInVitrine,
             item.IsFeatured,
             item.VitrineDescription,
-            item.Images
+            item.Images,
+            item.AttributeValues?.Select(x => x.ToDto()).ToList()
         );
     }
 
@@ -308,6 +325,9 @@ public class ProductVm : INotifyPropertyChanged
                 : null,
             Stones = item.GemStones != null
                 ? new ObservableCollection<GemStoneVm>(item.GemStones.Select(GemStoneVm.CreateFrom))
+                : [],
+            AttributeValues = item.AttributeValues != null
+                ? new ObservableCollection<ProductAttributeValueVm>(item.AttributeValues.Select(ProductAttributeValueVm.CreateFrom))
                 : [],
             MoltenGold = item.ProductType is ProductType.MoltenGold ? MoltenGoldVm.CreateFrom(item.MoltenGold) : null
         };

@@ -1548,15 +1548,32 @@
   .vitrine-root .shop-sidebar {
     background-color: var(--white) !important;
     border-radius: var(--border-radius-sm);
-    padding: 24px 22px;
+    padding: 22px 20px;
     box-shadow: var(--shadow-subtle);
     border: 1px solid var(--gray-200) !important;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     position: sticky;
     top: 90px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
     width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--primary-color-rgb), 0.25) transparent;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--primary-color-rgb), 0.25);
+    border-radius: 4px;
   }
 
   .vitrine-root .shop-products {
@@ -1860,6 +1877,39 @@
   width: 36px;
   height: 2px;
   background-color: var(--accent-color);
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  transition: color var(--transition-fast);
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible:hover {
+  color: var(--accent-color) !important;
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible .widget-toggle-icon {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  transition: transform 0.25s ease;
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible .widget-toggle-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.vitrine-root .active-facet-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  display: inline-block;
 }
 
 .vitrine-root .search-box {
