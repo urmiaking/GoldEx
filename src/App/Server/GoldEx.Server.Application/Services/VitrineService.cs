@@ -1,5 +1,6 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -7,6 +8,7 @@ using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
+using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
@@ -32,6 +34,7 @@ internal class VitrineService(
     IProductCategoryRepository categoryRepository,
     IPriceRepository priceRepository,
     IInventoryStockRepository inventoryStockRepository,
+    GoldExDbContext dbContext,
     ILogger<VitrineService> logger) : IVitrineService
 {
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -114,21 +117,24 @@ internal class VitrineService(
             if (store == null)
                 return [];
 
-            var categories = await categoryRepository.Get(new ProductCategoriesByStoreIdSpecification(store.Id))
+            var storeId = store.Id;
+
+            var categories = await categoryRepository.Get(new ProductCategoriesByStoreIdSpecification(storeId))
                 .AsNoTracking()
                 .IgnoreQueryFilters()
                 .ToListAsync(cancellationToken);
 
-            var vitrineProducts = await productRepository.Get(new ProductsForVitrineSpecification(store.Id.Value))
+            var countsByCategory = await dbContext.Set<Product>()
                 .AsNoTracking()
                 .IgnoreQueryFilters()
-                .Select(p => p.ProductCategoryId)
-                .ToListAsync(cancellationToken);
-
-            var countsByCategory = vitrineProducts
-                .Where(cid => cid.HasValue)
-                .GroupBy(cid => cid!.Value)
-                .ToDictionary(g => g.Key, g => g.Count());
+                .Where(p => p.StoreId == storeId && p.ShowInVitrine && (p.ProductType == ProductType.Gold || p.ProductType == ProductType.Jewelry) && p.ProductCategoryId != null)
+                .GroupBy(p => p.ProductCategoryId!.Value)
+                .Select(g => new
+                {
+                    CategoryId = g.Key,
+                    Count = g.Count()
+                })
+                .ToDictionaryAsync(x => x.CategoryId, x => x.Count, cancellationToken);
 
             return categories
                 .Select(c => new VitrineCategoryDto(
@@ -167,72 +173,107 @@ internal class VitrineService(
             if (store == null)
                 return [];
 
-            var spec = new ProductsForVitrineSpecification(store.Id.Value);
-            var query = productRepository.Get(spec)
+            var storeId = store.Id;
+
+            var baseQuery = dbContext.Set<Product>()
                 .AsNoTracking()
-                .IgnoreQueryFilters();
+                .IgnoreQueryFilters()
+                .AsSingleQuery()
+                .Where(p => p.StoreId == storeId && p.ShowInVitrine && (p.ProductType == ProductType.Gold || p.ProductType == ProductType.Jewelry));
 
             if (categoryId.HasValue)
             {
                 var pCatId = new ProductCategoryId(categoryId.Value);
-                query = query.Where(p => p.ProductCategoryId == pCatId);
+                baseQuery = baseQuery.Where(p => p.ProductCategoryId == pCatId);
             }
 
             if (isFeatured.HasValue && isFeatured.Value)
             {
-                query = query.Where(p => p.IsFeatured);
+                baseQuery = baseQuery.Where(p => p.IsFeatured);
             }
 
-            var products = await query.ToListAsync(cancellationToken);
+            var rawProducts = await baseQuery
+                .Select(p => new VitrineProductRawProjection
+                {
+                    Id = p.Id.Value,
+                    Barcode = p.Barcode,
+                    Name = p.Name,
+                    Weight = p.Weight,
+                    Fineness = p.Fineness,
+                    ProductType = p.ProductType,
+                    Wage = p.Wage,
+                    WageType = p.WageType,
+                    CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                    CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : null,
+                    IsFeatured = p.IsFeatured,
+                    MainImageUrl = p.Images
+                        .OrderByDescending(img => img.IsMain)
+                        .ThenBy(img => img.DisplayOrder)
+                        .Select(img => img.Url)
+                        .FirstOrDefault(),
+                    GemStoneTotalCost = p.GemStones.Sum(s => (decimal?)s.Cost) ?? 0m,
+                    Attributes = p.AttributeValues
+                        .Where(v => v.Attribute != null)
+                        .Select(v => new VitrineAttributeProjection
+                        {
+                            AttributeId = v.AttributeId.Value,
+                            Title = v.Attribute!.Title,
+                            Unit = v.Attribute.Unit,
+                            Value = v.Value,
+                            NumericValue = v.NumericValue,
+                            DataType = v.Attribute.DataType
+                        })
+                        .ToList()
+                })
+                .ToListAsync(cancellationToken);
+
+            if (rawProducts.Count == 0)
+                return [];
+
             var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
 
-            var productIds = products.Select(p => p.Id).ToList();
-            var stockQuantities = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+            var productIds = rawProducts.Select(p => new ProductId(p.Id)).ToList();
+            var stockQuantities = await dbContext.Set<InventoryStock>()
                 .AsNoTracking()
                 .IgnoreQueryFilters()
-                .Where(s => s.StoreId == store.Id && s.ProductId != null && productIds.Contains(s.ProductId.Value))
+                .Where(s => s.StoreId == storeId && s.ProductId != null && productIds.Contains(s.ProductId.Value))
                 .GroupBy(s => s.ProductId!.Value)
                 .Select(g => new
                 {
-                    ProductId = g.Key,
+                    ProductId = g.Key.Value,
                     TotalQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
                 })
                 .ToDictionaryAsync(x => x.ProductId, x => x.TotalQuantity, cancellationToken);
 
-            return products.Select(p =>
+            return rawProducts.Select(p =>
             {
-                var mainImage = p.Images?.OrderByDescending(x => x.IsMain).ThenBy(x => x.DisplayOrder).FirstOrDefault()?.Url;
                 var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
                 var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
-                var priceBreakdown = CalculateVitrinePrice(p, gramPrice750, effectiveWeight);
+                var priceBreakdown = CalculateVitrinePriceFromRaw(p.Weight, p.Fineness, p.Wage, p.WageType, p.GemStoneTotalCost, gramPrice750, effectiveWeight);
 
-                var categoryAttrOrder = p.ProductCategory?.Attributes?
-                    .ToDictionary(a => a.ProductAttributeId.Value, a => a.DisplayOrder) ?? new();
-
-                var attributes = p.AttributeValues?
-                    .Where(v => v.Attribute != null)
+                var attributes = p.Attributes
                     .Select(v => new VitrineAttributeValueDto(
-                        AttributeId: v.AttributeId.Value,
-                        Title: v.Attribute!.Title,
-                        Unit: v.Attribute.Unit,
+                        AttributeId: v.AttributeId,
+                        Title: v.Title,
+                        Unit: v.Unit,
                         Value: v.Value,
                         NumericValue: v.NumericValue,
-                        DataType: v.Attribute.DataType,
-                        DisplayOrder: categoryAttrOrder.TryGetValue(v.AttributeId.Value, out var order) ? order : 999))
+                        DataType: v.DataType,
+                        DisplayOrder: 999))
                     .OrderBy(x => x.DisplayOrder)
                     .ThenBy(x => x.Title)
                     .ToList();
 
                 return new VitrineProductSummaryDto(
-                    Id: p.Id.Value,
+                    Id: p.Id,
                     Barcode: p.Barcode,
                     Name: p.Name,
                     Weight: effectiveWeight,
                     Fineness: p.Fineness,
                     ProductType: p.ProductType,
-                    CategoryId: p.ProductCategoryId?.Value,
-                    CategoryTitle: p.ProductCategory?.Title,
-                    MainImageUrl: mainImage,
+                    CategoryId: p.CategoryId,
+                    CategoryTitle: p.CategoryTitle,
+                    MainImageUrl: p.MainImageUrl,
                     EstimatedPrice: priceBreakdown.EstimatedPrice,
                     IsFeatured: p.IsFeatured,
                     IsAvailable: isAvailable,
@@ -266,71 +307,106 @@ internal class VitrineService(
             if (store == null)
                 return null;
 
-            var spec = new ProductForVitrineByBarcodeSpecification(barcode.Trim(), store.Id.Value);
-            var product = await productRepository.Get(spec)
+            var storeId = store.Id;
+            var cleanBarcode = barcode.Trim();
+
+            var rawProduct = await dbContext.Set<Product>()
                 .AsNoTracking()
                 .IgnoreQueryFilters()
+                .AsSingleQuery()
+                .Where(p => p.StoreId == storeId && p.Barcode == cleanBarcode && p.ShowInVitrine && (p.ProductType == ProductType.Gold || p.ProductType == ProductType.Jewelry))
+                .Select(p => new VitrineProductDetailRawProjection
+                {
+                    Id = p.Id.Value,
+                    Barcode = p.Barcode,
+                    Name = p.Name,
+                    Weight = p.Weight,
+                    Wage = p.Wage,
+                    WageType = p.WageType,
+                    Fineness = p.Fineness,
+                    ProductType = p.ProductType,
+                    CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                    CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : null,
+                    Description = p.VitrineDescription,
+                    ImageUrls = p.Images
+                        .OrderByDescending(x => x.IsMain)
+                        .ThenBy(x => x.DisplayOrder)
+                        .Select(x => x.Url)
+                        .ToList(),
+                    GemStones = p.GemStones
+                        .Select(s => new VitrineGemStoneProjection
+                        {
+                            Type = s.Type,
+                            Color = s.Color,
+                            Carat = s.Carat,
+                            Cost = s.Cost
+                        })
+                        .ToList(),
+                    Attributes = p.AttributeValues
+                        .Where(v => v.Attribute != null)
+                        .Select(v => new VitrineAttributeProjection
+                        {
+                            AttributeId = v.AttributeId.Value,
+                            Title = v.Attribute!.Title,
+                            Unit = v.Attribute.Unit,
+                            Value = v.Value,
+                            NumericValue = v.NumericValue,
+                            DataType = v.Attribute.DataType
+                        })
+                        .ToList()
+                })
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (product == null)
+            if (rawProduct == null)
                 return null;
 
             var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
 
-            var quantity = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+            var quantity = await dbContext.Set<InventoryStock>()
                 .AsNoTracking()
                 .IgnoreQueryFilters()
-                .Where(s => s.StoreId == store.Id && s.ProductId == product.Id)
+                .Where(s => s.StoreId == storeId && s.ProductId == new ProductId(rawProduct.Id))
                 .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
 
             var isAvailable = quantity > 0.0001m;
-            var effectiveWeight = product.Weight > 0 ? product.Weight : (quantity > 0 ? quantity : 0m);
-            var priceBreakdown = CalculateVitrinePrice(product, gramPrice750, effectiveWeight);
+            var effectiveWeight = rawProduct.Weight > 0 ? rawProduct.Weight : (quantity > 0 ? quantity : 0m);
+            var gemStoneTotalCost = rawProduct.GemStones.Sum(s => s.Cost);
+            var priceBreakdown = CalculateVitrinePriceFromRaw(rawProduct.Weight, rawProduct.Fineness, rawProduct.Wage, rawProduct.WageType, gemStoneTotalCost, gramPrice750, effectiveWeight);
 
-            var imageUrls = product.Images?
-                .OrderByDescending(x => x.IsMain)
-                .ThenBy(x => x.DisplayOrder)
-                .Select(x => x.Url)
-                .ToList() ?? [];
-
-            var gemstones = product.GemStones?
+            var gemstones = rawProduct.GemStones
                 .Select(s => new VitrineGemStoneDto(
                     Type: s.Type,
                     Color: s.Color,
                     Carat: s.Carat,
                     Cost: s.Cost))
-                .ToList() ?? [];
+                .ToList();
 
-            var categoryAttrOrder = product.ProductCategory?.Attributes?
-                .ToDictionary(a => a.ProductAttributeId.Value, a => a.DisplayOrder) ?? new();
-
-            var attributes = product.AttributeValues?
-                .Where(v => v.Attribute != null)
+            var attributes = rawProduct.Attributes
                 .Select(v => new VitrineAttributeValueDto(
-                    AttributeId: v.AttributeId.Value,
-                    Title: v.Attribute!.Title,
-                    Unit: v.Attribute.Unit,
+                    AttributeId: v.AttributeId,
+                    Title: v.Title,
+                    Unit: v.Unit,
                     Value: v.Value,
                     NumericValue: v.NumericValue,
-                    DataType: v.Attribute.DataType,
-                    DisplayOrder: categoryAttrOrder.TryGetValue(v.AttributeId.Value, out var order) ? order : 999))
+                    DataType: v.DataType,
+                    DisplayOrder: 999))
                 .OrderBy(x => x.DisplayOrder)
                 .ThenBy(x => x.Title)
                 .ToList();
 
             return new VitrineProductDetailDto(
-                Id: product.Id.Value,
-                Barcode: product.Barcode,
-                Name: product.Name,
+                Id: rawProduct.Id,
+                Barcode: rawProduct.Barcode,
+                Name: rawProduct.Name,
                 Weight: effectiveWeight,
-                Wage: product.Wage,
-                WageType: product.WageType,
-                Fineness: product.Fineness,
-                ProductType: product.ProductType,
-                CategoryId: product.ProductCategoryId?.Value,
-                CategoryTitle: product.ProductCategory?.Title,
-                Description: product.VitrineDescription,
-                ImageUrls: imageUrls,
+                Wage: rawProduct.Wage,
+                WageType: rawProduct.WageType,
+                Fineness: rawProduct.Fineness,
+                ProductType: rawProduct.ProductType,
+                CategoryId: rawProduct.CategoryId,
+                CategoryTitle: rawProduct.CategoryTitle,
+                Description: rawProduct.Description,
+                ImageUrls: rawProduct.ImageUrls,
                 GemStones: gemstones,
                 EstimatedPrice: priceBreakdown.EstimatedPrice,
                 RawGoldPrice: priceBreakdown.RawGoldPrice,
@@ -421,30 +497,24 @@ internal class VitrineService(
     }
 
     private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)
-        CalculateVitrinePrice(Product product, decimal gramPrice750, decimal? overrideWeight = null)
+        CalculateVitrinePriceFromRaw(decimal weight, decimal fineness, decimal wage, WageType? wageType, decimal stoneCost, decimal gramPrice750, decimal? overrideWeight = null)
     {
-        var weight = (overrideWeight.HasValue && overrideWeight.Value > 0) ? overrideWeight.Value : product.Weight;
-        var fineness = product.Fineness > 0 ? product.Fineness : 750m;
-        var adjustedGramPrice = gramPrice750 * (fineness / 750m);
-        var rawGoldPrice = Math.Round(weight * adjustedGramPrice, 0);
+        var effectiveWeight = (overrideWeight.HasValue && overrideWeight.Value > 0) ? overrideWeight.Value : weight;
+        var effectiveFineness = fineness > 0 ? fineness : 750m;
+        var adjustedGramPrice = gramPrice750 * (effectiveFineness / 750m);
+        var rawGoldPrice = Math.Round(effectiveWeight * adjustedGramPrice, 0);
 
         decimal wageAmount = 0;
-        if (product.Wage > 0)
+        if (wage > 0)
         {
-            if (product.WageType == WageType.Percent)
+            if (wageType == WageType.Percent)
             {
-                wageAmount = Math.Round(rawGoldPrice * (product.Wage / 100m), 0);
+                wageAmount = Math.Round(rawGoldPrice * (wage / 100m), 0);
             }
             else
             {
-                wageAmount = Math.Round(product.Wage * weight, 0);
+                wageAmount = Math.Round(wage * effectiveWeight, 0);
             }
-        }
-
-        decimal stoneCost = 0;
-        if (product.GemStones != null && product.GemStones.Count > 0)
-        {
-            stoneCost = product.GemStones.Sum(s => s.Cost);
         }
 
         var basePrice = rawGoldPrice + wageAmount + stoneCost;
@@ -455,5 +525,66 @@ internal class VitrineService(
         return (estimatedPrice, rawGoldPrice, wageAmount, profitAmount, taxAmount);
     }
 
+    private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)
+        CalculateVitrinePrice(Product product, decimal gramPrice750, decimal? overrideWeight = null)
+    {
+        var stoneCost = product.GemStones?.Sum(s => s.Cost) ?? 0m;
+        return CalculateVitrinePriceFromRaw(product.Weight, product.Fineness, product.Wage, product.WageType, stoneCost, gramPrice750, overrideWeight);
+    }
+
     #endregion
+}
+
+internal sealed class VitrineProductRawProjection
+{
+    public Guid Id { get; init; }
+    public string Barcode { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public decimal Weight { get; init; }
+    public decimal Fineness { get; init; }
+    public ProductType ProductType { get; init; }
+    public decimal Wage { get; init; }
+    public WageType? WageType { get; init; }
+    public Guid? CategoryId { get; init; }
+    public string? CategoryTitle { get; init; }
+    public bool IsFeatured { get; init; }
+    public string? MainImageUrl { get; init; }
+    public decimal GemStoneTotalCost { get; init; }
+    public List<VitrineAttributeProjection> Attributes { get; init; } = [];
+}
+
+internal sealed class VitrineProductDetailRawProjection
+{
+    public Guid Id { get; init; }
+    public string Barcode { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public decimal Weight { get; init; }
+    public decimal Wage { get; init; }
+    public WageType? WageType { get; init; }
+    public decimal Fineness { get; init; }
+    public ProductType ProductType { get; init; }
+    public Guid? CategoryId { get; init; }
+    public string? CategoryTitle { get; init; }
+    public string? Description { get; init; }
+    public List<string> ImageUrls { get; init; } = [];
+    public List<VitrineGemStoneProjection> GemStones { get; init; } = [];
+    public List<VitrineAttributeProjection> Attributes { get; init; } = [];
+}
+
+internal sealed class VitrineGemStoneProjection
+{
+    public string Type { get; init; } = string.Empty;
+    public string Color { get; init; } = string.Empty;
+    public decimal Carat { get; init; }
+    public decimal Cost { get; init; }
+}
+
+internal sealed class VitrineAttributeProjection
+{
+    public Guid AttributeId { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public string? Unit { get; init; }
+    public string Value { get; init; } = string.Empty;
+    public decimal? NumericValue { get; init; }
+    public ProductAttributeDataType DataType { get; init; }
 }

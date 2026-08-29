@@ -8,6 +8,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Components;
 
@@ -19,7 +20,7 @@ public partial class App
     [Inject] private LicenseState LicenseState { get; set; } = default!;
     [Inject] private IWebHostEnvironment Env { get; set; } = default!;
     [Inject] private IStoreContext StoreContext { get; set; } = default!;
-    [Inject] private GoldExDbContext DbContext { get; set; } = default!;
+    [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     private string SplashTitle { get; set; } = "GoldEx";
@@ -90,10 +91,13 @@ public partial class App
 
     private async Task LoadStoreMetadataAsync()
     {
+        using var scope = ScopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<GoldExDbContext>();
+
         if (IsLoggedIn && StoreContext.StoreId.HasValue)
         {
             var storeId = new StoreId(StoreContext.StoreId.Value);
-            var store = await DbContext.Set<Store>()
+            var store = await dbContext.Set<Store>()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == storeId);
 
@@ -120,7 +124,7 @@ public partial class App
             if (segments.Length > 0 && !ClientRoutes.Vitrine.IsReservedSegment(segments[0]))
             {
                 var slug = segments[0].ToLowerInvariant();
-                var store = await DbContext.Set<Store>()
+                var store = await dbContext.Set<Store>()
                     .AsNoTracking()
                     .IgnoreQueryFilters()
                     .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
@@ -140,7 +144,7 @@ public partial class App
                         StoreLogoUrl = store.LogoUrl;
                     }
 
-                    var setting = await DbContext.Set<Setting>()
+                    var setting = await dbContext.Set<Setting>()
                         .AsNoTracking()
                         .IgnoreQueryFilters()
                         .FirstOrDefaultAsync(s => s.StoreId == store.Id);
