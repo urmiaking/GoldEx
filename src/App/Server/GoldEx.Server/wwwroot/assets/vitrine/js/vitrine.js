@@ -492,3 +492,15 @@ window.goldexVitrine = {
     }
   }
 };
+
+// Ensure no stale Service Worker intercepts Vitrine traffic
+if ('serviceWorker' in navigator) {
+  try {
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      for (var reg of registrations) {
+        // If on custom vitrine domain or vitrine sub-route, unregister to avoid stale cache
+        reg.unregister();
+      }
+    }).catch(function () {});
+  } catch (e) {}
+}

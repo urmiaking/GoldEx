@@ -8,33 +8,39 @@
     <meta name="theme-color" content="#daa520" />
     <base href="/" />
 
-    <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
-
-    @if (IsVitrineRoute() && !string.IsNullOrWhiteSpace(StoreLogoUrl))
+    @if (!IsVitrineRoute())
     {
-        <link rel="shortcut icon" href="@StoreLogoUrl" />
-        <link rel="icon" type="image/png" href="@StoreLogoUrl" />
-        <link rel="apple-touch-icon" href="@StoreLogoUrl" />
-    }
-    else
-    {
+        <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
         <link rel="icon" type="image/png" href="/favicon.ico" />
+
+        <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
+        <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
+        <link rel="stylesheet" href="@Assets["css/app.css"]" />
+        <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
     }
-
-    <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
-    <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
-    <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
-    <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
-    <link rel="stylesheet" href="@Assets["css/app.css"]" />
-
-    <ImportMap />
-
-    <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
-    @if (IsVitrineRoute())
+    else
     {
+        @if (!string.IsNullOrWhiteSpace(StoreLogoUrl))
+        {
+            <link rel="shortcut icon" href="@StoreLogoUrl" />
+            <link rel="icon" type="image/png" href="@StoreLogoUrl" />
+            <link rel="apple-touch-icon" href="@StoreLogoUrl" />
+        }
+        else
+        {
+            <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+            <link rel="icon" type="image/png" href="/favicon.ico" />
+        }
+
+        <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
         <meta name="theme-color" content="@GetVitrineThemeColorMeta()" />
         <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />
         <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css" />
@@ -50,6 +56,12 @@
             </style>
         }
     }
+
+    @if (!IsVitrineRoute())
+    {
+        <ImportMap />
+    }
+
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 
@@ -95,15 +107,25 @@
         }
     }
 
-    <script src=@Assets["app.js"]></script>
+    @if (!IsVitrineRoute())
+    {
+        <script src=@Assets["app.js"]></script>
+    }
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
         Blazor.start({
-        webAssembly: {}
+            webAssembly: {}
         });
     </script>
-    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
-    <script src="@Assets["js/pwa-helper.js"]"></script>
+    @if (!IsVitrineRoute())
+    {
+        <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+        <script src="@Assets["js/pwa-helper.js"]"></script>
+    }
+    else
+    {
+        <script src="/assets/vitrine/js/vitrine.js"></script>
+    }
 </body>
 
 
