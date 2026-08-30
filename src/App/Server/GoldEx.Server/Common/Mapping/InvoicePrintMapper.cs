@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -90,7 +90,9 @@ internal class InvoicePrintMapper : IRegister
             .Map(dest => dest.InvoiceCoinItems, src => src.CoinItems)
             .Map(dest => dest.InvoiceCurrencyItems, src => src.CurrencyItems)
             .Map(dest => dest.InvoiceUsedProductItems, src => src.UsedProducts)
-            .Map(dest => dest.InvoicePayments, src => src.InvoicePayments);
+            .Map(dest => dest.InvoicePayments, src => src.InvoicePayments != null
+                ? src.InvoicePayments.OrderBy(x => x.PaymentDate).ThenBy(x => x.CreatedAt)
+                : null);
 
         config.NewConfig<InvoiceProductItem, GetInvoiceProductItemReportResponse>()
             .Map(dest => dest.Product, src => src.Product)
