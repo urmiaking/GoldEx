@@ -37,13 +37,7 @@ internal class VitrineService(
         await Semaphore.WaitAsync(cancellationToken);
         try
         {
-            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
-
-            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-                .AsNoTracking()
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
-
+            var store = await ResolveStoreAsync(storeSlug, cancellationToken);
             if (store == null)
                 return null;
 
@@ -97,13 +91,7 @@ internal class VitrineService(
         await Semaphore.WaitAsync(cancellationToken);
         try
         {
-            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
-
-            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-                .AsNoTracking()
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
-
+            var store = await ResolveStoreAsync(storeSlug, cancellationToken);
             if (store == null)
                 return [];
 
@@ -153,13 +141,7 @@ internal class VitrineService(
         await Semaphore.WaitAsync(cancellationToken);
         try
         {
-            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
-
-            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-                .AsNoTracking()
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
-
+            var store = await ResolveStoreAsync(storeSlug, cancellationToken);
             if (store == null)
                 return [];
 
@@ -287,13 +269,7 @@ internal class VitrineService(
         await Semaphore.WaitAsync(cancellationToken);
         try
         {
-            var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
-
-            var store = await storeRepository.Get(new StoreBySlugSpecification(normalizedSlug))
-                .AsNoTracking()
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
-
+            var store = await ResolveStoreAsync(storeSlug, cancellationToken);
             if (store == null)
                 return null;
 
@@ -458,6 +434,31 @@ internal class VitrineService(
     }
 
     #region Helper Methods
+
+    private async Task<GoldEx.Server.Domain.StoreAggregate.Store?> ResolveStoreAsync(string? storeSlugOrDomain, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(storeSlugOrDomain))
+            return null;
+
+        var normalized = storeSlugOrDomain.ToLowerInvariant().Trim();
+
+        // 1. Try resolving by store slug
+        var store = await storeRepository.Get(new StoreBySlugSpecification(normalized))
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+
+        if (store != null)
+            return store;
+
+        // 2. Try resolving by store custom domain
+        store = await storeRepository.Get(new StoreByCustomDomainSpecification(normalized))
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+
+        return store;
+    }
 
     private async Task<decimal> GetLive18KGoldPriceAsync(CancellationToken cancellationToken)
     {

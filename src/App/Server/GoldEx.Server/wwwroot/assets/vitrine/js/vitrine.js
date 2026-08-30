@@ -2,6 +2,30 @@
    GoldEx Vitrine - Interactive Helpers, Image Gallery & Multi-Platform Share
    ========================================================================== */
 
+(function () {
+  try {
+    if (localStorage.getItem('gex_sw_clean_v1')) return;
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function (keys) {
+        keys.forEach(function (key) {
+          if (key.indexOf('blazor-cache') !== -1) {
+            caches.delete(key);
+          }
+        });
+      });
+    }
+    localStorage.setItem('gex_sw_clean_v1', '1');
+  } catch (e) {}
+})();
+
 window.goldexVitrine = {
   _currentStoryBlob: null,
   _currentShareData: null,

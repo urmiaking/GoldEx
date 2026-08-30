@@ -10,12 +10,15 @@
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <PageTitle>ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
 <HeadContent>
     @{
-        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString();
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}").ToString();
         var storeName = _storeInfo?.Name ?? "گالری طلا و جواهر";
         var pageTitle = $"ویترین آنلاین طلا و جواهرات {storeName}";
         var pageDesc = _storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {storeName} با محاسبه زنده قیمت روز، عیار استاندارد ۷۵۰ و استعلام سریع.";
@@ -70,7 +73,7 @@
             </p>
 
             <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-                <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-accent" style="padding: 15px 34px;">
+                <a href="@CatalogUrl" class="btn-gisu btn-gisu-accent" style="padding: 15px 34px;">
                     <span>مشاهده کاتالوگ محصولات (@_products.Count قطعه)</span>
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
@@ -135,20 +138,20 @@
                 <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--primary-color);">
                     دسته‌بندی‌های طلا و جواهر
                 </h3>
-                <a href="@($"/{StoreSlug}/catalog")" style="color: var(--accent-color); font-size: 0.88rem; text-decoration: none; font-weight: 700;">
+                <a href="@CatalogUrl" style="color: var(--accent-color); font-size: 0.88rem; text-decoration: none; font-weight: 700;">
                     همه دسته‌ها ←
                 </a>
             </div>
 
             <div class="vitrine-categories-bar">
-                <a href="@($"/{StoreSlug}/catalog")" class="vitrine-category-pill active">
+                <a href="@CatalogUrl" class="vitrine-category-pill active">
                     <i class="fa-solid fa-gem"></i>
                     <span>همه دسته‌بندی‌ها</span>
                     <span class="vitrine-category-count">@_products.Count</span>
                 </a>
                 @foreach (var cat in _categories)
                 {
-                    <a href="@($"/{StoreSlug}/catalog?categoryId={cat.Id}")" class="vitrine-category-pill">
+                    <a href="@GetCategoryCatalogUrl(cat.Id)" class="vitrine-category-pill">
                         <i class="@GetCategoryIcon(cat.Title)"></i>
                         <span>@cat.Title</span>
                         <span class="vitrine-category-count">@cat.ProductCount</span>
@@ -169,7 +172,7 @@
                     </h2>
                     <div class="showcase-title-line"></div>
                 </div>
-                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="showcase-link-all">
+                <a href="@FeaturedCatalogUrl" class="showcase-link-all">
                     <span>مشاهده همه</span>
                     <i class="fa-solid fa-angle-left"></i>
                 </a>
@@ -178,7 +181,7 @@
             <div class="vitrine-home-slider">
                 @foreach (var product in _featuredProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
+                    <a href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
                             @if (!product.IsAvailable)
                             {
@@ -186,9 +189,9 @@
                                 <span class="product-badge badge-top-left">عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
                                 <span class="product-badge badge-bottom-right">@(product.Weight.ToString("G29")) گرم</span>
                                 @if (product.IsFeatured)
-                                {
-                                    <span class="product-badge badge-featured">⭐ ویژه</span>
-                                }
+                            {
+                                <span class="product-badge badge-featured">⭐ ویژه</span>
+                            }
                             }
                             else
                             {
@@ -230,7 +233,7 @@
                 }
 
                 <!-- Ending Card -->
-                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه برگزیده‌ها">
+                <a href="@FeaturedCatalogUrl" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه برگزیده‌ها">
                     <div class="slider-view-all-circle">
                         <i class="fa-solid fa-arrow-left"></i>
                     </div>
@@ -250,7 +253,7 @@
                 <div class="showcase-title-line"></div>
             </div>
 
-            <a href="@($"/{StoreSlug}/catalog")" class="showcase-link-all">
+            <a href="@CatalogUrl" class="showcase-link-all">
                 <span>مشاهده همه</span>
                 <i class="fa-solid fa-angle-left"></i>
             </a>
@@ -278,7 +281,7 @@
             <div class="vitrine-home-slider">
                 @foreach (var product in FilteredHomeProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
+                    <a href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
                             @if (!product.IsAvailable)
                             {
@@ -330,7 +333,7 @@
                 }
 
                 <!-- Dedicated Digikala-style 'مشاهده همه' (View All) Card -->
-                <a href="@($"/{StoreSlug}/catalog")" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه محصولات کاتالوگ">
+                <a href="@CatalogUrl" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه محصولات کاتالوگ">
                     <div class="slider-view-all-circle">
                         <i class="fa-solid fa-arrow-left"></i>
                     </div>
@@ -375,8 +378,19 @@
 </div>
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
+    [Parameter] public string? StoreSlug { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+
+    private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveStoreSlug}/catalog";
+    private string FeaturedCatalogUrl => StoreContext.IsCustomDomain ? "/catalog?onlyFeatured=true" : $"/{EffectiveStoreSlug}/catalog?onlyFeatured=true";
+    private string GetCategoryCatalogUrl(Guid? catId) => StoreContext.IsCustomDomain 
+        ? (catId.HasValue ? $"/catalog?categoryId={catId}" : "/catalog") 
+        : (catId.HasValue ? $"/{EffectiveStoreSlug}/catalog?categoryId={catId}" : $"/{EffectiveStoreSlug}/catalog");
+    private string GetProductUrl(string barcode) => StoreContext.IsCustomDomain ? $"/p/{barcode}" : $"/{EffectiveStoreSlug}/p/{barcode}";
 
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineProductSummaryDto> _featuredProducts = [];
@@ -386,7 +400,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -394,8 +408,8 @@
 
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistHomeData);
 
-        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_home_categories_{StoreSlug}", out var catRestored) && catRestored != null &&
-            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_home_products_{StoreSlug}", out var prodRestored) && prodRestored != null)
+        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_home_categories_{EffectiveStoreSlug}", out var catRestored) && catRestored != null &&
+            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_home_products_{EffectiveStoreSlug}", out var prodRestored) && prodRestored != null)
         {
             _categories = catRestored;
             _products = prodRestored;
@@ -410,7 +424,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -426,11 +440,11 @@
     {
         if (_categories != null && _categories.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_home_categories_{StoreSlug}", _categories);
+            ApplicationState.PersistAsJson($"vitrine_home_categories_{EffectiveStoreSlug}", _categories);
         }
         if (_products != null && _products.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_home_products_{StoreSlug}", _products);
+            ApplicationState.PersistAsJson($"vitrine_home_products_{EffectiveStoreSlug}", _products);
         }
         return Task.CompletedTask;
     }
@@ -440,8 +454,8 @@
         _isLoading = true;
         try
         {
-            _categories = (await VitrineService.GetCategoriesAsync(StoreSlug)).ToList();
-            var allProducts = (await VitrineService.GetVitrineProductsAsync(StoreSlug)).ToList();
+            _categories = (await VitrineService.GetCategoriesAsync(EffectiveStoreSlug)).ToList();
+            var allProducts = (await VitrineService.GetVitrineProductsAsync(EffectiveStoreSlug)).ToList();
 
             _products = allProducts;
             _featuredProducts = allProducts.Where(x => x.IsFeatured).Take(4).ToList();

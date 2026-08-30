@@ -1,0 +1,64 @@
+@attribute [AllowAnonymous]
+@using GoldEx.Shared.Services.Abstractions
+@using Microsoft.AspNetCore.Http
+@inject NavigationManager Navigation
+@inject IStoreContext StoreContext
+
+<PageTitle>صفحه مورد نظر یافت نشد (۴۰۴)</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+<div class="vitrine-container d-flex align-items-center justify-content-center" style="min-height: 60vh; padding: 48px 16px;">
+    <div style="background: var(--bg-surface, #1e1e24); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 20px; padding: 40px 24px; max-width: 520px; width: 100%; text-align: center; box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
+        <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(212, 175, 55, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-gem" style="font-size: 2.5rem; color: var(--accent-color, #d4af37);"></i>
+        </div>
+        
+        <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; font-family: inherit;">۴۰۴</h1>
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #f3f4f6; margin-bottom: 12px; font-family: inherit;">صفحه یا محصول مورد نظر یافت نشد</h2>
+        <p style="color: rgba(255, 255, 255, 0.65); font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px;">
+            آدرس وارد شده نامعتبر است یا این کالا/صفحه از ویترین حذف شده است.
+        </p>
+
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="@HomeUrl" class="btn-gisu btn-gisu-accent" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 24px; border-radius: 12px; font-weight: 600;">
+                <i class="fa-solid fa-house"></i>
+                <span>صفحه اصلی ویترین</span>
+            </a>
+            <a href="@CatalogUrl" class="btn-gisu btn-gisu-outline" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 24px; border-radius: 12px; font-weight: 600;">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>کاتالوگ محصولات</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    [Parameter] public string? StoreSlug { get; set; }
+
+    private string EffectiveSlug => !string.IsNullOrWhiteSpace(StoreSlug) 
+        ? StoreSlug 
+        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+
+    private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveSlug}";
+    private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveSlug}/catalog";
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            if (HttpContext != null && !HttpContext.Response.HasStarted)
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+        }
+        catch
+        {
+            // ignore if response stream has already started
+        }
+    }
+}

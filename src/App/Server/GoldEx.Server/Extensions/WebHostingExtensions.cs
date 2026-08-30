@@ -114,7 +114,6 @@ public static class WebHostingExtensions
             });
             app.UseDevExpressControls();
 
-            var cacheMaxAgeOneWeek = (60 * 60 * 24 * 7).ToString();
             app.UseStaticFiles(new StaticFileOptions
             {
                 OnPrepareResponse = ctx =>
@@ -128,13 +127,31 @@ public static class WebHostingExtensions
                     else
                     {
                         var path = ctx.Context.Request.Path.Value ?? "";
-                        if (path.StartsWith("/assets/vitrine/", StringComparison.OrdinalIgnoreCase))
+
+                        // Manifests, boot configs, service workers, and vitrine assets must always revalidate
+                        if (path.EndsWith("blazor.boot.json", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("blazor.web.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("service-worker.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("service-worker-assets.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
+                            path.StartsWith("/assets/vitrine/", StringComparison.OrdinalIgnoreCase))
                         {
-                            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, must-revalidate";
+                            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                            ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                            ctx.Context.Response.Headers["Expires"] = "0";
+                        }
+                        else if (path.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) &&
+                                (path.EndsWith(".wasm", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".br", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // Fingerprinted wasm / dll assets can be safely cached
+                            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
                         }
                         else
                         {
-                            ctx.Context.Response.Headers["Cache-Control"] = $"public, max-age={cacheMaxAgeOneWeek}";
+                            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=86400";
                         }
                     }
                 }

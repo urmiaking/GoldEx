@@ -1,24 +1,33 @@
 @using GoldEx.Client.Components.Constants
 @using GoldEx.Client.Components.Services
+@using GoldEx.Shared.Services.Abstractions
 @using Microsoft.JSInterop
 @inherits LayoutComponentBase
+@inject IStoreContext StoreContext
 
-<PageTitle>گلدکس</PageTitle>
-
-<MudRTLProvider RightToLeft="true">
-    <MudThemeProvider Theme="@ThemeService?.CurrentTheme" IsDarkMode="@(ThemeService?.IsDarkMode ?? false)" />
-    <MudPopoverProvider />
-    <MudDialogProvider />
-    <MudSnackbarProvider />
-
+@if (StoreContext.IsCustomDomain)
+{
     @Body
+}
+else
+{
+    <PageTitle>گلدکس</PageTitle>
 
-    <div id="blazor-error-ui" data-nosnippet>
-        خطایی در حین اجرای برنامه رخ داد
-        <a href="." class="reload">بارگیری مجدد</a>
-        <span class="dismiss">🗙</span>
-    </div>
-</MudRTLProvider>
+    <MudRTLProvider RightToLeft="true">
+        <MudThemeProvider Theme="@ThemeService?.CurrentTheme" IsDarkMode="@(ThemeService?.IsDarkMode ?? false)" />
+        <MudPopoverProvider />
+        <MudDialogProvider />
+        <MudSnackbarProvider />
+
+        @Body
+
+        <div id="blazor-error-ui" data-nosnippet>
+            خطایی در حین اجرای برنامه رخ داد
+            <a href="." class="reload">بارگیری مجدد</a>
+            <span class="dismiss">🗙</span>
+        </div>
+    </MudRTLProvider>
+}
 
 @code {
     private static ISnackbar? _staticToastService;

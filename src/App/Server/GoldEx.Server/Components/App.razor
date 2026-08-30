@@ -124,6 +124,31 @@
     }
     else
     {
+        <script>
+            (function () {
+                try {
+                    if (localStorage.getItem('gex_sw_clean_v1')) return;
+
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(function (regs) {
+                            for (var i = 0; i < regs.length; i++) {
+                                regs[i].unregister();
+                            }
+                        });
+                    }
+                    if ('caches' in window) {
+                        caches.keys().then(function (keys) {
+                            for (var j = 0; j < keys.length; j++) {
+                                if (keys[j].indexOf('blazor-cache') !== -1) {
+                                    caches.delete(keys[j]);
+                                }
+                            }
+                        });
+                    }
+                    localStorage.setItem('gex_sw_clean_v1', '1');
+                } catch (e) {}
+            })();
+        </script>
         <script src="/assets/vitrine/js/vitrine.js"></script>
     }
 </body>

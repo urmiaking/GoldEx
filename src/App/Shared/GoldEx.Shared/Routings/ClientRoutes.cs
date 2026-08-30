@@ -257,7 +257,7 @@ public static class ClientRoutes
 
     public static class About
     {
-        private const string Prefix = "about";
+        private const string Prefix = "about-goldex";
         public const string Index = $"{Prefix}";
     }
 
@@ -340,17 +340,73 @@ public static class ClientRoutes
             return segments;
         }
 
+        public static bool IsPlatformDomain(string? host)
+        {
+            if (string.IsNullOrWhiteSpace(host)) return true;
+            host = host.ToLowerInvariant().Trim();
+
+            if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".local", StringComparison.OrdinalIgnoreCase) ||
+                host.Equals("goldexsoft.ir", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".goldexsoft.ir", StringComparison.OrdinalIgnoreCase) ||
+                System.Net.IPAddress.TryParse(host, out _))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public static bool IsReservedSegment(string? segment)
         {
             if (string.IsNullOrWhiteSpace(segment)) return true;
             return _allKnownAppSegments.Contains(segment.Trim());
         }
 
-        public static bool IsVitrinePath(string? path)
+        public static bool IsVitrinePath(string? path, bool isCustomDomain = false)
         {
-            if (string.IsNullOrWhiteSpace(path)) return false;
+            if (path == null) return false;
 
             var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (isCustomDomain)
+            {
+                // On a custom domain, root / is the vitrine home
+                if (segments.Length == 0) return true;
+
+                var first = segments[0];
+                if (IsReservedSegment(first)) return false;
+
+                // Clean routes on custom domain:
+                // /catalog
+                // /about
+                // /p/{barcode}
+                if (segments.Length == 1 && (first.Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                                            first.Equals("about", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+                if (segments.Length == 2 && first.Equals("p", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Or slug routes on custom domain: /{slug}, /{slug}/catalog, /{slug}/about, /{slug}/p/{barcode}
+                if (segments.Length == 1) return true;
+                if (segments.Length == 2 && (segments[1].Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                                            segments[1].Equals("about", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+                if (segments.Length == 3 && segments[1].Equals("p", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
             if (segments.Length == 0) return false;
 
             var firstSegment = segments[0];
@@ -358,7 +414,13 @@ public static class ClientRoutes
             // If the first segment is a known application route or system asset, it is NOT vitrine
             if (IsReservedSegment(firstSegment)) return false;
 
-            // Vitrine routes MUST strictly match one of the 4 defined Vitrine route shapes:
+            // Clean routes without slug:
+            if (segments.Length == 1 && firstSegment.Equals("catalog", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (segments.Length == 2 && firstSegment.Equals("p", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Multi-tenant Vitrine routes:
             // 1. /{storeSlug}
             if (segments.Length == 1) return true;
 

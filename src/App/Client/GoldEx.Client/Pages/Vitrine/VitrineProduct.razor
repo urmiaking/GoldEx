@@ -1,4 +1,5 @@
 @page "/{StoreSlug}/p/{Barcode}"
+@page "/p/{Barcode}"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
 @implements IDisposable
@@ -7,18 +8,22 @@
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
 @using GoldEx.Shared.Routings
+@using Microsoft.AspNetCore.Http
 @using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <PageTitle>@(_product != null ? $"{_product.Name} (عیار {(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")}) - {(_storeInfo?.Name ?? "گالری طلا")}" : "جزئیات قطعه طلا")</PageTitle>
 
 <HeadContent>
     @if (_product != null)
     {
-        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{Barcode}").ToString();
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri($"/p/{Barcode}").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}/p/{Barcode}").ToString();
         var mainImage = _product.ImageUrls.Count > 0 ? Navigation.ToAbsoluteUri(_product.ImageUrls[0]).ToString() : null;
         var storeName = _storeInfo?.Name ?? "گالری طلا";
         var finenessText = _product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750";
@@ -73,43 +78,36 @@
     }
 </HeadContent>
 
-<div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
-    <!-- Breadcrumb -->
-    <div class="d-flex align-items-center gap-2 mb-4" style="font-size: 0.86rem; color: var(--gray-600);">
-        <a href="@($"/{StoreSlug}")" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
-        <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
-        <a href="@($"/{StoreSlug}/catalog")" style="color: var(--primary-color); text-decoration: none;">کاتالوگ طلا</a>
-        @if (_product != null && !string.IsNullOrEmpty(_product.CategoryTitle))
-        {
-            <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
-            <a href="@($"/{StoreSlug}/catalog?categoryId={_product.CategoryId}")" style="color: var(--primary-color); text-decoration: none;">@_product.CategoryTitle</a>
-        }
-        <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
-        <span style="color: var(--accent-color); font-weight: 700;">@(_product?.Name ?? "جزئیات کالا")</span>
-    </div>
-
-    @if (_isLoading)
-    {
+@if (_isLoading)
+{
+    <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
         <div class="text-center py-5">
             <div class="vitrine-ticker-pulse d-inline-block mb-3" style="width: 32px; height: 32px;"></div>
             <div style="color: var(--primary-color); font-weight: 800; font-size: 1.1rem;">در حال دریافت اطلاعات و محاسبه قیمت قطعه...</div>
         </div>
-    }
-    else if (_product == null)
-    {
-        <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); margin: 30px 0; padding: 60px 20px; box-shadow: var(--shadow-subtle);">
-            <i class="fa-solid fa-triangle-exclamation mb-3" style="font-size: 3.5rem; color: var(--accent-color); display: block;"></i>
-            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">قطعه مورد نظر در ویترین یافت نشد</h2>
-            <p style="color: var(--gray-600); max-width: 480px; margin: 0 auto 28px; line-height: 1.8; font-size: 0.94rem;">
-                ممکن است این کالا فروخته شده یا از ویترین خارج شده باشد. می‌توانید سایر زیورآلات موجود در گالری را بررسی فرمایید.
-            </p>
-            <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-primary" style="display: inline-flex;">
-                <span>مشاهده سایر طلا و جواهرات کاتالوگ</span>
-            </a>
+    </div>
+}
+else if (_product == null)
+{
+    <VitrineNotFound StoreSlug="@EffectiveStoreSlug" />
+}
+else
+{
+    <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
+        <!-- Breadcrumb -->
+        <div class="d-flex align-items-center gap-2 mb-4" style="font-size: 0.86rem; color: var(--gray-600);">
+            <a href="@HomeUrl" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
+            <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+            <a href="@CatalogUrl" style="color: var(--primary-color); text-decoration: none;">کاتالوگ طلا</a>
+            @if (!string.IsNullOrEmpty(_product.CategoryTitle))
+            {
+                <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+                <a href="@CategoryUrl" style="color: var(--primary-color); text-decoration: none;">@_product.CategoryTitle</a>
+            }
+            <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+            <span style="color: var(--accent-color); font-weight: 700;">@_product.Name</span>
         </div>
-    }
-    else
-    {
+
         <div class="vitrine-product-layout animate-fade-in">
             <!-- Mobile Header (Title First, Tags Below on Mobile) -->
             <div class="d-block d-lg-none mb-3">
@@ -364,13 +362,24 @@
                 </div>
             </div>
         </div>
-    }
-</div>
+    </div>
+}
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    [Parameter] public string? StoreSlug { get; set; }
     [Parameter] public string Barcode { get; set; } = default!;
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+
+    private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveStoreSlug}";
+    private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveStoreSlug}/catalog";
+    private string CategoryUrl => StoreContext.IsCustomDomain 
+        ? $"/catalog?categoryId={_product?.CategoryId}" 
+        : $"/{EffectiveStoreSlug}/catalog?categoryId={_product?.CategoryId}";
 
     private VitrineProductDetailDto? _product;
     private bool _isLoading = true;
@@ -378,7 +387,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -386,7 +395,7 @@
 
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistProductData);
 
-        if (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{StoreSlug}_{Barcode}", out var restored) && restored != null)
+        if (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", out var restored) && restored != null)
         {
             _product = restored;
             _isLoading = false;
@@ -399,7 +408,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -415,7 +424,7 @@
     {
         if (_product != null)
         {
-            ApplicationState.PersistAsJson($"vitrine_product_{StoreSlug}_{Barcode}", _product);
+            ApplicationState.PersistAsJson($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", _product);
         }
         return Task.CompletedTask;
     }
@@ -425,15 +434,27 @@
         _isLoading = true;
         try
         {
-            _product = await VitrineService.GetProductDetailAsync(StoreSlug, Barcode);
+            _product = await VitrineService.GetProductDetailAsync(EffectiveStoreSlug, Barcode);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading product: {ex.Message}");
+            _product = null;
         }
         finally
         {
             _isLoading = false;
+            try
+            {
+                if (_product == null && HttpContext != null && !HttpContext.Response.HasStarted)
+                {
+                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                }
+            }
+            catch
+            {
+                // ignore if response stream already started
+            }
         }
     }
 

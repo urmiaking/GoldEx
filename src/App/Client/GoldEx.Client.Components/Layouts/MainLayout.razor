@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Components.Services
+@using GoldEx.Client.Components.Services
 @using GoldEx.Shared.DTOs.Licenses
 @using GoldEx.Shared.Services.Abstractions
 @using Microsoft.JSInterop
@@ -6,15 +6,24 @@
 @inherits LayoutComponentBase
 @layout BaseLayout
 
-<MudLayout>
-    <AppBar @bind-DrawerOpen="_drawerOpen" />
-    <Drawer @bind-IsDrawerOpen="_drawerOpen" />
-    <MudMainContent Class="mt-10 mb-md-4 mb-20 pa-md-4 py-4">
-        @Body
+@inject IStoreContext StoreContext
 
-        <MobileNav Class="d-md-none d-block" />
-    </MudMainContent>
-</MudLayout>
+@if (StoreContext.IsCustomDomain)
+{
+    @Body
+}
+else
+{
+    <MudLayout>
+        <AppBar @bind-DrawerOpen="_drawerOpen" />
+        <Drawer @bind-IsDrawerOpen="_drawerOpen" />
+        <MudMainContent Class="mt-10 mb-md-4 mb-20 pa-md-4 py-4">
+            @Body
+
+            <MobileNav Class="d-md-none d-block" />
+        </MudMainContent>
+    </MudLayout>
+}
 
 @code
 {
@@ -28,16 +37,29 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
+        if (!StoreContext.IsCustomDomain)
+        {
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
+            }
+            catch
+            {
+                // ignore
+            }
+        }
         await base.OnAfterRenderAsync(firstRender);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!StoreContext.IsCustomDomain)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-        if (authState.User.Identity?.IsAuthenticated == true) 
-            await GetLicenseAsync();
+            if (authState.User.Identity?.IsAuthenticated == true) 
+                await GetLicenseAsync();
+        }
 
         await base.OnInitializedAsync();
     }

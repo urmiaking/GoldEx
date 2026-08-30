@@ -37,8 +37,11 @@ public partial class App
 
     private bool IsVitrineRoute()
     {
+        if (StoreContext.IsCustomDomain)
+            return true;
+
         var path = HttpContext.Request.Path.Value ?? "";
-        return ClientRoutes.Vitrine.IsVitrinePath(path);
+        return ClientRoutes.Vitrine.IsVitrinePath(path, StoreContext.IsCustomDomain);
     }
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
@@ -116,14 +119,29 @@ public partial class App
         else
         {
             var path = HttpContext.Request.Path.Value ?? "";
-            if (ClientRoutes.Vitrine.IsVitrinePath(path))
+            if (ClientRoutes.Vitrine.IsVitrinePath(path, StoreContext.IsCustomDomain))
             {
-                var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                var slug = segments[0].ToLowerInvariant();
-                var store = await dbContext.Set<Store>()
-                    .AsNoTracking()
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
+                Store? store = null;
+                if (StoreContext.IsCustomDomain && StoreContext.StoreId.HasValue)
+                {
+                    var storeId = new StoreId(StoreContext.StoreId.Value);
+                    store = await dbContext.Set<Store>()
+                        .AsNoTracking()
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(s => s.Id == storeId);
+                }
+                else
+                {
+                    var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                    if (segments.Length > 0 && !ClientRoutes.Vitrine.IsReservedSegment(segments[0]))
+                    {
+                        var slug = segments[0].ToLowerInvariant();
+                        store = await dbContext.Set<Store>()
+                            .AsNoTracking()
+                            .IgnoreQueryFilters()
+                            .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
+                    }
+                }
 
                 if (store != null)
                 {

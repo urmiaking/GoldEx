@@ -24,6 +24,8 @@ public static class DependencyInjection
             services.AddScoped<HelpContext>();
             services.AddScoped<LicenseState>();
             services.AddScoped<WebAuthnService>();
+            services.AddScoped<ClientStoreContext>();
+            services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<ClientStoreContext>());
 
             return services.DiscoverServices();
         }

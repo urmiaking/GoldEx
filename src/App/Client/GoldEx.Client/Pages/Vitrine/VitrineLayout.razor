@@ -2,11 +2,13 @@
 @implements IDisposable
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
+@using Microsoft.AspNetCore.Http
 @using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <HeadContent>
     <meta name="robots" content="index, follow" />
@@ -67,7 +69,7 @@
         <div class="vitrine-container">
             <div class="vitrine-header-inner">
                 <!-- Store Brand / Logo -->
-                <a href="@($"/{StoreSlug}")" class="vitrine-logo">
+                <a href="@HomeHref" class="vitrine-logo">
                     <div class="vitrine-logo-icon">
                         @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
                         {
@@ -90,16 +92,16 @@
 
                 <!-- Desktop Navigation Menu -->
                 <nav class="d-none d-lg-flex vitrine-nav-menu">
-                    <a href="@($"/{StoreSlug}")" class="vitrine-nav-link @(IsActivePage("") ? "active" : "")">
+                    <a href="@HomeHref" class="vitrine-nav-link @(IsActivePage("") ? "active" : "")">
                         صفحه اصلی
                     </a>
-                    <a href="@($"/{StoreSlug}/catalog")" class="vitrine-nav-link @(IsActivePage("catalog") ? "active" : "")">
+                    <a href="@CatalogHref" class="vitrine-nav-link @(IsActivePage("catalog") ? "active" : "")">
                         کاتالوگ محصولات
                     </a>
-                    <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="vitrine-nav-link">
+                    <a href="@FeaturedCatalogHref" class="vitrine-nav-link">
                         <i class="fa-solid fa-star" style="color: var(--accent-color); margin-left: 4px; font-size: 0.8rem;"></i> پیشنهادات ویژه
                     </a>
-                    <a href="@($"/{StoreSlug}/about")" class="vitrine-nav-link @(IsActivePage("about") ? "active" : "")">
+                    <a href="@AboutHref" class="vitrine-nav-link @(IsActivePage("about") ? "active" : "")">
                         درباره و تماس
                     </a>
                 </nav>
@@ -123,7 +125,7 @@
                         </a>
                     }
 
-                    <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-outline d-lg-none" style="padding: 8px 14px; font-size: 0.85rem;">
+                    <a href="@CatalogHref" class="btn-gisu btn-gisu-outline d-lg-none" style="padding: 8px 14px; font-size: 0.85rem;">
                         <span>کاتالوگ</span>
                     </a>
                 </div>
@@ -133,11 +135,18 @@
 
     <!-- Main Content Body -->
     <main style="flex-grow: 1;">
-        <CascadingValue Value="@_storeInfo">
-            <CascadingValue Value="@StoreSlug" Name="StoreSlug">
-                @Body
+        @if (_isStoreLoaded && _storeInfo == null)
+        {
+            <VitrineNotFound StoreSlug="@StoreSlug" />
+        }
+        else
+        {
+            <CascadingValue Value="@_storeInfo">
+                <CascadingValue Value="@StoreSlug" Name="StoreSlug">
+                    @Body
+                </CascadingValue>
             </CascadingValue>
-        </CascadingValue>
+        }
     </main>
 
     <!-- Luxury Royal Emerald Footer -->
@@ -170,10 +179,10 @@
                 <div>
                     <h4 style="color: var(--accent-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 18px;">دسترسی سریع</h4>
                     <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
-                        <li><a href="@($"/{StoreSlug}")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">صفحه اصلی ویترین</a></li>
-                        <li><a href="@($"/{StoreSlug}/catalog")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کاتالوگ کامل طلا و جواهر</a></li>
-                        <li><a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کالکشن‌های پیشنهادی ویژه</a></li>
-                        <li><a href="@($"/{StoreSlug}/about")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">درباره و موقعیت فروشگاه</a></li>
+                        <li><a href="@HomeHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">صفحه اصلی ویترین</a></li>
+                        <li><a href="@CatalogHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کاتالوگ کامل طلا و جواهر</a></li>
+                        <li><a href="@FeaturedCatalogHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کالکشن‌های پیشنهادی ویژه</a></li>
+                        <li><a href="@AboutHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">درباره و موقعیت فروشگاه</a></li>
                     </ul>
                 </div>
 
@@ -228,11 +237,11 @@
 
     <!-- Mobile Floating Navigation Bar -->
     <div class="vitrine-mobile-bar">
-        <a href="@($"/{StoreSlug}")" class="vitrine-mobile-item @(IsActivePage("") ? "active" : "")">
+        <a href="@HomeHref" class="vitrine-mobile-item @(IsActivePage("") ? "active" : "")">
             <i class="fa-solid fa-house vitrine-mobile-icon"></i>
             <span>ویترین</span>
         </a>
-        <a href="@($"/{StoreSlug}/catalog")" class="vitrine-mobile-item @(IsActivePage("catalog") ? "active" : "")">
+        <a href="@CatalogHref" class="vitrine-mobile-item @(IsActivePage("catalog") ? "active" : "")">
             <i class="fa-solid fa-gem vitrine-mobile-icon"></i>
             <span>کاتالوگ</span>
         </a>
@@ -252,7 +261,7 @@
                 <span>تماس</span>
             </a>
         }
-        <a href="@($"/{StoreSlug}/about")" class="vitrine-mobile-item @(IsActivePage("about") ? "active" : "")">
+        <a href="@AboutHref" class="vitrine-mobile-item @(IsActivePage("about") ? "active" : "")">
             <i class="fa-solid fa-circle-info vitrine-mobile-icon"></i>
             <span>درباره ما</span>
         </a>
@@ -260,10 +269,18 @@
 </div>
 
 @code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
     private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
     private string StoreSlug = "default";
+    private bool _isStoreLoaded;
     private PersistingComponentStateSubscription _persistingSubscription;
+
+    private string HomeHref => StoreContext.IsCustomDomain ? "/" : $"/{StoreSlug}";
+    private string CatalogHref => StoreContext.IsCustomDomain ? "/catalog" : $"/{StoreSlug}/catalog";
+    private string FeaturedCatalogHref => StoreContext.IsCustomDomain ? "/catalog?onlyFeatured=true" : $"/{StoreSlug}/catalog?onlyFeatured=true";
+    private string AboutHref => StoreContext.IsCustomDomain ? "/about" : $"/{StoreSlug}/about";
 
     protected override async Task OnInitializedAsync()
     {
@@ -273,6 +290,7 @@
         if (ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out var restored) && restored != null)
         {
             _storeInfo = restored;
+            _isStoreLoaded = true;
         }
         else
         {
@@ -319,16 +337,37 @@
 
     private void ResolveStoreSlug()
     {
-        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
-        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length > 0 && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase))
+        if (StoreContext.IsCustomDomain && !string.IsNullOrWhiteSpace(StoreContext.StoreSlug))
         {
-            StoreSlug = segments[0];
+            StoreSlug = StoreContext.StoreSlug;
+            return;
+        }
+
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length > 0)
+        {
+            var first = segments[0];
+            if (first.Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                first.Equals("about", StringComparison.OrdinalIgnoreCase) ||
+                first.Equals("p", StringComparison.OrdinalIgnoreCase))
+            {
+                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default";
+            }
+            else if (!first.Equals("api", StringComparison.OrdinalIgnoreCase))
+            {
+                StoreSlug = first;
+            }
+            else
+            {
+                StoreSlug = "default";
+            }
         }
         else
         {
-            StoreSlug = "default";
+            StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default";
         }
     }
 
@@ -340,14 +379,35 @@
         }
         catch
         {
-            // Ignored for graceful fallback
+            _storeInfo = null;
+        }
+        finally
+        {
+            _isStoreLoaded = true;
+            try
+            {
+                if (_storeInfo == null && HttpContext != null && !HttpContext.Response.HasStarted)
+                {
+                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
 
     private bool IsActivePage(string subPath)
     {
         var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+
+        if (StoreContext.IsCustomDomain)
+        {
+            return pathOnly.Equals(subPath, StringComparison.OrdinalIgnoreCase);
+        }
+
         var expected = string.IsNullOrEmpty(subPath) ? StoreSlug : $"{StoreSlug}/{subPath}";
         return pathOnly.Equals(expected, StringComparison.OrdinalIgnoreCase);
     }

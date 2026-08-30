@@ -1,4 +1,5 @@
 @page "/{StoreSlug}/catalog"
+@page "/catalog"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
 @implements IDisposable
@@ -10,12 +11,15 @@
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
 
 <HeadContent>
     @{
-        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog").ToString();
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/catalog").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}/catalog").ToString();
         var storeName = _storeInfo?.Name ?? "گالری طلا";
         var pageTitle = $"کاتالوگ طلا و جواهرات | {storeName}";
         var pageDesc = $"کاتالوگ رسمی طلا و جواهرات {storeName} با محاسبه آنلاین قیمت روز، مشاهده وزن، عیار ۷۵۰، فیلتر وزن و استعلام فوری کالاها.";
@@ -64,7 +68,7 @@
     <!-- Breadcrumb & Header -->
     <div style="margin-bottom: 24px;">
         <div class="d-flex align-items-center gap-2 mb-2" style="font-size: 0.86rem; color: var(--gray-600);">
-            <a href="@($"/{StoreSlug}")" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
+            <a href="@HomeUrl" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
             <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
             <span style="color: var(--accent-color); font-weight: 700;">کاتالوگ زیورآلات و طلا</span>
         </div>
@@ -264,7 +268,7 @@
                 <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
                     @foreach (var product in VisibleProducts)
                     {
-                        <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
+                        <a href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
                                 @if (!product.IsAvailable)
                                 {
@@ -366,7 +370,6 @@
 </div>
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
     [SupplyParameterFromQuery] public Guid? CategoryId { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyAvailable { get; set; }
@@ -617,9 +620,21 @@
         }
     </text>;
 
+    [Parameter] public string? StoreSlug { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+
+    private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveStoreSlug}";
+
+    private string GetProductUrl(string barcode) => StoreContext.IsCustomDomain
+        ? $"/p/{barcode}"
+        : $"/{EffectiveStoreSlug}/p/{barcode}";
+
     protected override async Task OnInitializedAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -630,8 +645,8 @@
         _onlyAvailable = OnlyAvailable ?? false;
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
 
-        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{StoreSlug}", out var catRestored) && catRestored != null &&
-            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{StoreSlug}", out var prodRestored) && prodRestored != null)
+        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{EffectiveStoreSlug}", out var catRestored) && catRestored != null &&
+            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{EffectiveStoreSlug}", out var prodRestored) && prodRestored != null)
         {
             _categories = catRestored;
             _products = prodRestored;
@@ -646,7 +661,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -666,11 +681,11 @@
     {
         if (_categories != null && _categories.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_categories_{StoreSlug}", _categories);
+            ApplicationState.PersistAsJson($"vitrine_catalog_categories_{EffectiveStoreSlug}", _categories);
         }
         if (_products != null && _products.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_products_{StoreSlug}", _products);
+            ApplicationState.PersistAsJson($"vitrine_catalog_products_{EffectiveStoreSlug}", _products);
         }
         return Task.CompletedTask;
     }
@@ -680,8 +695,8 @@
         _isLoading = true;
         try
         {
-            _categories = (await VitrineService.GetCategoriesAsync(StoreSlug)).ToList();
-            _products = (await VitrineService.GetVitrineProductsAsync(StoreSlug)).ToList();
+            _categories = (await VitrineService.GetCategoriesAsync(EffectiveStoreSlug)).ToList();
+            _products = (await VitrineService.GetVitrineProductsAsync(EffectiveStoreSlug)).ToList();
             ResetVisibleCount();
         }
         catch (Exception ex)
@@ -942,7 +957,7 @@
         {
             ["@type"] = "ListItem",
             ["position"] = idx + 1,
-            ["url"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{p.Barcode}").ToString(),
+            ["url"] = Navigation.ToAbsoluteUri(GetProductUrl(p.Barcode)).ToString(),
             ["name"] = p.Name,
             ["image"] = !string.IsNullOrWhiteSpace(p.MainImageUrl) ? Navigation.ToAbsoluteUri(p.MainImageUrl).ToString() : null
         }).ToList();
@@ -980,7 +995,7 @@
                     ["@type"] = "ListItem",
                     ["position"] = 1,
                     ["name"] = storeName,
-                    ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString()
+                    ["item"] = Navigation.ToAbsoluteUri(HomeUrl).ToString()
                 },
                 new Dictionary<string, object>
                 {

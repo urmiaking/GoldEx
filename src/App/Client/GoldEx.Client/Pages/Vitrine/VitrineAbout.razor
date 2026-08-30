@@ -1,16 +1,21 @@
 @page "/{StoreSlug}/about"
+@page "/about"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Routings
+@using GoldEx.Shared.Services.Abstractions
 @inject NavigationManager Navigation
+@inject IStoreContext StoreContext
 
 <PageTitle>درباره و تماس با @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
 <HeadContent>
     @{
-        var canonicalUrl = Navigation.ToAbsoluteUri($"/{StoreSlug}/about").ToString();
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/about").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}/about").ToString();
         var storeName = _storeInfo?.Name ?? "گالری طلا و جواهر";
         var pageTitle = $"درباره و تماس با {storeName}";
         var pageDesc = $"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی، شماره واتساپ و معرفی {storeName}.";
@@ -165,12 +170,16 @@
 </div>
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
+    [Parameter] public string? StoreSlug { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
 
     protected override void OnInitialized()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
@@ -184,6 +193,10 @@
         if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl)) sameAsList.Add(_storeInfo.BaleUrl);
         if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber)) sameAsList.Add($"https://wa.me/{_storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+')}");
 
+        var homeUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}").ToString();
+
         var jsonObject = new Dictionary<string, object?>
         {
             ["@context"] = "https://schema.org",
@@ -195,7 +208,7 @@
             {
                 ["@type"] = "JewelryStore",
                 ["name"] = storeName,
-                ["url"] = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString(),
+                ["url"] = homeUrl,
                 ["logo"] = logoUrl,
                 ["image"] = logoUrl,
                 ["telephone"] = _storeInfo?.PhoneNumber,
