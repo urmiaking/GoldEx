@@ -38,11 +38,7 @@ public partial class App
     private bool IsVitrineRoute()
     {
         var path = HttpContext.Request.Path.Value ?? "";
-        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length == 0) return false;
-
-        var firstSegment = segments[0];
-        return !ClientRoutes.Vitrine.IsReservedSegment(firstSegment);
+        return ClientRoutes.Vitrine.IsVitrinePath(path);
     }
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
@@ -120,9 +116,9 @@ public partial class App
         else
         {
             var path = HttpContext.Request.Path.Value ?? "";
-            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length > 0 && !ClientRoutes.Vitrine.IsReservedSegment(segments[0]))
+            if (ClientRoutes.Vitrine.IsVitrinePath(path))
             {
+                var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
                 var slug = segments[0].ToLowerInvariant();
                 var store = await dbContext.Set<Store>()
                     .AsNoTracking()

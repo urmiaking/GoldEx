@@ -36,7 +36,7 @@ public partial class ProductAttributeEditorDialog
 
     private async Task SaveAsync()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid) return;
 
         _isSaving = true;

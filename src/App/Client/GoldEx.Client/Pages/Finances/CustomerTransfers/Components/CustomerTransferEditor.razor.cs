@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.Validators;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
@@ -301,7 +302,7 @@ public partial class CustomerTransferEditor
     private async Task<IEnumerable<CustomerVm>> SearchCustomers(string value, CancellationToken cancellationToken)
     {
         var filter = new RequestFilter { Search = value, Take = 20 };
-        var pagedList = await CustomerService.GetListAsync(filter, null, cancellationToken);
+        var pagedList = await CustomerService.GetListAsync(filter, new CustomerFilter(null, null, null, null), cancellationToken);
         return pagedList.Data.Select(c => new CustomerVm
         {
             Id = c.Id,

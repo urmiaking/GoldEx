@@ -108,14 +108,27 @@ self.addEventListener('fetch', event => {
 
     const isVitrineNavigation = (event.request.mode === 'navigate') && (() => {
         const segments = url.pathname.split('/').filter(Boolean);
-        if (segments.length === 0) return false;
+        if (segments.length === 0 || segments.length > 3) return false;
+
         const firstSegment = segments[0].toLowerCase();
         const reserved = [
             'account', 'dashboard', 'invoices', 'products', 'finances', 'base-info',
             'settings', 'quick-invoice', 'user-accounts', 'blogs', 'reporting',
-            'customers', 'inventory-stocks', 'api', '_content', '_framework', 'ssr'
+            'customers', 'inventory-stocks', 'calculator', 'price-board', 'product-categories',
+            'transactions', 'register-product', 'api', '_content', '_framework', '_blazor',
+            'nostore', 'not-found', 'under-development', 'error', 'swagger', 'healthcheck', 'serilog-ui', 'ssr'
         ];
-        return !reserved.includes(firstSegment);
+        if (reserved.includes(firstSegment)) return false;
+
+        // Shape check:
+        // 1. /{slug}
+        if (segments.length === 1) return true;
+        // 2. /{slug}/catalog or /{slug}/about
+        if (segments.length === 2 && ['catalog', 'about'].includes(segments[1].toLowerCase())) return true;
+        // 3. /{slug}/p/{barcode}
+        if (segments.length === 3 && segments[1].toLowerCase() === 'p') return true;
+
+        return false;
     })();
 
     if (isRangeRequest || isVideoRequest || isVitrineAsset || isVitrineNavigation) {

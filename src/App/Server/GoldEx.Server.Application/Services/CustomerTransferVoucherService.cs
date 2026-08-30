@@ -8,21 +8,19 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
-using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.CustomerTransfers;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.CustomerTransfers;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -34,7 +32,6 @@ internal class CustomerTransferVoucherService(
     ICustomerRepository customerRepository,
     IServerLedgerAccountService ledgerAccountService,
     IAccountingTransactionService transactionService,
-    IMapper mapper,
     ILogger<CustomerTransferVoucherService> logger,
     CreateCustomerTransferVoucherRequestValidator createValidator,
     UpdateCustomerTransferVoucherRequestValidator updateValidator) : ICustomerTransferVoucherService

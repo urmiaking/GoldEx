@@ -1,16 +1,12 @@
-﻿using GoldEx.Sdk.Common;
-using GoldEx.Sdk.Server.Domain.Entities.Identity;
-using GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
+﻿using GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
 using GoldEx.Shared;
 using GoldEx.Shared.Routings;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net.Http.Json;
 
 namespace GoldEx.Server.Infrastructure.HealthChecks;
 
-public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSender emailSender, UserManager<AppUser> userManager) : IHealthCheck
+public class SignalHealthCheck(IHttpClientFactory httpClientFactory) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
@@ -39,7 +35,7 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSende
                 ? HealthCheckResult.Healthy()
                 : HealthCheckResult.Unhealthy("اختلال در سرویس");
         }
-        catch (Exception e)
+        catch (Exception)
         {
             //try
             //{

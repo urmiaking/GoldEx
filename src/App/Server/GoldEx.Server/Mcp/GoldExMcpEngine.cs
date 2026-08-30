@@ -1,26 +1,15 @@
 using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
-using GoldEx.Shared.DTOs.FinancialAccounts;
-using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GoldEx.Server.Mcp;
 
@@ -34,15 +23,8 @@ public class GoldExMcpEngine(
     IInvoiceService invoiceService,
     IPriceUnitService priceUnitService,
     IFinancialAccountService financialAccountService,
-    IHttpContextAccessor httpContextAccessor,
-    IStoreContext storeContext)
+    IHttpContextAccessor httpContextAccessor)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = true
-    };
-
     private string GetBaseUrl()
     {
         var context = httpContextAccessor.HttpContext;

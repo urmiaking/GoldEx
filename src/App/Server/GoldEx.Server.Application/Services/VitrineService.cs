@@ -1,28 +1,20 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.InventoryStockAggregate;
-using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Server.Domain.SettingAggregate;
-using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Server.Infrastructure.Specifications.Stores;
-using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Vitrine;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -33,18 +25,16 @@ internal class VitrineService(
     ISettingRepository settingRepository,
     IProductCategoryRepository categoryRepository,
     IPriceRepository priceRepository,
-    IInventoryStockRepository inventoryStockRepository,
-    GoldExDbContext dbContext,
-    ILogger<VitrineService> logger) : IVitrineService
+    GoldExDbContext dbContext) : IVitrineService
 {
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
     public async Task<VitrineStoreInfoDto?> GetStoreInfoAsync(string storeSlug, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(storeSlug))
             return null;
 
-        await _semaphore.WaitAsync(cancellationToken);
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
@@ -95,7 +85,7 @@ internal class VitrineService(
         }
         finally
         {
-            _semaphore.Release();
+            Semaphore.Release();
         }
     }
 
@@ -104,7 +94,7 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug))
             return [];
 
-        await _semaphore.WaitAsync(cancellationToken);
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
@@ -147,7 +137,7 @@ internal class VitrineService(
         }
         finally
         {
-            _semaphore.Release();
+            Semaphore.Release();
         }
     }
 
@@ -160,7 +150,7 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug))
             return [];
 
-        await _semaphore.WaitAsync(cancellationToken);
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
@@ -282,7 +272,7 @@ internal class VitrineService(
         }
         finally
         {
-            _semaphore.Release();
+            Semaphore.Release();
         }
     }
 
@@ -294,7 +284,7 @@ internal class VitrineService(
         if (string.IsNullOrWhiteSpace(storeSlug) || string.IsNullOrWhiteSpace(barcode))
             return null;
 
-        await _semaphore.WaitAsync(cancellationToken);
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             var normalizedSlug = storeSlug.ToLowerInvariant().Trim();
@@ -420,7 +410,7 @@ internal class VitrineService(
         }
         finally
         {
-            _semaphore.Release();
+            Semaphore.Release();
         }
     }
 
@@ -429,7 +419,7 @@ internal class VitrineService(
         UpdateProductVitrineRequest request,
         CancellationToken cancellationToken = default)
     {
-        await _semaphore.WaitAsync(cancellationToken);
+        await Semaphore.WaitAsync(cancellationToken);
         try
         {
             var spec = new ProductsByIdSpecification(new ProductId(productId));
@@ -463,7 +453,7 @@ internal class VitrineService(
         }
         finally
         {
-            _semaphore.Release();
+            Semaphore.Release();
         }
     }
 
