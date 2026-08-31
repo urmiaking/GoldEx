@@ -234,13 +234,13 @@ public partial class Editor
 
     private void OnStoneTypeChanged(int index, Guid? val)
     {
-        var stone = Model.Stones[index];
-        stone.StoneTypeId = val;
+        var stone = Model.Stones?[index];
+        stone?.StoneTypeId = val;
         var selectedType = _stoneTypes.FirstOrDefault(x => x.Id == val);
         if (selectedType != null)
         {
-            stone.Type = selectedType.Title;
-            stone.StoneTypeSymbol = selectedType.Symbol;
+            stone?.Type = selectedType.Title;
+            stone?.StoneTypeSymbol = selectedType.Symbol;
         }
     }
 

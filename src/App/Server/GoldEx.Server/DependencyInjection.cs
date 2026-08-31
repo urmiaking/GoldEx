@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components;
+using GoldEx.Client.Components;
 using GoldEx.Server.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 
@@ -25,6 +25,7 @@ public static class DependencyInjection
             .AddDevExpress()
             .AddClientServices()
             .AddHttpClient()
+            .AddRateLimitingServices()
             .DiscoverServices();
 
         return services;

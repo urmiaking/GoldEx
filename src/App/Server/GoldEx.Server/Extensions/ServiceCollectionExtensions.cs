@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using AspNetCore.DataProtection.SqlServer;
 using DevExpress.AspNetCore;
 using DevExpress.Drawing;
@@ -14,6 +15,7 @@ using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
 using GoldEx.Server.Application.Services;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
@@ -27,6 +29,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -44,6 +47,88 @@ internal static class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
+        internal IServiceCollection AddRateLimitingServices()
+        {
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    context.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+                    if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    {
+                        context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+                    }
+                    await context.HttpContext.Response.WriteAsync("{\"error\":\"تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کرده و مجدداً تلاش کنید.\"}", token);
+                };
+
+                // SMS Policy: Strict (5 requests / 10 minutes per IP)
+                options.AddPolicy(RateLimitPolicies.Sms, httpContext =>
+                {
+                    var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        partitionKey: $"sms_{clientIp}",
+                        factory: _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(10),
+                            SegmentsPerWindow = 5,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                });
+
+                // Auth Policy: (15 requests / 1 minute per IP)
+                options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+                {
+                    var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: $"auth_{clientIp}",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 15,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                });
+
+                // MCP Policy: Soft rate limiting (180 requests / 1 minute)
+                options.AddPolicy(RateLimitPolicies.Mcp, httpContext =>
+                {
+                    var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        partitionKey: $"mcp_{clientIp}",
+                        factory: _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 180,
+                            Window = TimeSpan.FromMinutes(1),
+                            SegmentsPerWindow = 6,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 5
+                        });
+                });
+
+                // Vitrine Policy: Generous public rate limiting (300 requests / 1 minute)
+                options.AddPolicy(RateLimitPolicies.Vitrine, httpContext =>
+                {
+                    var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        partitionKey: $"vitrine_{clientIp}",
+                        factory: _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 300,
+                            Window = TimeSpan.FromMinutes(1),
+                            SegmentsPerWindow = 6,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 10
+                        });
+                });
+            });
+
+            return services;
+        }
         internal IServiceCollection AddControllers(IConfiguration configuration)
         {
             services
@@ -77,6 +162,8 @@ internal static class ServiceCollectionExtensions
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SameSite = SameSiteMode.Lax;
             });
 
             services.AddDatabaseDeveloperPageExceptionFilter();
@@ -217,10 +304,10 @@ internal static class ServiceCollectionExtensions
                 config.ExpireTimeSpan = TimeSpan.FromDays(90);
                 config.SlidingExpiration = true;
 
-                // Ensure we are configuring the scheme Identity uses
-                // (Optional if you just want to use the default 'Identity.Application')
-                // config.Cookie.Name = "GoldExToken"; 
                 config.Cookie.Name = "GoldExAuthCookie";
+                config.Cookie.HttpOnly = true;
+                config.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                config.Cookie.SameSite = SameSiteMode.Lax;
 
                 var defaultEvents = config.Events;
 

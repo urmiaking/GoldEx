@@ -35,10 +35,12 @@
   --border-radius-md: 12px;
   --border-radius-lg: 20px;
 
+  --vitrine-font-family: "Vazirmatn", "IRANSans", system-ui, sans-serif;
+
   /* 2. Container Base Rules */
   background-color: var(--light-color) !important;
   color: var(--dark-color) !important;
-  font-family: "IRANSans", "Vazirmatn", system-ui, sans-serif !important;
+  font-family: var(--vitrine-font-family) !important;
   direction: rtl !important;
   min-height: 100vh;
   display: flex;
@@ -49,8 +51,240 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ==========================================================================
+   7 Curated Luxury Theme Presets
+   ========================================================================== */
+
+/* 1. Persian Turquoise - Authentic Nishapur Turquoise & 18K Gold */
+.vitrine-root.theme-persian-turquoise,
+.vitrine-root.theme-turquoise,
+.vitrine-root.theme-obsidian-noir,
+.vitrine-root.theme-obsidian {
+  --primary-color: #0d6e6e;
+  --primary-light: #168a8a;
+  --primary-dark: #084c4c;
+  --accent-color: #dfb260;
+  --accent-hover: #c49942;
+  --accent-soft: #edf8f8;
+  --dark-color: #162424;
+  --light-color: #f4fbfb;
+  --white: #ffffff;
+  --gray-50: #f6fcfc;
+  --gray-100: #e8f5f5;
+  --gray-200: #d0e7e7;
+  --gray-400: #8aa7a7;
+  --gray-600: #5c7b7b;
+  --gray-800: #213838;
+  --shadow-subtle: 0 4px 20px rgba(13, 110, 110, 0.05);
+  --shadow-medium: 0 10px 30px rgba(13, 110, 110, 0.09);
+  --shadow-premium: 0 20px 40px rgba(223, 178, 96, 0.18), 0 5px 15px rgba(13, 110, 110, 0.04);
+}
+
+/* 2. Royal Emerald - Palace Heritage & Champagne Gold (Default) */
+.vitrine-root.theme-royal-emerald,
+.vitrine-root.theme-emerald {
+  --primary-color: #0f342e;
+  --primary-light: #16463e;
+  --primary-dark: #09221e;
+  --accent-color: #d5b267;
+  --accent-hover: #b8974e;
+  --accent-soft: #fcf8ee;
+  --dark-color: #1a1e1d;
+  --light-color: #fbf9f5;
+  --white: #ffffff;
+  --gray-50: #fcfbfa;
+  --gray-100: #f5f2eb;
+  --gray-200: #e7ded0;
+  --gray-400: #9aa2a0;
+  --gray-600: #6e7774;
+  --gray-800: #2d3331;
+  --shadow-subtle: 0 4px 20px rgba(15, 52, 46, 0.04);
+  --shadow-medium: 0 10px 30px rgba(15, 52, 46, 0.08);
+  --shadow-premium: 0 20px 40px rgba(213, 178, 103, 0.14), 0 5px 15px rgba(15, 52, 46, 0.03);
+}
+
+/* 3. Imperial Ruby - Rich Velvet Cabernet & Imperial Gold */
+.vitrine-root.theme-imperial-ruby,
+.vitrine-root.theme-ruby {
+  --primary-color: #3b0f19;
+  --primary-light: #541624;
+  --primary-dark: #24080f;
+  --accent-color: #dfb260;
+  --accent-hover: #c49942;
+  --accent-soft: #fdf4e9;
+  --dark-color: #21191a;
+  --light-color: #faf6f6;
+  --white: #ffffff;
+  --gray-50: #faf7f7;
+  --gray-100: #f5ecec;
+  --gray-200: #ebd7d9;
+  --gray-400: #a39697;
+  --gray-600: #756869;
+  --gray-800: #332728;
+  --shadow-subtle: 0 4px 20px rgba(59, 15, 25, 0.05);
+  --shadow-medium: 0 10px 30px rgba(59, 15, 25, 0.09);
+  --shadow-premium: 0 20px 40px rgba(223, 178, 96, 0.16), 0 5px 15px rgba(59, 15, 25, 0.04);
+}
+
+/* 4. Champagne Pearl - Alabaster, Warm Espresso & Soft Champagne */
+.vitrine-root.theme-champagne-pearl,
+.vitrine-root.theme-pearl,
+.vitrine-root.theme-champagne {
+  --primary-color: #2b2723;
+  --primary-light: #423c36;
+  --primary-dark: #1b1816;
+  --accent-color: #c99d52;
+  --accent-hover: #ab8034;
+  --accent-soft: #fbf5eb;
+  --dark-color: #221f1c;
+  --light-color: #faf8f5;
+  --white: #ffffff;
+  --gray-50: #faf9f7;
+  --gray-100: #f4efe9;
+  --gray-200: #eee6da;
+  --gray-400: #a59e95;
+  --gray-600: #787168;
+  --gray-800: #34302b;
+  --shadow-subtle: 0 4px 20px rgba(43, 39, 35, 0.04);
+  --shadow-medium: 0 10px 30px rgba(43, 39, 35, 0.08);
+  --shadow-premium: 0 20px 40px rgba(201, 157, 82, 0.16), 0 5px 15px rgba(43, 39, 35, 0.03);
+}
+
+/* 5. Modern Minimal White - Studio White, Slate & 18K Yellow Gold */
+.vitrine-root.theme-minimal-white,
+.vitrine-root.theme-minimal {
+  --primary-color: #111827;
+  --primary-light: #1f2937;
+  --primary-dark: #030712;
+  --accent-color: #d4af37;
+  --accent-hover: #b59325;
+  --accent-soft: #faf7eb;
+  --dark-color: #0f172a;
+  --light-color: #ffffff;
+  --white: #fbfbfb;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #64748b;
+  --gray-800: #1e293b;
+  --shadow-subtle: 0 4px 20px rgba(15, 23, 42, 0.04);
+  --shadow-medium: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-premium: 0 20px 40px rgba(212, 175, 55, 0.16), 0 5px 15px rgba(15, 23, 42, 0.03);
+}
+
+/* 6. Rose Gold Blossom - Soft Rose Mist, Plum Truffle & Metallic Rose Gold */
+.vitrine-root.theme-rose-gold,
+.vitrine-root.theme-rosegold {
+  --primary-color: #2f1d24;
+  --primary-light: #472d37;
+  --primary-dark: #1e1116;
+  --accent-color: #d98c80;
+  --accent-hover: #be7266;
+  --accent-soft: #fbeee9;
+  --dark-color: #261b1f;
+  --light-color: #fcf9f9;
+  --white: #ffffff;
+  --gray-50: #fcf8f8;
+  --gray-100: #f6eeee;
+  --gray-200: #ebd9d7;
+  --gray-400: #a69493;
+  --gray-600: #786665;
+  --gray-800: #36282b;
+  --shadow-subtle: 0 4px 20px rgba(47, 29, 36, 0.05);
+  --shadow-medium: 0 10px 30px rgba(47, 29, 36, 0.09);
+  --shadow-premium: 0 20px 40px rgba(217, 140, 128, 0.2), 0 5px 15px rgba(47, 29, 36, 0.04);
+}
+
+/* 7. Yemeni Agate & Amber - Warm Yemeni Carnelian & Pure Gold */
+.vitrine-root.theme-yemeni-agate,
+.vitrine-root.theme-agate,
+.vitrine-root.theme-amber,
+.vitrine-root.theme-midnight-sapphire,
+.vitrine-root.theme-sapphire {
+  --primary-color: #7c2d12;
+  --primary-light: #9a3412;
+  --primary-dark: #581c0c;
+  --accent-color: #e5b85a;
+  --accent-hover: #c99d3e;
+  --accent-soft: #fef3eb;
+  --dark-color: #271a15;
+  --light-color: #fdf8f5;
+  --white: #ffffff;
+  --gray-50: #fdf9f7;
+  --gray-100: #f9ede7;
+  --gray-200: #eed6cc;
+  --gray-400: #a89188;
+  --gray-600: #7a635a;
+  --gray-800: #3b2820;
+  --shadow-subtle: 0 4px 20px rgba(124, 45, 18, 0.05);
+  --shadow-medium: 0 10px 30px rgba(124, 45, 18, 0.09);
+  --shadow-premium: 0 20px 40px rgba(229, 184, 90, 0.18), 0 5px 15px rgba(124, 45, 18, 0.04);
+}
+
+/* ==========================================================================
+   Border Radius Tokens
+   ========================================================================== */
+.vitrine-root.radius-sharp {
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+}
+
+.vitrine-root.radius-rounded {
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+  --border-radius-lg: 20px;
+}
+
+.vitrine-root.radius-pill {
+  --border-radius-sm: 20px;
+  --border-radius-md: 26px;
+  --border-radius-lg: 32px;
+}
+
+/* ==========================================================================
+   Card Style Tokens
+   ========================================================================== */
+.vitrine-root.card-minimal .product-card {
+  border: 1px solid var(--gray-200) !important;
+  box-shadow: var(--shadow-subtle);
+}
+
+.vitrine-root.card-glass .product-card,
+.vitrine-root.card-glass .vitrine-showcase-box,
+.vitrine-root.card-glass .vitrine-trust-grid,
+.vitrine-root.card-glass .shop-sidebar,
+.vitrine-root.card-glass .vitrine-price-calculator-card {
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  background-color: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid rgba(213, 178, 103, 0.28) !important;
+}
+
+.vitrine-root.card-elevated .product-card {
+  border: 1px solid transparent !important;
+  box-shadow: var(--shadow-medium) !important;
+}
+
+.vitrine-root.card-elevated .product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-premium) !important;
+}
+
+/* ==========================================================================
+   Persian Typography Tokens
+   ========================================================================== */
+.vitrine-root.font-vazirmatn {
+  --vitrine-font-family: "Vazirmatn", "IRANSans", system-ui, sans-serif;
+}
+
+.vitrine-root.font-iransans {
+  --vitrine-font-family: "IRANSans", "Vazirmatn", system-ui, sans-serif;
+}
+
 .vitrine-root *:not(i):not([class*="fa-"]):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.fa):not(.fas):not(.far):not(.fab) {
-  font-family: "IRANSans", "Vazirmatn", system-ui, sans-serif !important;
+  font-family: var(--vitrine-font-family) !important;
   box-sizing: border-box;
 }
 
@@ -1314,15 +1548,32 @@
   .vitrine-root .shop-sidebar {
     background-color: var(--white) !important;
     border-radius: var(--border-radius-sm);
-    padding: 24px 22px;
+    padding: 22px 20px;
     box-shadow: var(--shadow-subtle);
     border: 1px solid var(--gray-200) !important;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     position: sticky;
     top: 90px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
     width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--primary-color-rgb), 0.25) transparent;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .vitrine-root .shop-sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--primary-color-rgb), 0.25);
+    border-radius: 4px;
   }
 
   .vitrine-root .shop-products {
@@ -1626,6 +1877,39 @@
   width: 36px;
   height: 2px;
   background-color: var(--accent-color);
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  transition: color var(--transition-fast);
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible:hover {
+  color: var(--accent-color) !important;
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible .widget-toggle-icon {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  transition: transform 0.25s ease;
+}
+
+.vitrine-root .sidebar-widget h3.widget-collapsible .widget-toggle-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.vitrine-root .active-facet-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  display: inline-block;
 }
 
 .vitrine-root .search-box {
@@ -2012,4 +2296,263 @@
   font-size: 0.88rem;
   font-weight: 700;
   border-top: 1px dashed var(--gray-200);
+}
+
+/* ==========================================================================
+   Vitrine Multi-Platform Share & Instagram Story Card Modal (Bottom Sheet)
+   ========================================================================== */
+.vitrine-share-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  font-family: var(--vitrine-font-family, "Vazirmatn", "IRANSans", system-ui, sans-serif) !important;
+  direction: rtl !important;
+  animation: vitrineFadeIn 0.25s ease-out forwards;
+}
+
+.vitrine-share-modal-content {
+  background: #0f131a !important;
+  border: 1px solid rgba(218, 165, 32, 0.35) !important;
+  border-bottom: none !important;
+  border-radius: 28px 28px 0 0 !important;
+  width: 100% !important;
+  max-width: 540px !important;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 14px)) !important;
+  box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(218, 165, 32, 0.15) !important;
+  direction: rtl !important;
+  color: #fff !important;
+  position: relative !important;
+  font-family: var(--vitrine-font-family, "Vazirmatn", "IRANSans", system-ui, sans-serif) !important;
+  margin: 0 auto !important;
+  flex-shrink: 0 !important;
+}
+
+.vitrine-share-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vitrine-share-close-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #9ca3af;
+  font-size: 1.4rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.vitrine-share-close-btn:hover {
+  background: rgba(218, 165, 32, 0.2);
+  border-color: var(--accent-color, #d5b267);
+  color: var(--accent-color, #d5b267);
+  transform: rotate(90deg);
+}
+
+/* Instagram Story Banner Card */
+.vitrine-story-card-banner {
+  background: linear-gradient(135deg, rgba(131, 58, 180, 0.25) 0%, rgba(225, 48, 108, 0.3) 50%, rgba(245, 96, 64, 0.25) 100%);
+  border: 1.5px solid rgba(225, 48, 108, 0.6);
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(225, 48, 108, 0.2);
+  font-family: inherit;
+}
+
+.vitrine-story-card-banner:hover {
+  transform: translateY(-2px);
+  border-color: rgba(225, 48, 108, 0.95);
+  box-shadow: 0 8px 30px rgba(225, 48, 108, 0.35);
+}
+
+.vitrine-story-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(220, 39, 67, 0.45);
+}
+
+/* Apps Grid */
+.vitrine-share-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.vitrine-share-app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 6px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: #f3f4f6;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all 0.25s ease;
+}
+
+.vitrine-share-app-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(218, 165, 32, 0.45);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.share-app-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.share-telegram .share-app-icon {
+  background: linear-gradient(135deg, #2aabee, #229ed9);
+  box-shadow: 0 4px 14px rgba(34, 158, 217, 0.4);
+}
+
+.share-whatsapp .share-app-icon {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+}
+
+.share-bale .share-app-icon {
+  background: linear-gradient(135deg, #00b956, #008f43);
+  box-shadow: 0 4px 14px rgba(0, 185, 86, 0.4);
+}
+
+.share-eitaa .share-app-icon {
+  background: linear-gradient(135deg, #e77324, #c95c14);
+  box-shadow: 0 4px 14px rgba(231, 115, 36, 0.4);
+}
+
+/* Copy Link Row */
+.vitrine-share-link-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+
+.vitrine-share-link-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-family: inherit;
+  padding: 8px 10px;
+  outline: none;
+  direction: ltr;
+  text-align: left;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.vitrine-share-link-input:focus {
+  border-color: var(--accent-color, #d5b267);
+  color: #ffffff;
+}
+
+.vitrine-share-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, var(--accent-color, #d5b267), var(--accent-hover, #b8974e));
+  color: #0f131a;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(213, 178, 103, 0.3);
+}
+
+.vitrine-share-copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(213, 178, 103, 0.5);
+  filter: brightness(1.08);
+}
+
+.vitrine-share-copy-btn:active {
+  transform: scale(0.97);
+}
+
+@keyframes vitrineFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: vitrineSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes vitrineSlideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-out {
+  animation: vitrineFadeOut 0.2s ease forwards !important;
+}
+
+@keyframes vitrineFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }

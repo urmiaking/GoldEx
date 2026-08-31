@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.CoinInstances;
+using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -113,7 +113,10 @@ public record GetInvoicePaymentResponse(
     GetCustomerResponse? Endorser,
     GetPriceUnitTitleResponse PriceUnit,
     List<GetFinancialAccountTitleResponse> FinancialAccounts,
-    GetCheckPaymentResponse? CheckPayment);
+    GetCheckPaymentResponse? CheckPayment,
+    GetCoinInstanceResponse? CoinInstance = null,
+    int? CoinQuantity = null,
+    decimal? CoinUnitPrice = null);
 
 public record GetInvoiceExtraCostsResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);
 

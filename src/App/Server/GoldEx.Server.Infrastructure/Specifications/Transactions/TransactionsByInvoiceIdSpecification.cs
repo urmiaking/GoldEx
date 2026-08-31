@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 
@@ -9,7 +9,7 @@ public class TransactionsByInvoiceIdSpecification : SpecificationBase<Transactio
     // includePayments: اگر false باشد، پرداخت‌ها (دارای InvoicePaymentId) برگردانده نمی‌شوند
     public TransactionsByInvoiceIdSpecification(InvoiceId invoiceId, bool includePayments = true)
     {
-        AddCriteria(x => x.InvoiceId == invoiceId);
+        AddCriteria(x => x.InvoiceId == invoiceId && x.CustomerTransferVoucherId == null);
 
         if (!includePayments)
         {

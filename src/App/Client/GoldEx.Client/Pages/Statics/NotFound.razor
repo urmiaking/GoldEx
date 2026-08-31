@@ -1,0 +1,31 @@
+﻿@attribute [Route(ClientRoutes.Statics.NotFound)]
+@layout EmptyBoxLayout
+
+<PageTitle>صفحه مورد نظر یافت نشد (۴۰۴)</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center" Spacing="5" Class="py-8">
+    <MudIcon Icon="@Icons.Material.Filled.SearchOff"
+             Color="Color.Warning"
+             Style="font-size: 5.5rem;" />
+
+    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight: 800; color: var(--mud-palette-primary);">
+        ۴۰۴
+    </MudText>
+
+    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight: bold;">
+        صفحه مورد نظر یافت نشد
+    </MudText>
+
+    <MudText Typo="Typo.body1" Align="Align.Center" Class="mud-text-secondary" Style="max-width: 480px; line-height: 1.8;">
+        آدرس وارد شده نامعتبر است یا این صفحه منتقل و حذف شده است.
+    </MudText>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Size="Size.Medium"
+               Href="@ClientRoutes.Home.Index"
+               StartIcon="@Icons.Material.Filled.Home"
+               Class="mt-4 px-6 py-2 rounded-pill font-bold">
+        بازگشت به صفحه اصلی
+    </MudButton>
+</MudStack>

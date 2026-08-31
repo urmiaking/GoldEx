@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.Enums;
 
@@ -11,6 +11,7 @@ public class InvoicePaymentsByNumberSpecification : SpecificationBase<InvoicePay
         AddInclude(x => x.Invoice!.Customer!);
         AddInclude(x => x.LedgerAccount!.Customer!);
         AddInclude(x => x.SourceFinancialAccount!);
+        AddInclude(x => x.CoinInstance!.Coin!);
 
         AddCriteria(x => x.Invoice!.InvoiceNumber == invoiceNumber);
         AddCriteria(x => x.Invoice!.InvoiceType == invoiceType);

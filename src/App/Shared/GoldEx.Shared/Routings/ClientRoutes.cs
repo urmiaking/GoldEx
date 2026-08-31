@@ -105,6 +105,7 @@ public static class ClientRoutes
         public const string LicenseRequests = $"{SettingsPrefix}/license-requests";
         public const string Stores = $"{SettingsPrefix}/stores";
         public const string StoneTypes = $"{SettingsPrefix}/stone-types";
+        public const string ProductAttributes = $"{SettingsPrefix}/product-attributes";
         public const string PersonalAccessTokens = $"{SettingsPrefix}/api-tokens";
     }
 
@@ -256,25 +257,188 @@ public static class ClientRoutes
 
     public static class About
     {
-        private const string Prefix = "about";
+        private const string Prefix = "about-goldex";
         public const string Index = $"{Prefix}";
     }
 
     public static class Vitrine
     {
-        public static readonly HashSet<string> ReservedSegments = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> _allKnownAppSegments = InitializeAppSegments();
+
+        private static HashSet<string> InitializeAppSegments()
         {
-            "api", "_content", "_framework", "Account", "oauth", "mcp", ".well-known",
-            "serilog-ui", "swagger", "health", "Error", "__test", "uploads", "shared",
-            "assets", "fonts", "css", "js", "invoices", "products", "finances", "base-info",
-            "settings", "quick-invoice", "ssr", "favicon.ico", "manifest.webmanifest",
-            "app.js", "sw.js", "register-product", "user-accounts", "dashboard", "blogs"
-        };
+            var segments = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "api", "_content", "_framework", "_blazor", "Account", "oauth", "mcp", ".well-known",
+                "serilog-ui", "swagger", "health", "HealthCheck", "Error", "__test", "uploads", "shared",
+                "assets", "fonts", "css", "js", "favicon.ico", "manifest.webmanifest",
+                "app.js", "sw.js", "robots.txt", "sitemap.xml", "sitemap.xsl", "ssr"
+            };
+
+            try
+            {
+                // Auto-discover all route prefixes defined across all nested classes of ClientRoutes
+                var nestedTypes = typeof(ClientRoutes).GetNestedTypes(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                foreach (var type in nestedTypes)
+                {
+                    if (type.Name.Equals(nameof(Vitrine), StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var fields = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+                    foreach (var field in fields)
+                    {
+                        if (field.FieldType == typeof(string))
+                        {
+                            var val = field.GetValue(null) as string;
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                var seg = val.TrimStart('/').Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                if (!string.IsNullOrWhiteSpace(seg) && !seg.StartsWith("{", StringComparison.Ordinal))
+                                {
+                                    segments.Add(seg);
+                                }
+                            }
+                        }
+                    }
+
+                    // Check for nested sub-types (e.g. Reporting.Print, Accounts.Manage, InventoryStocks.MeltingBatches, etc.)
+                    var subNestedTypes = type.GetNestedTypes(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                    foreach (var subType in subNestedTypes)
+                    {
+                        var subFields = subType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+                        foreach (var subField in subFields)
+                        {
+                            if (subField.FieldType == typeof(string))
+                            {
+                                var val = subField.GetValue(null) as string;
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    var seg = val.TrimStart('/').Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                    if (!string.IsNullOrWhiteSpace(seg) && !seg.StartsWith("{", StringComparison.Ordinal))
+                                    {
+                                        segments.Add(seg);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Safe fallback if reflection fails
+                string[] fallbacks =
+                {
+                    "calculator", "customers", "invoices", "finances", "inventory-stocks",
+                    "reporting", "base-info", "dashboard", "blogs", "products",
+                    "product-categories", "price-board", "transactions", "register-product",
+                    "user-accounts", "about", "under-development", "not-found", "NoStore"
+                };
+                foreach (var f in fallbacks) segments.Add(f);
+            }
+
+            return segments;
+        }
+
+        public static bool IsPlatformDomain(string? host)
+        {
+            if (string.IsNullOrWhiteSpace(host)) return true;
+            host = host.ToLowerInvariant().Trim();
+
+            if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".local", StringComparison.OrdinalIgnoreCase) ||
+                host.Equals("goldexsoft.ir", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".goldexsoft.ir", StringComparison.OrdinalIgnoreCase) ||
+                System.Net.IPAddress.TryParse(host, out _))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         public static bool IsReservedSegment(string? segment)
         {
             if (string.IsNullOrWhiteSpace(segment)) return true;
-            return ReservedSegments.Contains(segment.Trim());
+            return _allKnownAppSegments.Contains(segment.Trim());
+        }
+
+        public static bool IsVitrinePath(string? path, bool isCustomDomain = false)
+        {
+            if (path == null) return false;
+
+            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (isCustomDomain)
+            {
+                // On a custom domain, root / is the vitrine home
+                if (segments.Length == 0) return true;
+
+                var first = segments[0];
+                if (IsReservedSegment(first)) return false;
+
+                // Clean routes on custom domain:
+                // /catalog
+                // /about
+                // /p/{barcode}
+                if (segments.Length == 1 && (first.Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                                            first.Equals("about", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+                if (segments.Length == 2 && first.Equals("p", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Or slug routes on custom domain: /{slug}, /{slug}/catalog, /{slug}/about, /{slug}/p/{barcode}
+                if (segments.Length == 1) return true;
+                if (segments.Length == 2 && (segments[1].Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                                            segments[1].Equals("about", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+                if (segments.Length == 3 && segments[1].Equals("p", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (segments.Length == 0) return false;
+
+            var firstSegment = segments[0];
+
+            // If the first segment is a known application route or system asset, it is NOT vitrine
+            if (IsReservedSegment(firstSegment)) return false;
+
+            // Clean routes without slug:
+            if (segments.Length == 1 && firstSegment.Equals("catalog", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (segments.Length == 2 && firstSegment.Equals("p", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Multi-tenant Vitrine routes:
+            // 1. /{storeSlug}
+            if (segments.Length == 1) return true;
+
+            // 2. /{storeSlug}/catalog
+            // 3. /{storeSlug}/about
+            if (segments.Length == 2 && (segments[1].Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                                        segments[1].Equals("about", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            // 4. /{storeSlug}/p/{barcode}
+            if (segments.Length == 3 && segments[1].Equals("p", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

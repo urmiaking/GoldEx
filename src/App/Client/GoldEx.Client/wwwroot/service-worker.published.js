@@ -90,10 +90,55 @@ self.addEventListener('fetch', event => {
 
     const url = new URL(event.request.url);
 
+    /* ============================
+     * 0. BYPASS FOR VITRINE & MEDIA
+     *    Never intercept Vitrine routes, Vitrine assets, range or video requests.
+     *    Returning early without calling event.respondWith allows direct browser network handling.
+     * ============================ */
+    const isRangeRequest = event.request.headers.has('range');
+    const isVideoRequest =
+        event.request.destination === 'video' ||
+        /\.mp4$|\.webm$|\.ogg$|\.mov$|\.m4v$/i.test(url.pathname);
+    const isVitrineAsset =
+        url.pathname.includes('/assets/vitrine/') ||
+        url.pathname.includes('/assets/fontawesome/') ||
+        url.pathname.startsWith('/uploads/products/') ||
+        url.pathname.startsWith('/api/vitrine/') ||
+        url.pathname.startsWith('/api/v1/vitrine/');
+
+    const isVitrineNavigation = (event.request.mode === 'navigate') && (() => {
+        const segments = url.pathname.split('/').filter(Boolean);
+        if (segments.length === 0 || segments.length > 3) return false;
+
+        const firstSegment = segments[0].toLowerCase();
+        const reserved = [
+            'account', 'dashboard', 'invoices', 'products', 'finances', 'base-info',
+            'settings', 'quick-invoice', 'user-accounts', 'blogs', 'reporting',
+            'customers', 'inventory-stocks', 'calculator', 'price-board', 'product-categories',
+            'transactions', 'register-product', 'api', '_content', '_framework', '_blazor',
+            'nostore', 'not-found', 'under-development', 'error', 'swagger', 'healthcheck', 'serilog-ui', 'ssr'
+        ];
+        if (reserved.includes(firstSegment)) return false;
+
+        // Shape check:
+        // 1. /{slug}
+        if (segments.length === 1) return true;
+        // 2. /{slug}/catalog or /{slug}/about
+        if (segments.length === 2 && ['catalog', 'about'].includes(segments[1].toLowerCase())) return true;
+        // 3. /{slug}/p/{barcode}
+        if (segments.length === 3 && segments[1].toLowerCase() === 'p') return true;
+
+        return false;
+    })();
+
+    if (isRangeRequest || isVideoRequest || isVitrineAsset || isVitrineNavigation) {
+        return;
+    }
+
     event.respondWith((async () => {
 
         /* ============================
-         * 0. API REQUESTS
+         * 1. API REQUESTS
          *    NETWORK FIRST
          * ============================ */
         if (url.pathname.startsWith('/api/')) {
@@ -119,22 +164,6 @@ self.addEventListener('fetch', event => {
                     }
                 );
             }
-        }
-
-        /* ============================
-         * 1. Video / Vitrine / Range requests
-         *    BYPASS CACHE / NETWORK FIRST
-         * ============================ */
-        const isRangeRequest = event.request.headers.has('range');
-        const isVideoRequest =
-            event.request.destination === 'video' ||
-            /\.mp4$|\.webm$|\.ogg$|\.mov$|\.m4v$/i.test(url.pathname);
-        const isVitrineRequest =
-            url.pathname.includes('/assets/vitrine/') ||
-            url.pathname.includes('/assets/fontawesome/');
-
-        if (isRangeRequest || isVideoRequest || isVitrineRequest) {
-            return fetch(event.request);
         }
 
         /* ============================
@@ -176,7 +205,15 @@ self.addEventListener('fetch', event => {
             } catch {
                 const cache = await caches.open(CACHE_NAME);
                 const fallback = await cache.match(BASE_PATH);
-                return fallback || new Response('Offline', { status: 503 });
+                if (fallback) return fallback;
+
+                return new Response(
+                    '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>خطای ارتباط با سرور</title><style>body{font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#18181b;color:#f4f4f5;text-align:center;padding:20px}h1{font-size:1.4rem;color:#daa520;margin-bottom:8px}p{color:#a1a1aa;margin-bottom:20px;font-size:0.95rem}button{background:#daa520;border:none;color:#000;font-weight:bold;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px}</style></head><body><div><h1>عدم برقراری ارتباط با سرور</h1><p>لطفاً اتصال اینترنت خود را بررسی نمایید.</p><button onclick="location.reload()">تلاش مجدد</button></div></body></html>',
+                    {
+                        status: 503,
+                        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                    }
+                );
             }
         }
 
@@ -191,14 +228,13 @@ self.addEventListener('fetch', event => {
         try {
             const response = await fetch(event.request);
 
-            // فقط responseهای کامل و موفق cache شوند
             if (response.ok && response.status === 200) {
                 await cache.put(event.request, response.clone());
             }
 
             return response;
         } catch {
-            return new Response('Offline', { status: 503 });
+            return new Response('', { status: 503, statusText: 'Offline' });
         }
 
     })());

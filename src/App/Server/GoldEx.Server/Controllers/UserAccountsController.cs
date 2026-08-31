@@ -1,10 +1,11 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Sdk.Server.Application.Abstractions;
 using GoldEx.Sdk.Server.Application.Exceptions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.UserAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
@@ -12,6 +13,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GoldEx.Server.Controllers;
 
@@ -46,6 +48,7 @@ public class UserAccountsController(
         return NoContent();
     }
 
+    [EnableRateLimiting(RateLimitPolicies.Sms)]
     [HttpPost(ApiRoutes.UserAccounts.SendVerificationToken)]
     public async Task<IActionResult> SendVerificationTokenAsync(SendVerificationCodeRequest request,
         CancellationToken cancellationToken = default)

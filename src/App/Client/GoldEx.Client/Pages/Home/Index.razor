@@ -1,10 +1,19 @@
 @attribute [Route(ClientRoutes.Home.Index)]
+@using GoldEx.Client.Pages.Vitrine
+@using GoldEx.Shared.Services.Abstractions
+@inject IStoreContext StoreContext
 
 @inherits GoldExComponentBase
 
-<PageTitle>صفحه اصلی</PageTitle>
+@if (StoreContext.IsCustomDomain)
+{
+    <VitrineHome />
+}
+else
+{
+    <PageTitle>صفحه اصلی</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2">
     <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
         <MudBreadcrumbs Class="px-0 py-2 mb-0" Items="_breadcrumbs" MaxItems="2">
             <SeparatorTemplate>
@@ -162,4 +171,5 @@
         </div>
     </div>
 </MudContainer>
+}
 

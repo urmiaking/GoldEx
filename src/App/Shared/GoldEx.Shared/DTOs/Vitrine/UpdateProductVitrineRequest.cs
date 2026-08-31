@@ -6,4 +6,5 @@ public record UpdateProductVitrineRequest(
     bool ShowInVitrine,
     bool IsFeatured,
     string? VitrineDescription,
-    List<ProductImageDto>? Images);
+    List<ProductImageDto>? Images,
+    List<ProductAttributeValueDto>? AttributeValues = null);

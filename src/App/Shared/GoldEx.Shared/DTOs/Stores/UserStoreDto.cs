@@ -9,6 +9,7 @@ public class UserStoreDto
     public string Slug { get; set; } = default!;
     public string? LogoUrl { get; set; }
     public string? BackgroundImageUrl { get; set; }
+    public string? CustomDomain { get; set; }
     public bool IsDefault { get; set; }
     public bool IsCurrent { get; set; }
 }

@@ -30,6 +30,9 @@ public class CustomerTransferVoucherVm
     [Display(Name = "نرخ تبدیل")]
     public decimal? ExchangeRate { get; set; }
 
+    public Guid? SourceInvoiceId { get; set; }
+    public Guid? DestinationInvoiceId { get; set; }
+
     [Display(Name = "فاکتور مبدا (خرید/فروش فرستنده)")]
     public GetTinyInvoiceResponse? SourceInvoice { get; set; }
 

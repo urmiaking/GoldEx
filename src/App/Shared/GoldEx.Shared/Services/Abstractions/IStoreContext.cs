@@ -6,4 +6,6 @@ public interface IStoreContext
 {
     Guid? StoreId { get; }
     string? StoreSlug { get; }
+    string? CustomDomain { get; }
+    bool IsCustomDomain { get; }
 }

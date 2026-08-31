@@ -1,21 +1,60 @@
 @page "/{StoreSlug}/about"
+@page "/about"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Routings
+@using GoldEx.Shared.Services.Abstractions
 @inject NavigationManager Navigation
+@inject IStoreContext StoreContext
 
 <PageTitle>درباره و تماس با @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
 <HeadContent>
-    <meta name="description" content="@($"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی و معرفی {(_storeInfo?.Name ?? "گالری طلا و جواهر")}")" />
-    <meta property="og:title" content="درباره و تماس | @(_storeInfo?.Name ?? "گالری طلا")" />
-    <meta property="og:description" content="@($"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی و معرفی {(_storeInfo?.Name ?? "گالری طلا و جواهر")}")" />
-    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
-    {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    @{
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/about").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}/about").ToString();
+        var storeName = _storeInfo?.Name ?? "گالری طلا و جواهر";
+        var pageTitle = $"درباره و تماس با {storeName}";
+        var pageDesc = $"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی، شماره واتساپ و معرفی {storeName}.";
+        var logoUrl = !string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl) ? Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString() : null;
     }
+
+    <link rel="canonical" href="@canonicalUrl" />
+    <meta name="description" content="@pageDesc" />
+    <meta name="keywords" content="@($"تماس با {storeName}, آدرس {storeName}, تلفن {storeName}, درباره {storeName}, گالری طلا")" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="@storeName" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta property="og:image" content="@logoUrl" />
+        <meta property="og:image:alt" content="@storeName" />
+        <link rel="icon" type="image/png" href="@logoUrl" />
+        <link rel="shortcut icon" href="@logoUrl" />
+        <link rel="apple-touch-icon" href="@logoUrl" />
+    }
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta name="twitter:image" content="@logoUrl" />
+    }
+
+    <!-- JSON-LD Structured Data: AboutPage & ContactPage -->
+    <script type="application/ld+json">
+    @((MarkupString)GetAboutJsonLd(canonicalUrl, logoUrl, storeName, pageDesc))
+    </script>
 </HeadContent>
 
 <div class="vitrine-container" style="padding-top: 40px; padding-bottom: 70px;">
@@ -131,14 +170,65 @@
 </div>
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
+    [Parameter] public string? StoreSlug { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(_storeInfo?.Slug) 
+            ? _storeInfo.Slug 
+            : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : ""));
 
     protected override void OnInitialized()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
+    }
+
+    private string GetAboutJsonLd(string canonicalUrl, string? logoUrl, string storeName, string pageDesc)
+    {
+        var sameAsList = new List<string>();
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.InstagramUrl)) sameAsList.Add(_storeInfo.InstagramUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.TelegramUrl)) sameAsList.Add(_storeInfo.TelegramUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl)) sameAsList.Add(_storeInfo.BaleUrl);
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber)) sameAsList.Add($"https://wa.me/{_storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+')}");
+
+        var homeUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}").ToString();
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "AboutPage",
+            ["name"] = $"درباره و تماس با {storeName}",
+            ["url"] = canonicalUrl,
+            ["description"] = pageDesc,
+            ["mainEntity"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "JewelryStore",
+                ["name"] = storeName,
+                ["url"] = homeUrl,
+                ["logo"] = logoUrl,
+                ["image"] = logoUrl,
+                ["telephone"] = _storeInfo?.PhoneNumber,
+                ["address"] = !string.IsNullOrWhiteSpace(_storeInfo?.Address)
+                    ? new Dictionary<string, object>
+                    {
+                        ["@type"] = "PostalAddress",
+                        ["streetAddress"] = _storeInfo.Address,
+                        ["addressCountry"] = "IR"
+                    }
+                    : null,
+                ["sameAs"] = sameAsList.Count > 0 ? sameAsList : null
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
     }
 }

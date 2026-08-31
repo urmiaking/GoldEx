@@ -79,6 +79,16 @@ internal class SettingService(ISettingRepository repository,
         item.SetUsedGoldFinenessDeduction(request.UsedGoldFinenessDeductionRate);
         item.SetGramPerMesghal(request.GramPerMesghal);
         item.SetVitrineSocialInfo(request.InstagramUrl, request.TelegramUrl, request.BaleUrl, request.WhatsAppNumber, request.AboutText);
+        item.SetVitrineTheme(
+            request.VitrineThemePreset,
+            request.VitrinePrimaryColor,
+            request.VitrineAccentColor,
+            request.VitrineBackgroundColor,
+            request.VitrineSurfaceColor,
+            request.VitrineCardStyle,
+            request.VitrineRadiusStyle,
+            request.VitrineFontStyle,
+            request.VitrineHeaderStyle);
 
         await repository.UpdateAsync(item, cancellationToken);
 

@@ -85,6 +85,10 @@ namespace GoldEx.Server.Services
             {
                 _state.PersistAsJson(nameof(UserInfo), new UserInfo(principal.Claims));
             }
+            else
+            {
+                _state.PersistAsJson(nameof(UserInfo), new UserInfo([]));
+            }
         }
 
         protected override void Dispose(bool disposing)

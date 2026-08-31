@@ -640,6 +640,9 @@ internal class AccountingTransactionService(
         {
             foreach (var payment in invoice.InvoicePayments)
             {
+                if (payment.CustomerTransferVoucherId.HasValue)
+                    continue;
+
                 var paymentGroupId = Guid.CreateVersion7();
 
                 long payLine = 0;
@@ -1025,7 +1028,214 @@ internal class AccountingTransactionService(
                     }
                 }
 
-                // 3) حواله‌کرد (CustomerTransfer)
+                // 3) پرداخت با سکه (موجودی سکه)
+                else if (payment.PaymentType is PaymentType.Coin)
+                {
+                    var coinLedger = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                        .FirstOrDefaultAsync(cancellationToken)
+                        ?? throw new NotFoundException("Coin inventory ledger account not found.");
+
+                    var counterpartyRole = invoice.InvoiceType == InvoiceType.Sell
+                        ? LedgerAccountRole.Receivable
+                        : LedgerAccountRole.Payable;
+
+                    var counterpartyLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                        customer.Id, invoice.PriceUnitId, counterpartyRole, cancellationToken);
+
+                    var description = TransactionDescriptionBuilder.ForCoinPayment(invoice, payment);
+
+                    var sameCurrency = payment.PriceUnitId == invoice.PriceUnitId;
+
+                    if (sameCurrency)
+                    {
+                        if (payment.PaymentSide == PaymentSide.Receive)
+                        {
+                            // دریافت سکه در فاکتور فروش -> ورود به دارایی سکه و کاهش طلب از مشتری
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                exchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                coinLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                exchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                counterpartyLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                        else // PaymentSide.Pay
+                        {
+                            // پرداخت سکه در فاکتور خرید -> کاهش بدهی به تأمین کننده و خروج از دارایی سکه
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                exchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                counterpartyLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                exchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                coinLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                    }
+                    else
+                    {
+                        // نرخ تبدیل سکه → ارز پایه
+                        decimal? coinExchangeRate =
+                            payment.PriceUnitId == basePriceUnit.Id
+                                ? null
+                                : payment.ExchangeRate
+                                  ?? throw new InvalidOperationException("Coin exchange rate is required.");
+
+                        // نرخ تسویه سکه → ارز فاکتور
+                        var settlementRate = ResolveInvoiceSettlementRate(invoice, payment)
+                                             ?? throw new InvalidOperationException(
+                                                 "Settlement rate is required for coin payment settlement.");
+
+                        // STEP 1: ورود / خروج موجودی سکه با ارز پرداخت
+                        if (payment.PaymentSide == PaymentSide.Receive)
+                        {
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                coinExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                coinLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                coinExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                settlementLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                        else // PaymentSide.Pay
+                        {
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                coinExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                settlementLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                payment.FinalAmount,
+                                coinExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                coinLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+
+                        // STEP 2: تسویه فاکتور با ارز فاکتور
+                        var invoiceAmount = payment.FinalAmount * settlementRate;
+
+                        var invoiceExchangeRate =
+                            invoice.PriceUnitId == basePriceUnit.Id
+                                ? null
+                                : invoice.ExchangeRate;
+
+                        if (payment.PaymentSide == PaymentSide.Receive)
+                        {
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                invoiceAmount,
+                                invoiceExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                settlementLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                invoiceAmount,
+                                invoiceExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                counterpartyLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                        else // Pay
+                        {
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                invoiceAmount,
+                                invoiceExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Debit,
+                                counterpartyLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                description,
+                                invoiceAmount,
+                                invoiceExchangeRate,
+                                paymentGroupId,
+                                TransactionType.Credit,
+                                settlementLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                    }
+                }
+
+                // 4) حواله‌کرد (CustomerTransfer)
                 else if (payment.PaymentType == PaymentType.CustomerTransfer)
                 {
                     if (payment.LedgerAccount?.CustomerId is null)
@@ -1102,13 +1312,13 @@ internal class AccountingTransactionService(
 
                         if (payment.PaymentSide == PaymentSide.Receive)
                         {
-                            // بدهکار کردن مشتری اصلی، بستانکار کردن حواله‌کرد
+                            // دریافت از مشتری اصلی: بستانکار کردن مشتری اصلی، بدهکار کردن طرف حواله‌دهنده
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
-                                TransactionType.Debit,
+                                TransactionType.Credit,
                                 customerReceivableAccount.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
@@ -1120,7 +1330,7 @@ internal class AccountingTransactionService(
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
-                                TransactionType.Credit,
+                                TransactionType.Debit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
@@ -1129,14 +1339,14 @@ internal class AccountingTransactionService(
                         }
                         else // PaymentSide.Pay
                         {
-                            // بدهکار کردن حواله‌کرد، بستانکار کردن مشتری اصلی
+                            // پرداخت به مشتری اصلی (عودت طلب/انتقال بستانکاری): بدهکار کردن مشتری اصلی، بستانکار کردن طرف حواله‌گیرنده
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 amount,
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
                                 TransactionType.Debit,
-                                endorserLedger.Id,
+                                customerReceivableAccount.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
                                 payment.Id,
@@ -1148,7 +1358,7 @@ internal class AccountingTransactionService(
                                 sameCurrency ? exchangeRate : invoice.ExchangeRate,
                                 paymentGroupId,
                                 TransactionType.Credit,
-                                customerReceivableAccount.Id,
+                                endorserLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id,
                                 payment.Id,
@@ -1671,6 +1881,44 @@ internal class AccountingTransactionService(
 
         var postingDate = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
 
+        Invoice? sourceInvoice = null;
+        if (voucher.SourceInvoiceId.HasValue)
+        {
+            sourceInvoice = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(voucher.SourceInvoiceId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        Invoice? destInvoice = null;
+        if (voucher.DestinationInvoiceId.HasValue)
+        {
+            destInvoice = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(voucher.DestinationInvoiceId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        TransactionType sourceTxType;
+        TransactionType destTxType;
+
+        if (destInvoice != null && destInvoice.InvoiceType == InvoiceType.Purchase)
+        {
+            // گیرنده فاکتور خرید دارد (ما به گیرنده بدهکار بودیم): با دریافت حواله، طلب گیرنده تسویه می‌شود (بدهکار)
+            destTxType = TransactionType.Debit;
+            sourceTxType = TransactionType.Credit;
+        }
+        else if (sourceInvoice != null && sourceInvoice.InvoiceType == InvoiceType.Sell)
+        {
+            // فرستنده فاکتور فروش دارد (فرستنده به ما بدهکار بود): با انتقال وجه، بدهی فاکتور فرستنده تسویه می‌شود (بستانکار)
+            sourceTxType = TransactionType.Credit;
+            destTxType = TransactionType.Debit;
+        }
+        else
+        {
+            // حالت پیش‌فرض (انتقال اعتبار از فرستنده به گیرنده، یا تسویه فاکتور فروش گیرنده، یا تسویه فاکتور خرید فرستنده)
+            sourceTxType = TransactionType.Debit;
+            destTxType = TransactionType.Credit;
+        }
+
         var sourceDesc = TransactionDescriptionBuilder.ForCustomerTransferSource(
             voucher.VoucherNumber, destinationCustomer.FullName, voucher.Description);
 
@@ -1684,7 +1932,7 @@ internal class AccountingTransactionService(
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Debit,
+                sourceTxType,
                 sourceLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,
@@ -1696,7 +1944,7 @@ internal class AccountingTransactionService(
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Credit,
+                destTxType,
                 destLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,

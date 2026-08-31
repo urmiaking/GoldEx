@@ -73,6 +73,7 @@ public partial class Stores
                         Slug = item.Slug,
                         LogoUrl = item.LogoUrl,
                         BackgroundImageUrl = item.BackgroundImageUrl,
+                        CustomDomain = item.CustomDomain,
                         IsActive = item.IsActive,
                         Index = filter.Skip ?? 0 + idx + 1
                     }).ToList()

@@ -76,14 +76,29 @@ public static class WebHostingExtensions
 
             app.Use((context, next) =>
             {
+                var headers = context.Response.Headers;
+
+                headers["X-Content-Type-Options"] = "nosniff";
+                headers["X-Frame-Options"] = "SAMEORIGIN";
+                headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=(), payment=()";
+                headers["X-XSS-Protection"] = "1; mode=block";
+
+                if (!app.Environment.IsDevelopment() && context.Request.IsHttps)
+                {
+                    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+                }
+
+                headers.Remove("X-Powered-By");
+
                 var path = context.Request.Path.Value ?? string.Empty;
                 if (!path.StartsWith("/oauth", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/mcp", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/.well-known", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
-                    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+                    headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+                    headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
                 }
                 return next.Invoke();
             });
@@ -99,7 +114,6 @@ public static class WebHostingExtensions
             });
             app.UseDevExpressControls();
 
-            var cacheMaxAgeOneWeek = (60 * 60 * 24 * 7).ToString();
             app.UseStaticFiles(new StaticFileOptions
             {
                 OnPrepareResponse = ctx =>
@@ -113,13 +127,31 @@ public static class WebHostingExtensions
                     else
                     {
                         var path = ctx.Context.Request.Path.Value ?? "";
-                        if (path.StartsWith("/assets/vitrine/", StringComparison.OrdinalIgnoreCase))
+
+                        // Manifests, boot configs, service workers, and vitrine assets must always revalidate
+                        if (path.EndsWith("blazor.boot.json", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("blazor.web.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("service-worker.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("service-worker-assets.js", StringComparison.OrdinalIgnoreCase) ||
+                            path.EndsWith("manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
+                            path.StartsWith("/assets/vitrine/", StringComparison.OrdinalIgnoreCase))
                         {
-                            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, must-revalidate";
+                            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                            ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                            ctx.Context.Response.Headers["Expires"] = "0";
+                        }
+                        else if (path.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) &&
+                                (path.EndsWith(".wasm", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".br", StringComparison.OrdinalIgnoreCase) ||
+                                 path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // Fingerprinted wasm / dll assets can be safely cached
+                            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
                         }
                         else
                         {
-                            ctx.Context.Response.Headers["Cache-Control"] = $"public, max-age={cacheMaxAgeOneWeek}";
+                            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=86400";
                         }
                     }
                 }
@@ -127,6 +159,7 @@ public static class WebHostingExtensions
 
             app.UseRouting();
             app.UseCors("McpCorsPolicy");
+            app.UseRateLimiter();
 
             app.UseAuthentication();
             app.UseMiddleware<ApiKeyAuthenticationMiddleware>();

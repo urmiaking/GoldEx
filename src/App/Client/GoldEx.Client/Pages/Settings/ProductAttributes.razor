@@ -1,0 +1,99 @@
+@attribute [Route(ClientRoutes.Settings.ProductAttributes)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.ProductAttributes
+@using GoldEx.Shared.Enums
+
+<PageTitle>ویژگی‌های توصیفی کالاها</PageTitle>
+
+<div class="d-flex align-center justify-space-between mb-3">
+    <div>
+        <MudText Typo="Typo.h6">ویژگی‌های توصیفی کالاها</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">تعریف ویژگی‌ها، ابعاد، و مشخصات ساختاریافته کالاها جهت استفاده در ویترین و انبار</MudText>
+    </div>
+    
+    <MudButton Color="Color.Success"
+               StartIcon="@Icons.Material.Filled.Add"
+               Variant="Variant.Filled"
+               Size="Size.Small"
+               OnClick="OnCreateAttribute">
+        تعریف ویژگی جدید
+    </MudButton>
+</div>
+
+<MudDivider Class="my-2" />
+
+<MudTable T="ProductAttributeDto"
+          Hover="true"
+          FixedHeader="true"
+          Dense="true"
+          Items="_attributes"
+          Loading="_processing"
+          Breakpoint="Breakpoint.None"
+          Elevation="24"
+          Class="p-2 mt-4"
+          ContainerClass="responsive-table">
+    <HeaderContent>
+        <MudTh>ردیف</MudTh>
+        <MudTh>عنوان ویژگی</MudTh>
+        <MudTh>واحد اندازه‌گیری</MudTh>
+        <MudTh>نوع داده</MudTh>
+        <MudTh>گزینه‌های انتخابی</MudTh>
+        <MudTh>توضیحات</MudTh>
+        <MudTh Style="width: 100px;">عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ردیف">@(_attributes.IndexOf(context) + 1)</MudTd>
+        <MudTd DataLabel="عنوان ویژگی">
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@context.Title</MudChip>
+        </MudTd>
+        <MudTd DataLabel="واحد اندازه‌گیری">
+            @(string.IsNullOrWhiteSpace(context.Unit) ? "—" : context.Unit)
+        </MudTd>
+        <MudTd DataLabel="نوع داده">
+            @switch (context.DataType)
+            {
+                case ProductAttributeDataType.Number:
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">عددی</MudChip>
+                    break;
+                case ProductAttributeDataType.Select:
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">انتخابی</MudChip>
+                    break;
+                default:
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">متنی</MudChip>
+                    break;
+            }
+        </MudTd>
+        <MudTd DataLabel="گزینه‌های انتخابی">
+            @(string.IsNullOrWhiteSpace(context.Options) ? "—" : context.Options)
+        </MudTd>
+        <MudTd DataLabel="توضیحات">
+            @(string.IsNullOrWhiteSpace(context.Description) ? "—" : context.Description)
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="_ => OnEditAttribute(context)" />
+                </MudTooltip>
+                <MudTooltip Text="حذف">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   OnClick="_ => OnDeleteAttribute(context)" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ ویژگی توصیفی تعریف نشده است.</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری اطلاعات...</MudText>
+    </LoadingContent>
+</MudTable>

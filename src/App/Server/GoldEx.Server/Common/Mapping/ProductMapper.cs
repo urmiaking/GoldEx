@@ -20,7 +20,17 @@ internal class ProductMapper : IRegister
             .Map(dest => dest.GemStones, src => src.GemStones)
             .Map(dest => dest.Weight, src => src.InventoryStocks != null 
                 ? src.InventoryStocks.Sum(x => x.ActionType == WarehouseActionType.In ? x.ChangeAmount : -x.ChangeAmount)
-                : src.Weight);
+                : src.Weight)
+            .Map(dest => dest.AttributeValues, src => src.AttributeValues != null
+                ? src.AttributeValues.Select(v => new ProductAttributeValueDto(
+                    v.AttributeId.Value,
+                    v.Attribute != null ? v.Attribute.Title : null,
+                    v.Attribute != null ? v.Attribute.Unit : null,
+                    v.Value,
+                    v.NumericValue,
+                    v.Attribute != null ? v.Attribute.DataType : ProductAttributeDataType.Text
+                )).ToList()
+                : null);
 
         config.NewConfig<GemStone, GetGemStoneResponse>()
             .Map(dest => dest.StoneTypeId, src => src.StoneTypeId.HasValue ? src.StoneTypeId.Value.Value : (Guid?)null)

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -7,6 +7,7 @@ using GoldEx.Sdk.Server.Application.Exceptions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Application.Extensions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.UserAccounts;
 using GoldEx.Shared.DTOs.UserAccounts;
 using GoldEx.Shared.Services.Abstractions;
@@ -28,14 +29,12 @@ internal sealed class UserAccountService(
     IUserStore<AppUser> userStore,
     ILogger<UserAccountService> logger,
     ITransactionContext transactionContext,
-    IMemoryCache cache,
     ISmsSender smsSender,
+    ISmsSecurityService smsSecurityService,
     IUserContext userContext,
     IHttpContextAccessor httpContextAccessor,
     IMapper mapper) : IUserAccountService
 {
-    private readonly TimeSpan _cooldown = TimeSpan.FromMinutes(2);
-
     public async Task<GetUserAccountResponse> GetCurrentUserInfoAsync(CancellationToken cancellationToken = default)
     {
         var userId = userContext.GetUserId() ?? throw new UnauthorizedAccessException();
@@ -83,16 +82,14 @@ internal sealed class UserAccountService(
     public async Task SendVerificationTokenAsync(SendVerificationCodeRequest request,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"phone:smsCooldown:{request.OldPhoneNumber}";
-
-        if (cache.TryGetValue(cacheKey, out _))
+        var clientIp = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        var rateCheck = smsSecurityService.CheckCanSendSms(request.OldPhoneNumber, clientIp);
+        if (!rateCheck.Allowed)
         {
-#if !DEBUG
             throw new ValidationException([
                 new ValidationFailure(nameof(request.NewPhoneNumber),
-                    $"لطفاً بعد از {_cooldown.TotalMinutes} دقیقه دوباره تلاش کنید")
+                    rateCheck.ErrorMessage ?? "امکان ارسال پیامک در حال حاضر وجود ندارد.")
             ]);
-#endif
         }
 
         if (!userManager.SupportsUserPhoneNumber)
@@ -109,8 +106,6 @@ internal sealed class UserAccountService(
             throw new ValidationException([
                 new ValidationFailure(nameof(request.NewPhoneNumber), "خطا در ارسال کد تایید")
             ]);
-
-        cache.Set(cacheKey, true, _cooldown);
     }
 
     public async Task UpdateUserEmailAsync(UpdateUserEmailRequest request, CancellationToken cancellationToken = default)
@@ -390,35 +385,52 @@ internal sealed class UserAccountService(
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.Equals(user.PhoneNumber, request.PhoneNumber, StringComparison.CurrentCultureIgnoreCase))
+                var normalizedPhone = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+                if (!string.Equals(user.PhoneNumber, normalizedPhone, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var result = await userManager.SetPhoneNumberAsync(user, request.PhoneNumber);
+                    var result = await userManager.SetPhoneNumberAsync(user, normalizedPhone);
 
                     if (!result.Succeeded)
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.Equals(user.Email, request.Email, StringComparison.CurrentCultureIgnoreCase))
+                var normalizedEmail = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim();
+                if (!string.Equals(user.Email, normalizedEmail, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var result = await userManager.SetEmailAsync(user, request.Email);
+                    var result = await userManager.SetEmailAsync(user, normalizedEmail);
 
                     if (!result.Succeeded)
                         throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
                 }
 
-                if (!string.IsNullOrEmpty(request.Password))
+                if (!string.IsNullOrWhiteSpace(request.Password))
                 {
-                    await userManager.RemovePasswordAsync(user);
+                    if (await userManager.HasPasswordAsync(user))
+                    {
+                        var removePassResult = await userManager.RemovePasswordAsync(user);
+                        if (!removePassResult.Succeeded)
+                            throw new InvalidOperationException(string.Join(",", removePassResult.Errors.Select(x => x.Description)));
+                    }
+
                     var passwordResult = await userManager.AddPasswordAsync(user, request.Password);
 
                     if (!passwordResult.Succeeded)
                         throw new InvalidOperationException(string.Join(",", passwordResult.Errors.Select(x => x.Description)));
                 }
 
-                if (user.UserRoles.All(x => x.Role.Name != request.Role))
+                var currentRoles = await userManager.GetRolesAsync(user);
+                if (!currentRoles.Contains(request.Role))
                 {
-                    await userManager.RemoveFromRoleAsync(user, user.UserRoles.FirstOrDefault()!.Role.Name!);
-                    await userManager.AddToRoleAsync(user, request.Role);
+                    if (currentRoles.Count > 0)
+                    {
+                        var removeRoleResult = await userManager.RemoveFromRolesAsync(user, currentRoles);
+                        if (!removeRoleResult.Succeeded)
+                            throw new InvalidOperationException(string.Join(",", removeRoleResult.Errors.Select(x => x.Description)));
+                    }
+
+                    var addRoleResult = await userManager.AddToRoleAsync(user, request.Role);
+                    if (!addRoleResult.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", addRoleResult.Errors.Select(x => x.Description)));
                 }
 
                 await dbTransaction.CommitAsync(cancellationToken);

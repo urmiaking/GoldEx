@@ -15,7 +15,7 @@
                         <div class="d-flex align-center justify-space-between mb-2">
                             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="d-flex align-center gap-1">
                                 <MudIcon Icon="@Icons.Material.Outlined.Preview" Size="Size.Small" />
-                                پیش‌نمایش جریان سند حسابداری
+                                پیش‌نمایش جریان سند و مانده حساب مشتریان
                             </MudText>
                         </div>
                         <MudGrid AlignItems="Center" Spacing="2">
@@ -25,9 +25,37 @@
                                     <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
                                         @(Model.SourceCustomer?.FullName ?? "انتخاب نشده")
                                     </MudText>
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text" Class="mt-1">
-                                        کاهش طلب ما از مشتری
-                                    </MudChip>
+                                    
+                                    @if (Model.SourceCustomer != null)
+                                    {
+                                        <div class="mt-2 text-start px-2 py-1 rounded" style="background: rgba(0,0,0,0.03); font-size: 0.8rem;">
+                                            <div class="d-flex justify-space-between align-center mb-1">
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "مانده قبل از این حواله:" : "مانده فعلی:")</span>
+                                                @if (_loadingSourceBalance)
+                                                {
+                                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width: 14px; height: 14px;" />
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(SourceBaseBalance)" Style="font-weight: 600;">
+                                                        @GetBalanceLabel(SourceBaseBalance)
+                                                    </MudText>
+                                                }
+                                            </div>
+                                            <div class="d-flex justify-space-between align-center">
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "پس از ویرایش حواله:" : "پس از ثبت حواله:")</span>
+                                                <MudText Typo="Typo.caption" Color="@GetBalanceColor(SourceProjectedBalance)" Style="font-weight: bold;">
+                                                    @GetBalanceLabel(SourceProjectedBalance)
+                                                </MudText>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text" Class="mt-1">
+                                            کاهش طلب ما از مشتری
+                                        </MudChip>
+                                    }
                                 </MudPaper>
                             </MudItem>
 
@@ -46,9 +74,37 @@
                                     <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
                                         @(Model.DestinationCustomer?.FullName ?? "انتخاب نشده")
                                     </MudText>
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Class="mt-1">
-                                        کاهش بدهی ما به مشتری
-                                    </MudChip>
+
+                                    @if (Model.DestinationCustomer != null)
+                                    {
+                                        <div class="mt-2 text-start px-2 py-1 rounded" style="background: rgba(0,0,0,0.03); font-size: 0.8rem;">
+                                            <div class="d-flex justify-space-between align-center mb-1">
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "مانده قبل از این حواله:" : "مانده فعلی:")</span>
+                                                @if (_loadingDestBalance)
+                                                {
+                                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Style="width: 14px; height: 14px;" />
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="@GetBalanceColor(DestBaseBalance)" Style="font-weight: 600;">
+                                                        @GetBalanceLabel(DestBaseBalance)
+                                                    </MudText>
+                                                }
+                                            </div>
+                                            <div class="d-flex justify-space-between align-center">
+                                                <span style="color: var(--mud-palette-text-secondary);">@(IsEditMode ? "پس از ویرایش حواله:" : "پس از ثبت حواله:")</span>
+                                                <MudText Typo="Typo.caption" Color="@GetBalanceColor(DestProjectedBalance)" Style="font-weight: bold;">
+                                                    @GetBalanceLabel(DestProjectedBalance)
+                                                </MudText>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Class="mt-1">
+                                            کاهش بدهی ما به مشتری
+                                        </MudChip>
+                                    }
                                 </MudPaper>
                             </MudItem>
                         </MudGrid>
@@ -125,6 +181,7 @@
                     <MudNumericField T="decimal"
                                      @bind-Value="@Model.Amount"
                                      dir="ltr"
+                                     Immediate="true"
                                      Variant="Variant.Outlined"
                                      Label="مبلغ یا وزن حواله *"
                                      For="() => Model.Amount"
@@ -166,6 +223,7 @@
                     <MudSelect T="GetTinyInvoiceResponse?"
                                @bind-Value="Model.SourceInvoice"
                                Label="فاکتور مبدا فرستنده (اختیاری جهت تسویه فاکتور)"
+                               ToStringFunc="@(inv => inv != null ? $"فاکتور {inv.InvoiceType.GetDisplayName()} شماره {inv.InvoiceNumber} (مانده: {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)})" : null)"
                                Disabled="@(Model.SourceCustomer == null || _loadingInvoices)"
                                Clearable="true"
                                Margin="Margin.Dense"
@@ -183,6 +241,7 @@
                     <MudSelect T="GetTinyInvoiceResponse?"
                                @bind-Value="Model.DestinationInvoice"
                                Label="فاکتور مقصد گیرنده (اختیاری جهت تسویه فاکتور)"
+                               ToStringFunc="@(inv => inv != null ? $"فاکتور {inv.InvoiceType.GetDisplayName()} شماره {inv.InvoiceNumber} (مانده: {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)})" : null)"
                                Disabled="@(Model.DestinationCustomer == null || _loadingInvoices)"
                                Clearable="true"
                                Margin="Margin.Dense"

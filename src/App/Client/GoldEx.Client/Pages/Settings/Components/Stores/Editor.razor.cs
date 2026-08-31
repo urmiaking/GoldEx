@@ -119,7 +119,8 @@ public partial class Editor
             logoExt,
             bgContent,
             bgExt,
-            Model.IsActive
+            Model.IsActive,
+            Model.CustomDomain
         );
 
         if (Id == null)

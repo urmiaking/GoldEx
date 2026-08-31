@@ -180,11 +180,26 @@
         <MudTd Class="desktop-table-cell align-middle" DataLabel="مانده کل مشتری">
             @if (context.CustomerId != Guid.Empty)
             {
-                <CustomerRemaining CustomerId="@context.CustomerId"
-                                   UntilDate="@GetInvoicePostingDate(context)"
-                                   InvoiceId="@context.Id"
-                                   EnableManualSlide="true"
-                                   ItemClass="justify-content-end justify-content-lg-start" />
+                <MudTooltip Placement="Placement.Top">
+                    <ChildContent>
+                        <CustomerRemaining CustomerId="@context.CustomerId"
+                                           EnableManualSlide="true"
+                                           ItemClass="justify-content-end justify-content-lg-start" />
+                    </ChildContent>
+                    <TooltipContent>
+                        <div class="d-flex flex-column gap-1 pa-1 text-start" style="font-size: 0.75rem;">
+                            <span style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">
+                                مانده در لحظه صدور این فاکتور:
+                            </span>
+                            <div class="d-flex align-center gap-1 mt-1">
+                                <CustomerRemaining CustomerId="@context.CustomerId"
+                                                   UntilDate="@GetInvoicePostingDate(context)"
+                                                   InvoiceId="@context.Id"
+                                                   EnableManualSlide="true" />
+                            </div>
+                        </div>
+                    </TooltipContent>
+                </MudTooltip>
             }
         </MudTd>
 
@@ -274,11 +289,26 @@
                             <MudText Typo="Typo.caption" Class="mb-1">مانده کل مشتری</MudText>
                             @if (context.CustomerId != Guid.Empty)
                             {
-                                <CustomerRemaining CustomerId="@context.CustomerId"
-                                                   UntilDate="@GetInvoicePostingDate(context)"
-                                                   InvoiceId="@context.Id"
-                                                   EnableManualSlide="true"
-                                                   ItemClass="justify-content-end" />
+                                <MudTooltip Placement="Placement.Top">
+                                    <ChildContent>
+                                        <CustomerRemaining CustomerId="@context.CustomerId"
+                                                           EnableManualSlide="true"
+                                                           ItemClass="justify-content-end" />
+                                    </ChildContent>
+                                    <TooltipContent>
+                                        <div class="d-flex flex-column gap-1 pa-1 text-start" style="font-size: 0.75rem;">
+                                            <span style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">
+                                                مانده در لحظه صدور این فاکتور:
+                                            </span>
+                                            <div class="d-flex align-center gap-1 mt-1">
+                                                <CustomerRemaining CustomerId="@context.CustomerId"
+                                                                   UntilDate="@GetInvoicePostingDate(context)"
+                                                                   InvoiceId="@context.Id"
+                                                                   EnableManualSlide="true" />
+                                            </div>
+                                        </div>
+                                    </TooltipContent>
+                                </MudTooltip>
                             }
                         </div>
                     </div>

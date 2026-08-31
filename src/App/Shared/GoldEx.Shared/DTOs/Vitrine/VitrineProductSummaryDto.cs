@@ -14,4 +14,5 @@ public record VitrineProductSummaryDto(
     string? MainImageUrl,
     decimal EstimatedPrice,
     bool IsFeatured,
-    bool IsAvailable = true);
+    bool IsAvailable = true,
+    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null);

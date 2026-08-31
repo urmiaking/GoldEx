@@ -89,8 +89,21 @@ internal class InvoiceMapper : IRegister
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
             .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount)
             .Map(dest => dest.Endorser, src =>
-                src.LedgerAccount != null && src.LedgerAccount.Customer != null ? src.LedgerAccount.Customer : null)
-            .Map(dest => dest.TargetInvoice, src => src.TargetInvoice);
+                src.LedgerAccount != null && src.LedgerAccount.Customer != null
+                    ? src.LedgerAccount.Customer
+                    : (src.CustomerTransferVoucher != null
+                        ? (src.PaymentType == PaymentType.TransferedPayment
+                            ? src.CustomerTransferVoucher.SourceCustomer
+                            : src.CustomerTransferVoucher.DestinationCustomer)
+                        : (src.TargetInvoice != null && src.TargetInvoice.Customer != null
+                            ? src.TargetInvoice.Customer
+                            : (src.SourcePayment != null && src.SourcePayment.Invoice != null && src.SourcePayment.Invoice.Customer != null
+                                ? src.SourcePayment.Invoice.Customer
+                                : null))))
+            .Map(dest => dest.TargetInvoice, src => src.TargetInvoice)
+            .Map(dest => dest.CoinInstance, src => src.CoinInstance)
+            .Map(dest => dest.CoinQuantity, src => src.CoinQuantity)
+            .Map(dest => dest.CoinUnitPrice, src => src.CoinUnitPrice);
 
         config.NewConfig<Invoice, GetTinyInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

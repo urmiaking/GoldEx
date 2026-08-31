@@ -1,9 +1,9 @@
-﻿@attribute [Route(ClientRoutes.Accounts.VerifyPhoneNumber)]
+@attribute [Route(ClientRoutes.Accounts.VerifyPhoneNumber)]
 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
-@inject IMemoryCache MemoryCache
+@inject ISmsSecurityService SmsSecurityService
 @layout EmptyBoxLayout
 
 <PageTitle>تایید شماره تلفن</PageTitle>
@@ -28,8 +28,8 @@
 
     <MudItem xs="12" Class="mb-4">
         <MudStaticTextField For="@(() => Input.Code)" @bind-Value="Input.Code"
-                            Label="کد تایید"
-                            UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
+                            Label="کد تایید ۶ رقمی" Placeholder="123456"
+                            UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "one-time-code" }, { "aria-required", "true" }, { "dir", "ltr" }, { "maxlength", "6" } } )" />
     </MudItem>
     @if (!string.IsNullOrEmpty(_errorMessage))
     {
@@ -39,9 +39,15 @@
     }
     <MudItem xs="12">
         <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login" FullWidth="true"
-                   Color="Color.Primary" ButtonType="ButtonType.Submit">تایید</MudButton>
+                   Color="Color.Primary" ButtonType="ButtonType.Submit">ورود به سامانه</MudButton>
     </MudItem>
 </EditForm>
+
+<MudGrid Class="mt-2">
+    <MudItem xs="12" Class="text-center">
+        <MudLink Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ارسال مجدد کد تایید</MudLink>
+    </MudItem>
+</MudGrid>
 
 @code
 {
@@ -64,27 +70,21 @@
 
     private async Task OnValidSubmitAsync()
     {
-        var user = await UserManager.Users.FirstOrDefaultAsync(x => x.PhoneNumber == PhoneNumber);
+        var phone = PhoneNumber?.Trim() ?? "";
+
+        var user = await UserManager.Users.FirstOrDefaultAsync(x => x.PhoneNumber == phone);
 
         if (user is null)
         {
             RedirectManager.RedirectTo(ClientRoutes.Accounts.LoginWithPhoneNumber);
+            return;
         }
 
-        var code = MemoryCache.Get(user.Id);
+        var verifyResult = SmsSecurityService.VerifyOtp(phone, Input.Code, OtpPurpose.Login);
 
-        var token = code?.ToString();
-
-        if (string.IsNullOrEmpty(token))
+        if (!verifyResult.Success)
         {
-            _errorMessage = "کد تایید وارد شده صحیح نمی‌باشد";
-        }
-
-        var isValidToken = Input.Code == token;
-
-        if (!isValidToken)
-        {
-            _errorMessage = "کد تایید وارد شده صحیح نمی‌باشد";
+            _errorMessage = verifyResult.ErrorMessage ?? "کد تایید وارد شده صحیح نمی‌باشد";
             return;
         }
 
@@ -94,13 +94,14 @@
         await SignInManager.SignInAsync(user, RememberMe);
 
         RedirectManager.RedirectTo(ReturnUrl);
-
     }
 
     public class InputModel
     {
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Display(Name = "کد تایید")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "کد تایید باید ۶ رقم باشد")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "کد تایید باید فقط شامل ارقام انگلیسی باشد")]
         public string Code { get; set; } = string.Empty;
     }
 }

@@ -455,13 +455,13 @@ public partial class ProductItemEditor
 
     private void OnStoneTypeChanged(int index, Guid? val)
     {
-        var stone = Model.Product.Stones[index];
-        stone.StoneTypeId = val;
+        var stone = Model.Product.Stones?[index];
+        stone?.StoneTypeId = val;
         var selectedType = _stoneTypes.FirstOrDefault(x => x.Id == val);
         if (selectedType != null)
         {
-            stone.Type = selectedType.Title;
-            stone.StoneTypeSymbol = selectedType.Symbol;
+            stone?.Type = selectedType.Title;
+            stone?.StoneTypeSymbol = selectedType.Symbol;
         }
     }
 }

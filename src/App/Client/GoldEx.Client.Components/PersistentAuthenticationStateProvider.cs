@@ -32,9 +32,16 @@ public class PersistentAuthenticationStateProvider : AuthenticationStateProvider
         // Strategy 1: Try PersistentComponentState (available when prerendering is enabled)
         if (state.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) && userInfo is not null)
         {
-            _authenticationStateTask = Task.FromResult(
-                new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(userInfo.Claims,
-                    authenticationType: nameof(PersistentAuthenticationStateProvider)))));
+            if (userInfo.UserClaims is { Count: > 0 })
+            {
+                _authenticationStateTask = Task.FromResult(
+                    new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(userInfo.Claims,
+                        authenticationType: nameof(PersistentAuthenticationStateProvider)))));
+            }
+            else
+            {
+                _authenticationStateTask = DefaultUnauthenticatedTask;
+            }
             return;
         }
 

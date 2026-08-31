@@ -81,6 +81,16 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
     public string? WhatsAppNumber { get; private set; }
     public string? AboutText { get; private set; }
 
+    public string VitrineThemePreset { get; private set; } = "royal-emerald";
+    public string? VitrinePrimaryColor { get; private set; }
+    public string? VitrineAccentColor { get; private set; }
+    public string? VitrineBackgroundColor { get; private set; }
+    public string? VitrineSurfaceColor { get; private set; }
+    public string VitrineCardStyle { get; private set; } = "minimal";
+    public string VitrineRadiusStyle { get; private set; } = "rounded";
+    public string VitrineFontStyle { get; private set; } = "iransans";
+    public string VitrineHeaderStyle { get; private set; } = "glass-sticky";
+
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
     public void SetAddress(string address) => Address = address;
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
@@ -140,6 +150,28 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
         AboutText = aboutText?.Trim();
     }
 
+    public void SetVitrineTheme(
+        string? preset,
+        string? primaryColor,
+        string? accentColor,
+        string? backgroundColor,
+        string? surfaceColor,
+        string? cardStyle,
+        string? radiusStyle,
+        string? fontStyle,
+        string? headerStyle)
+    {
+        VitrineThemePreset = string.IsNullOrWhiteSpace(preset) ? "royal-emerald" : preset.Trim().ToLowerInvariant();
+        VitrinePrimaryColor = string.IsNullOrWhiteSpace(primaryColor) ? null : primaryColor.Trim();
+        VitrineAccentColor = string.IsNullOrWhiteSpace(accentColor) ? null : accentColor.Trim();
+        VitrineBackgroundColor = string.IsNullOrWhiteSpace(backgroundColor) ? null : backgroundColor.Trim();
+        VitrineSurfaceColor = string.IsNullOrWhiteSpace(surfaceColor) ? null : surfaceColor.Trim();
+        VitrineCardStyle = string.IsNullOrWhiteSpace(cardStyle) ? "minimal" : cardStyle.Trim().ToLowerInvariant();
+        VitrineRadiusStyle = string.IsNullOrWhiteSpace(radiusStyle) ? "rounded" : radiusStyle.Trim().ToLowerInvariant();
+        VitrineFontStyle = string.IsNullOrWhiteSpace(fontStyle) ? "iransans" : fontStyle.Trim().ToLowerInvariant();
+        VitrineHeaderStyle = string.IsNullOrWhiteSpace(headerStyle) ? "glass-sticky" : headerStyle.Trim().ToLowerInvariant();
+    }
+
     public void UpdateBarcodePrintSettings(BarcodePrintSettings barcodePrintSettings)
     {
         BarcodePrintSettings = barcodePrintSettings ?? throw new ArgumentNullException(nameof(barcodePrintSettings));
@@ -162,6 +194,17 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
             storeId
         );
         clone.SetVitrineSocialInfo(InstagramUrl, TelegramUrl, BaleUrl, WhatsAppNumber, AboutText);
+        clone.SetVitrineTheme(
+            VitrineThemePreset,
+            VitrinePrimaryColor,
+            VitrineAccentColor,
+            VitrineBackgroundColor,
+            VitrineSurfaceColor,
+            VitrineCardStyle,
+            VitrineRadiusStyle,
+            VitrineFontStyle,
+            VitrineHeaderStyle
+        );
         if (BarcodePrintSettings != null)
         {
             clone.UpdateBarcodePrintSettings(BarcodePrintSettings.Clone());

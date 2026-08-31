@@ -1,4 +1,4 @@
-﻿@using GoldEx.Shared.DTOs.PriceUnits
+@using GoldEx.Shared.DTOs.PriceUnits
 
 @inherits GoldExComponentBase
 
@@ -450,6 +450,14 @@ else
                                                            Variant="Variant.Filled" FullWidth="true"
                                                            OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
                                                     <MudText Color="Color.Dark">طلای آبشده</MudText>
+                                                </MudButton>
+                                            </MudMenuItem>
+                                            <MudMenuItem>
+                                                <MudButton Class="ml-2" Color="Color.Secondary"
+                                                           StartIcon="@Icons.Material.Filled.MonetizationOn"
+                                                           Variant="Variant.Filled" FullWidth="true"
+                                                           OnClick="() => OnAddPayment(PaymentType.Coin)">
+                                                    <MudText>سکه</MudText>
                                                 </MudButton>
                                             </MudMenuItem>
                                             <MudMenuItem>

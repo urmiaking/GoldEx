@@ -2,26 +2,30 @@
 @implements IDisposable
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
+@using Microsoft.AspNetCore.Http
 @using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <HeadContent>
     <meta name="robots" content="index, follow" />
     <meta property="og:site_name" content="@(_storeInfo?.Name ?? "ویترین آنلاین طلا و جواهر")" />
     <meta property="og:type" content="website" />
+    <meta name="theme-color" content="@GetThemeColorMeta()" />
     @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
     {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+        var absLogoUrl = Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString();
+        <meta property="og:image" content="@absLogoUrl" />
+        <link rel="icon" type="image/png" href="@absLogoUrl" />
+        <link rel="shortcut icon" href="@absLogoUrl" />
+        <link rel="apple-touch-icon" href="@absLogoUrl" />
     }
 </HeadContent>
 
-<link href="/assets/fontawesome/css/all.min.css?v=6.5.1" rel="stylesheet" />
-<link href="@($"/assets/vitrine/css/vitrine.css?v={_cssVersion}")" rel="stylesheet" />
-
-<div class="vitrine-root">
+<div class="vitrine-root @GetThemeClassNames()" style="@GetDynamicThemeVariables()">
     <!-- Live Gold Ticker Top Bar -->
     <div class="vitrine-top-ticker">
         <div class="vitrine-container">
@@ -65,7 +69,7 @@
         <div class="vitrine-container">
             <div class="vitrine-header-inner">
                 <!-- Store Brand / Logo -->
-                <a href="@($"/{StoreSlug}")" class="vitrine-logo">
+                <a href="@HomeHref" class="vitrine-logo">
                     <div class="vitrine-logo-icon">
                         @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
                         {
@@ -88,16 +92,16 @@
 
                 <!-- Desktop Navigation Menu -->
                 <nav class="d-none d-lg-flex vitrine-nav-menu">
-                    <a href="@($"/{StoreSlug}")" class="vitrine-nav-link @(IsActivePage("") ? "active" : "")">
+                    <a href="@HomeHref" class="vitrine-nav-link @(IsActivePage("") ? "active" : "")">
                         صفحه اصلی
                     </a>
-                    <a href="@($"/{StoreSlug}/catalog")" class="vitrine-nav-link @(IsActivePage("catalog") ? "active" : "")">
+                    <a href="@CatalogHref" class="vitrine-nav-link @(IsActivePage("catalog") ? "active" : "")">
                         کاتالوگ محصولات
                     </a>
-                    <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="vitrine-nav-link">
+                    <a href="@FeaturedCatalogHref" class="vitrine-nav-link">
                         <i class="fa-solid fa-star" style="color: var(--accent-color); margin-left: 4px; font-size: 0.8rem;"></i> پیشنهادات ویژه
                     </a>
-                    <a href="@($"/{StoreSlug}/about")" class="vitrine-nav-link @(IsActivePage("about") ? "active" : "")">
+                    <a href="@AboutHref" class="vitrine-nav-link @(IsActivePage("about") ? "active" : "")">
                         درباره و تماس
                     </a>
                 </nav>
@@ -121,7 +125,7 @@
                         </a>
                     }
 
-                    <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-outline d-lg-none" style="padding: 8px 14px; font-size: 0.85rem;">
+                    <a href="@CatalogHref" class="btn-gisu btn-gisu-outline d-lg-none" style="padding: 8px 14px; font-size: 0.85rem;">
                         <span>کاتالوگ</span>
                     </a>
                 </div>
@@ -131,11 +135,18 @@
 
     <!-- Main Content Body -->
     <main style="flex-grow: 1;">
-        <CascadingValue Value="@_storeInfo">
-            <CascadingValue Value="@StoreSlug" Name="StoreSlug">
-                @Body
+        @if (_isStoreLoaded && _storeInfo == null)
+        {
+            <VitrineNotFound StoreSlug="@StoreSlug" />
+        }
+        else
+        {
+            <CascadingValue Value="@_storeInfo">
+                <CascadingValue Value="@StoreSlug" Name="StoreSlug">
+                    @Body
+                </CascadingValue>
             </CascadingValue>
-        </CascadingValue>
+        }
     </main>
 
     <!-- Luxury Royal Emerald Footer -->
@@ -168,10 +179,10 @@
                 <div>
                     <h4 style="color: var(--accent-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 18px;">دسترسی سریع</h4>
                     <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
-                        <li><a href="@($"/{StoreSlug}")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">صفحه اصلی ویترین</a></li>
-                        <li><a href="@($"/{StoreSlug}/catalog")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کاتالوگ کامل طلا و جواهر</a></li>
-                        <li><a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کالکشن‌های پیشنهادی ویژه</a></li>
-                        <li><a href="@($"/{StoreSlug}/about")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">درباره و موقعیت فروشگاه</a></li>
+                        <li><a href="@HomeHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">صفحه اصلی ویترین</a></li>
+                        <li><a href="@CatalogHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کاتالوگ کامل طلا و جواهر</a></li>
+                        <li><a href="@FeaturedCatalogHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کالکشن‌های پیشنهادی ویژه</a></li>
+                        <li><a href="@AboutHref" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">درباره و موقعیت فروشگاه</a></li>
                     </ul>
                 </div>
 
@@ -226,11 +237,11 @@
 
     <!-- Mobile Floating Navigation Bar -->
     <div class="vitrine-mobile-bar">
-        <a href="@($"/{StoreSlug}")" class="vitrine-mobile-item @(IsActivePage("") ? "active" : "")">
+        <a href="@HomeHref" class="vitrine-mobile-item @(IsActivePage("") ? "active" : "")">
             <i class="fa-solid fa-house vitrine-mobile-icon"></i>
             <span>ویترین</span>
         </a>
-        <a href="@($"/{StoreSlug}/catalog")" class="vitrine-mobile-item @(IsActivePage("catalog") ? "active" : "")">
+        <a href="@CatalogHref" class="vitrine-mobile-item @(IsActivePage("catalog") ? "active" : "")">
             <i class="fa-solid fa-gem vitrine-mobile-icon"></i>
             <span>کاتالوگ</span>
         </a>
@@ -250,29 +261,43 @@
                 <span>تماس</span>
             </a>
         }
-        <a href="@($"/{StoreSlug}/about")" class="vitrine-mobile-item @(IsActivePage("about") ? "active" : "")">
+        <a href="@AboutHref" class="vitrine-mobile-item @(IsActivePage("about") ? "active" : "")">
             <i class="fa-solid fa-circle-info vitrine-mobile-icon"></i>
             <span>درباره ما</span>
         </a>
     </div>
-
-    <script src="@($"/assets/vitrine/js/vitrine.js?v={_cssVersion}")"></script>
 </div>
 
 @code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
     private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
-    private string StoreSlug = "default";
+    private string StoreSlug = string.Empty;
+    private bool _isStoreLoaded;
     private PersistingComponentStateSubscription _persistingSubscription;
+
+    private string HomeHref => StoreContext.IsCustomDomain ? "/" : $"/{StoreSlug}";
+    private string CatalogHref => StoreContext.IsCustomDomain ? "/catalog" : $"/{StoreSlug}/catalog";
+    private string FeaturedCatalogHref => StoreContext.IsCustomDomain ? "/catalog?onlyFeatured=true" : $"/{StoreSlug}/catalog?onlyFeatured=true";
+    private string AboutHref => StoreContext.IsCustomDomain ? "/about" : $"/{StoreSlug}/about";
 
     protected override async Task OnInitializedAsync()
     {
         ResolveStoreSlug();
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistStoreInfo);
 
-        if (ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out var restored) && restored != null)
+        if ((ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>("vitrine_store_info", out var restored) && restored != null) ||
+            (!string.IsNullOrWhiteSpace(StoreSlug) && ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out restored) && restored != null))
         {
             _storeInfo = restored;
+            StoreSlug = restored.Slug;
+            if (StoreContext is ClientStoreContext clientCtx)
+            {
+                clientCtx.StoreSlug = restored.Slug;
+                clientCtx.CustomDomain = restored.CustomDomain;
+            }
+            _isStoreLoaded = true;
         }
         else
         {
@@ -284,7 +309,7 @@
     {
         var oldSlug = StoreSlug;
         ResolveStoreSlug();
-        if (_storeInfo == null || !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase))
+        if (_storeInfo == null || (!string.IsNullOrWhiteSpace(StoreSlug) && !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase)))
         {
             await LoadStoreInfoAsync();
         }
@@ -294,7 +319,11 @@
     {
         if (_storeInfo != null)
         {
-            ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
+            ApplicationState.PersistAsJson("vitrine_store_info", _storeInfo);
+            if (!string.IsNullOrWhiteSpace(StoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
+            }
         }
         return Task.CompletedTask;
     }
@@ -319,16 +348,54 @@
 
     private void ResolveStoreSlug()
     {
-        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
-        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length > 0 && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase))
+        if (StoreContext.IsCustomDomain)
         {
-            StoreSlug = segments[0];
+            if (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug))
+            {
+                StoreSlug = StoreContext.StoreSlug;
+                return;
+            }
+
+            try
+            {
+                var host = Navigation.ToAbsoluteUri(Navigation.Uri).Host;
+                if (!string.IsNullOrWhiteSpace(host))
+                {
+                    StoreSlug = host;
+                    return;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length > 0)
+        {
+            var first = segments[0];
+            if (first.Equals("catalog", StringComparison.OrdinalIgnoreCase) ||
+                first.Equals("about", StringComparison.OrdinalIgnoreCase) ||
+                first.Equals("p", StringComparison.OrdinalIgnoreCase))
+            {
+                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
+            }
+            else if (!first.Equals("api", StringComparison.OrdinalIgnoreCase))
+            {
+                StoreSlug = first;
+            }
+            else
+            {
+                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
+            }
         }
         else
         {
-            StoreSlug = "default";
+            StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
         }
     }
 
@@ -337,19 +404,93 @@
         try
         {
             _storeInfo = await VitrineService.GetStoreInfoAsync(StoreSlug);
+            if (_storeInfo != null)
+            {
+                StoreSlug = _storeInfo.Slug;
+                if (StoreContext is ClientStoreContext clientCtx)
+                {
+                    clientCtx.StoreSlug = _storeInfo.Slug;
+                    clientCtx.CustomDomain = _storeInfo.CustomDomain;
+                }
+            }
         }
         catch
         {
-            // Ignored for graceful fallback
+            _storeInfo = null;
+        }
+        finally
+        {
+            _isStoreLoaded = true;
+            try
+            {
+                if (_storeInfo == null && HttpContext != null && !HttpContext.Response.HasStarted)
+                {
+                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
 
     private bool IsActivePage(string subPath)
     {
         var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+
+        if (StoreContext.IsCustomDomain)
+        {
+            return pathOnly.Equals(subPath, StringComparison.OrdinalIgnoreCase);
+        }
+
         var expected = string.IsNullOrEmpty(subPath) ? StoreSlug : $"{StoreSlug}/{subPath}";
         return pathOnly.Equals(expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetThemeClassNames()
+    {
+        var preset = _storeInfo?.Theme?.Preset ?? "royal-emerald";
+        var card = _storeInfo?.Theme?.CardStyle ?? "minimal";
+        var radius = _storeInfo?.Theme?.RadiusStyle ?? "rounded";
+        var font = _storeInfo?.Theme?.FontStyle ?? "vazirmatn";
+
+        return $"theme-{preset} card-{card} radius-{radius} font-{font}";
+    }
+
+    private string GetDynamicThemeVariables()
+    {
+        if (_storeInfo?.Theme == null) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.PrimaryColor))
+            sb.Append($"--primary-color: {_storeInfo.Theme.PrimaryColor}; --primary-dark: {_storeInfo.Theme.PrimaryColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.AccentColor))
+            sb.Append($"--accent-color: {_storeInfo.Theme.AccentColor}; --accent-hover: {_storeInfo.Theme.AccentColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.BackgroundColor))
+            sb.Append($"--light-color: {_storeInfo.Theme.BackgroundColor}; ");
+        if (!string.IsNullOrWhiteSpace(_storeInfo.Theme.SurfaceColor))
+            sb.Append($"--white: {_storeInfo.Theme.SurfaceColor}; ");
+
+        return sb.ToString();
+    }
+
+    private string GetThemeColorMeta()
+    {
+        if (!string.IsNullOrWhiteSpace(_storeInfo?.Theme?.PrimaryColor))
+            return _storeInfo.Theme.PrimaryColor;
+
+        return (_storeInfo?.Theme?.Preset?.ToLowerInvariant()) switch
+        {
+            "persian-turquoise" or "turquoise" => "#0d6e6e",
+            "imperial-ruby" or "ruby" => "#3b0f19",
+            "yemeni-agate" or "agate" or "amber" => "#7c2d12",
+            "champagne-pearl" or "pearl" or "champagne" => "#2b2723",
+            "minimal-white" or "minimal" => "#111827",
+            "rose-gold" or "rosegold" => "#2f1d24",
+            _ => "#0f342e"
+        };
     }
 
     public void Dispose()

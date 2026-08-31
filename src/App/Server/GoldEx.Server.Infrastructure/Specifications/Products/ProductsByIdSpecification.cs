@@ -14,5 +14,6 @@ public class ProductsByIdSpecification : SpecificationBase<Product>
         AddInclude(x => x.ProductCategory!);
         AddInclude(x => x.Images);
         AddInclude(x => x.GemStones);
+        AddInclude(x => x.AttributeValues);
     }
 }

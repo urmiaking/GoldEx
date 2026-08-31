@@ -9,6 +9,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.StoneTypeAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
@@ -211,6 +212,19 @@ internal class ProductService(
             }
         }
 
+        if (request.AttributeValues != null && request.AttributeValues.Any())
+        {
+            item.SetAttributeValues(request.AttributeValues.Select(v =>
+                ProductAttributeValue.Create(
+                    new ProductAttributeId(v.AttributeId),
+                    v.Value,
+                    v.NumericValue ?? (decimal.TryParse(v.Value, out var n) ? n : null))));
+        }
+        else if (request.AttributeValues != null)
+        {
+            item.ClearAttributeValues();
+        }
+
         await repository.UpdateAsync(item, cancellationToken);
 
         return item;
@@ -304,6 +318,15 @@ internal class ProductService(
             {
                 product.SetImages(request.Images.Select(img => ProductImage.Create(img.Url, img.IsMain, img.DisplayOrder)));
             }
+        }
+
+        if (request.AttributeValues != null && request.AttributeValues.Any())
+        {
+            product.SetAttributeValues(request.AttributeValues.Select(v =>
+                ProductAttributeValue.Create(
+                    new ProductAttributeId(v.AttributeId),
+                    v.Value,
+                    v.NumericValue ?? (decimal.TryParse(v.Value, out var n) ? n : null))));
         }
 
         if (string.IsNullOrEmpty(request.Barcode))

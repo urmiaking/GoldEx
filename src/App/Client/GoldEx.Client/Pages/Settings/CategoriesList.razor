@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.ProductCategories.Index)]
+@attribute [Route(ClientRoutes.ProductCategories.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits GoldExComponentBase
@@ -33,6 +33,10 @@
         <MudTd DataLabel="پیش کد">@context.PrefixCode</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
+                <MudTooltip Text="مدیریت ویژگی‌های دسته">
+                    <MudIconButton Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Info" OnClick="_ => OnManageAttributes(context)"></MudIconButton>
+                </MudTooltip>
                 <MudTooltip Text="ویرایش">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
                                    Color="Color.Primary" OnClick="_ => OnEditCategory(context)"></MudIconButton>

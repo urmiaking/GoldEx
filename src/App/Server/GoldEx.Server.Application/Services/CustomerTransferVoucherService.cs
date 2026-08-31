@@ -10,13 +10,14 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.CustomerTransfers;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
@@ -28,8 +29,9 @@ internal class CustomerTransferVoucherService(
     ICustomerTransferVoucherRepository repository,
     IInvoicePaymentRepository invoicePaymentRepository,
     IInvoiceRepository invoiceRepository,
+    ICustomerRepository customerRepository,
+    IServerLedgerAccountService ledgerAccountService,
     IAccountingTransactionService transactionService,
-    IMapper mapper,
     ILogger<CustomerTransferVoucherService> logger,
     CreateCustomerTransferVoucherRequestValidator createValidator,
     UpdateCustomerTransferVoucherRequestValidator updateValidator) : ICustomerTransferVoucherService
@@ -240,6 +242,20 @@ internal class CustomerTransferVoucherService(
     {
         var dateTime = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
 
+        var sourceCustomer = await customerRepository
+            .Get(new CustomersByIdSpecification(voucher.SourceCustomerId))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var destCustomer = await customerRepository
+            .Get(new CustomersByIdSpecification(voucher.DestinationCustomerId))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var destLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            voucher.DestinationCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+
+        var sourceLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            voucher.SourceCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+
         // Source Invoice Payment (e.g. Ali's Sales Invoice)
         if (voucher.SourceInvoiceId.HasValue)
         {
@@ -250,7 +266,8 @@ internal class CustomerTransferVoucherService(
             if (sourceInvoice != null)
             {
                 var side = sourceInvoice.InvoiceType == InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay;
-                var note = $"حواله شماره {voucher.VoucherNumber} به حساب {voucher.DestinationCustomer?.FullName}";
+                var destName = destCustomer?.FullName ?? string.Empty;
+                var note = $"حواله شماره {voucher.VoucherNumber} به حساب {destName}".Trim();
 
                 var payment = InvoicePayment.Create(
                     dateTime,
@@ -262,7 +279,7 @@ internal class CustomerTransferVoucherService(
                     sourceInvoice.Id,
                     voucher.PriceUnitId,
                     null,
-                    null,
+                    destLedger.Id,
                     null,
                     null,
                     voucher.DestinationInvoiceId,
@@ -286,7 +303,8 @@ internal class CustomerTransferVoucherService(
             if (destInvoice != null)
             {
                 var side = destInvoice.InvoiceType == InvoiceType.Purchase ? PaymentSide.Pay : PaymentSide.Receive;
-                var note = $"حواله شده از حساب {voucher.SourceCustomer?.FullName} طبق سند شماره {voucher.VoucherNumber}";
+                var sourceName = sourceCustomer?.FullName ?? string.Empty;
+                var note = $"حواله شده از حساب {sourceName} طبق سند شماره {voucher.VoucherNumber}".Trim();
 
                 var payment = InvoicePayment.Create(
                     dateTime,
@@ -298,7 +316,7 @@ internal class CustomerTransferVoucherService(
                     destInvoice.Id,
                     voucher.PriceUnitId,
                     null,
-                    null,
+                    sourceLedger.Id,
                     null,
                     null,
                     voucher.SourceInvoiceId,
@@ -321,6 +339,16 @@ internal class CustomerTransferVoucherService(
 
         if (existingPayments.Count > 0)
         {
+            var sourceIds = existingPayments.Select(p => p.Id).ToList();
+            var childPayments = await invoicePaymentRepository
+                .Get(new InvoicePaymentsBySourcePaymentIdsSpecification(sourceIds))
+                .ToListAsync(cancellationToken);
+
+            if (childPayments.Count > 0)
+            {
+                await invoicePaymentRepository.DeleteRangeAsync(childPayments, cancellationToken);
+            }
+
             await invoicePaymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
         }
     }

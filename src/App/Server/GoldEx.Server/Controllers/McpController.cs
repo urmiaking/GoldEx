@@ -1,8 +1,10 @@
 using GoldEx.Server.Mcp;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -14,6 +16,7 @@ namespace GoldEx.Server.Controllers;
 [ApiController]
 [IgnoreAntiforgeryToken]
 [AllowAnonymous]
+[EnableRateLimiting(RateLimitPolicies.Mcp)]
 public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

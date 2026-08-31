@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using GoldEx.Server.Application.Services;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Domain.StoreAggregate;
+using GoldEx.Shared.Routings;
 
 namespace GoldEx.Server.Common.Middlewares;
 
@@ -122,6 +123,54 @@ public class StoreResolutionMiddleware(RequestDelegate next)
                             context.Response.Redirect("/NoStore");
                             return;
                         }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Anonymous / Public request - Check if incoming request host is a custom store vitrine domain (not GoldEx platform domain)
+            var host = context.Request.Host.Host.ToLowerInvariant();
+            if (!ClientRoutes.Vitrine.IsPlatformDomain(host))
+            {
+                var cleanHost = host.StartsWith("www.") ? host.Substring(4) : host;
+
+                // 1. Try to find an active store whose CustomDomain matches host or cleanHost
+                var stores = await dbContext.Set<Store>()
+                    .AsNoTracking()
+                    .IgnoreQueryFilters()
+                    .Where(x => x.IsActive)
+                    .ToListAsync();
+
+                var customStore = stores.FirstOrDefault(x =>
+                {
+                    if (string.IsNullOrWhiteSpace(x.CustomDomain))
+                        return false;
+
+                    var domain = x.CustomDomain.Trim().ToLowerInvariant()
+                        .Replace("https://", "")
+                        .Replace("http://", "")
+                        .TrimEnd('/');
+
+                    var cleanDomain = domain.StartsWith("www.") ? domain.Substring(4) : domain;
+
+                    return cleanDomain.Equals(cleanHost, StringComparison.OrdinalIgnoreCase) ||
+                           domain.Equals(host, StringComparison.OrdinalIgnoreCase);
+                });
+
+                if (customStore != null)
+                {
+                    storeContext.SetStore(customStore.Id.Value, customStore.Slug, customStore.CustomDomain);
+                }
+                else
+                {
+                    // 2. Fallback to default store so vitrine works immediately on third-party custom domains
+                    var defaultStore = stores.FirstOrDefault(x => x.Slug == "default" || x.Id == new StoreId(Guid.Empty))
+                                     ?? stores.FirstOrDefault();
+
+                    if (defaultStore != null)
+                    {
+                        storeContext.SetStore(defaultStore.Id.Value, defaultStore.Slug, host);
                     }
                 }
             }

@@ -1,0 +1,75 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.ProductAttributes
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Services.Abstractions
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@(IsEdit ? Icons.Material.Filled.Edit : Icons.Material.Filled.AddCircle)" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">@(IsEdit ? "ویرایش ویژگی" : "تعریف ویژگی جدید")</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_title"
+                                  Label="عنوان ویژگی *"
+                                  Placeholder="مثال: قطر، سایز، طول زنجیر، رنگ طلا"
+                                  Required="true"
+                                  RequiredError="عنوان ویژگی الزامی است."
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_unit"
+                                  Label="واحد اندازه‌گیری (اختیاری)"
+                                  Placeholder="مثال: میلی‌متر، سانتی‌متر، سایز، قیراط"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="_dataType"
+                               Label="نوع مقدار *"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               T="ProductAttributeDataType">
+                        <MudSelectItem Value="ProductAttributeDataType.Text">متنی (آزاد)</MudSelectItem>
+                        <MudSelectItem Value="ProductAttributeDataType.Number">عددی</MudSelectItem>
+                        <MudSelectItem Value="ProductAttributeDataType.Select">انتخابی (لیست گزینه‌ها)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_description"
+                                  Label="توضیحات راهنما (اختیاری)"
+                                  Placeholder="توضیح کوتاه برای متصدی"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+
+                @if (_dataType == ProductAttributeDataType.Select)
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_options"
+                                      Label="گزینه‌های مجاز (با ویرگول یا کاما جدا کنید)"
+                                      Placeholder="مثال: زرد, سفید, دو رنگ, رزگلد"
+                                      HelperText="گزینه‌هایی که کاربر می‌تواند در دراپ‌داون انتخاب کند."
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_isSaving">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-2" />
+            }
+            ذخیره
+        </MudButton>
+    </DialogActions>
+</MudDialog>

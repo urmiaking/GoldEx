@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Reporting;
 
@@ -14,4 +14,5 @@ public record CustomerTransactionRpResponse(
     decimal BaseCurrencyAmount,
     Guid? InvoiceId,
     Guid? InvoicePaymentId,
-    Guid? PaymentVoucherId);
+    Guid? PaymentVoucherId,
+    Guid? CustomerTransferVoucherId = null);

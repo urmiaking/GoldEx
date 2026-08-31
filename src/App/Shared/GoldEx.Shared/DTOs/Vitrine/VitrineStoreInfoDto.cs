@@ -12,4 +12,6 @@ public record VitrineStoreInfoDto(
     string? BaleUrl,
     string? WhatsAppNumber,
     string? AboutText,
-    decimal LiveGoldPrice18K = 0);
+    decimal LiveGoldPrice18K = 0,
+    string? CustomDomain = null,
+    VitrineThemeDto? Theme = null);

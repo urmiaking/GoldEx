@@ -1,17 +1,51 @@
-﻿@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
+@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
+@using GoldEx.Client.Pages.Statics
+@using GoldEx.Client.Pages.Vitrine
+@using GoldEx.Shared.Routings
+@using GoldEx.Shared.Services.Abstractions
+@inject NavigationManager Navigation
+@inject IStoreContext StoreContext
 
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[typeof(BaseLayout).Assembly]" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="@GetDefaultLayout()">
+            <Authorizing>
+            </Authorizing>
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
         </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        @* <FocusOnNavigate RouteData="routeData" Selector="h1" /> *@
     </Found>
+    <NotFound>
+        @if (IsVitrineNotFound())
+        {
+            <LayoutView Layout="typeof(VitrineLayout)">
+                <VitrineNotFound />
+            </LayoutView>
+        }
+        else
+        {
+            <LayoutView Layout="typeof(EmptyBoxLayout)">
+                <NotFound />
+            </LayoutView>
+        }
+    </NotFound>
 </Router>
 
 @code {
+    private Type GetDefaultLayout()
+    {
+        return StoreContext.IsCustomDomain ? typeof(VitrineLayout) : typeof(MainLayout);
+    }
+
+    private bool IsVitrineNotFound()
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+        return ClientRoutes.Vitrine.IsVitrinePath(pathOnly, StoreContext.IsCustomDomain);
+    }
+
     public virtual Task OnNavigateAsync(NavigationContext arg)
     {
         return Task.CompletedTask;

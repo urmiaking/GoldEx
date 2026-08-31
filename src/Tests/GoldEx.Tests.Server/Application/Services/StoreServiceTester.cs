@@ -48,6 +48,8 @@ public class StoreServiceTester
     {
         public Guid? StoreId { get; set; }
         public string? StoreSlug { get; set; }
+        public string? CustomDomain { get; set; }
+        public bool IsCustomDomain => !string.IsNullOrWhiteSpace(CustomDomain);
     }
 
     [SetUp]

@@ -1499,7 +1499,9 @@ public partial class EditorForm
                     PriceUnit = priceUnit,
                     AmountAdornmentText = adornmentText,
                     GoldFineness = fineness,
-                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay
+                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay,
+                    CoinInstance = paymentType is PaymentType.Coin ? new CoinInstanceVm() : null,
+                    CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
                 }
             },
             { x => x.BasePriceUnit, _model.InvoicePriceUnit },

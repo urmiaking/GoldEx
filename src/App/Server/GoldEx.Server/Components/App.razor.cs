@@ -1,4 +1,5 @@
 using GoldEx.Client.Components.Services;
+using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.DTOs.Licenses;
@@ -7,6 +8,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Components;
 
@@ -18,21 +20,28 @@ public partial class App
     [Inject] private LicenseState LicenseState { get; set; } = default!;
     [Inject] private IWebHostEnvironment Env { get; set; } = default!;
     [Inject] private IStoreContext StoreContext { get; set; } = default!;
-    [Inject] private GoldExDbContext DbContext { get; set; } = default!;
+    [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     private string SplashTitle { get; set; } = "GoldEx";
     private string? SplashLogoUrl { get; set; }
+    private string? StoreLogoUrl { get; set; }
+    private string? StoreName { get; set; }
     private bool IsStoreTitle { get; set; }
+
+    private string VitrineThemePreset { get; set; } = "royal-emerald";
+    private string? VitrinePrimaryColor { get; set; }
+    private string? VitrineAccentColor { get; set; }
+    private string? VitrineBackgroundColor { get; set; }
+    private string? VitrineSurfaceColor { get; set; }
 
     private bool IsVitrineRoute()
     {
-        var path = HttpContext.Request.Path.Value ?? "";
-        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length == 0) return false;
+        if (StoreContext.IsCustomDomain)
+            return true;
 
-        var firstSegment = segments[0];
-        return !ClientRoutes.Vitrine.IsReservedSegment(firstSegment);
+        var path = HttpContext.Request.Path.Value ?? "";
+        return ClientRoutes.Vitrine.IsVitrinePath(path, StoreContext.IsCustomDomain);
     }
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
@@ -75,19 +84,19 @@ public partial class App
     protected override async Task OnInitializedAsync()
     {
         await GetLicenseAsync();
-        if (!IsVitrineRoute())
-        {
-            await LoadSplashTitleAsync();
-        }
+        await LoadStoreMetadataAsync();
         await base.OnInitializedAsync();
     }
 
-    private async Task LoadSplashTitleAsync()
+    private async Task LoadStoreMetadataAsync()
     {
+        using var scope = ScopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<GoldExDbContext>();
+
         if (IsLoggedIn && StoreContext.StoreId.HasValue)
         {
             var storeId = new StoreId(StoreContext.StoreId.Value);
-            var store = await DbContext.Set<Store>()
+            var store = await dbContext.Set<Store>()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == storeId);
 
@@ -96,42 +105,92 @@ public partial class App
                 if (!string.IsNullOrWhiteSpace(store.Name))
                 {
                     SplashTitle = store.Name;
+                    StoreName = store.Name;
                     IsStoreTitle = true;
                 }
 
                 if (!string.IsNullOrWhiteSpace(store.LogoUrl))
                 {
                     SplashLogoUrl = store.LogoUrl;
+                    StoreLogoUrl = store.LogoUrl;
                 }
             }
         }
         else
         {
             var path = HttpContext.Request.Path.Value ?? "";
-            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length > 0 && !segments[0].StartsWith("_") && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase) && !segments[0].Equals("Account", StringComparison.OrdinalIgnoreCase))
+            if (ClientRoutes.Vitrine.IsVitrinePath(path, StoreContext.IsCustomDomain))
             {
-                var slug = segments[0].ToLowerInvariant();
-                var store = await DbContext.Set<Store>()
-                    .AsNoTracking()
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
+                Store? store = null;
+                if (StoreContext.IsCustomDomain && StoreContext.StoreId.HasValue)
+                {
+                    var storeId = new StoreId(StoreContext.StoreId.Value);
+                    store = await dbContext.Set<Store>()
+                        .AsNoTracking()
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(s => s.Id == storeId);
+                }
+                else
+                {
+                    var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                    if (segments.Length > 0 && !ClientRoutes.Vitrine.IsReservedSegment(segments[0]))
+                    {
+                        var slug = segments[0].ToLowerInvariant();
+                        store = await dbContext.Set<Store>()
+                            .AsNoTracking()
+                            .IgnoreQueryFilters()
+                            .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
+                    }
+                }
 
                 if (store != null)
                 {
                     if (!string.IsNullOrWhiteSpace(store.Name))
                     {
                         SplashTitle = store.Name;
+                        StoreName = store.Name;
                         IsStoreTitle = true;
                     }
 
                     if (!string.IsNullOrWhiteSpace(store.LogoUrl))
                     {
                         SplashLogoUrl = store.LogoUrl;
+                        StoreLogoUrl = store.LogoUrl;
+                    }
+
+                    var setting = await dbContext.Set<Setting>()
+                        .AsNoTracking()
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(s => s.StoreId == store.Id);
+
+                    if (setting != null)
+                    {
+                        VitrineThemePreset = setting.VitrineThemePreset ?? "royal-emerald";
+                        VitrinePrimaryColor = setting.VitrinePrimaryColor;
+                        VitrineAccentColor = setting.VitrineAccentColor;
+                        VitrineBackgroundColor = setting.VitrineBackgroundColor;
+                        VitrineSurfaceColor = setting.VitrineSurfaceColor;
                     }
                 }
             }
         }
+    }
+
+    private string GetVitrineThemeColorMeta()
+    {
+        if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor))
+            return VitrinePrimaryColor;
+
+        return (VitrineThemePreset?.ToLowerInvariant()) switch
+        {
+            "persian-turquoise" or "turquoise" => "#0d6e6e",
+            "imperial-ruby" or "ruby" => "#3b0f19",
+            "yemeni-agate" or "agate" or "amber" => "#7c2d12",
+            "champagne-pearl" or "pearl" or "champagne" => "#2b2723",
+            "minimal-white" or "minimal" => "#111827",
+            "rose-gold" or "rosegold" => "#2f1d24",
+            _ => "#0f342e" // royal-emerald
+        };
     }
 
     private async Task GetLicenseAsync()

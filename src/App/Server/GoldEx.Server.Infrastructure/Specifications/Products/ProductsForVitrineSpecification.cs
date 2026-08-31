@@ -16,10 +16,6 @@ public class ProductsForVitrineSpecification : SpecificationBase<Product>
 
         AddCriteria(x => x.ShowInVitrine && (x.ProductType == ProductType.Gold || x.ProductType == ProductType.Jewelry));
 
-        AddInclude(x => x.ProductCategory!);
-        AddInclude(x => x.WagePriceUnit!);
-        AddInclude(x => x.StonePriceUnit!);
         AddInclude(x => x.Images);
-        AddInclude(x => x.GemStones);
     }
 }

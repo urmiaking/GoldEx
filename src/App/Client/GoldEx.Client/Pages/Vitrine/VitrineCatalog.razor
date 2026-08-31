@@ -1,4 +1,5 @@
 @page "/{StoreSlug}/catalog"
+@page "/catalog"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
 @implements IDisposable
@@ -10,24 +11,64 @@
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
+@inject IStoreContext StoreContext
 
 <PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
 
 <HeadContent>
-    <meta name="description" content="@($"کاتالوگ رسمی طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه آنلاین قیمت روز، مشاهده وزن، عیار و استعلام فوری")" />
-    <meta property="og:title" content="کاتالوگ طلا و جواهرات | @(_storeInfo?.Name ?? "گالری طلا")" />
-    <meta property="og:description" content="@($"مشاهده تمام مصنوعات طلا، النگو، دستبند، انگشتر، گردنبند و سرویس‌های طلا در {(_storeInfo?.Name ?? "گالری طلا")}")" />
-    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
-    {
-        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    @{
+        var canonicalUrl = StoreContext.IsCustomDomain 
+            ? Navigation.ToAbsoluteUri("/catalog").ToString() 
+            : Navigation.ToAbsoluteUri($"/{EffectiveStoreSlug}/catalog").ToString();
+        var storeName = _storeInfo?.Name ?? "گالری طلا";
+        var pageTitle = $"کاتالوگ طلا و جواهرات | {storeName}";
+        var pageDesc = $"کاتالوگ رسمی طلا و جواهرات {storeName} با محاسبه آنلاین قیمت روز، مشاهده وزن، عیار ۷۵۰، فیلتر وزن و استعلام فوری کالاها.";
+        var logoUrl = !string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl) ? Navigation.ToAbsoluteUri(_storeInfo.LogoUrl).ToString() : null;
     }
+
+    <link rel="canonical" href="@canonicalUrl" />
+    <meta name="description" content="@pageDesc" />
+    <meta name="keywords" content="@($"کاتالوگ طلا, محصولات طلا, {storeName}, خرید دستبند طلا, خرید انگشتر طلا, النگو طلا, گردنبند طلا, طلا 18 عیار")" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="@storeName" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta property="og:image" content="@logoUrl" />
+        <meta property="og:image:alt" content="@storeName" />
+        <link rel="icon" type="image/png" href="@logoUrl" />
+        <link rel="shortcut icon" href="@logoUrl" />
+        <link rel="apple-touch-icon" href="@logoUrl" />
+    }
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDesc" />
+    @if (!string.IsNullOrWhiteSpace(logoUrl))
+    {
+        <meta name="twitter:image" content="@logoUrl" />
+    }
+
+    <!-- JSON-LD Structured Data: CollectionPage & BreadcrumbList -->
+    <script type="application/ld+json">
+    @((MarkupString)GetCatalogJsonLd(canonicalUrl, storeName, pageDesc))
+    </script>
+    <script type="application/ld+json">
+    @((MarkupString)GetCatalogBreadcrumbJsonLd(canonicalUrl, storeName))
+    </script>
 </HeadContent>
 
 <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
     <!-- Breadcrumb & Header -->
     <div style="margin-bottom: 24px;">
         <div class="d-flex align-items-center gap-2 mb-2" style="font-size: 0.86rem; color: var(--gray-600);">
-            <a href="@($"/{StoreSlug}")" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
+            <a href="@HomeUrl" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
             <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
             <span style="color: var(--accent-color); font-weight: 700;">کاتالوگ زیورآلات و طلا</span>
         </div>
@@ -97,6 +138,15 @@
                 {
                     <button type="button" class="catalog-quick-pill active" @onclick='() => SetWeightFilter("all")'>
                         <span>@GetWeightFilterTitle(_weightFilter)</span>
+                        <i class="fa-solid fa-xmark remove-pill"></i>
+                    </button>
+                }
+                @foreach (var (attrId, attrVal) in _selectedAttributeFilters)
+                {
+                    var group = AvailableAttributeFacets.FirstOrDefault(g => g.AttributeId == attrId);
+                    var title = group != null ? $"{group.Title}: {attrVal}" : attrVal;
+                    <button type="button" class="catalog-quick-pill active" @onclick="() => SetAttributeFilter(attrId, null)">
+                        <span>@title</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
                     </button>
                 }
@@ -218,7 +268,7 @@
                 <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
                     @foreach (var product in VisibleProducts)
                     {
-                        <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
+                        <a href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
                                 @if (!product.IsAvailable)
                                 {
@@ -320,7 +370,6 @@
 </div>
 
 @code {
-    [Parameter] public string StoreSlug { get; set; } = "default";
     [SupplyParameterFromQuery] public Guid? CategoryId { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyAvailable { get; set; }
@@ -341,6 +390,7 @@
     private string _searchTerm = "";
     private string _sortBy = "newest";
     private bool _isLoading = true;
+    private Dictionary<Guid, string> _selectedAttributeFilters = new();
 
     private string SearchTerm
     {
@@ -514,6 +564,52 @@
             </div>
         </div>
 
+        <!-- ویجت‌های ویژگی‌های توصیفی پویا (آکاردئونی و باز و بسته‌شونده) -->
+        @foreach (var group in AvailableAttributeFacets)
+        {
+            var isExpanded = IsAttributeWidgetExpanded(group.AttributeId);
+            var hasActiveFilter = _selectedAttributeFilters.ContainsKey(group.AttributeId);
+
+            <div class="sidebar-widget">
+                <h3 class="widget-collapsible @(isExpanded ? "expanded" : "")" @onclick="() => ToggleAttributeWidget(group.AttributeId)">
+                    <div class="d-flex align-items-center gap-2">
+                        <span>@group.Title @(!string.IsNullOrWhiteSpace(group.Unit) ? $"({group.Unit})" : "")</span>
+                        @if (hasActiveFilter)
+                        {
+                            <span class="active-facet-dot"></span>
+                        }
+                    </div>
+                    <i class="fa-solid fa-chevron-down widget-toggle-icon @(isExpanded ? "rotated" : "")"></i>
+                </h3>
+
+                @if (isExpanded)
+                {
+                    <div class="filter-pills-vertical animate-fade-in" style="margin-top: 10px;">
+                        <button type="button" class="filter-pill-btn @(!_selectedAttributeFilters.ContainsKey(group.AttributeId) ? "active" : "")"
+                                @onclick="() => SetAttributeFilter(group.AttributeId, null)">
+                            <span>همه</span>
+                            @if (!_selectedAttributeFilters.ContainsKey(group.AttributeId))
+                            {
+                                <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                            }
+                        </button>
+                        @foreach (var val in group.Values)
+                        {
+                            var isSelected = _selectedAttributeFilters.TryGetValue(group.AttributeId, out var currentVal) && currentVal.Equals(val, StringComparison.OrdinalIgnoreCase);
+                            <button type="button" class="filter-pill-btn @(isSelected ? "active" : "")"
+                                    @onclick="() => SetAttributeFilter(group.AttributeId, val)">
+                                <span>@val</span>
+                                @if (isSelected)
+                                {
+                                    <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                                }
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
         <!-- دکمه پاک کردن فیلترها -->
         @if (HasActiveFilters)
         {
@@ -524,9 +620,23 @@
         }
     </text>;
 
+    [Parameter] public string? StoreSlug { get; set; }
+
+    private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
+        ? StoreSlug
+        : (!string.IsNullOrWhiteSpace(_storeInfo?.Slug) 
+            ? _storeInfo.Slug 
+            : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : ""));
+
+    private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveStoreSlug}";
+
+    private string GetProductUrl(string barcode) => StoreContext.IsCustomDomain
+        ? $"/p/{barcode}"
+        : $"/{EffectiveStoreSlug}/p/{barcode}";
+
     protected override async Task OnInitializedAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -537,11 +647,18 @@
         _onlyAvailable = OnlyAvailable ?? false;
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
 
-        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{StoreSlug}", out var catRestored) && catRestored != null &&
-            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{StoreSlug}", out var prodRestored) && prodRestored != null)
+        var restoredCategories = ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>("vitrine_catalog_categories", out var catRestored) && catRestored != null
+            ? catRestored
+            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{EffectiveStoreSlug}", out catRestored) && catRestored != null ? catRestored : null);
+
+        var restoredProducts = ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>("vitrine_catalog_products", out var prodRestored) && prodRestored != null
+            ? prodRestored
+            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{EffectiveStoreSlug}", out prodRestored) && prodRestored != null ? prodRestored : null);
+
+        if (restoredCategories != null && restoredProducts != null)
         {
-            _categories = catRestored;
-            _products = prodRestored;
+            _categories = restoredCategories;
+            _products = restoredProducts;
             ResetVisibleCount();
             _isLoading = false;
         }
@@ -553,7 +670,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
@@ -573,11 +690,19 @@
     {
         if (_categories != null && _categories.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_categories_{StoreSlug}", _categories);
+            ApplicationState.PersistAsJson("vitrine_catalog_categories", _categories);
+            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_catalog_categories_{EffectiveStoreSlug}", _categories);
+            }
         }
         if (_products != null && _products.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_products_{StoreSlug}", _products);
+            ApplicationState.PersistAsJson("vitrine_catalog_products", _products);
+            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_catalog_products_{EffectiveStoreSlug}", _products);
+            }
         }
         return Task.CompletedTask;
     }
@@ -587,8 +712,8 @@
         _isLoading = true;
         try
         {
-            _categories = (await VitrineService.GetCategoriesAsync(StoreSlug)).ToList();
-            _products = (await VitrineService.GetVitrineProductsAsync(StoreSlug)).ToList();
+            _categories = (await VitrineService.GetCategoriesAsync(EffectiveStoreSlug)).ToList();
+            _products = (await VitrineService.GetVitrineProductsAsync(EffectiveStoreSlug)).ToList();
             ResetVisibleCount();
         }
         catch (Exception ex)
@@ -668,6 +793,35 @@
         ResetVisibleCount();
     }
 
+    private readonly HashSet<Guid> _expandedAttributeWidgets = new();
+
+    private void ToggleAttributeWidget(Guid attributeId)
+    {
+        if (!_expandedAttributeWidgets.Add(attributeId))
+        {
+            _expandedAttributeWidgets.Remove(attributeId);
+        }
+    }
+
+    private bool IsAttributeWidgetExpanded(Guid attributeId)
+    {
+        return _selectedAttributeFilters.ContainsKey(attributeId) || _expandedAttributeWidgets.Contains(attributeId);
+    }
+
+    private void SetAttributeFilter(Guid attributeId, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _selectedAttributeFilters.Remove(attributeId);
+        }
+        else
+        {
+            _selectedAttributeFilters[attributeId] = value;
+            _expandedAttributeWidgets.Add(attributeId);
+        }
+        ResetVisibleCount();
+    }
+
     private void ResetFilters()
     {
         _selectedCategoryId = null;
@@ -677,7 +831,39 @@
         _weightFilter = "all";
         _searchTerm = "";
         _sortBy = "newest";
+        _selectedAttributeFilters.Clear();
         ResetVisibleCount();
+    }
+
+    public record AttributeFacetGroup(Guid AttributeId, string Title, string? Unit, List<string> Values);
+
+    private List<AttributeFacetGroup> AvailableAttributeFacets
+    {
+        get
+        {
+            var baseProducts = _products.AsEnumerable();
+            if (_selectedCategoryId.HasValue)
+            {
+                baseProducts = baseProducts.Where(p => p.CategoryId == _selectedCategoryId.Value);
+            }
+
+            var allAttrs = baseProducts
+                .SelectMany(p => p.Attributes ?? Enumerable.Empty<VitrineAttributeValueDto>())
+                .Where(a => !string.IsNullOrWhiteSpace(a.Value))
+                .GroupBy(a => new { a.AttributeId, a.Title, a.Unit, a.DisplayOrder })
+                .OrderBy(g => g.Key.DisplayOrder)
+                .ThenBy(g => g.Key.Title)
+                .Select(g => new AttributeFacetGroup(
+                    g.Key.AttributeId,
+                    g.Key.Title,
+                    g.Key.Unit,
+                    g.Select(x => x.Value.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToList()
+                ))
+                .Where(g => g.Values.Count > 0)
+                .ToList();
+
+            return allAttrs;
+        }
     }
 
     private string GetWeightFilterTitle(string weight) => weight switch
@@ -700,6 +886,7 @@
             if (_onlyAvailable) count++;
             if (_weightFilter != "all") count++;
             if (!string.IsNullOrWhiteSpace(_searchTerm)) count++;
+            count += _selectedAttributeFilters.Count;
             return count;
         }
     }
@@ -759,6 +946,14 @@
                                            (x.CategoryTitle != null && x.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)));
             }
 
+            if (_selectedAttributeFilters.Count > 0)
+            {
+                foreach (var (attrId, attrVal) in _selectedAttributeFilters)
+                {
+                    result = result.Where(x => x.Attributes != null && x.Attributes.Any(a => a.AttributeId == attrId && a.Value.Equals(attrVal, StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+
             // Sorting: Always prioritize in-stock items (IsAvailable == true) first, then apply chosen sort order
             result = _sortBy switch
             {
@@ -771,5 +966,67 @@
 
             return result.ToList();
         }
+    }
+
+    private string GetCatalogJsonLd(string canonicalUrl, string storeName, string pageDesc)
+    {
+        var items = VisibleProducts.Take(12).Select((p, idx) => new Dictionary<string, object?>
+        {
+            ["@type"] = "ListItem",
+            ["position"] = idx + 1,
+            ["url"] = Navigation.ToAbsoluteUri(GetProductUrl(p.Barcode)).ToString(),
+            ["name"] = p.Name,
+            ["image"] = !string.IsNullOrWhiteSpace(p.MainImageUrl) ? Navigation.ToAbsoluteUri(p.MainImageUrl).ToString() : null
+        }).ToList();
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "CollectionPage",
+            ["name"] = $"کاتالوگ طلا و جواهرات {storeName}",
+            ["url"] = canonicalUrl,
+            ["description"] = pageDesc,
+            ["mainEntity"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "ItemList",
+                ["itemListElement"] = items
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
+
+    private string GetCatalogBreadcrumbJsonLd(string canonicalUrl, string storeName)
+    {
+        var jsonObject = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "BreadcrumbList",
+            ["itemListElement"] = new List<object>
+            {
+                new Dictionary<string, object>
+                {
+                    ["@type"] = "ListItem",
+                    ["position"] = 1,
+                    ["name"] = storeName,
+                    ["item"] = Navigation.ToAbsoluteUri(HomeUrl).ToString()
+                },
+                new Dictionary<string, object>
+                {
+                    ["@type"] = "ListItem",
+                    ["position"] = 2,
+                    ["name"] = "کاتالوگ طلا و جواهرات",
+                    ["item"] = canonicalUrl
+                }
+            }
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(jsonObject, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
     }
 }

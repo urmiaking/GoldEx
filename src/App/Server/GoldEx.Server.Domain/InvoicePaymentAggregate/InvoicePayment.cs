@@ -1,6 +1,7 @@
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -34,7 +35,10 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
         string? referenceNumber = null,
         string? note = null,
         StoreId storeId = default,
-        CustomerTransferVoucherId? customerTransferVoucherId = null)
+        CustomerTransferVoucherId? customerTransferVoucherId = null,
+        CoinInstanceId? coinInstanceId = null,
+        int? coinQuantity = null,
+        decimal? coinUnitPrice = null)
     {
         var finalAmount = goldFineness.HasValue ? amount * goldFineness.Value / 750m : amount;
 
@@ -58,6 +62,9 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
             SourcePaymentId = sourcePaymentId,
             ReferenceNumber = referenceNumber,
             Note = note,
+            CoinInstanceId = coinInstanceId,
+            CoinQuantity = coinQuantity,
+            CoinUnitPrice = coinUnitPrice,
             StoreId = storeId
         };
     }
@@ -100,7 +107,24 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
 
     public CheckPayment? CheckPayment { get; private set; }
 
+    public CoinInstanceId? CoinInstanceId { get; private set; }
+    public CoinInstance? CoinInstance { get; private set; }
+    public int? CoinQuantity { get; private set; }
+    public decimal? CoinUnitPrice { get; private set; }
+
     public decimal FinalAmount { get; private set; }
+
+    public void SetCoinDetails(CoinInstanceId? coinInstanceId, int? coinQuantity, decimal? coinUnitPrice)
+    {
+        CoinInstanceId = coinInstanceId;
+        CoinQuantity = coinQuantity;
+        CoinUnitPrice = coinUnitPrice;
+    }
+
+    public void SetCoinInstance(CoinInstance? coinInstance)
+    {
+        CoinInstance = coinInstance;
+    }
 
     public void SetPaymentDate(DateTime paymentDate) => PaymentDate = paymentDate;
     public void SetReferenceNumber(string? referenceNumber) => ReferenceNumber = referenceNumber;

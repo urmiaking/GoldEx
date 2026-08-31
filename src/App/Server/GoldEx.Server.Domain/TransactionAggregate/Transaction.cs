@@ -342,9 +342,15 @@ public class Transaction : EntityBase<TransactionId>, IStoreFiltered
         };
     }
 
-    public Transaction MarkAsReversalOf(TransactionId originalTransactionId)
+    public Transaction MarkAsReversalOf(TransactionId? originalTransactionId)
     {
         ReverseTransactionId = originalTransactionId;
+        return this;
+    }
+
+    public Transaction ClearReversal()
+    {
+        ReverseTransactionId = null;
         return this;
     }
 

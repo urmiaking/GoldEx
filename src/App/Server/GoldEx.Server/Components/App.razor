@@ -1,32 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#daa520" />
     <base href="/" />
 
-    <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
-
-    <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
-    <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
-    <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
-    <link rel="stylesheet" href="@Assets["css/app.css"]" />
-
-    <ImportMap />
-
-    <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
-    <link rel="icon" type="image/png" href="favicon.ico" />
-    @if (IsVitrineRoute())
+    @if (!IsVitrineRoute())
     {
+        <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+        <link rel="icon" type="image/png" href="/favicon.ico" />
+
+        <link rel="stylesheet" href="@Assets["fonts/Google/google-fonts.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
+        <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
+        <link rel="stylesheet" href="@Assets["css/app.css"]" />
+        <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(StoreLogoUrl))
+        {
+            <link rel="shortcut icon" href="@StoreLogoUrl" />
+            <link rel="icon" type="image/png" href="@StoreLogoUrl" />
+            <link rel="apple-touch-icon" href="@StoreLogoUrl" />
+        }
+        else
+        {
+            <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+            <link rel="icon" type="image/png" href="/favicon.ico" />
+        }
+
+        <link rel="stylesheet" href="@Assets["fonts/IRANSANS/IRANSANS-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["fonts/vazir/Vazirmatn-font-face.css"]" />
+        <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
+        <meta name="theme-color" content="@GetVitrineThemeColorMeta()" />
         <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />
         <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css" />
+        @if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor) || !string.IsNullOrWhiteSpace(VitrineAccentColor) || !string.IsNullOrWhiteSpace(VitrineBackgroundColor) || !string.IsNullOrWhiteSpace(VitrineSurfaceColor))
+        {
+            <style>
+                .vitrine-root {
+                    @if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor)) { <text>--primary-color: @VitrinePrimaryColor; --primary-dark: @VitrinePrimaryColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineAccentColor)) { <text>--accent-color: @VitrineAccentColor; --accent-hover: @VitrineAccentColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineBackgroundColor)) { <text>--light-color: @VitrineBackgroundColor; </text> }
+                    @if (!string.IsNullOrWhiteSpace(VitrineSurfaceColor)) { <text>--white: @VitrineSurfaceColor; </text> }
+                }
+            </style>
+        }
     }
+
+    @if (!IsVitrineRoute())
+    {
+        <ImportMap />
+    }
+
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 
@@ -72,15 +107,50 @@
         }
     }
 
-    <script src=@Assets["app.js"]></script>
+    @if (!IsVitrineRoute())
+    {
+        <script src=@Assets["app.js"]></script>
+    }
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
         Blazor.start({
-        webAssembly: {}
+            webAssembly: {}
         });
     </script>
-    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
-    <script src="@Assets["js/pwa-helper.js"]"></script>
+    @if (!IsVitrineRoute())
+    {
+        <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+        <script src="@Assets["js/pwa-helper.js"]"></script>
+    }
+    else
+    {
+        <script>
+            (function () {
+                try {
+                    if (localStorage.getItem('gex_sw_clean_v1')) return;
+
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(function (regs) {
+                            for (var i = 0; i < regs.length; i++) {
+                                regs[i].unregister();
+                            }
+                        });
+                    }
+                    if ('caches' in window) {
+                        caches.keys().then(function (keys) {
+                            for (var j = 0; j < keys.length; j++) {
+                                if (keys[j].indexOf('blazor-cache') !== -1) {
+                                    caches.delete(keys[j]);
+                                }
+                            }
+                        });
+                    }
+                    localStorage.setItem('gex_sw_clean_v1', '1');
+                } catch (e) {}
+            })();
+        </script>
+        <script src="/assets/vitrine/js/vitrine.js"></script>
+    }
 </body>
 
 

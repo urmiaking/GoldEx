@@ -50,6 +50,15 @@
         </MudTd>
         <MudTd DataLabel="نام فروشگاه">
             <MudText Typo="Typo.body2" Style="font-weight: bold;">@context.Name</MudText>
+            @if (!string.IsNullOrWhiteSpace(context.CustomDomain))
+            {
+                <div class="d-flex align-center gap-1 mt-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Language" Size="Size.Small" Color="Color.Info" Style="font-size: 0.85rem;" />
+                    <a href="@($"https://{context.CustomDomain}")" target="_blank" style="color: var(--mud-palette-info); font-size: 0.75rem; text-decoration: none; direction: ltr;">
+                        @context.CustomDomain
+                    </a>
+                </div>
+            }
         </MudTd>
         <MudTd DataLabel="شناسه (Slug)">
             <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@context.Slug</MudChip>

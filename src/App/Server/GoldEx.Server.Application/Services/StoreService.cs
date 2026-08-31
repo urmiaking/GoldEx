@@ -76,6 +76,7 @@ internal class StoreService(
             Slug = s.Slug,
             LogoUrl = s.LogoUrl,
             BackgroundImageUrl = s.BackgroundImageUrl,
+            CustomDomain = s.CustomDomain,
             IsDefault = storeUsers.First(su => su.StoreId == s.Id).IsDefault,
             IsCurrent = s.Id.Value == storeContext.StoreId
         }).ToList();
@@ -127,6 +128,7 @@ internal class StoreService(
                 Slug = s.Slug,
                 LogoUrl = s.LogoUrl,
                 BackgroundImageUrl = s.BackgroundImageUrl,
+                CustomDomain = s.CustomDomain,
                 IsActive = s.IsActive
             }).ToList(),
             Total = total,
@@ -142,7 +144,7 @@ internal class StoreService(
         await using var transaction = await storeRepository.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
-            var store = Store.Create(request.Name, request.Slug);
+            var store = Store.Create(request.Name, request.Slug, customDomain: request.CustomDomain);
 
             var logoUrl = store.LogoUrl;
             var backgroundImageUrl = store.BackgroundImageUrl;
@@ -420,7 +422,7 @@ internal class StoreService(
             backgroundImageUrl = $"/{relativePath}";
         }
 
-        store.UpdateDetails(request.Name, request.Slug, logoUrl, backgroundImageUrl);
+        store.UpdateDetails(request.Name, request.Slug, logoUrl, backgroundImageUrl, request.CustomDomain);
         store.SetActive(request.IsActive);
 
         await storeRepository.UpdateAsync(store, cancellationToken);

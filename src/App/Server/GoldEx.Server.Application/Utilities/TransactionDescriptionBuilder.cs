@@ -169,6 +169,7 @@ public static class TransactionDescriptionBuilder
             PaymentType.UsedGoldInventory => "طلای شکسته",
             PaymentType.MoltenGoldInventory => "طلای آبشده",
             PaymentType.Check => "چک",
+            PaymentType.Coin => "سکه",
             _ => "پرداخت"
         };
 
@@ -241,6 +242,32 @@ public static class TransactionDescriptionBuilder
             desc += $" با عیار {payment.GoldFineness.Value:G29}";
 
         desc += $" بابت {invoiceTitle} شماره {invoice.InvoiceNumber}";
+
+        return desc;
+    }
+
+    // ---------------------- 🪙 پرداخت‌های با سکه ----------------------
+
+    public static string ForCoinPayment(Invoice invoice, InvoicePayment payment)
+    {
+        var sideTitle = payment.PaymentSide == PaymentSide.Receive
+            ? "دریافت"
+            : "پرداخت";
+
+        var invoiceTitle = invoice.InvoiceType switch
+        {
+            InvoiceType.Sell => "فاکتور فروش",
+            InvoiceType.Purchase => "فاکتور خرید",
+            _ => "فاکتور"
+        };
+
+        var coinTitle = payment.CoinInstance?.Coin?.Title ?? "سکه";
+        var qty = payment.CoinQuantity ?? 1;
+
+        var desc = $"{sideTitle} {qty} عدد {coinTitle} بابت {invoiceTitle} شماره {invoice.InvoiceNumber}";
+
+        if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
+            desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
 
         return desc;
     }

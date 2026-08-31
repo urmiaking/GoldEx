@@ -1,4 +1,5 @@
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.StoneTypeAggregate;
 using Microsoft.EntityFrameworkCore;
@@ -72,9 +73,36 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.OwnsMany(x => x.GemStones, Configure);
         builder.OwnsMany(x => x.Images, ConfigureProductImages);
+        builder.OwnsMany(x => x.AttributeValues, ConfigureProductAttributeValues);
         builder.OwnsOne(x => x.MoltenGold, Configure);
 
         builder.Navigation(x => x.Images).AutoInclude();
+        builder.Navigation(x => x.AttributeValues).AutoInclude();
+    }
+
+    private static void ConfigureProductAttributeValues(OwnedNavigationBuilder<Product, ProductAttributeValue> builder)
+    {
+        builder.ToTable("ProductAttributeValues");
+
+        builder.HasKey(x => new { x.ProductId, x.AttributeId });
+
+        builder.Property(x => x.AttributeId)
+            .HasConversion(id => id.Value,
+                value => new ProductAttributeId(value));
+
+        builder.Property(x => x.Value)
+            .HasMaxLength(500)
+            .IsRequired();
+
+        builder.Property(x => x.NumericValue)
+            .HasPrecision(18, 4);
+
+        builder.HasOne(x => x.Attribute)
+            .WithMany()
+            .HasForeignKey(x => x.AttributeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.Attribute).AutoInclude();
     }
 
     private static void ConfigureProductImages(OwnedNavigationBuilder<Product, ProductImage> builder)

@@ -23,4 +23,5 @@ public record VitrineProductDetailDto(
     decimal TaxAmount,
     decimal GramPrice750,
     DateTime UpdatedAt,
-    bool IsAvailable = true);
+    bool IsAvailable = true,
+    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null);
