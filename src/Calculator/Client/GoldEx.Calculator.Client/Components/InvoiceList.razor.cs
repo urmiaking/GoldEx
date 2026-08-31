@@ -137,7 +137,7 @@ public partial class InvoiceList
             { x => x.Invoice, invoice }
         };
 
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
         await DialogService.ShowAsync<InvoiceShareDialog>("اشتراک‌گذاری فاکتور", parameters, options);
     }
 

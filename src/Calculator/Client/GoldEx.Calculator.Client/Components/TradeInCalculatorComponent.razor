@@ -10,7 +10,7 @@
             <MudPaper Outlined="true" Class="pa-4 h-100 rounded-lg">
                 <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
                     <MudIcon Icon="@Icons.Material.Filled.AssignmentReturn" Color="Color.Warning" />
-                    <MudText Typo="Typo.h6" Class="font-weight-bold">۱. طلای کهنه/مستعمل (دریافتی از مشتری)</MudText>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">۱. طلای کهنه دریافتی از مشتری</MudText>
                 </div>
 
                 <MudGrid Spacing="3">
@@ -26,6 +26,7 @@
                                          @bind-Value="_model.UsedGramPrice"
                                          Label="نرخ هر گرم طلای ۱۸"
                                          Format="#,##0.##"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -39,6 +40,7 @@
                                          @bind-Value="_model.UsedWeight"
                                          Label="وزن طلای کهنه (گرم)"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -51,6 +53,7 @@
                         <MudNumericField T="decimal"
                                          @bind-Value="_model.UsedFineness"
                                          Label="عیار طلا"
+                                         Immediate="true"
                                          Format="0.###"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
@@ -64,6 +67,7 @@
                                              @bind-Value="_model.UsedFinenessDeduction"
                                              Label="کسر خط عیار"
                                              Format="0.###"
+                                             Immediate="true"
                                              HideSpinButtons="true"
                                              Variant="Variant.Outlined"
                                              Margin="Margin.Dense"
@@ -113,6 +117,7 @@
                                          @bind-Value="_model.NewGramPrice"
                                          Label="نرخ هر گرم طلای ۱۸"
                                          Format="#,##0.##"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -126,6 +131,7 @@
                                          @bind-Value="_model.NewWeight"
                                          Label="وزن طلای نو (گرم)"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -139,6 +145,7 @@
                                          @bind-Value="_model.NewFineness"
                                          Label="عیار طلا"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -150,6 +157,7 @@
                                          @bind-Value="_model.NewWage"
                                          Label="اجرت ساخت"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -173,6 +181,7 @@
                                          @bind-Value="_model.NewProfitPercent"
                                          Label="درصد سود طلافروش"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"
@@ -186,6 +195,7 @@
                                          @bind-Value="_model.NewTaxPercent"
                                          Label="درصد مالیات ارزش افزوده"
                                          Format="0.###"
+                                         Immediate="true"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Margin="Margin.Dense"

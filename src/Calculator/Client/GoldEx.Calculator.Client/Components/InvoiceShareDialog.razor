@@ -7,7 +7,7 @@
 
 <MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true">
     <DialogContent>
-        <div class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column gap-3" style="max-height: 75vh; overflow-y: auto;">
             <!-- پیش‌نمایش گرافیکی و رسمی فاکتور طلا و جواهر -->
             <div id="invoice-preview-card" class="pa-4 rounded-xl shadow-sm" style="background: #ffffff; color: #1f2937; border: 2px solid #D4AF37; font-family: 'IRANSans', Tahoma, sans-serif;">
                 <!-- سربرگ فاکتور -->
@@ -28,8 +28,9 @@
                     </div>
 
                     <div class="d-flex flex-column align-end">
-                        <span class="pa-1 px-3 rounded-pill font-weight-bold" style="background: rgba(212, 175, 55, 0.15); color: #997A15; font-size: 0.82rem; direction: ltr;">
-                            شماره فاکتور: @Invoice.InvoiceNumber
+                        <span class="pa-1 px-3 rounded-pill font-weight-bold d-inline-flex align-center gap-1" style="background: rgba(212, 175, 55, 0.15); color: #997A15; font-size: 0.82rem; direction: rtl;">
+                            <span>شماره فاکتور:</span>
+                            <bdi style="direction: ltr;">@Invoice.InvoiceNumber</bdi>
                         </span>
                         <span class="text-secondary mt-1" style="font-size: 0.78rem;">
                             تاریخ: @Invoice.DateTime
@@ -65,6 +66,7 @@
                             {
                                 decimal.TryParse(item.FinalPrice.Replace(",", "").Replace("تومان", "").Trim(), out var linePrice);
                                 grandTotal += linePrice;
+                                var cleanPrice = item.FinalPrice.Replace("تومان", "").Replace("ریال", "").Trim();
 
                                 <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.12);">
                                     <td class="pa-2">@idx</td>
@@ -75,8 +77,11 @@
                                         @(!string.IsNullOrWhiteSpace(item.Wage) ? item.Wage : "—")
                                         @(!string.IsNullOrWhiteSpace(item.WageType) ? $" ({item.WageType})" : "")
                                     </td>
-                                    <td class="pa-2 text-left font-weight-bold" style="color: @(linePrice < 0 ? "#ef4444" : "#10b981"); direction: ltr;">
-                                        @item.FinalPrice
+                                    <td class="pa-2 text-left font-weight-bold" style="color: @(linePrice < 0 ? "#ef4444" : "#10b981");">
+                                        <span class="d-inline-flex align-center gap-1" style="direction: rtl;">
+                                            <bdi style="direction: ltr; font-variant-numeric: tabular-nums;">@cleanPrice</bdi>
+                                            <span style="font-size: 0.8rem; font-weight: normal;">تومان</span>
+                                        </span>
                                     </td>
                                 </tr>
                                 idx++;
@@ -88,8 +93,9 @@
                 <!-- جمع کل فاکتور -->
                 <div class="d-flex justify-space-between align-center pa-3 rounded-lg" style="background: rgba(212, 175, 55, 0.18); border: 1px solid rgba(212, 175, 55, 0.5);">
                     <span class="font-weight-bold" style="font-size: 0.95rem;">جمع کل قابل پرداخت:</span>
-                    <span class="font-weight-black" style="font-size: 1.25rem; color: #997A15; direction: ltr;">
-                        @grandTotal.ToString("N0") تومان
+                    <span class="font-weight-black d-inline-flex align-center gap-1" style="font-size: 1.25rem; color: #997A15; direction: rtl;">
+                        <bdi style="direction: ltr; font-variant-numeric: tabular-nums;">@grandTotal.ToString("N0")</bdi>
+                        <span style="font-size: 0.95rem; font-weight: bold;">تومان</span>
                     </span>
                 </div>
 

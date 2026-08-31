@@ -48,10 +48,6 @@ public partial class TradeInCalculatorComponent : IAsyncDisposable
             var price = await PriceStateService.GetAsync(GoldUnitType.Gram, null, false);
             if (price != null && decimal.TryParse(price.Value?.Replace(",", "").Replace("٬", "").Trim(), out var rate) && rate > 0)
             {
-                // تبدیل خودکار ریال به تومان در صورت نیاز
-                if (price.Unit?.Contains("ریال") == true || rate > 100_000_000)
-                    rate /= 10;
-
                 if (_model.UsedGramPrice == 0) _model.UsedGramPrice = rate;
                 if (_model.NewGramPrice == 0) _model.NewGramPrice = rate;
                 StateHasChanged();
