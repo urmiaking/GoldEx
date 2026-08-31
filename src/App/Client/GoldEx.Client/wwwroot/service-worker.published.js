@@ -107,8 +107,16 @@ self.addEventListener('fetch', event => {
         url.pathname.startsWith('/api/v1/vitrine/');
 
     const isVitrineNavigation = (event.request.mode === 'navigate') && (() => {
+        const host = url.hostname.toLowerCase();
+        const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
+        if (!isPlatformHost) {
+            // Any navigation on custom domains (e.g. fanijewellery.ir) is 100% vitrine
+            return true;
+        }
+
         const segments = url.pathname.split('/').filter(Boolean);
-        if (segments.length === 0 || segments.length > 3) return false;
+        if (segments.length === 0) return false;
+        if (segments.length > 3) return false;
 
         const firstSegment = segments[0].toLowerCase();
         const reserved = [
@@ -120,7 +128,11 @@ self.addEventListener('fetch', event => {
         ];
         if (reserved.includes(firstSegment)) return false;
 
-        // Shape check:
+        // Custom domain routes without slug:
+        if (['catalog', 'about'].includes(firstSegment)) return true;
+        if (firstSegment === 'p' && segments.length === 2) return true;
+
+        // Shape check with slug:
         // 1. /{slug}
         if (segments.length === 1) return true;
         // 2. /{slug}/catalog or /{slug}/about

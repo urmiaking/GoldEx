@@ -56,7 +56,7 @@ public partial class App
             return RenderMode.InteractiveServer;
 
         if (IsVitrineRoute())
-            return new InteractiveServerRenderMode(prerender: true);
+            return new InteractiveWebAssemblyRenderMode(prerender: true);
 
         return new InteractiveWebAssemblyRenderMode(prerender: false);
     }
