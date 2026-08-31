@@ -273,7 +273,7 @@
 
     private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
-    private string StoreSlug = "default";
+    private string StoreSlug = string.Empty;
     private bool _isStoreLoaded;
     private PersistingComponentStateSubscription _persistingSubscription;
 
@@ -287,9 +287,16 @@
         ResolveStoreSlug();
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistStoreInfo);
 
-        if (ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out var restored) && restored != null)
+        if ((ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>("vitrine_store_info", out var restored) && restored != null) ||
+            (!string.IsNullOrWhiteSpace(StoreSlug) && ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out restored) && restored != null))
         {
             _storeInfo = restored;
+            StoreSlug = restored.Slug;
+            if (StoreContext is ClientStoreContext clientCtx)
+            {
+                clientCtx.StoreSlug = restored.Slug;
+                clientCtx.CustomDomain = restored.CustomDomain;
+            }
             _isStoreLoaded = true;
         }
         else
@@ -302,7 +309,7 @@
     {
         var oldSlug = StoreSlug;
         ResolveStoreSlug();
-        if (_storeInfo == null || !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase))
+        if (_storeInfo == null || (!string.IsNullOrWhiteSpace(StoreSlug) && !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase)))
         {
             await LoadStoreInfoAsync();
         }
@@ -312,7 +319,11 @@
     {
         if (_storeInfo != null)
         {
-            ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
+            ApplicationState.PersistAsJson("vitrine_store_info", _storeInfo);
+            if (!string.IsNullOrWhiteSpace(StoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
+            }
         }
         return Task.CompletedTask;
     }
@@ -337,10 +348,27 @@
 
     private void ResolveStoreSlug()
     {
-        if (StoreContext.IsCustomDomain && !string.IsNullOrWhiteSpace(StoreContext.StoreSlug))
+        if (StoreContext.IsCustomDomain)
         {
-            StoreSlug = StoreContext.StoreSlug;
-            return;
+            if (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug))
+            {
+                StoreSlug = StoreContext.StoreSlug;
+                return;
+            }
+
+            try
+            {
+                var host = Navigation.ToAbsoluteUri(Navigation.Uri).Host;
+                if (!string.IsNullOrWhiteSpace(host))
+                {
+                    StoreSlug = host;
+                    return;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
@@ -354,7 +382,7 @@
                 first.Equals("about", StringComparison.OrdinalIgnoreCase) ||
                 first.Equals("p", StringComparison.OrdinalIgnoreCase))
             {
-                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default";
+                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
             }
             else if (!first.Equals("api", StringComparison.OrdinalIgnoreCase))
             {
@@ -362,12 +390,12 @@
             }
             else
             {
-                StoreSlug = "default";
+                StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
             }
         }
         else
         {
-            StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default";
+            StoreSlug = !string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "";
         }
     }
 
@@ -376,6 +404,15 @@
         try
         {
             _storeInfo = await VitrineService.GetStoreInfoAsync(StoreSlug);
+            if (_storeInfo != null)
+            {
+                StoreSlug = _storeInfo.Slug;
+                if (StoreContext is ClientStoreContext clientCtx)
+                {
+                    clientCtx.StoreSlug = _storeInfo.Slug;
+                    clientCtx.CustomDomain = _storeInfo.CustomDomain;
+                }
+            }
         }
         catch
         {

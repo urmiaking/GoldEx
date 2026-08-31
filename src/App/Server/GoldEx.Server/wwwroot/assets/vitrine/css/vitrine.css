@@ -2299,47 +2299,48 @@
 }
 
 /* ==========================================================================
-   Vitrine Multi-Platform Share & Instagram Story Card Modal
+   Vitrine Multi-Platform Share & Instagram Story Card Modal (Bottom Sheet)
    ========================================================================== */
 .vitrine-share-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(4, 5, 8, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 10000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  font-family: var(--vitrine-font-family, "Vazirmatn", "IRANSans", system-ui, sans-serif) !important;
+  direction: rtl !important;
   animation: vitrineFadeIn 0.25s ease-out forwards;
 }
 
-@media (min-width: 768px) {
-  .vitrine-share-modal-overlay {
-    align-items: center;
-    padding: 20px;
-  }
-}
-
 .vitrine-share-modal-content {
-  background: #0f131a;
-  border: 1px solid rgba(218, 165, 32, 0.35);
-  border-radius: 24px 24px 0 0;
-  width: 100%;
-  max-width: 520px;
-  padding: 24px 22px 32px;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(218, 165, 32, 0.12);
-  direction: rtl;
-  color: #fff;
-  position: relative;
-}
-
-@media (min-width: 768px) {
-  .vitrine-share-modal-content {
-    border-radius: 20px;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(218, 165, 32, 0.15);
-  }
+  background: #0f131a !important;
+  border: 1px solid rgba(218, 165, 32, 0.35) !important;
+  border-bottom: none !important;
+  border-radius: 28px 28px 0 0 !important;
+  width: 100% !important;
+  max-width: 540px !important;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 14px)) !important;
+  box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(218, 165, 32, 0.15) !important;
+  direction: rtl !important;
+  color: #fff !important;
+  position: relative !important;
+  font-family: var(--vitrine-font-family, "Vazirmatn", "IRANSans", system-ui, sans-serif) !important;
+  margin: 0 auto !important;
+  flex-shrink: 0 !important;
 }
 
 .vitrine-share-modal-header {
@@ -2347,15 +2348,15 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .vitrine-share-close-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: none;
-  color: var(--gray-400);
-  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #9ca3af;
+  font-size: 1.4rem;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -2365,42 +2366,45 @@
   justify-content: center;
   transition: all 0.2s ease;
   line-height: 1;
+  font-family: inherit;
 }
 
 .vitrine-share-close-btn:hover {
   background: rgba(218, 165, 32, 0.2);
-  color: var(--accent-color);
+  border-color: var(--accent-color, #d5b267);
+  color: var(--accent-color, #d5b267);
   transform: rotate(90deg);
 }
 
 /* Instagram Story Banner Card */
 .vitrine-story-card-banner {
-  background: linear-gradient(135deg, rgba(131, 58, 180, 0.2) 0%, rgba(225, 48, 108, 0.25) 50%, rgba(245, 96, 64, 0.2) 100%);
-  border: 1.5px solid rgba(225, 48, 108, 0.5);
-  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(131, 58, 180, 0.25) 0%, rgba(225, 48, 108, 0.3) 50%, rgba(245, 96, 64, 0.25) 100%);
+  border: 1.5px solid rgba(225, 48, 108, 0.6);
+  border-radius: 18px;
   padding: 16px 18px;
   margin-bottom: 22px;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 20px rgba(225, 48, 108, 0.15);
+  box-shadow: 0 4px 20px rgba(225, 48, 108, 0.2);
+  font-family: inherit;
 }
 
 .vitrine-story-card-banner:hover {
   transform: translateY(-2px);
-  border-color: rgba(225, 48, 108, 0.85);
-  box-shadow: 0 6px 25px rgba(225, 48, 108, 0.3);
+  border-color: rgba(225, 48, 108, 0.95);
+  box-shadow: 0 8px 30px rgba(225, 48, 108, 0.35);
 }
 
 .vitrine-story-icon-box {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(220, 39, 67, 0.4);
+  box-shadow: 0 4px 14px rgba(220, 39, 67, 0.45);
 }
 
 /* Apps Grid */
@@ -2417,76 +2421,117 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 14px 6px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   text-decoration: none;
-  color: #e5e7eb;
-  font-size: 0.82rem;
+  color: #f3f4f6;
+  font-size: 0.85rem;
   font-weight: 700;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  transition: all 0.25s ease;
 }
 
 .vitrine-share-app-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(218, 165, 32, 0.45);
+  color: #ffffff;
   transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .share-app-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   color: #fff;
 }
 
 .share-telegram .share-app-icon {
   background: linear-gradient(135deg, #2aabee, #229ed9);
-  box-shadow: 0 4px 14px rgba(34, 158, 217, 0.35);
+  box-shadow: 0 4px 14px rgba(34, 158, 217, 0.4);
 }
 
 .share-whatsapp .share-app-icon {
   background: linear-gradient(135deg, #25d366, #128c7e);
-  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
 }
 
 .share-bale .share-app-icon {
   background: linear-gradient(135deg, #00b956, #008f43);
-  box-shadow: 0 4px 14px rgba(0, 185, 86, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 185, 86, 0.4);
 }
 
 .share-eitaa .share-app-icon {
   background: linear-gradient(135deg, #e77324, #c95c14);
-  box-shadow: 0 4px 14px rgba(231, 115, 36, 0.35);
+  box-shadow: 0 4px 14px rgba(231, 115, 36, 0.4);
 }
 
 /* Copy Link Row */
 .vitrine-share-link-box {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.4);
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 6px 8px;
+  border-radius: 14px;
+  padding: 8px 10px;
 }
 
 .vitrine-share-link-input {
   flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--gray-400);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #d1d5db;
   font-size: 0.82rem;
-  padding: 6px 8px;
+  font-family: inherit;
+  padding: 8px 10px;
   outline: none;
   direction: ltr;
+  text-align: left;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.vitrine-share-link-input:focus {
+  border-color: var(--accent-color, #d5b267);
+  color: #ffffff;
+}
+
+.vitrine-share-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, var(--accent-color, #d5b267), var(--accent-hover, #b8974e));
+  color: #0f131a;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(213, 178, 103, 0.3);
+}
+
+.vitrine-share-copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(213, 178, 103, 0.5);
+  filter: brightness(1.08);
+}
+
+.vitrine-share-copy-btn:active {
+  transform: scale(0.97);
 }
 
 @keyframes vitrineFadeIn {

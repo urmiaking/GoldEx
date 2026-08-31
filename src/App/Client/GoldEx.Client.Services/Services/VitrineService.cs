@@ -12,9 +12,35 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class VitrineService(HttpClient client, JsonSerializerOptions jsonOptions) : IVitrineService
 {
+    private readonly Dictionary<string, VitrineStoreInfoDto> _storeInfoCache = new(StringComparer.OrdinalIgnoreCase);
+
+    private string ResolveSlug(string? storeSlug)
+    {
+        if (!string.IsNullOrWhiteSpace(storeSlug))
+            return storeSlug.Trim();
+
+        try
+        {
+            var host = client.BaseAddress?.Host;
+            if (!string.IsNullOrWhiteSpace(host))
+                return host.Trim();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return "default";
+    }
+
     public async Task<VitrineStoreInfoDto?> GetStoreInfoAsync(string storeSlug, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Vitrine.GetStoreInfo(storeSlug), cancellationToken);
+        var slug = ResolveSlug(storeSlug);
+
+        if (_storeInfoCache.TryGetValue(slug, out var cachedInfo))
+            return cachedInfo;
+
+        using var response = await client.GetAsync(ApiUrls.Vitrine.GetStoreInfo(slug), cancellationToken);
 
         if (response.StatusCode is HttpStatusCode.NotFound)
             return null;
@@ -22,7 +48,17 @@ internal class VitrineService(HttpClient client, JsonSerializerOptions jsonOptio
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        return await response.Content.ReadFromJsonAsync<VitrineStoreInfoDto>(jsonOptions, cancellationToken);
+        var info = await response.Content.ReadFromJsonAsync<VitrineStoreInfoDto>(jsonOptions, cancellationToken);
+        if (info != null)
+        {
+            _storeInfoCache[slug] = info;
+            if (!string.IsNullOrWhiteSpace(info.Slug))
+                _storeInfoCache[info.Slug] = info;
+            if (!string.IsNullOrWhiteSpace(info.CustomDomain))
+                _storeInfoCache[info.CustomDomain] = info;
+        }
+
+        return info;
     }
 
     public async Task<IReadOnlyList<VitrineProductSummaryDto>> GetVitrineProductsAsync(
@@ -31,7 +67,8 @@ internal class VitrineService(HttpClient client, JsonSerializerOptions jsonOptio
         bool? onlyFeatured = null,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Vitrine.GetProducts(storeSlug, categoryId, onlyFeatured), cancellationToken);
+        var slug = ResolveSlug(storeSlug);
+        using var response = await client.GetAsync(ApiUrls.Vitrine.GetProducts(slug, categoryId, onlyFeatured), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
@@ -45,7 +82,8 @@ internal class VitrineService(HttpClient client, JsonSerializerOptions jsonOptio
         string barcode,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Vitrine.GetProductDetail(storeSlug, barcode), cancellationToken);
+        var slug = ResolveSlug(storeSlug);
+        using var response = await client.GetAsync(ApiUrls.Vitrine.GetProductDetail(slug, barcode), cancellationToken);
 
         if (response.StatusCode is HttpStatusCode.NotFound)
             return null;
@@ -60,7 +98,8 @@ internal class VitrineService(HttpClient client, JsonSerializerOptions jsonOptio
         string storeSlug,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Vitrine.GetCategories(storeSlug), cancellationToken);
+        var slug = ResolveSlug(storeSlug);
+        using var response = await client.GetAsync(ApiUrls.Vitrine.GetCategories(slug), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

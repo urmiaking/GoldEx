@@ -373,13 +373,18 @@ else
 
     private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
         ? StoreSlug
-        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+        : (!string.IsNullOrWhiteSpace(_storeInfo?.Slug) 
+            ? _storeInfo.Slug 
+            : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : ""));
 
     private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveStoreSlug}";
     private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveStoreSlug}/catalog";
     private string CategoryUrl => StoreContext.IsCustomDomain 
         ? $"/catalog?categoryId={_product?.CategoryId}" 
         : $"/{EffectiveStoreSlug}/catalog?categoryId={_product?.CategoryId}";
+    private string ProductUrl => StoreContext.IsCustomDomain 
+        ? $"/p/{Barcode}" 
+        : $"/{EffectiveStoreSlug}/p/{Barcode}";
 
     private VitrineProductDetailDto? _product;
     private bool _isLoading = true;
@@ -395,7 +400,11 @@ else
 
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistProductData);
 
-        if (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", out var restored) && restored != null)
+        var restored = (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{Barcode}", out var prodRestored) && prodRestored != null)
+            ? prodRestored
+            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", out prodRestored) && prodRestored != null ? prodRestored : null);
+
+        if (restored != null)
         {
             _product = restored;
             _isLoading = false;
@@ -424,7 +433,11 @@ else
     {
         if (_product != null)
         {
-            ApplicationState.PersistAsJson($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", _product);
+            ApplicationState.PersistAsJson($"vitrine_product_{Barcode}", _product);
+            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", _product);
+            }
         }
         return Task.CompletedTask;
     }
@@ -598,14 +611,14 @@ else
                 ["@type"] = "ListItem",
                 ["position"] = 1,
                 ["name"] = storeName,
-                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}").ToString()
+                ["item"] = Navigation.ToAbsoluteUri(HomeUrl).ToString()
             },
             new Dictionary<string, object>
             {
                 ["@type"] = "ListItem",
                 ["position"] = 2,
                 ["name"] = "کاتالوگ طلا",
-                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog").ToString()
+                ["item"] = Navigation.ToAbsoluteUri(CatalogUrl).ToString()
             }
         };
 
@@ -616,7 +629,7 @@ else
                 ["@type"] = "ListItem",
                 ["position"] = items.Count + 1,
                 ["name"] = _product.CategoryTitle,
-                ["item"] = Navigation.ToAbsoluteUri($"/{StoreSlug}/catalog?categoryId={_product.CategoryId}").ToString()
+                ["item"] = Navigation.ToAbsoluteUri(CategoryUrl).ToString()
             });
         }
 
@@ -661,7 +674,7 @@ else
             priceFormatted = _product.EstimatedPrice.ToString("N0"),
             imageUrl = mainImg,
             storeName = _storeInfo?.Name ?? "گالری طلا و جواهر",
-            url = Navigation.ToAbsoluteUri($"/{StoreSlug}/p/{Barcode}").ToString()
+            url = Navigation.ToAbsoluteUri(ProductUrl).ToString()
         };
 
         await JsRuntime.InvokeVoidAsync("goldexVitrine.shareProduct", shareData);

@@ -624,7 +624,9 @@
 
     private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
         ? StoreSlug
-        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+        : (!string.IsNullOrWhiteSpace(_storeInfo?.Slug) 
+            ? _storeInfo.Slug 
+            : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : ""));
 
     private string HomeUrl => StoreContext.IsCustomDomain ? "/" : $"/{EffectiveStoreSlug}";
 
@@ -645,11 +647,18 @@
         _onlyAvailable = OnlyAvailable ?? false;
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
 
-        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{EffectiveStoreSlug}", out var catRestored) && catRestored != null &&
-            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{EffectiveStoreSlug}", out var prodRestored) && prodRestored != null)
+        var restoredCategories = ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>("vitrine_catalog_categories", out var catRestored) && catRestored != null
+            ? catRestored
+            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{EffectiveStoreSlug}", out catRestored) && catRestored != null ? catRestored : null);
+
+        var restoredProducts = ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>("vitrine_catalog_products", out var prodRestored) && prodRestored != null
+            ? prodRestored
+            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{EffectiveStoreSlug}", out prodRestored) && prodRestored != null ? prodRestored : null);
+
+        if (restoredCategories != null && restoredProducts != null)
         {
-            _categories = catRestored;
-            _products = prodRestored;
+            _categories = restoredCategories;
+            _products = restoredProducts;
             ResetVisibleCount();
             _isLoading = false;
         }
@@ -681,11 +690,19 @@
     {
         if (_categories != null && _categories.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_categories_{EffectiveStoreSlug}", _categories);
+            ApplicationState.PersistAsJson("vitrine_catalog_categories", _categories);
+            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_catalog_categories_{EffectiveStoreSlug}", _categories);
+            }
         }
         if (_products != null && _products.Count > 0)
         {
-            ApplicationState.PersistAsJson($"vitrine_catalog_products_{EffectiveStoreSlug}", _products);
+            ApplicationState.PersistAsJson("vitrine_catalog_products", _products);
+            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            {
+                ApplicationState.PersistAsJson($"vitrine_catalog_products_{EffectiveStoreSlug}", _products);
+            }
         }
         return Task.CompletedTask;
     }

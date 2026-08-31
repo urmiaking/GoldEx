@@ -175,7 +175,9 @@
 
     private string EffectiveStoreSlug => !string.IsNullOrWhiteSpace(StoreSlug)
         ? StoreSlug
-        : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : "default");
+        : (!string.IsNullOrWhiteSpace(_storeInfo?.Slug) 
+            ? _storeInfo.Slug 
+            : (!string.IsNullOrWhiteSpace(StoreContext.StoreSlug) ? StoreContext.StoreSlug : ""));
 
     protected override void OnInitialized()
     {

@@ -21,7 +21,7 @@ public class ClientStoreContext : IStoreContext
     private string? _storeSlug;
     public string? StoreSlug
     {
-        get => !string.IsNullOrWhiteSpace(_storeSlug) ? _storeSlug : (IsCustomDomain ? "default" : null);
+        get => _storeSlug;
         set => _storeSlug = value;
     }
 

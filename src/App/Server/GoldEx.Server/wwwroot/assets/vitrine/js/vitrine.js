@@ -356,47 +356,8 @@ window.goldexVitrine = {
   // --------------------------------------------------------------------------
   // Share & Story Action
   // --------------------------------------------------------------------------
-  shareProduct: async function (data) {
+  shareProduct: function (data) {
     window.goldexVitrine._currentShareData = data;
-    var btn = document.getElementById("vitrineShareBtn");
-    var origText = "";
-    if (btn) {
-      origText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>در حال آماده‌سازی استوری...</span>';
-      btn.disabled = true;
-    }
-
-    try {
-      var blob = await window.goldexVitrine.generateStoryCardBlob(data);
-      window.goldexVitrine._currentStoryBlob = blob;
-
-      var file = new File([blob], "story-" + (data.barcode || "gold") + ".png", { type: "image/png" });
-      var sharePayload = {
-        title: data.productName || "طلا و جواهر",
-        text: (data.productName ? data.productName + " - " : "") + (data.priceFormatted ? ("قیمت: " + data.priceFormatted + " تومان - ") : "") + "مشاهده در ویترین: " + data.url,
-        url: data.url,
-        files: [file]
-      };
-
-      // If mobile supports sharing files directly to Instagram Stories / WhatsApp / Telegram
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        if (btn) {
-          btn.innerHTML = origText;
-          btn.disabled = false;
-        }
-        await navigator.share(sharePayload);
-        return;
-      }
-    } catch (err) {
-      console.log("Native share cancelled or not available, showing modal:", err);
-    } finally {
-      if (btn) {
-        btn.innerHTML = origText;
-        btn.disabled = false;
-      }
-    }
-
-    // Fallback: Open Luxury Share Sheet Modal
     window.goldexVitrine.openShareModal(data);
   },
 
@@ -428,7 +389,6 @@ window.goldexVitrine = {
     }
   },
 
-  // Open Multi-App Share Bottom Sheet Modal
   openShareModal: function (data) {
     data = data || window.goldexVitrine._currentShareData;
     if (!data) return;
@@ -436,7 +396,12 @@ window.goldexVitrine = {
     var existing = document.getElementById("vitrineShareModal");
     if (existing) existing.remove();
 
-    var encodedUrl = encodeURIComponent(data.url || window.location.href);
+    var productUrl = data.url;
+    if (!productUrl || productUrl.indexOf("://p/") !== -1 || productUrl.startsWith("//p/")) {
+      productUrl = window.location.href;
+    }
+
+    var encodedUrl = encodeURIComponent(productUrl);
     var shareMsg = (data.productName ? data.productName + "\n" : "") +
                    (data.priceFormatted ? "قیمت روز: " + data.priceFormatted + " تومان\n" : "") +
                    (data.weight ? "وزن: " + data.weight + " گرم - عیار " + (data.fineness || "750") + "\n" : "") +
@@ -453,8 +418,8 @@ window.goldexVitrine = {
         <div class="vitrine-share-modal-content animate-slide-up">
           <div class="vitrine-share-modal-header">
             <div class="d-flex align-items-center gap-2">
-              <i class="fa-solid fa-share-nodes" style="color: var(--accent-color); font-size: 1.25rem;"></i>
-              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #fff;">اشتراک‌گذاری کالا</h3>
+              <i class="fa-solid fa-share-nodes" style="color: var(--accent-color, #d5b267); font-size: 1.25rem;"></i>
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #fff; font-family: inherit;">اشتراک‌گذاری کالا</h3>
             </div>
             <button type="button" class="vitrine-share-close-btn" onclick="window.goldexVitrine.closeShareModal()">&times;</button>
           </div>
@@ -466,10 +431,10 @@ window.goldexVitrine = {
                 <i class="fa-brands fa-instagram" style="font-size: 1.8rem;"></i>
               </div>
               <div style="flex: 1; text-align: right;">
-                <div style="font-weight: 800; font-size: 0.98rem; color: #fff;">دانلود کارت آماده استوری اینستاگرام</div>
-                <div style="font-size: 0.8rem; color: var(--gray-400);">طراحی شیک عمودی (۹:۱۶) همراه با عکس و مشخصات کامل</div>
+                <div style="font-weight: 800; font-size: 0.98rem; color: #fff; font-family: inherit;">دانلود کارت آماده استوری اینستاگرام</div>
+                <div style="font-size: 0.8rem; color: #9ca3af; font-family: inherit; margin-top: 2px;">طراحی شیک عمودی (۹:۱۶) همراه با عکس و مشخصات کامل</div>
               </div>
-              <i class="fa-solid fa-download" style="color: var(--accent-color); font-size: 1.1rem;"></i>
+              <i class="fa-solid fa-download" style="color: var(--accent-color, #d5b267); font-size: 1.1rem;"></i>
             </div>
           </div>
 
@@ -495,8 +460,8 @@ window.goldexVitrine = {
 
           <!-- Copy Link Section -->
           <div class="vitrine-share-link-box">
-            <input type="text" readonly value="${data.url || window.location.href}" class="vitrine-share-link-input" />
-            <button type="button" class="btn-gisu btn-gisu-accent" style="padding: 10px 18px; font-size: 0.88rem;" onclick="window.goldexVitrine.copyShareLink('${data.url}')">
+            <input type="text" readonly value="${productUrl}" class="vitrine-share-link-input" />
+            <button type="button" class="vitrine-share-copy-btn" onclick="window.goldexVitrine.copyShareLink('${productUrl}')">
               <i class="fa-solid fa-copy"></i>
               <span>کپی لینک</span>
             </button>
@@ -506,6 +471,22 @@ window.goldexVitrine = {
     `;
 
     document.body.insertAdjacentHTML("beforeend", modalHtml);
+  },
+
+  nativeShare: async function () {
+    var data = window.goldexVitrine._currentShareData;
+    if (!data) return;
+    var productUrl = data.url || window.location.href;
+    var sharePayload = {
+      title: data.productName || "طلا و جواهر",
+      text: (data.productName ? data.productName + " - " : "") + (data.priceFormatted ? ("قیمت: " + data.priceFormatted + " تومان - ") : "") + "مشاهده در ویترین: " + productUrl,
+      url: productUrl
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(sharePayload);
+      } catch (e) {}
+    }
   },
 
   closeShareModal: function () {
