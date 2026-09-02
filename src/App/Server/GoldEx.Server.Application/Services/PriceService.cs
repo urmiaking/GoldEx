@@ -18,6 +18,7 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
@@ -34,7 +35,8 @@ internal class PriceService(
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
-    PriceProviderRegistry providerRegistry) : IServerPriceService,
+    PriceProviderRegistry providerRegistry,
+    IPriceNotificationPublisher? notificationPublisher = null) : IServerPriceService,
     IPriceService 
 {
     #region ServerPriceService
@@ -47,32 +49,90 @@ internal class PriceService(
         var localPricesLookup = (await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken))
             .ToDictionary(p => p.Title);
 
-        var pricesToUpdate = GetPricesToUpdate(incomingPriceList, localPricesLookup);
+        var defaultPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var (pricesToUpdate, changedNotifications) = GetPricesToUpdateWithNotifications(incomingPriceList, localPricesLookup, defaultPriceUnit);
 
         if (pricesToUpdate.Any())
+        {
             await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
+
+            if (changedNotifications.Any() && notificationPublisher != null)
+            {
+                await notificationPublisher.PublishPriceChangesAsync(changedNotifications, cancellationToken);
+            }
+        }
     }
 
     #region Helper methods
 
-    private List<Price> GetPricesToUpdate(
+    private (List<Price> PricesToUpdate, List<PriceChangedNotificationDto> ChangedNotifications) GetPricesToUpdateWithNotifications(
             List<PriceResponse> incomingPriceList,
-            Dictionary<string, Price> localPricesLookup)
+            Dictionary<string, Price> localPricesLookup,
+            PriceUnit? defaultPriceUnit)
     {
         var pricesToUpdate = new List<Price>();
+        var changedNotifications = new List<PriceChangedNotificationDto>();
 
         foreach (var incomingPrice in incomingPriceList)
         {
             if (localPricesLookup.TryGetValue(incomingPrice.Title, out var existingPrice))
             {
+                var hadHistory = existingPrice.PriceHistory is not null;
+                var oldValue = existingPrice.PriceHistory?.CurrentValue ?? 0m;
+                var newValue = incomingPrice.CurrentValue;
+
                 if (UpdateExistingPriceHistory(existingPrice, incomingPrice))
                 {
                     pricesToUpdate.Add(existingPrice);
+
+                    var direction = !hadHistory || newValue > oldValue
+                        ? PriceChangeDirection.Up
+                        : (newValue < oldValue ? PriceChangeDirection.Down : PriceChangeDirection.None);
+
+                    decimal displayValueNumeric;
+                    string displayUnit;
+                    string displayChange;
+
+                    if (existingPrice.MarketType is not MarketType.Ounce)
+                    {
+                        displayValueNumeric = ConvertFromRial(newValue, defaultPriceUnit?.UnitType);
+                        displayUnit = defaultPriceUnit?.Title ?? incomingPrice.Unit;
+                        displayChange = ConvertFormattedPrice(incomingPrice.Change, defaultPriceUnit?.UnitType);
+                    }
+                    else
+                    {
+                        displayValueNumeric = newValue;
+                        displayUnit = incomingPrice.Unit;
+                        displayChange = incomingPrice.Change;
+                    }
+
+                    var percentChange = PriceHelper.ExtractPercentChange(displayChange);
+
+                    changedNotifications.Add(new PriceChangedNotificationDto(
+                        Id: existingPrice.Id.Value,
+                        Title: existingPrice.Title,
+                        OldValue: oldValue,
+                        NewValue: newValue,
+                        CurrentValue: displayValueNumeric,
+                        Value: displayValueNumeric.ToString("N0"),
+                        Unit: displayUnit,
+                        Change: displayChange,
+                        ChangePercent: percentChange,
+                        Direction: direction,
+                        LastUpdate: incomingPrice.LastUpdate,
+                        MarketType: existingPrice.MarketType,
+                        UnitType: existingPrice.PriceUnit?.UnitType,
+                        PriceCatalog: existingPrice.PriceCatalog
+                    ));
                 }
             }
         }
 
-        return pricesToUpdate;
+        return (pricesToUpdate, changedNotifications);
     }
 
     /// <summary>

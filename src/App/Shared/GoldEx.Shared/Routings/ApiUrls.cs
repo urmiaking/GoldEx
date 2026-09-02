@@ -921,4 +921,9 @@ public class ApiUrls
         public static string UpdateProductVitrine(Guid productId) =>
             BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.UpdateProductVitrine).FormatRoute(new { productId });
     }
+
+    public class Hubs
+    {
+        public static string Prices => ApiRoutes.Hubs.Prices;
+    }
 }

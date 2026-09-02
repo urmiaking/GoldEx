@@ -168,6 +168,8 @@ internal static class ServiceCollectionExtensions
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
+            services.AddSignalR();
+
             services.AddSingleton<IEmailSender<AppUser>, IdentityEmailSender>();
             services.AddSingleton<IEmailSender, EmailSender>();
             services.AddUserContext();

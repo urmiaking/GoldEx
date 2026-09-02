@@ -365,5 +365,35 @@ GoldEx supports coin-based barter and payments (`PaymentType.Coin = 6`) across b
 5. **UI/UX & Live Price Synchronization**:
    - `PaymentEditor.razor` loads coins list, fetches live market price via `ICoinService.GetPriceAsync`, and binds `CoinUnitPrice` and `CoinQuantity` with auto-computed total amounts, while offering full manual override for price, quantity, mint type, package type, and workshop issuer.
 
+---
+
+## Real-Time Price Streaming & Visual Flash Indicator Architecture (پخش زنده قیمت‌ها با SignalR و انیمیشن درخشش کارت‌ها)
+
+GoldEx uses an event-driven, real-time push architecture for market prices, replacing client-side timer polling with SignalR and hardware-accelerated visual indicators:
+
+1. **Server-Side Change Detection & Efficient Dispatching**:
+   - `PriceUpdaterBackgroundService` periodically triggers `IPriceUpdateOrchestrator.UpdateAllAsync()`.
+   - In `PriceService.AddOrUpdateAsync`:
+     - Compares incoming provider ticks against persisted `PriceHistory.CurrentValue`.
+     - Detects genuine numeric price shifts (filtering out duplicate unchanged provider ticks to eliminate redundant network traffic).
+     - Computes direction (`PriceChangeDirection.Up` or `PriceChangeDirection.Down`), formats values based on the default system `PriceUnit` (e.g. Rial to Toman conversion), and builds `PriceChangedNotificationDto`.
+     - After persisting to the database via `repository.UpdateRangeAsync`, dispatches notifications through `IPriceNotificationPublisher`.
+2. **SignalR Hub & Multi-Transport Infrastructure**:
+   - `PriceHub : Hub<IPriceHubClient>` mapped at `ApiRoutes.Hubs.Prices` (`/hubs/prices`).
+   - Strong typing via `IPriceHubClient.ReceivePriceUpdates(List<PriceChangedNotificationDto>)`.
+   - Excluded from COEP isolation restrictions in `WebHostingExtensions` to permit seamless WebSockets handshakes.
+   - `SignalRPriceNotificationPublisher` uses `IHubContext<PriceHub, IPriceHubClient>` to broadcast real-time ticks to all connected clients (`Clients.All`).
+3. **Self-Healing & Resilient Client Architecture**:
+   - `PriceStateService` maintains an in-memory thread-safe price cache and acts as the SignalR client listener.
+   - **Automatic Reconnection**: Configured with `WithAutomaticReconnect([0s, 2s, 5s, 10s, 30s])` plus an exponential backoff jittered background loop (`RetryConnectionLoopAsync`) if the connection is permanently closed.
+   - **Reconnection Healing**: On `Reconnected`, automatically calls `RefreshAsync()` to fetch a complete snapshot from the database, guaranteeing no missed price updates during temporary offline/reconnect windows.
+   - **In-Memory O(1) Cache Patching**: Incoming price updates patch `List<GetPriceResponse>` in memory directly, updating all subscribed cards and calculators in 0ms without issuing secondary `GET /api/price` HTTP requests.
+   - **Dormant Fallback Safety Timer**: A slow fallback polling timer (every 2 minutes) runs only when SignalR is disconnected (`HubConnectionState != Connected`), and is immediately stopped when the WebSocket connection is active.
+4. **Visual Indicator (Green / Red Flash Animation)**:
+   - `PriceCard.razor` and `MarketPriceDeck.razor` subscribe to `OnPriceChanged` and `OnPriceBatchChanged`.
+   - When a price increase is received: activates `.price-card-flash-up` / `.market-ticker-card.flash-up` (soft emerald glow and border pulse).
+   - When a price decrease is received: activates `.price-card-flash-down` / `.market-ticker-card.flash-down` (soft ruby glow and border pulse).
+   - Driven by hardware-accelerated CSS keyframes (`price-flash-green` / `price-flash-red`) in `app.css` that gracefully fade back to the card's native theme styling after 1.8-2 seconds.
+
 
 

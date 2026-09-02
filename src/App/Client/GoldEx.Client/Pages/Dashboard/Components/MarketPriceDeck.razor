@@ -54,7 +54,7 @@
                 var changePercent = ExtractPercentChange(item.Change);
                 var isUp = changePercent >= 0;
 
-                <div class="market-ticker-card @(isUp ? "trend-up" : "trend-down")">
+                <div class="market-ticker-card @(isUp ? "trend-up" : "trend-down") @GetFlashClass(item.Id)">
                     <div class="d-flex align-center justify-space-between gap-2 mb-2">
                         <div class="d-flex align-center gap-2">
                             <div class="market-card-icon">

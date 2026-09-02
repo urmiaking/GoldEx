@@ -7,10 +7,12 @@ using GoldEx.Server.Application.BackgroundServices;
 using GoldEx.Server.Application.Factories;
 using GoldEx.Server.Application.Reporting;
 using GoldEx.Server.Application.Services;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GoldEx.Server.Application;
 
@@ -26,6 +28,7 @@ public static class DependencyInjection
 
             services.AddScoped<StoreContext>();
             services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<StoreContext>());
+            services.TryAddScoped<IPriceNotificationPublisher, NullPriceNotificationPublisher>();
 
             services.DiscoverServices();
             return services;
