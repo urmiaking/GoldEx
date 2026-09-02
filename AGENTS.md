@@ -10,7 +10,10 @@ Read these documents before generating code:
 
 Every time that you learn something new about the project update the AGENTS.md file with the new information.
 This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
-- **AUTOMATIC VERSIONING & RELEASE NOTES**: Whenever you complete a feature implementation or fix a bug, you **must** add a new release entry (or append to current version changes) in `src/App/Server/GoldEx.Server/releases.json`. Increment the version number (SemVer), set the release date (`yyyy-MM-dd`), and add a bulleted array of Persian descriptions summarizing what changed.
+- **AUTOMATIC VERSIONING & RELEASE NOTES**:
+  - **Scope**: `src/App/Server/GoldEx.Server/releases.json` belongs **exclusively to the main enterprise GoldEx project** (`src/App/`). Do **NOT** add or modify entries in `releases.json` for changes made to `GoldEx.Calculator` (`src/Calculator/`) or standalone SDK libraries.
+  - **End-User Friendly & Non-Technical Language**: All change descriptions in `releases.json` **MUST** be written in very simple, plain, and non-technical Persian (فارسی روان، ساده و کاملاً غیرفنی برای کاربر نهایی و زرگرها). Strictly avoid technical developer jargon (such as SSR, WASM, PersistentComponentState, Cache-Control, DI, EF Core, etc.); instead, describe the change from the end-user's perspective and the practical benefit (e.g., «رفع مشکل نمایش فاکتور در موبایل»، «بهبود سرعت باز شدن صفحات»، «نمایش زنده تغییرات قیمت»).
+  - **Execution**: Whenever you complete a feature implementation or fix a bug in the main GoldEx application, add a new release entry (or append to current version changes) in `src/App/Server/GoldEx.Server/releases.json`. Increment the version number (SemVer), set the release date (`yyyy-MM-dd`), and add a bulleted array of simple, user-facing Persian descriptions.
 
 ### AI Build Execution Policy
 - **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
