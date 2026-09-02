@@ -8,7 +8,7 @@ public sealed class TradeInVm
     // طلای کهنه دریافتی از مشتری
     public decimal UsedWeight { get; set; } = 1m;
     public decimal UsedFineness { get; set; } = 750m;
-    public decimal UsedFinenessDeduction { get; set; } = 0m;
+    public decimal UsedFinenessDeduction { get; set; } = 15m;
     public decimal UsedGramPrice { get; set; }
 
     public string? UsedItemName { get; set; } = "طلای کهنه تعویضی";

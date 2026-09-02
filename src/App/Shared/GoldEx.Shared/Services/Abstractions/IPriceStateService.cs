@@ -12,4 +12,6 @@ public interface IPriceStateService
     Task RefreshAsync(CancellationToken cancellationToken = default);
     
     event Action? OnPricesUpdated;
+    event Action<List<PriceChangedNotificationDto>>? OnPriceBatchChanged;
+    event Action<PriceChangedNotificationDto>? OnPriceChanged;
 }

@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 <div class="@Class">
 
@@ -45,7 +45,9 @@
                 @foreach (var item in group)
                 {
                     <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="2">
-                        <PriceCard Title="@item.Title"
+                        <PriceCard @key="item.Id"
+                                   Id="@item.Id"
+                                   Title="@item.Title"
                                    ImageUrl="@(ApiUrls.Icons.Get(IconType.Price, item.Id))"
                                    ChangePercent="@ExtractPercentChange(item.Change)"
                                    Price="@item.Value"

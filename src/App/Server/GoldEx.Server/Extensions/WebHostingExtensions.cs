@@ -12,7 +12,9 @@ using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Common.Middlewares;
 using GoldEx.Server.Components;
 using GoldEx.Server.Components.Account;
+using GoldEx.Server.Hubs;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Server.Services;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using HealthChecks.UI.Client;
@@ -40,6 +42,8 @@ public static class WebHostingExtensions
                 .AddServer(configuration)
                 .AddApplication().AddHostedServices()
                 .AddInfrastructure(configuration);
+
+            builder.Services.AddScoped<IPriceNotificationPublisher, SignalRPriceNotificationPublisher>();
 
             return builder.Build();
         }
@@ -94,6 +98,7 @@ public static class WebHostingExtensions
                 var path = context.Request.Path.Value ?? string.Empty;
                 if (!path.StartsWith("/oauth", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/mcp", StringComparison.OrdinalIgnoreCase) &&
+                    !path.StartsWith("/hubs", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/.well-known", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
                 {
@@ -238,6 +243,7 @@ public static class WebHostingExtensions
             app.MapStaticAssets();
 
             app.MapControllers();
+            app.MapHub<PriceHub>(ApiRoutes.Hubs.Prices);
             app.MapRazorComponents<App>()
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddInteractiveServerRenderMode()

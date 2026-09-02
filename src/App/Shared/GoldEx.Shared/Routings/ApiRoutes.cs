@@ -476,4 +476,9 @@ public static class ApiRoutes
         public const string UploadProductImage = "upload-image";
         public const string UpdateProductVitrine = "products/{productId}/vitrine";
     }
+
+    public class Hubs
+    {
+        public const string Prices = "/hubs/prices";
+    }
 }
