@@ -249,7 +249,10 @@ internal class VitrineService(
                     EstimatedPrice: priceBreakdown.EstimatedPrice,
                     IsFeatured: p.IsFeatured,
                     IsAvailable: isAvailable,
-                    Attributes: attributes);
+                    Attributes: attributes,
+                    Wage: p.Wage,
+                    WageType: p.WageType,
+                    WageAmount: priceBreakdown.WageAmount);
             }).ToList();
         }
         finally

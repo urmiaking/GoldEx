@@ -15,4 +15,7 @@ public record VitrineProductSummaryDto(
     decimal EstimatedPrice,
     bool IsFeatured,
     bool IsAvailable = true,
-    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null);
+    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null,
+    decimal Wage = 0,
+    WageType? WageType = null,
+    decimal WageAmount = 0);

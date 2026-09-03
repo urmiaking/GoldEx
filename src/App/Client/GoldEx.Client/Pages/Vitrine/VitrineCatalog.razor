@@ -141,6 +141,13 @@
                         <i class="fa-solid fa-xmark remove-pill"></i>
                     </button>
                 }
+                @if (_wageFilter != "all")
+                {
+                    <button type="button" class="catalog-quick-pill active" @onclick='() => SetWageFilter("all")'>
+                        <span>@GetWageFilterTitle(_wageFilter)</span>
+                        <i class="fa-solid fa-xmark remove-pill"></i>
+                    </button>
+                }
                 @foreach (var (attrId, attrVal) in _selectedAttributeFilters)
                 {
                     var group = AvailableAttributeFacets.FirstOrDefault(g => g.AttributeId == attrId);
@@ -216,6 +223,9 @@
                         <button type="button" class="sort-tab @(_sortBy == "newest" ? "active" : "")" @onclick='() => SetSortBy("newest")'>
                             جدیدترین
                         </button>
+                        <button type="button" class="sort-tab @(_sortBy == "wage_asc" ? "active" : "")" @onclick='() => SetSortBy("wage_asc")'>
+                            کم‌اجرت‌ترین
+                        </button>
                         <button type="button" class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" @onclick='() => SetSortBy("price_asc")'>
                             ارزان‌ترین
                         </button>
@@ -227,6 +237,9 @@
                         </button>
                         <button type="button" class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" @onclick='() => SetSortBy("weight_desc")'>
                             سنگین‌ترین
+                        </button>
+                        <button type="button" class="sort-tab @(_sortBy == "wage_desc" ? "active" : "")" @onclick='() => SetSortBy("wage_desc")'>
+                            بیشترین اجرت
                         </button>
                     </div>
                 </div>
@@ -387,6 +400,7 @@
     private bool _onlyAvailable;
     private bool _isFilterDrawerOpen;
     private string _weightFilter = "all";
+    private string _wageFilter = "all";
     private string _searchTerm = "";
     private string _sortBy = "newest";
     private bool _isLoading = true;
@@ -557,6 +571,45 @@
                         @onclick='() => SetWeightFilter("over_10")'>
                     <span>بالای ۱۰ گرم (سنگین و مجلسی)</span>
                     @if (_weightFilter == "over_10")
+                    {
+                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                    }
+                </button>
+            </div>
+        </div>
+
+        <!-- ویجت محدوده اجرت ساخت -->
+        <div class="sidebar-widget">
+            <h3>محدوده اجرت ساخت</h3>
+            <div class="filter-pills-vertical">
+                <button type="button" class="filter-pill-btn @(_wageFilter == "all" ? "active" : "")"
+                        @onclick='() => SetWageFilter("all")'>
+                    <span>همه اجرت‌ها</span>
+                    @if (_wageFilter == "all")
+                    {
+                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                    }
+                </button>
+                <button type="button" class="filter-pill-btn @(_wageFilter == "low" ? "active" : "")"
+                        @onclick='() => SetWageFilter("low")'>
+                    <span>طلای کم‌اجرت (زیر ۱۰٪ - اقتصادی)</span>
+                    @if (_wageFilter == "low")
+                    {
+                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                    }
+                </button>
+                <button type="button" class="filter-pill-btn @(_wageFilter == "medium" ? "active" : "")"
+                        @onclick='() => SetWageFilter("medium")'>
+                    <span>اجرت متوسط (۱۰٪ تا ۲۰٪)</span>
+                    @if (_wageFilter == "medium")
+                    {
+                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                    }
+                </button>
+                <button type="button" class="filter-pill-btn @(_wageFilter == "high" ? "active" : "")"
+                        @onclick='() => SetWageFilter("high")'>
+                    <span>کارهای فاخر و پرکار (بالای ۲۰٪)</span>
+                    @if (_wageFilter == "high")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
@@ -787,6 +840,12 @@
         ResetVisibleCount();
     }
 
+    private void SetWageFilter(string filter)
+    {
+        _wageFilter = filter;
+        ResetVisibleCount();
+    }
+
     private void SetSortBy(string sort)
     {
         _sortBy = sort;
@@ -829,6 +888,7 @@
         _onlyFeatured = false;
         _onlyAvailable = false;
         _weightFilter = "all";
+        _wageFilter = "all";
         _searchTerm = "";
         _sortBy = "newest";
         _selectedAttributeFilters.Clear();
@@ -875,6 +935,25 @@
         _ => "همه وزن‌ها"
     };
 
+    private string GetWageFilterTitle(string wage) => wage switch
+    {
+        "low" => "کم‌اجرت (زیر ۱۰٪)",
+        "medium" => "اجرت ۱۰ تا ۲۰٪",
+        "high" => "اجرت بالای ۲۰٪",
+        _ => "همه اجرت‌ها"
+    };
+
+    private static decimal GetEffectiveWage(VitrineProductSummaryDto p)
+    {
+        if (p.WageType == WageType.Percent)
+            return p.Wage;
+
+        if (p.EstimatedPrice > 0 && p.WageAmount > 0)
+            return Math.Round((p.WageAmount / p.EstimatedPrice) * 100m, 2);
+
+        return p.Wage;
+    }
+
     private int ActiveFiltersCount
     {
         get
@@ -885,6 +964,7 @@
             if (_onlyFeatured) count++;
             if (_onlyAvailable) count++;
             if (_weightFilter != "all") count++;
+            if (_wageFilter != "all") count++;
             if (!string.IsNullOrWhiteSpace(_searchTerm)) count++;
             count += _selectedAttributeFilters.Count;
             return count;
@@ -938,6 +1018,19 @@
                 result = result.Where(x => x.Weight > 10.0m);
             }
 
+            if (_wageFilter == "low")
+            {
+                result = result.Where(x => GetEffectiveWage(x) < 10.0m);
+            }
+            else if (_wageFilter == "medium")
+            {
+                result = result.Where(x => GetEffectiveWage(x) >= 10.0m && GetEffectiveWage(x) <= 20.0m);
+            }
+            else if (_wageFilter == "high")
+            {
+                result = result.Where(x => GetEffectiveWage(x) > 20.0m);
+            }
+
             if (!string.IsNullOrWhiteSpace(_searchTerm))
             {
                 var term = _searchTerm.Trim();
@@ -959,6 +1052,8 @@
             {
                 "price_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.EstimatedPrice),
                 "price_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.EstimatedPrice),
+                "wage_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => GetEffectiveWage(x)).ThenBy(x => x.WageAmount),
+                "wage_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => GetEffectiveWage(x)).ThenByDescending(x => x.WageAmount),
                 "weight_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.Weight),
                 "weight_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.Weight),
                 _ => result.OrderByDescending(x => x.IsAvailable) // newest / default
