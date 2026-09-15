@@ -1056,7 +1056,9 @@
                 "wage_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => GetEffectiveWage(x)).ThenByDescending(x => x.WageAmount),
                 "weight_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.Weight),
                 "weight_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.Weight),
-                _ => result.OrderByDescending(x => x.IsAvailable) // newest / default
+                _ => result.OrderByDescending(x => x.IsAvailable)
+                    .ThenByDescending(x => x.CreatedAt)
+                    .ThenByDescending(x => x.Id) // newest / default
             };
 
             return result.ToList();

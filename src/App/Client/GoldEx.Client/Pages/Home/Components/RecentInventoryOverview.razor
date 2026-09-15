@@ -58,7 +58,7 @@
                 <div class="summary-kpi-card goldex-glass-card pa-3">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">طلای ساخته‌شده</span>
-                        <MudIcon Icon="@Icons.Material.Filled.Square" Size="Size.Small" Class="kpi-icon text-info" />
+                        <MudIcon Icon="@Icons.Material.Filled.Diamond" Size="Size.Small" Class="kpi-icon text-info" />
                     </div>
                     <div class="kpi-value">@($"{ManufacturedGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
                     <div class="kpi-subtext">تعداد: @ManufacturedGoldCount جنس</div>
@@ -79,19 +79,12 @@
             <div class="col-12 col-sm-6 col-md-3">
                 <div class="summary-kpi-card goldex-glass-card pa-3">
                     <div class="d-flex align-center justify-space-between mb-1">
-                        <span class="kpi-title">مستعمل، سکه و ارز</span>
+                        <span class="kpi-title">مستعمل و مسکوکات</span>
                         <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="kpi-icon text-secondary" />
                     </div>
                     <div class="kpi-value">@($"{UsedGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
                     <div class="kpi-subtext">
-                        @if (_currencySummaries.Any())
-                        {
-                            <span>سکه: @CoinsCount عدد | ارز: @string.Join("، ", _currencySummaries.Take(2).Select(c => $"{c.Amount.ToCurrencyFormat()} {c.Title}"))</span>
-                        }
-                        else
-                        {
-                            <span>سکه: @CoinsCount عدد | ارز: ۰</span>
-                        }
+                        <span>مستعمل: @UsedGoldCount مورد | سکه: @CoinsCount عدد</span>
                     </div>
                 </div>
             </div>
@@ -99,13 +92,13 @@
 
         @* Detailed Breakdown Cards Grid (2 Columns) *@
         <div class="row g-3">
-            @* Left Column: Stock Category Distribution *@
+            @* Left Column: Stock Composition (All goods + coins) *@
             <div class="col-12 col-md-6">
                 <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
                     <div>
                         <div class="d-flex align-center gap-2 mb-3">
                             <MudIcon Icon="@Icons.Material.Filled.DonutSmall" Size="Size.Small" Class="text-secondary" />
-                            <span class="card-section-title">ترکیب موجودی طلا به تفکیک جنس</span>
+                            <span class="card-section-title">ترکیب موجودی اجناس و مسکوکات</span>
                         </div>
 
                         <div class="breakdown-stat-row mb-3">
@@ -128,7 +121,7 @@
                             </div>
                         </div>
 
-                        <div class="breakdown-stat-row">
+                        <div class="breakdown-stat-row mb-3">
                             <div class="d-flex justify-space-between mb-1">
                                 <span class="stat-name">طلای مستعمل</span>
                                 <span class="stat-num">@($"{UsedGoldWeight.ToWeightFormat(GoldUnitType.Gram)} ({UsedGoldCount} مورد)")</span>
@@ -136,6 +129,22 @@
                             <div class="stat-progress-bar">
                                 <div class="progress-fill error" style="width: @(TotalGoldWeight > 0 ? (UsedGoldWeight * 100 / TotalGoldWeight) : 0)%"></div>
                             </div>
+                        </div>
+
+                        @* Coins count brought alongside other goods *@
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">سکه و مسکوکات</span>
+                                <span class="stat-num">@($"{CoinsCount} عدد")</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill secondary" style="width: @(TotalItemsCount > 0 ? (CoinsCount * 100 / TotalItemsCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="metric-info-row mt-3 pa-3 rounded-lg border-subtle d-flex justify-space-between align-center">
+                            <span class="text-secondary font-xs">میانگین وزن هر کالای ساخته‌شده:</span>
+                            <span class="font-weight-500 font-xs">@($"{AverageGoldWeightPerItem:N2} گرم")</span>
                         </div>
                     </div>
 
@@ -152,9 +161,19 @@
             <div class="col-12 col-md-6">
                 <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
                     <div>
-                        <div class="d-flex align-center gap-2 mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Class="text-secondary" />
-                            <span class="card-section-title">موجودی انبار به تفکیک ارز</span>
+                        <div class="d-flex align-center justify-space-between gap-2 mb-3">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.CurrencyExchange" Size="Size.Small" Class="text-secondary" />
+                                <span class="card-section-title">موجودی انبار به تفکیک ارز</span>
+                            </div>
+                            @if (_currencySummaries.Any())
+                            {
+                                <span class="badge-pill-soft success">@_currencySummaries.Count نوع ارز فعال</span>
+                            }
+                            else
+                            {
+                                <span class="badge-pill-soft secondary">بدون موجودی ارزی</span>
+                            }
                         </div>
 
                         @if (_currencySummaries.Any())
@@ -162,36 +181,61 @@
                             <div class="currency-balances-grid d-flex flex-wrap gap-2 mb-3">
                                 @foreach (var currency in _currencySummaries)
                                 {
-                                    <div class="currency-balance-card pa-2 px-3 rounded-lg border-subtle d-flex align-center justify-space-between flex-grow-1">
+                                    <div class="currency-balance-card pa-3 rounded-lg border-subtle d-flex align-center justify-space-between flex-grow-1">
                                         <div class="d-flex align-center gap-2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" Class="text-success" />
-                                            <span class="font-xs font-weight-500">@currency.Title</span>
+                                            <div class="currency-icon-circle">
+                                                <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" Class="text-success" />
+                                            </div>
+                                            <div>
+                                                <div class="font-xs font-weight-bold">@currency.Title</div>
+                                                <div class="font-2xs text-secondary">اسکناس و حواله</div>
+                                            </div>
                                         </div>
-                                        <span class="font-xs font-weight-500 dir-ltr text-primary">@currency.Amount.ToCurrencyFormat()</span>
+                                        <div class="text-end">
+                                            <div class="font-sm font-weight-bold dir-ltr text-primary">@currency.Amount.ToCurrencyFormat()</div>
+                                            <div class="font-2xs text-secondary">موجود در صندوق</div>
+                                        </div>
                                     </div>
                                 }
                             </div>
                         }
                         else
                         {
-                            <div class="pa-3 rounded-lg border-subtle text-secondary font-xs mb-3 text-center">
-                                هیچ موجودی ارزی (دلار، یورو و...) در انبار ثبت نشده است.
+                            <div class="currency-empty-state pa-4 rounded-xl border-subtle text-center mb-3">
+                                <div class="currency-empty-icon-box mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Primary" />
+                                </div>
+                                <div class="font-weight-bold font-sm mb-1">صندوق ارزی انبار آماده دریافت</div>
+                                <div class="text-secondary font-xs mb-3">
+                                    در حال حاضر موجودی ارزی (دلار، یورو، درهم و...) در انبار ثبت نشده است. می‌توانید با ثبت ورود به انبار، ارزهای خود را مدیریت کنید.
+                                </div>
+                                <div class="d-flex justify-center gap-2 flex-wrap">
+                                    <MudButton Href="@ClientRoutes.InventoryStocks.InventoryEntry.Index"
+                                               Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Add">
+                                        ورود ارز به انبار
+                                    </MudButton>
+                                    <MudButton Href="@($"/inventory-stocks/list?type=Currency")"
+                                               Variant="Variant.Text"
+                                               Color="Color.Default"
+                                               Size="Size.Small"
+                                               EndIcon="@Icons.Material.Filled.ArrowBack">
+                                        کاردکس ارزها
+                                    </MudButton>
+                                </div>
                             </div>
                         }
 
-                        <div class="metric-info-row mb-3 pa-3 rounded-lg border-subtle d-flex justify-space-between align-center">
-                            <span class="text-secondary font-xs">میانگین وزن هر کالا در انبار:</span>
-                            <span class="font-weight-500 font-xs">@($"{AverageGoldWeightPerItem:N2} گرم")</span>
-                        </div>
-
-                        <div class="breakdown-stat-row">
-                            <div class="d-flex justify-space-between mb-1">
-                                <span class="stat-name">تعداد مسکوکات سکه</span>
-                                <span class="stat-num">@CoinsCount عدد</span>
+                        <div class="d-flex align-center justify-space-between gap-2 pa-2 px-3 rounded-lg border-subtle mb-2 bg-subtle-tint">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.PriceChange" Size="Size.Small" Color="Color.Info" />
+                                <span class="font-xs text-secondary">نرخ و مظنه‌های بازار:</span>
                             </div>
-                            <div class="stat-progress-bar">
-                                <div class="progress-fill secondary" style="width: @(TotalItemsCount > 0 ? (CoinsCount * 100 / TotalItemsCount) : 0)%"></div>
-                            </div>
+                            <MudLink Href="@ClientRoutes.PriceBoard.Index" Typo="Typo.caption" Color="Color.Info" Underline="Underline.Hover">
+                                مشاهده تابلو قیمت‌ها
+                            </MudLink>
                         </div>
                     </div>
 

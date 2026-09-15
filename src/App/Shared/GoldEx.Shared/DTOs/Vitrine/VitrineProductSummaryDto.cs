@@ -18,4 +18,5 @@ public record VitrineProductSummaryDto(
     IReadOnlyList<VitrineAttributeValueDto>? Attributes = null,
     decimal Wage = 0,
     WageType? WageType = null,
-    decimal WageAmount = 0);
+    decimal WageAmount = 0,
+    DateTime CreatedAt = default);

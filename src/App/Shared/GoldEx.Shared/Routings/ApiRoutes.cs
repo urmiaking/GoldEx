@@ -232,6 +232,7 @@ public static class ApiRoutes
         public const string Base = "/api/inventory-stocks";
         public const string GetList = "";
         public const string GetAvailableProducts = "available";
+        public const string Overview = "overview";
         public const string GetInventoryWeightChart = "{actionType}/weight-chart";
         public const string GetInvoiceInventoryItems = "invoice/{invoiceId}/items";
         public const string GetTraces = "{itemType}/{itemId}/traces";
@@ -475,6 +476,15 @@ public static class ApiRoutes
         public const string GetCategories = "{storeSlug}/categories";
         public const string UploadProductImage = "upload-image";
         public const string UpdateProductVitrine = "products/{productId}/vitrine";
+    }
+
+    public class Dashboard
+    {
+        public const string Base = "/api/dashboard";
+        public const string GetTodaySales = "today-sales";
+        public const string GetCustomerBalances = "customer-balances";
+        public const string GetTradeTrend30Days = "trade-trend";
+        public const string GetTopUnpaidInvoices = "top-unpaid";
     }
 
     public class Hubs

@@ -1096,4 +1096,122 @@ internal class InventoryStockRepository(
 
         return finalData;
     }
+
+    public async Task<GetInventoryOverviewResponse> GetInventoryOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        var settings = await settingRepository
+            .Get(new SettingsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
+
+        // 1. Manufactured Gold (ProductType.Gold & ProductType.Jewelry)
+        var manufacturedQuery = Query
+            .Where(x => x.ProductId != null &&
+                        (x.Product!.ProductType == ProductType.Jewelry || x.Product!.ProductType == ProductType.Gold))
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                CurrentQuantity = g.Sum(s =>
+                    (s.Product!.GoldUnitType == GoldUnitType.Mesghal ? gramPerMesghal : 1.0m) *
+                    (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                )
+            })
+            .Where(x => x.CurrentQuantity > 0);
+
+        var manufacturedCount = await manufacturedQuery.CountAsync(cancellationToken);
+        var manufacturedWeight = await manufacturedQuery.SumAsync(x => (decimal?)x.CurrentQuantity, cancellationToken) ?? 0m;
+
+        // 2. Molten Gold (ProductType.MoltenGold)
+        var moltenQuery = Query
+            .Where(x => x.ProductId != null && x.Product!.ProductType == ProductType.MoltenGold)
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                CurrentQuantity = g.Sum(s =>
+                    (
+                        (s.MoltenGoldDetail != null
+                            ? s.MoltenGoldDetail.WeightUnitType
+                            : s.Product!.GoldUnitType) == GoldUnitType.Mesghal
+                            ? gramPerMesghal
+                            : 1.0m
+                    ) * (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                )
+            })
+            .Where(x => x.CurrentQuantity > 0);
+
+        var moltenCount = await moltenQuery.CountAsync(cancellationToken);
+        var moltenWeight = await moltenQuery.SumAsync(x => (decimal?)x.CurrentQuantity, cancellationToken) ?? 0m;
+
+        // 3. Used Gold (ProductType.UsedGold)
+        var usedQuery = Query
+            .Where(x => x.ProductId != null && x.Product!.ProductType == ProductType.UsedGold)
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                CurrentQuantity = g.Sum(s =>
+                    (s.Product!.GoldUnitType == GoldUnitType.Mesghal ? gramPerMesghal : 1.0m) *
+                    (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                )
+            })
+            .Where(x => x.CurrentQuantity > 0);
+
+        var usedCount = await usedQuery.CountAsync(cancellationToken);
+        var usedWeight = await usedQuery.SumAsync(x => (decimal?)x.CurrentQuantity, cancellationToken) ?? 0m;
+
+        // 4. Coins
+        var coinQuery = Query
+            .Where(x => x.CoinInstanceId != null)
+            .GroupBy(x => x.CoinInstanceId)
+            .Select(g => new
+            {
+                CoinInstanceId = g.Key!,
+                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+            })
+            .Where(x => x.CurrentQuantity > 0);
+
+        var coinsCount = await coinQuery.CountAsync(cancellationToken);
+        var coinsTotalQuantity = await coinQuery.SumAsync(x => (decimal?)x.CurrentQuantity, cancellationToken) ?? 0m;
+
+        // 5. Currencies
+        var currencyQuery = Query
+            .Where(x => x.CurrencyId != null)
+            .GroupBy(x => x.CurrencyId)
+            .Select(g => new
+            {
+                CurrencyId = g.Key,
+                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+            })
+            .Where(x => x.CurrentQuantity > 0);
+
+        var currencyList = await currencyQuery
+            .Join(dbContext.Set<PriceUnit>(),
+                g => g.CurrencyId,
+                c => c.Id,
+                (g, c) => new CurrencyStockSummaryDto
+                {
+                    Title = c.Title,
+                    Amount = g.CurrentQuantity
+                })
+            .OrderByDescending(x => x.Amount)
+            .ToListAsync(cancellationToken);
+
+        return new GetInventoryOverviewResponse
+        {
+            ManufacturedGoldWeight = manufacturedWeight,
+            ManufacturedGoldCount = manufacturedCount,
+            MoltenGoldWeight = moltenWeight,
+            MoltenGoldCount = moltenCount,
+            UsedGoldWeight = usedWeight,
+            UsedGoldCount = usedCount,
+            CoinsCount = coinsCount,
+            CoinsTotalQuantity = coinsTotalQuantity,
+            CurrenciesCount = currencyList.Count,
+            CurrencySummaries = currencyList
+        };
+    }
 }

@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.InventoryStocks;
@@ -107,6 +107,18 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<GetInventoryItemTitleResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<GetInventoryOverviewResponse> GetInventoryOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetInventoryOverview(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetInventoryOverviewResponse>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

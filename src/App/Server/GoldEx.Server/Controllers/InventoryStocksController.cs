@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.InventoryStocks;
@@ -20,6 +20,13 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     {
         var list = await service.GetListAsync(filter, inventoryFilter, cancellationToken);
         return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.InventoryStocks.Overview)]
+    public async Task<IActionResult> GetInventoryOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        var overview = await service.GetInventoryOverviewAsync(cancellationToken);
+        return Ok(overview);
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetAvailableProducts)]

@@ -426,6 +426,9 @@ public class ApiUrls
                 .AppendQueryString(calculatorFilter)
                 .AppendQueryString(filter);
 
+        public static string GetInventoryOverview() =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.Overview);
+
         public static string GetInventoryWeightChart(WarehouseActionType actionType) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInventoryWeightChart)
                 .FormatRoute(new { actionType });
@@ -920,6 +923,22 @@ public class ApiUrls
 
         public static string UpdateProductVitrine(Guid productId) =>
             BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.UpdateProductVitrine).FormatRoute(new { productId });
+    }
+
+    public class Dashboard
+    {
+        public static string GetTodaySales() =>
+            BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetTodaySales);
+
+        public static string GetCustomerBalances() =>
+            BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetCustomerBalances);
+
+        public static string GetTradeTrend30Days() =>
+            BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetTradeTrend30Days);
+
+        public static string GetTopUnpaidInvoices(int count = 5) =>
+            BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetTopUnpaidInvoices)
+                .AppendQueryString(new { count });
     }
 
     public class Hubs

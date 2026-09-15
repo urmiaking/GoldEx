@@ -345,6 +345,14 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - Stores support optional `CustomDomain` (configured strictly by Administrators in `/settings/stores`).
    - `VitrineUrlHelper` generates public vitrine product and catalog links using `CustomDomain` (e.g. `https://fanijewellery.ir/{slug}/p/{barcode}`), falling back to current base URL if unconfigured.
    - Inventory management (`VitrineQuickEditDialog` and `InventoryStockList`) includes 1-click clipboard copy and open buttons for public product URLs.
+6. **WebAssembly Bootstrap Footprint & Embedded Browser Compatibility**:
+   - The public vitrine currently uses `InteractiveWebAssemblyRenderMode(prerender: true)` from the same `GoldEx.Client` project as the full administration application; it is not a separately trimmed vitrine client.
+   - A representative .NET 10 release publish contains roughly 396 files and about 51.5 MB of uncompressed `_framework` assets, including large administration-only dependencies such as DevExpress and EF Core. This can make first-load hydration fragile in memory-constrained embedded browsers such as Instagram's in-app WebView even though SSR content remains visible.
+   - The application currently sends `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin-allow-popups` on vitrine HTML and framework assets. Instagram's in-app WebView was confirmed to lose all Blazor interactivity in both `InteractiveWebAssembly` and `InteractiveServer` modes while these headers were present; ordinary mobile Chrome was unaffected. Hiding both response headers for the public custom domain in Nginx immediately restored interactivity.
+   - Public vitrine routes must therefore remain exempt from COEP/COOP unless a future feature demonstrably requires cross-origin isolation and has been tested in embedded browsers. The WASM payload size remains a secondary first-load performance risk, not the cause of this confirmed Instagram failure.
+7. **Catalog "Newest" Sorting**:
+   - The `VitrineCatalog.razor` `newest` option uses `Product.CreatedAt` as its chronology field. `GetVitrineProductsAsync` propagates it through `VitrineProductRawProjection` and `VitrineProductSummaryDto`.
+   - Catalog sorting preserves the available-first UX rule, then orders each availability group by `CreatedAt` descending and `Id` descending as a deterministic tie-breaker.
 
 ---
 
@@ -396,7 +404,53 @@ GoldEx uses an event-driven, real-time push architecture for market prices, repl
    - `PriceCard.razor` and `MarketPriceDeck.razor` subscribe to `OnPriceChanged` and `OnPriceBatchChanged`.
    - When a price increase is received: activates `.price-card-flash-up` / `.market-ticker-card.flash-up` (soft emerald glow and border pulse).
    - When a price decrease is received: activates `.price-card-flash-down` / `.market-ticker-card.flash-down` (soft ruby glow and border pulse).
-   - Driven by hardware-accelerated CSS keyframes (`price-flash-green` / `price-flash-red`) in `app.css` that gracefully fade back to the card's native theme styling after 1.8-2 seconds.
 
+---
 
+## Inventory Overview & Executive Stock Statistics Architecture (خلاصه وضعیت و موجودی کل انبار در پیش‌خوان)
 
+GoldEx calculates store-wide inventory stock totals and weights directly at the database level using a dedicated high-performance aggregate endpoint:
+
+1. **Database-Level Aggregation (`GetInventoryOverviewAsync`)**:
+   - Instead of fetching paged records into client memory (which truncated results when stores exceeded 200 or 500 products), `IInventoryStockRepository.GetInventoryOverviewAsync` executes group aggregations in SQL via EF Core.
+   - Converts mesghal to gram using the store's configured `GramPerMesghal` (e.g. 4.6083) for products and molten gold.
+   - Accurately counts and sums total active stock (`CurrentQuantity > 0`) across:
+     - **Manufactured Gold (`ProductType.Gold`, `ProductType.Jewelry`)**: Exact total weight in grams and total product count (e.g. 4,389 items).
+     - **Molten Gold (`ProductType.MoltenGold`)**: Exact total weight in grams and count of molten gold pieces.
+     - **Used Gold (`ProductType.UsedGold`)**: Exact total weight in grams and count of scrap/used items.
+     - **Coins (`CoinInstance`)**: Exact count of coin instances in stock and total quantity.
+     - **Currencies (`PriceUnit`)**: Distinct active currencies with formatted balance amounts, sorted descending.
+2. **Unified DTO & Endpoint (`ApiRoutes.InventoryStocks.Overview`)**:
+   - `GetInventoryOverviewResponse` encapsulates all stock metrics in a single lightweight payload (~200 bytes), replacing 5 separate heavy HTTP requests previously made by `RecentInventoryOverview.razor.cs`.
+3. **Executive Presentation (`RecentInventoryOverview.razor` & `ExecutiveDashboard.razor`)**:
+   - **Tab 3 («اجناس من»)**:
+     - Top KPI cards display exact total weight and item count without any paging bias.
+     - Stock composition section groups all physical inventory items together (Manufactured Gold, Molten Gold, Used Gold, and Coins) with distinct visual progress bars.
+     - Average weight per manufactured item is derived from the complete database-wide inventory.
+     - Currency section features distinct currency balance cards, active currency count pill badges, and an executive empty-state banner with direct 1-click action shortcuts when no currency balances exist.
+
+---
+
+## Executive Home Dashboard Architecture & Progressive Parallel Loading (پیش‌خوان اصلی و لود موازی و مستقل کارت‌ها)
+
+GoldEx employs a high-performance, non-blocking dashboard architecture on the executive home view (`/?tab=0`):
+
+1. **Problem Solved**:
+   - Previously, `ExecutiveDashboard.razor.cs` executed sequential monolithic requests: fetching 500 full invoice entities with nested joins, calculating customer ledger balances across every customer and transaction in the system, querying category sales, and reading inventory overview all behind a single global `_isLoaded` flag.
+   - As a result, users experienced multiple seconds of blank/skeleton screen time where all 4 KPI cards, trade charts, capital distribution donut, and unpaid invoice lists were blocked simultaneously until the slowest query finished.
+2. **Dedicated Backend Aggregation Endpoints (`IDashboardService` & `IDashboardRepository`)**:
+   - Registered under `ApiRoutes.Dashboard` (`/api/dashboard`):
+     - `GetTodaySalesAsync`: Instant SQL aggregate filtering `InvoiceDate == Today && InvoiceType == Sell`, grouped by `PriceUnit` (returns amount and invoice count).
+     - `GetCustomerBalancesSummaryAsync`: High-speed summary aggregating net customer receivables (our claims) and payables (our debts to customers) grouped by currency/unit, without transferring thousands of customer records over the network.
+     - `GetTradeTrend30DaysAsync`: Scoped specifically to the last 30 days (`InvoiceDate >= Today - 29`), grouping invoices by date and type (`Sell` vs `Purchase`) and calculating exact 18K gold weight equivalents via the domain method `Invoice.CalculateTotalWeightEquivalent()`.
+     - `GetTopUnpaidInvoicesAsync`: Evaluates recent open invoices, sorting by unpaid balance (`TotalUnpaidAmount`) and returning the top 5 records projected directly into `TopUnpaidInvoiceDto`.
+3. **Progressive, Non-Blocking Parallel Client-Side Loading**:
+   - In `ExecutiveDashboard.razor.cs`, the monolithic pipeline is replaced with independent parallel asynchronous tasks launched concurrently:
+     - `LoadTodaySalesAsync()`
+     - `LoadInventoryOverviewAsync()`
+     - `LoadCustomerBalancesAsync()`
+     - `LoadTradeTrendAsync()`
+     - `LoadCategorySalesAsync()`
+     - `LoadTopUnpaidInvoicesAsync()`
+   - Each card and widget maintains its own state flag (`_isSalesLoaded`, `_isInventoryLoaded`, `_isCustomerBalancesLoaded`, `_isTrendLoaded`, `_isCategoryLoaded`, `_isUnpaidLoaded`).
+   - In `ExecutiveDashboard.razor`, each KPI card and chart has dedicated skeleton placeholders. As each individual request resolves (often in under 100-200ms), that specific card smoothly transitions into its active data view and carousel without waiting for other components to finish.

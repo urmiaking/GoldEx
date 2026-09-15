@@ -168,6 +168,7 @@ internal class VitrineService(
                 .Select(p => new VitrineProductRawProjection
                 {
                     Id = p.Id.Value,
+                    CreatedAt = p.CreatedAt,
                     Barcode = p.Barcode,
                     Name = p.Name,
                     Weight = p.Weight,
@@ -252,7 +253,8 @@ internal class VitrineService(
                     Attributes: attributes,
                     Wage: p.Wage,
                     WageType: p.WageType,
-                    WageAmount: priceBreakdown.WageAmount);
+                    WageAmount: priceBreakdown.WageAmount,
+                    CreatedAt: p.CreatedAt);
             }).ToList();
         }
         finally
@@ -532,6 +534,7 @@ internal class VitrineService(
 internal sealed class VitrineProductRawProjection
 {
     public Guid Id { get; init; }
+    public DateTime CreatedAt { get; init; }
     public string Barcode { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public decimal Weight { get; init; }
