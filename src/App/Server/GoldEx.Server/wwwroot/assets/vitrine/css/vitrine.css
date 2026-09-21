@@ -46,6 +46,7 @@
   display: flex;
   flex-direction: column;
   line-height: 1.8;
+  overflow-x: clip;
   font-feature-settings: "tnum" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -548,7 +549,12 @@
 .vitrine-root .vitrine-hero {
   padding: 60px 0 45px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 50;
+}
+
+.vitrine-root .vitrine-hero.search-active {
+  z-index: 1200 !important;
 }
 
 .vitrine-root .vitrine-hero::before {
@@ -561,6 +567,7 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(213, 178, 103, 0.12) 0%, rgba(251, 249, 245, 0) 70%);
   z-index: 1;
+  pointer-events: none;
 }
 
 .vitrine-root .vitrine-hero::after {
@@ -573,6 +580,7 @@
   border: 1px solid rgba(213, 178, 103, 0.2);
   border-radius: 50%;
   z-index: 1;
+  pointer-events: none;
 }
 
 .vitrine-root .vitrine-hero-inner {
@@ -581,6 +589,10 @@
   text-align: center;
   max-width: 860px;
   margin: 0 auto;
+}
+
+.vitrine-root .vitrine-hero.search-active .vitrine-hero-inner {
+  z-index: 10;
 }
 
 .vitrine-root .vitrine-hero-tag {
@@ -631,6 +643,8 @@
   border: 1px solid var(--gray-200);
   border-radius: var(--border-radius-sm);
   padding: 24px 20px;
+  position: relative;
+  z-index: 5;
   margin-bottom: 50px;
   box-shadow: var(--shadow-subtle);
 }
@@ -2555,4 +2569,481 @@
 @keyframes vitrineFadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+
+/* ==========================================================================
+   Vitrine Home - Luxury Hero Search & Auto-Suggest Dropdown
+   ========================================================================== */
+
+.vitrine-root .vitrine-hero-search-wrapper {
+  position: relative;
+  max-width: 720px;
+  width: 100%;
+  margin: 28px auto 32px;
+  z-index: 100;
+  text-align: right;
+}
+
+.vitrine-root .vitrine-hero-search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 40px;
+  padding: 6px 10px 6px 6px;
+  box-shadow: 0 8px 30px rgba(15, 52, 46, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 104;
+}
+
+.vitrine-root .vitrine-hero-search-bar:focus-within,
+.vitrine-root .vitrine-hero-search-bar.has-dropdown {
+  border-color: var(--accent-color);
+  box-shadow: 0 12px 36px rgba(213, 178, 103, 0.22), 0 4px 12px rgba(15, 52, 46, 0.08);
+  transform: translateY(-2px);
+}
+
+.vitrine-root .vitrine-hero-search-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.vitrine-root .vitrine-hero-search-input {
+  flex: 1;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--dark-color);
+  direction: rtl;
+  min-width: 0;
+}
+
+.vitrine-root .vitrine-hero-search-input::placeholder {
+  color: var(--gray-400);
+  font-weight: 400;
+  font-size: 0.92rem;
+}
+
+.vitrine-root .vitrine-search-clear-btn {
+  background: var(--gray-100);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--gray-600);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.vitrine-root .vitrine-search-clear-btn:hover {
+  background: var(--gray-200);
+  color: var(--dark-color);
+}
+
+.vitrine-root .vitrine-search-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: var(--primary-dark);
+  font-size: 0.92rem;
+  font-weight: 800;
+  font-family: inherit;
+  border: none;
+  border-radius: 30px;
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(213, 178, 103, 0.3);
+}
+
+.vitrine-root .vitrine-search-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(213, 178, 103, 0.45);
+  filter: brightness(1.05);
+}
+
+.vitrine-root .vitrine-search-submit-btn:active {
+  transform: scale(0.98);
+}
+
+/* Quick Search Popular Tags */
+.vitrine-root .vitrine-search-quick-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 2px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vitrine-root .vitrine-search-quick-tags::-webkit-scrollbar {
+  display: none;
+}
+
+.vitrine-root .vitrine-search-tags-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vitrine-root .vitrine-search-tags-label i {
+  color: #f97316;
+}
+
+.vitrine-root .vitrine-search-tag-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--gray-800);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+}
+
+.vitrine-root .vitrine-search-tag-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--primary-color);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+/* Backdrop Overlay for closing dropdown */
+.vitrine-root .vitrine-search-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 101;
+}
+
+/* Dropdown Container */
+.vitrine-root .vitrine-hero-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.08);
+  z-index: 105;
+  overflow: hidden;
+  max-height: 480px;
+  overflow-y: auto;
+  text-align: right;
+  direction: rtl;
+}
+
+.vitrine-root .vitrine-dropdown-section {
+  padding: 14px 16px 8px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.vitrine-root .vitrine-dropdown-section:last-of-type {
+  border-bottom: none;
+}
+
+.vitrine-root .vitrine-dropdown-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--gray-600);
+  margin-bottom: 10px;
+}
+
+.vitrine-root .vitrine-dropdown-section-title i {
+  color: var(--accent-color);
+  font-size: 0.85rem;
+}
+
+/* Matched Categories Pills */
+.vitrine-root .vitrine-dropdown-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.vitrine-root .vitrine-dropdown-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.vitrine-root .vitrine-dropdown-cat-pill:hover {
+  background: var(--primary-color);
+  color: var(--accent-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.vitrine-root .vitrine-dropdown-cat-count {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  background: var(--gray-200);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.vitrine-root .vitrine-dropdown-cat-pill:hover .vitrine-dropdown-cat-count {
+  background: rgba(213, 178, 103, 0.3);
+  color: var(--accent-color);
+}
+
+/* Matched Products List */
+.vitrine-root .vitrine-dropdown-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vitrine-root .vitrine-dropdown-product-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  color: var(--dark-color);
+  transition: all 0.2s ease;
+  background: var(--white);
+}
+
+.vitrine-root .vitrine-dropdown-product-item:hover {
+  background: var(--accent-soft);
+  transform: translateX(-4px);
+}
+
+.vitrine-root .vitrine-dropdown-product-img {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.vitrine-root .vitrine-dropdown-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vitrine-root .vitrine-dropdown-no-img {
+  color: var(--gray-400);
+  font-size: 1.1rem;
+}
+
+.vitrine-root .vitrine-dropdown-product-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.vitrine-root .vitrine-dropdown-product-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--dark-color);
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vitrine-root .vitrine-dropdown-product-sub {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vitrine-root .vitrine-dot-separator {
+  color: var(--gray-400);
+  font-size: 0.7rem;
+}
+
+.vitrine-root .vitrine-dropdown-product-price {
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.vitrine-root .vitrine-dropdown-price-val {
+  font-size: 0.96rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  letter-spacing: -0.3px;
+}
+
+.vitrine-root .vitrine-dropdown-price-unit {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+}
+
+/* Dropdown Footer (View All Results) */
+.vitrine-root .vitrine-dropdown-footer {
+  padding: 10px 16px;
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  text-align: center;
+}
+
+.vitrine-root .vitrine-dropdown-view-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--primary-color);
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.vitrine-root .vitrine-dropdown-view-all-btn:hover {
+  color: var(--accent-color);
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Empty State in Dropdown */
+.vitrine-root .vitrine-dropdown-empty {
+  padding: 36px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vitrine-root .vitrine-dropdown-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+.vitrine-root .vitrine-dropdown-empty-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--dark-color);
+}
+
+.vitrine-root .vitrine-dropdown-empty-desc {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  margin-bottom: 12px;
+  max-width: 320px;
+}
+
+/* Mobile Responsiveness (< 768px) */
+@media (max-width: 767px) {
+  .vitrine-root .vitrine-hero-search-wrapper {
+    margin: 20px auto 26px;
+    padding: 0 4px;
+  }
+
+  .vitrine-root .vitrine-hero-search-bar {
+    padding: 4px 8px 4px 4px;
+  }
+
+  .vitrine-root .vitrine-hero-search-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .vitrine-root .vitrine-hero-search-input {
+    font-size: 0.88rem;
+    padding: 8px 6px;
+  }
+
+  .vitrine-root .vitrine-hero-search-input::placeholder {
+    font-size: 0.82rem;
+  }
+
+  .vitrine-root .vitrine-search-submit-btn {
+    padding: 9px 16px;
+    font-size: 0.82rem;
+  }
+
+  .vitrine-root .vitrine-hero-search-dropdown {
+    max-height: 380px;
+  }
+
+  .vitrine-root .vitrine-dropdown-product-img {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+  .vitrine-root .vitrine-dropdown-product-name {
+    font-size: 0.85rem;
+  }
+
+  .vitrine-root .vitrine-dropdown-price-val {
+    font-size: 0.88rem;
+  }
 }

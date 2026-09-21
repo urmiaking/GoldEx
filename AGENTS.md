@@ -350,9 +350,16 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - A representative .NET 10 release publish contains roughly 396 files and about 51.5 MB of uncompressed `_framework` assets, including large administration-only dependencies such as DevExpress and EF Core. This can make first-load hydration fragile in memory-constrained embedded browsers such as Instagram's in-app WebView even though SSR content remains visible.
    - The application currently sends `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin-allow-popups` on vitrine HTML and framework assets. Instagram's in-app WebView was confirmed to lose all Blazor interactivity in both `InteractiveWebAssembly` and `InteractiveServer` modes while these headers were present; ordinary mobile Chrome was unaffected. Hiding both response headers for the public custom domain in Nginx immediately restored interactivity.
    - Public vitrine routes must therefore remain exempt from COEP/COOP unless a future feature demonstrably requires cross-origin isolation and has been tested in embedded browsers. The WASM payload size remains a secondary first-load performance risk, not the cause of this confirmed Instagram failure.
+   - Vitrine startup must unregister active service workers and delete `blazor-cache-*` Cache Storage entries **before** calling `Blazor.start()`. Cleanup after startup is too late: a stale WASM bundle can hydrate over correct SSR markup and display obsolete UI or DTO behavior. Do not guard this cleanup with a permanent one-time `localStorage` flag because that prevents later deployments from evicting stale bundles.
 7. **Catalog "Newest" Sorting**:
    - The `VitrineCatalog.razor` `newest` option uses `Product.CreatedAt` as its chronology field. `GetVitrineProductsAsync` propagates it through `VitrineProductRawProjection` and `VitrineProductSummaryDto`.
-   - Catalog sorting preserves the available-first UX rule, then orders each availability group by `CreatedAt` descending and `Id` descending as a deterministic tie-breaker.
+   - For the `newest` option, `CreatedAt` descending is the primary ordering key. Availability is only a secondary tie-breaker, followed by `Id` descending for deterministic ordering. Do not place availability before `CreatedAt`, because that makes older in-stock products appear ahead of genuinely newer sold products while the UI says «جدیدترین».
+8. **Vitrine Wage Unit & Conversion**:
+   - The public vitrine reads the product's current configured wage (`Product.Wage`, `WageType`, and `WagePriceUnitId`). Purchase and sale invoice workflows retain their own wage snapshots, while the product remains the source of the current public/catalog wage.
+   - Fixed wages must display `Product.WagePriceUnit.Title`; they must never be labeled with a hard-coded currency title. Percentage wages remain unitless percentages.
+   - Vitrine prices are always displayed in Toman, independently of the system default price unit. Before calculating the estimated catalog price, a fixed wage uses its linked `Price.PriceHistory.CurrentValue` (stored in Rial), divides it by `10` to obtain the live Toman rate, and applies `Wage × LiveTomanRate × Weight`. `UnitType.TMN` uses rate `1`, while `UnitType.IRR` uses rate `0.1`.
+   - Legacy price units whose `PriceId` is missing may resolve the live price by an exact `Price.Title` match. A missing non-base live rate must never silently fall back to `1`, because that would treat a foreign-currency wage as Toman.
+   - Vitrine price breakdowns must use the current store's `Setting.GoldProfitPercent`, `Setting.JewelryProfitPercent`, and `Setting.TaxPercent` and the shared `CalculatorHelper.Product` formulas. Do not hard-code 7% profit or 9% tax: jewelry commonly uses a different configured profit percentage, and tax settings can change.
 
 ---
 
@@ -454,3 +461,11 @@ GoldEx employs a high-performance, non-blocking dashboard architecture on the ex
      - `LoadTopUnpaidInvoicesAsync()`
    - Each card and widget maintains its own state flag (`_isSalesLoaded`, `_isInventoryLoaded`, `_isCustomerBalancesLoaded`, `_isTrendLoaded`, `_isCategoryLoaded`, `_isUnpaidLoaded`).
    - In `ExecutiveDashboard.razor`, each KPI card and chart has dedicated skeleton placeholders. As each individual request resolves (often in under 100-200ms), that specific card smoothly transitions into its active data view and carousel without waiting for other components to finish.
+
+### Customer Balance Sign Semantics
+
+- Customer balances must be netted per customer and price unit across both the receivable and payable customer sub-ledgers using `Debit - Credit`.
+- A positive net balance means the store has a receivable from the customer («طلب ما»); a negative net balance means the store owes the customer («بدهی ما») and must be displayed using its absolute value.
+- Dashboard totals must classify and sum these per-customer net balances; they must not classify raw receivable/payable ledger columns independently, because one customer can have activity in both sub-ledgers.
+- Invoice overview statistics must keep invoice direction explicit: a positive unpaid **sale** invoice is a store receivable, while a positive unpaid **purchase** invoice is a store payable. Purchase balances must not be included in a card labeled «مانده مطالبات».
+- Negative invoice balances represent overpayments/credits and must be reported separately or netted at the appropriate customer-and-price-unit level; silently dropping them while summing only positive invoices can materially overstate outstanding receivables.

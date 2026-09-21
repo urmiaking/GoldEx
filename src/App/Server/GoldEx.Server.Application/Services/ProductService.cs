@@ -173,7 +173,10 @@ internal class ProductService(
             item.SetWageType(request.WageType);
         }
 
-        item.SetWeight(request.Weight); // TODO: check weight change impact on invoice
+        if (invoiceType is not InvoiceType.Sell)
+        {
+            item.SetWeight(request.Weight);
+        }
         item.SetProductType(request.ProductType);
         item.SetFineness(request.Fineness);
         item.SetGoldUnitType(request.GoldUnitType);

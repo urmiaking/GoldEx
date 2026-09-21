@@ -62,7 +62,7 @@
 
 <div class="vitrine-container">
     <!-- Asymmetric Editorial Hero Section -->
-    <section class="vitrine-hero animate-fade-in">
+    <section class="vitrine-hero animate-fade-in @(_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery) ? "search-active" : "")">
         <div class="vitrine-hero-inner">
             <div class="vitrine-hero-subtitle">کلکسیون فاخر سال ۱۴۰۵</div>
             <h1 class="vitrine-hero-title">
@@ -71,6 +71,156 @@
             <p class="vitrine-hero-desc">
                 در ویترین رسمی @(_storeInfo?.Name ?? "گالری طلا و جواهر")، هر قطعه طلا تلفیقی از هنر اصیل طلاسازی و عیار استاندارد ۷۵۰ است. محاسبه زنده قیمت روز، اجرت ساخت منصفانه و ارائه فاکتور معتبر رسمی.
             </p>
+
+            <!-- Luxury Hero Search Widget -->
+            <div class="vitrine-hero-search-wrapper">
+                <div class="vitrine-hero-search-bar @(_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery) ? "has-dropdown" : "")">
+                    <div class="vitrine-hero-search-icon">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input type="text"
+                           class="vitrine-hero-search-input"
+                           value="@_searchQuery"
+                           @oninput="OnInputChanged"
+                           @onfocus="OnInputFocus"
+                           @onkeydown="HandleSearchKeyDown"
+                           placeholder="جستجوی مدل، دسته‌بندی، النگو، انگشتر، دستبند، کد کالا..."
+                           autocomplete="off" />
+
+                    @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                    {
+                        <button type="button" class="vitrine-search-clear-btn" @onclick="ClearSearch" title="پاک کردن جستجو">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    }
+
+                    <button type="button" class="vitrine-search-submit-btn" @onclick="() => NavigateToCatalogSearch(_searchQuery)">
+                        <span>جستجو</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+
+                <!-- Quick Search Popular Tags -->
+                @if (_categories.Count > 0)
+                {
+                    <div class="vitrine-search-quick-tags">
+                        <span class="vitrine-search-tags-label">
+                            <i class="fa-solid fa-fire"></i>
+                            <span>بیشترین جستجوها:</span>
+                        </span>
+                        @foreach (var cat in _categories.Take(5))
+                        {
+                            <button type="button" class="vitrine-search-tag-btn" @onclick="() => SelectQuickTag(cat.Title)">
+                                @cat.Title
+                            </button>
+                        }
+                        <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("کم‌اجرت")'>
+                            کم‌اجرت
+                        </button>
+                        <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("سبک")'>
+                            طلای سبک
+                        </button>
+                    </div>
+                }
+
+                <!-- Live Dropdown Results -->
+                @if (_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery))
+                {
+                    <div class="vitrine-search-backdrop" @onclick="CloseDropdown"></div>
+
+                    <div class="vitrine-hero-search-dropdown animate-fade-in-up">
+                        @if (MatchedCategories.Count > 0)
+                        {
+                            <div class="vitrine-dropdown-section">
+                                <div class="vitrine-dropdown-section-title">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                    <span>دسته‌بندی‌های مرتبط</span>
+                                </div>
+                                <div class="vitrine-dropdown-categories">
+                                    @foreach (var cat in MatchedCategories)
+                                    {
+                                        <a href="@GetCategoryCatalogUrl(cat.Id)" class="vitrine-dropdown-cat-pill" @onclick="CloseDropdown">
+                                            <i class="@GetCategoryIcon(cat.Title)"></i>
+                                            <span>@cat.Title</span>
+                                            <span class="vitrine-dropdown-cat-count">@cat.ProductCount کالا</span>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (MatchedProducts.Count > 0)
+                        {
+                            <div class="vitrine-dropdown-section">
+                                <div class="vitrine-dropdown-section-title">
+                                    <i class="fa-solid fa-gem"></i>
+                                    <span>محصولات منطبق در ویترین (@TotalMatchedProductsCount مورد)</span>
+                                </div>
+                                <div class="vitrine-dropdown-products-list">
+                                    @foreach (var prod in MatchedProducts)
+                                    {
+                                        <a href="@GetProductUrl(prod.Barcode)" class="vitrine-dropdown-product-item" @onclick="CloseDropdown">
+                                            <div class="vitrine-dropdown-product-img">
+                                                @if (!string.IsNullOrWhiteSpace(prod.MainImageUrl))
+                                                {
+                                                    <img src="@prod.MainImageUrl" alt="@prod.Name" loading="lazy" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="vitrine-dropdown-no-img">
+                                                        <i class="fa-solid fa-gem"></i>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="vitrine-dropdown-product-meta">
+                                                <div class="d-flex align-items-center justify-content-between gap-2">
+                                                    <h4 class="vitrine-dropdown-product-name">@prod.Name</h4>
+                                                    @if (!prod.IsAvailable)
+                                                    {
+                                                        <span class="product-badge badge-sold" style="position: static; font-size: 0.65rem; padding: 2px 6px;">فروخته شد</span>
+                                                    }
+                                                </div>
+                                                <div class="vitrine-dropdown-product-sub">
+                                                    <span>@(prod.CategoryTitle ?? "طلا")</span>
+                                                    <span class="vitrine-dot-separator">•</span>
+                                                    <span>@prod.Weight.ToString("G29") گرم</span>
+                                                    <span class="vitrine-dot-separator">•</span>
+                                                    <span>عیار @(prod.Fineness > 0 ? prod.Fineness.ToString("G29") : "750")</span>
+                                                </div>
+                                            </div>
+                                            <div class="vitrine-dropdown-product-price">
+                                                <div class="vitrine-dropdown-price-val">@prod.EstimatedPrice.ToString("N0")</div>
+                                                <div class="vitrine-dropdown-price-unit">تومان</div>
+                                            </div>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="vitrine-dropdown-footer">
+                                <a href="@GetSearchCatalogUrl(_searchQuery)" class="vitrine-dropdown-view-all-btn" @onclick="CloseDropdown">
+                                    <span>مشاهده همه @TotalMatchedProductsCount نتیجه برای «@_searchQuery» در کاتالوگ</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </a>
+                            </div>
+                        }
+                        else if (MatchedCategories.Count == 0)
+                        {
+                            <div class="vitrine-dropdown-empty">
+                                <div class="vitrine-dropdown-empty-icon">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </div>
+                                <div class="vitrine-dropdown-empty-title">کالایی منطبق با «@_searchQuery» پیدا نشد</div>
+                                <div class="vitrine-dropdown-empty-desc">می‌توانید کاتالوگ کامل را بررسی کنید یا عبارت دیگری را جستجو فرمایید.</div>
+                                <a href="@CatalogUrl" class="btn-gisu btn-gisu-accent" style="padding: 10px 22px; font-size: 0.85rem;" @onclick="CloseDropdown">
+                                    <span>مشاهده تمام محصولات کاتالوگ</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
 
             <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
                 <a href="@CatalogUrl" class="btn-gisu btn-gisu-accent" style="padding: 15px 34px;">
@@ -393,6 +543,114 @@
         ? (catId.HasValue ? $"/catalog?categoryId={catId}" : "/catalog") 
         : (catId.HasValue ? $"/{EffectiveStoreSlug}/catalog?categoryId={catId}" : $"/{EffectiveStoreSlug}/catalog");
     private string GetProductUrl(string barcode) => StoreContext.IsCustomDomain ? $"/p/{barcode}" : $"/{EffectiveStoreSlug}/p/{barcode}";
+    private string GetSearchCatalogUrl(string? query)
+    {
+        var q = Uri.EscapeDataString(query?.Trim() ?? "");
+        return StoreContext.IsCustomDomain ? $"/catalog?q={q}" : $"/{EffectiveStoreSlug}/catalog?q={q}";
+    }
+
+    private string _searchQuery = "";
+    private bool _isSearchDropdownOpen = false;
+
+    private void OnInputChanged(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? "";
+        _isSearchDropdownOpen = !string.IsNullOrWhiteSpace(_searchQuery);
+    }
+
+    private void OnInputFocus()
+    {
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            _isSearchDropdownOpen = true;
+        }
+    }
+
+    private void HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            NavigateToCatalogSearch(_searchQuery);
+        }
+        else if (e.Key == "Escape")
+        {
+            _isSearchDropdownOpen = false;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        _searchQuery = "";
+        _isSearchDropdownOpen = false;
+    }
+
+    private void CloseDropdown()
+    {
+        _isSearchDropdownOpen = false;
+    }
+
+    private void SelectQuickTag(string tag)
+    {
+        _searchQuery = tag;
+        _isSearchDropdownOpen = true;
+    }
+
+    private void NavigateToCatalogSearch(string? query)
+    {
+        _isSearchDropdownOpen = false;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Navigation.NavigateTo(CatalogUrl);
+        }
+        else
+        {
+            Navigation.NavigateTo(GetSearchCatalogUrl(query));
+        }
+    }
+
+    private List<VitrineCategoryDto> MatchedCategories
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchQuery) || _searchQuery.Trim().Length < 1)
+                return [];
+
+            var term = _searchQuery.Trim();
+            return _categories.Where(c => c.Title.Contains(term, StringComparison.OrdinalIgnoreCase)).Take(3).ToList();
+        }
+    }
+
+    private List<VitrineProductSummaryDto> MatchedProducts
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchQuery) || _searchQuery.Trim().Length < 1)
+                return [];
+
+            var term = _searchQuery.Trim();
+            return _products.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                        p.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                        (p.CategoryTitle != null && p.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)))
+                            .OrderByDescending(p => p.IsAvailable)
+                            .ThenByDescending(p => p.CreatedAt)
+                            .Take(5)
+                            .ToList();
+        }
+    }
+
+    private int TotalMatchedProductsCount
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchQuery) || _searchQuery.Trim().Length < 1)
+                return 0;
+
+            var term = _searchQuery.Trim();
+            return _products.Count(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                        p.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                        (p.CategoryTitle != null && p.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
 
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineProductSummaryDto> _featuredProducts = [];

@@ -386,6 +386,7 @@
     [SupplyParameterFromQuery] public Guid? CategoryId { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyAvailable { get; set; }
+    [SupplyParameterFromQuery(Name = "q")] public string? QuerySearch { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
 
     private const int PageSize = 24;
@@ -698,6 +699,10 @@
         _selectedCategoryId = CategoryId;
         _onlyFeatured = OnlyFeatured ?? false;
         _onlyAvailable = OnlyAvailable ?? false;
+        if (!string.IsNullOrWhiteSpace(QuerySearch))
+        {
+            _searchTerm = QuerySearch.Trim();
+        }
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
 
         var restoredCategories = ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>("vitrine_catalog_categories", out var catRestored) && catRestored != null
@@ -732,6 +737,11 @@
         _selectedCategoryId = CategoryId;
         _onlyFeatured = OnlyFeatured ?? false;
         _onlyAvailable = OnlyAvailable ?? false;
+        if (QuerySearch != null && _searchTerm != QuerySearch.Trim())
+        {
+            _searchTerm = QuerySearch.Trim();
+            ResetVisibleCount();
+        }
 
         if (_products.Count == 0 && !_isLoading)
         {
@@ -1047,7 +1057,8 @@
                 }
             }
 
-            // Sorting: Always prioritize in-stock items (IsAvailable == true) first, then apply chosen sort order
+            // Keep "newest" faithful to its label: creation date is the primary key.
+            // Availability is only a tie-breaker for products created at the same instant.
             result = _sortBy switch
             {
                 "price_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.EstimatedPrice),
@@ -1056,8 +1067,8 @@
                 "wage_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => GetEffectiveWage(x)).ThenByDescending(x => x.WageAmount),
                 "weight_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.Weight),
                 "weight_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.Weight),
-                _ => result.OrderByDescending(x => x.IsAvailable)
-                    .ThenByDescending(x => x.CreatedAt)
+                _ => result.OrderByDescending(x => x.CreatedAt)
+                    .ThenByDescending(x => x.IsAvailable)
                     .ThenByDescending(x => x.Id) // newest / default
             };
 

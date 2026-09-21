@@ -58,13 +58,21 @@ internal class DashboardRepository(
         var balanceRequest = new CustomerRemainingBalanceRpRequest(null, null, null, null, null);
         var balances = await transactionRepository.GetCustomerRemainingBalanceAsync(balanceRequest, cancellationToken);
 
-        var receivables = balances
-            .Where(x => x.PayableAmount > 0)
-            .GroupBy(x => x.PriceUnitTitle ?? "تومان")
+        var netBalances = balances
+            .Select(x => new
+            {
+                PriceUnit = x.PriceUnitTitle ?? "تومان",
+                Amount = x.ReceivableAmount + x.PayableAmount
+            })
+            .ToList();
+
+        var receivables = netBalances
+            .Where(x => x.Amount > 0)
+            .GroupBy(x => x.PriceUnit)
             .Select(g => new PriceUnitSummaryDto
             {
                 PriceUnit = g.Key,
-                Amount = g.Sum(x => x.PayableAmount),
+                Amount = g.Sum(x => x.Amount),
                 Count = g.Count(),
                 Subtitle = "مانده بدهکاری مشتریان به ما"
             })
@@ -81,13 +89,13 @@ internal class DashboardRepository(
             });
         }
 
-        var payables = balances
-            .Where(x => x.ReceivableAmount > 0)
-            .GroupBy(x => x.PriceUnitTitle ?? "تومان")
+        var payables = netBalances
+            .Where(x => x.Amount < 0)
+            .GroupBy(x => x.PriceUnit)
             .Select(g => new PriceUnitSummaryDto
             {
                 PriceUnit = g.Key,
-                Amount = g.Sum(x => x.ReceivableAmount),
+                Amount = g.Sum(x => Math.Abs(x.Amount)),
                 Count = g.Count(),
                 Subtitle = "مانده بستانکاری مشتریان نزد ما"
             })
@@ -172,7 +180,7 @@ internal class DashboardRepository(
             .ToListAsync(cancellationToken);
 
         var list = candidates
-            .Where(x => Math.Abs(x.TotalUnpaidAmount) >= 0.01m)
+            .Where(x => x.TotalUnpaidAmount >= 0.01m)
             .OrderByDescending(x => x.TotalUnpaidAmount)
             .Take(count)
             .Select(x => new TopUnpaidInvoiceDto
@@ -186,23 +194,6 @@ internal class DashboardRepository(
                 InvoiceDate = x.InvoiceDate
             })
             .ToList();
-
-        if (!list.Any() && candidates.Any())
-        {
-            list = candidates
-                .Take(count)
-                .Select(x => new TopUnpaidInvoiceDto
-                {
-                    Id = x.Id.Value,
-                    InvoiceNumber = x.InvoiceNumber.ToString(),
-                    InvoiceType = x.InvoiceType,
-                    CustomerFullName = x.Customer != null ? x.Customer.FullName : string.Empty,
-                    TotalUnpaidAmount = x.TotalUnpaidAmount,
-                    PriceUnit = x.PriceUnit != null ? x.PriceUnit.Title : "تومان",
-                    InvoiceDate = x.InvoiceDate
-                })
-                .ToList();
-        }
 
         return list;
     }

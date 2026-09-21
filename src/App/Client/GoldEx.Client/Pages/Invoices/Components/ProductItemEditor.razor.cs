@@ -332,7 +332,7 @@ public partial class ProductItemEditor
     private void OnTotalWeightChanged(decimal? totalWeight)
     {
         Model.TotalWeight = totalWeight;
-        if (Model.Product != null)
+        if (Model.Product != null && Model.InvoiceType is not InvoiceType.Sell)
         {
             Model.Product.Weight = totalWeight;
         }

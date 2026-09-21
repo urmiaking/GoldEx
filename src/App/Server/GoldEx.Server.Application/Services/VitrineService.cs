@@ -1,9 +1,12 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
@@ -13,6 +16,7 @@ using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Server.Infrastructure.Specifications.Stores;
 using GoldEx.Shared.DTOs.Vitrine;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -146,6 +150,7 @@ internal class VitrineService(
                 return [];
 
             var storeId = store.Id;
+            var pricingSettings = await GetVitrinePricingSettingsAsync(storeId, cancellationToken);
 
             var baseQuery = dbContext.Set<Product>()
                 .AsNoTracking()
@@ -176,6 +181,7 @@ internal class VitrineService(
                     ProductType = p.ProductType,
                     Wage = p.Wage,
                     WageType = p.WageType,
+                    WagePriceUnitId = p.WagePriceUnitId != null ? (Guid?)p.WagePriceUnitId.Value.Value : null,
                     CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
                     CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : null,
                     IsFeatured = p.IsFeatured,
@@ -204,6 +210,7 @@ internal class VitrineService(
                 return [];
 
             var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
+            var wageRates = await GetWageExchangeRatesAsync(rawProducts, cancellationToken);
 
             var productIds = rawProducts.Select(p => new ProductId(p.Id)).ToList();
             var stockQuantities = await dbContext.Set<InventoryStock>()
@@ -221,8 +228,20 @@ internal class VitrineService(
             return rawProducts.Select(p =>
             {
                 var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
-                var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
-                var priceBreakdown = CalculateVitrinePriceFromRaw(p.Weight, p.Fineness, p.Wage, p.WageType, p.GemStoneTotalCost, gramPrice750, effectiveWeight);
+                var effectiveWeight = isAvailable ? qty : (p.Weight > 0 ? p.Weight : 0m);
+                var wageExchangeRate = ResolveWageExchangeRate(p.WageType, p.WagePriceUnitId, wageRates);
+                var priceBreakdown = CalculateVitrinePriceFromRaw(
+                    weight: p.Weight,
+                    fineness: p.Fineness,
+                    wage: p.Wage,
+                    wageType: p.WageType,
+                    stoneCost: p.GemStoneTotalCost,
+                    gramPrice750: gramPrice750,
+                    productType: p.ProductType,
+                    profitPercent: pricingSettings.GetProfitPercent(p.ProductType),
+                    taxPercent: pricingSettings.TaxPercent,
+                    overrideWeight: effectiveWeight,
+                    wageExchangeRate: wageExchangeRate);
 
                 var attributes = p.Attributes
                     .Select(v => new VitrineAttributeValueDto(
@@ -279,6 +298,7 @@ internal class VitrineService(
                 return null;
 
             var storeId = store.Id;
+            var pricingSettings = await GetVitrinePricingSettingsAsync(storeId, cancellationToken);
             var cleanBarcode = barcode.Trim();
 
             var rawProduct = await dbContext.Set<Product>()
@@ -294,6 +314,8 @@ internal class VitrineService(
                     Weight = p.Weight,
                     Wage = p.Wage,
                     WageType = p.WageType,
+                    WagePriceUnitId = p.WagePriceUnitId != null ? (Guid?)p.WagePriceUnitId.Value.Value : null,
+                    WagePriceUnitTitle = p.WagePriceUnit != null ? p.WagePriceUnit.Title : null,
                     Fineness = p.Fineness,
                     ProductType = p.ProductType,
                     CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
@@ -332,6 +354,7 @@ internal class VitrineService(
                 return null;
 
             var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
+            var wageRates = await GetWageExchangeRatesAsync([rawProduct], cancellationToken);
 
             var quantity = await dbContext.Set<InventoryStock>()
                 .AsNoTracking()
@@ -340,9 +363,21 @@ internal class VitrineService(
                 .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
 
             var isAvailable = quantity > 0.0001m;
-            var effectiveWeight = rawProduct.Weight > 0 ? rawProduct.Weight : (quantity > 0 ? quantity : 0m);
+            var effectiveWeight = isAvailable ? quantity : (rawProduct.Weight > 0 ? rawProduct.Weight : 0m);
             var gemStoneTotalCost = rawProduct.GemStones.Sum(s => s.Cost);
-            var priceBreakdown = CalculateVitrinePriceFromRaw(rawProduct.Weight, rawProduct.Fineness, rawProduct.Wage, rawProduct.WageType, gemStoneTotalCost, gramPrice750, effectiveWeight);
+            var wageExchangeRate = ResolveWageExchangeRate(rawProduct.WageType, rawProduct.WagePriceUnitId, wageRates);
+            var priceBreakdown = CalculateVitrinePriceFromRaw(
+                weight: rawProduct.Weight,
+                fineness: rawProduct.Fineness,
+                wage: rawProduct.Wage,
+                wageType: rawProduct.WageType,
+                stoneCost: gemStoneTotalCost,
+                gramPrice750: gramPrice750,
+                productType: rawProduct.ProductType,
+                profitPercent: pricingSettings.GetProfitPercent(rawProduct.ProductType),
+                taxPercent: pricingSettings.TaxPercent,
+                overrideWeight: effectiveWeight,
+                wageExchangeRate: wageExchangeRate);
 
             var gemstones = rawProduct.GemStones
                 .Select(s => new VitrineGemStoneDto(
@@ -387,7 +422,8 @@ internal class VitrineService(
                 GramPrice750: gramPrice750,
                 UpdatedAt: DateTime.Now,
                 IsAvailable: isAvailable,
-                Attributes: attributes);
+                Attributes: attributes,
+                WagePriceUnitTitle: rawProduct.WagePriceUnitTitle);
         }
         finally
         {
@@ -492,46 +528,182 @@ internal class VitrineService(
         return Math.Round(priceInRials / 10m, 0);
     }
 
+    private async Task<VitrinePricingSettings> GetVitrinePricingSettingsAsync(
+        StoreId storeId,
+        CancellationToken cancellationToken)
+    {
+        return await settingRepository.Get(new SettingsByStoreIdSpecification(storeId))
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Select(x => new VitrinePricingSettings
+            {
+                TaxPercent = x.TaxPercent,
+                GoldProfitPercent = x.GoldProfitPercent,
+                JewelryProfitPercent = x.JewelryProfitPercent
+            })
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? new VitrinePricingSettings();
+    }
+
     private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)
-        CalculateVitrinePriceFromRaw(decimal weight, decimal fineness, decimal wage, WageType? wageType, decimal stoneCost, decimal gramPrice750, decimal? overrideWeight = null)
+        CalculateVitrinePriceFromRaw(
+            decimal weight,
+            decimal fineness,
+            decimal wage,
+            WageType? wageType,
+            decimal stoneCost,
+            decimal gramPrice750,
+            ProductType productType,
+            decimal profitPercent,
+            decimal taxPercent,
+            decimal? overrideWeight = null,
+            decimal wageExchangeRate = 1m)
     {
         var effectiveWeight = (overrideWeight.HasValue && overrideWeight.Value > 0) ? overrideWeight.Value : weight;
         var effectiveFineness = fineness > 0 ? fineness : 750m;
-        var adjustedGramPrice = gramPrice750 * (effectiveFineness / 750m);
-        var rawGoldPrice = Math.Round(effectiveWeight * adjustedGramPrice, 0);
-
-        decimal wageAmount = 0;
-        if (wage > 0)
-        {
-            if (wageType == WageType.Percent)
-            {
-                wageAmount = Math.Round(rawGoldPrice * (wage / 100m), 0);
-            }
-            else
-            {
-                wageAmount = Math.Round(wage * effectiveWeight, 0);
-            }
-        }
-
-        var basePrice = rawGoldPrice + wageAmount + stoneCost;
-        var profitAmount = Math.Round(basePrice * 0.07m, 0); // 7% standard retail profit
-        var taxAmount = Math.Round((wageAmount + profitAmount) * 0.09m, 0); // 9% tax on wage+profit
-        var estimatedPrice = basePrice + profitAmount + taxAmount;
+        var rawGoldPrice = Math.Round(CalculatorHelper.Product.CalculateRawPrice(
+            effectiveWeight,
+            gramPrice750,
+            effectiveFineness,
+            quantity: 1,
+            productType), 0);
+        var wageAmount = Math.Round(CalculatorHelper.Product.CalculateWage(
+            rawGoldPrice,
+            effectiveWeight,
+            wage,
+            wageType,
+            wageExchangeRate), 0);
+        var profitAmount = Math.Round(CalculatorHelper.Product.CalculateProfit(
+            rawGoldPrice,
+            wageAmount,
+            productType,
+            profitPercent), 0);
+        var taxAmount = Math.Round(CalculatorHelper.Product.CalculateTax(
+            wageAmount,
+            profitAmount,
+            taxPercent,
+            productType,
+            stoneCost), 0);
+        var estimatedPrice = CalculatorHelper.Product.CalculateFinalPrice(
+            rawGoldPrice,
+            wageAmount,
+            profitAmount,
+            taxAmount,
+            stoneCost,
+            productType);
 
         return (estimatedPrice, rawGoldPrice, wageAmount, profitAmount, taxAmount);
     }
 
-    private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)
-        CalculateVitrinePrice(Product product, decimal gramPrice750, decimal? overrideWeight = null)
+    private async Task<Dictionary<Guid, decimal>> GetWageExchangeRatesAsync(
+        IEnumerable<IVitrineWageProjection> products,
+        CancellationToken cancellationToken)
     {
-        var stoneCost = product.GemStones?.Sum(s => s.Cost) ?? 0m;
-        return CalculateVitrinePriceFromRaw(product.Weight, product.Fineness, product.Wage, product.WageType, stoneCost, gramPrice750, overrideWeight);
+        var unitIds = products
+            .Where(x => x.WageType != WageType.Percent && x.WagePriceUnitId.HasValue)
+            .Select(x => x.WagePriceUnitId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (unitIds.Count == 0)
+            return [];
+
+        var priceUnitIds = unitIds.Select(x => new PriceUnitId(x)).ToList();
+        var priceUnits = await dbContext.Set<PriceUnit>()
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Where(x => priceUnitIds.Contains(x.Id))
+            .Select(x => new VitrineWagePriceUnitProjection
+            {
+                Id = x.Id.Value,
+                Title = x.Title,
+                UnitType = x.UnitType,
+                CurrentValueInRial = x.Price != null && x.Price.PriceHistory != null
+                    ? x.Price.PriceHistory.CurrentValue
+                    : null
+            })
+            .ToListAsync(cancellationToken);
+
+        var missingPriceTitles = priceUnits
+            .Where(x => x.UnitType is not (UnitType.TMN or UnitType.IRR) && x.CurrentValueInRial is not > 0)
+            .Select(x => x.Title)
+            .Distinct()
+            .ToList();
+
+        Dictionary<string, decimal> fallbackPricesByTitle = [];
+        if (missingPriceTitles.Count > 0)
+        {
+            fallbackPricesByTitle = await dbContext.Set<Price>()
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Where(x => missingPriceTitles.Contains(x.Title) && x.PriceHistory != null && x.PriceHistory.CurrentValue > 0)
+                .ToDictionaryAsync(x => x.Title, x => x.PriceHistory!.CurrentValue, cancellationToken);
+        }
+
+        var result = new Dictionary<Guid, decimal>();
+        foreach (var priceUnit in priceUnits)
+        {
+            var currentValueInRial = priceUnit.CurrentValueInRial;
+            if (currentValueInRial is not > 0 && fallbackPricesByTitle.TryGetValue(priceUnit.Title, out var fallbackPrice))
+                currentValueInRial = fallbackPrice;
+
+            var rateInToman = priceUnit.UnitType switch
+            {
+                UnitType.TMN => 1m,
+                UnitType.IRR => 0.1m,
+                _ when currentValueInRial is > 0 => currentValueInRial.Value / 10m,
+                _ => 0m
+            };
+
+            if (rateInToman > 0)
+                result[priceUnit.Id] = rateInToman;
+        }
+
+        return result;
+    }
+
+    private static decimal ResolveWageExchangeRate(
+        WageType? wageType,
+        Guid? wagePriceUnitId,
+        IReadOnlyDictionary<Guid, decimal> wageRates)
+    {
+        if (wageType == WageType.Percent || !wagePriceUnitId.HasValue)
+            return 1m;
+
+        if (wageRates.TryGetValue(wagePriceUnitId.Value, out var rate) && rate > 0)
+            return rate;
+
+        throw new InvalidOperationException("The live wage exchange rate is not configured for this product.");
     }
 
     #endregion
 }
 
-internal sealed class VitrineProductRawProjection
+internal interface IVitrineWageProjection
+{
+    WageType? WageType { get; }
+    Guid? WagePriceUnitId { get; }
+}
+
+internal sealed class VitrineWagePriceUnitProjection
+{
+    public Guid Id { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public UnitType? UnitType { get; init; }
+    public decimal? CurrentValueInRial { get; init; }
+}
+
+internal sealed class VitrinePricingSettings
+{
+    public decimal TaxPercent { get; init; } = 9m;
+    public decimal GoldProfitPercent { get; init; } = 7m;
+    public decimal JewelryProfitPercent { get; init; } = 20m;
+
+    public decimal GetProfitPercent(ProductType productType) =>
+        productType == ProductType.Jewelry ? JewelryProfitPercent : GoldProfitPercent;
+}
+
+internal sealed class VitrineProductRawProjection : IVitrineWageProjection
 {
     public Guid Id { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -542,6 +714,7 @@ internal sealed class VitrineProductRawProjection
     public ProductType ProductType { get; init; }
     public decimal Wage { get; init; }
     public WageType? WageType { get; init; }
+    public Guid? WagePriceUnitId { get; init; }
     public Guid? CategoryId { get; init; }
     public string? CategoryTitle { get; init; }
     public bool IsFeatured { get; init; }
@@ -550,7 +723,7 @@ internal sealed class VitrineProductRawProjection
     public List<VitrineAttributeProjection> Attributes { get; init; } = [];
 }
 
-internal sealed class VitrineProductDetailRawProjection
+internal sealed class VitrineProductDetailRawProjection : IVitrineWageProjection
 {
     public Guid Id { get; init; }
     public string Barcode { get; init; } = string.Empty;
@@ -558,6 +731,8 @@ internal sealed class VitrineProductDetailRawProjection
     public decimal Weight { get; init; }
     public decimal Wage { get; init; }
     public WageType? WageType { get; init; }
+    public Guid? WagePriceUnitId { get; init; }
+    public string? WagePriceUnitTitle { get; init; }
     public decimal Fineness { get; init; }
     public ProductType ProductType { get; init; }
     public Guid? CategoryId { get; init; }

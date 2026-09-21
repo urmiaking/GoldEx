@@ -2,29 +2,18 @@
    GoldEx Vitrine - Interactive Helpers, Image Gallery & Multi-Platform Share
    ========================================================================== */
 
-(function () {
-  try {
-    if (localStorage.getItem('gex_sw_clean_v1')) return;
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (var i = 0; i < registrations.length; i++) {
-          registrations[i].unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function (keys) {
-        keys.forEach(function (key) {
-          if (key.indexOf('blazor-cache') !== -1) {
-            caches.delete(key);
-          }
-        });
-      });
-    }
-    localStorage.setItem('gex_sw_clean_v1', '1');
-  } catch (e) {}
-})();
+// Clean up any lingering Service Workers on custom showcase domains
+try {
+  var currentHost = window.location.hostname.toLowerCase();
+  var isPlatform = currentHost === 'localhost' || currentHost.endsWith('goldexsoft.ir');
+  if (!isPlatform && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      for (var i = 0; i < registrations.length; i++) {
+        registrations[i].unregister();
+      }
+    }).catch(function () {});
+  }
+} catch (e) {}
 
 window.goldexVitrine = {
   _currentStoryBlob: null,
@@ -497,15 +486,3 @@ window.goldexVitrine = {
     }
   }
 };
-
-// Ensure no stale Service Worker intercepts Vitrine traffic
-if ('serviceWorker' in navigator) {
-  try {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-      for (var reg of registrations) {
-        // If on custom vitrine domain or vitrine sub-route, unregister to avoid stale cache
-        reg.unregister();
-      }
-    }).catch(function () {});
-  } catch (e) {}
-}

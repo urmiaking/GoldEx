@@ -267,7 +267,7 @@ else
                             }
                             else
                             {
-                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToString("N0") تومان</span>
+                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToCurrencyFormat(_product.WagePriceUnitTitle)</span>
                             }
                         </div>
                     }

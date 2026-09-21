@@ -90,8 +90,17 @@ self.addEventListener('fetch', event => {
 
     const url = new URL(event.request.url);
 
+    const host = url.hostname.toLowerCase();
+    const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
+
+    // 0. A. CUSTOM SHOWCASE DOMAIN BYPASS
+    // Custom domains (e.g. fanijewellery.ir) are pure online showcases and must NEVER be intercepted by the Service Worker.
+    if (!isPlatformHost) {
+        return;
+    }
+
     /* ============================
-     * 0. BYPASS FOR VITRINE & MEDIA
+     * 0. B. BYPASS FOR VITRINE ROUTES & MEDIA ON PLATFORM HOSTS
      *    Never intercept Vitrine routes, Vitrine assets, range or video requests.
      *    Returning early without calling event.respondWith allows direct browser network handling.
      * ============================ */
@@ -107,12 +116,6 @@ self.addEventListener('fetch', event => {
         url.pathname.startsWith('/api/v1/vitrine/');
 
     const isVitrineNavigation = (event.request.mode === 'navigate') && (() => {
-        const host = url.hostname.toLowerCase();
-        const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
-        if (!isPlatformHost) {
-            // Any navigation on custom domains (e.g. fanijewellery.ir) is 100% vitrine
-            return true;
-        }
 
         const segments = url.pathname.split('/').filter(Boolean);
         if (segments.length === 0) return false;
