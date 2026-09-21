@@ -2,19 +2,6 @@
    GoldEx Vitrine - Interactive Helpers, Image Gallery & Multi-Platform Share
    ========================================================================== */
 
-// Clean up any lingering Service Workers on custom showcase domains
-try {
-  var currentHost = window.location.hostname.toLowerCase();
-  var isPlatform = currentHost === 'localhost' || currentHost.endsWith('goldexsoft.ir');
-  if (!isPlatform && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-      for (var i = 0; i < registrations.length; i++) {
-        registrations[i].unregister();
-      }
-    }).catch(function () {});
-  }
-} catch (e) {}
-
 window.goldexVitrine = {
   _currentStoryBlob: null,
   _currentShareData: null,

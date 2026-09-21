@@ -70,6 +70,15 @@ self.addEventListener('install', event => {
  * ============================ */
 self.addEventListener('activate', event => {
     event.waitUntil((async () => {
+        const host = self.location.hostname.toLowerCase();
+        const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
+        if (!isPlatformHost) {
+            await self.registration.unregister();
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+            return;
+        }
+
         const keys = await caches.keys();
 
         await Promise.all(
@@ -93,9 +102,10 @@ self.addEventListener('fetch', event => {
     const host = url.hostname.toLowerCase();
     const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
 
-    // 0. A. CUSTOM SHOWCASE DOMAIN BYPASS
+    // 0. A. CUSTOM SHOWCASE DOMAIN BYPASS & SELF-DESTRUCT
     // Custom domains (e.g. fanijewellery.ir) are pure online showcases and must NEVER be intercepted by the Service Worker.
     if (!isPlatformHost) {
+        self.registration.unregister();
         return;
     }
 
@@ -183,9 +193,29 @@ self.addEventListener('fetch', event => {
 
         /* ============================
          * 2. Blazor framework files
-         *    cache-first
+         *    - blazor.boot.json & boot scripts: network-first (detect new releases instantly)
+         *    - assemblies & static assets: cache-first
          * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
+            // Boot manifest and boot scripts must ALWAYS be network-first
+            if (url.pathname.endsWith('blazor.boot.json') || url.pathname.endsWith('blazor.web.js') || url.pathname.includes('/dotnet')) {
+                try {
+                    const response = await fetch(event.request);
+                    if (response.ok) {
+                        const cache = await caches.open(CACHE_NAME);
+                        await cache.put(event.request, response.clone());
+                    }
+                    return response;
+                } catch {
+                    const cached = await caches.match(event.request);
+                    if (cached) return cached;
+                    return new Response('Offline boot file missing', {
+                        status: 503,
+                        headers: { 'Content-Type': 'text/plain' }
+                    });
+                }
+            }
+
             const cleanUrl = new URL(event.request.url);
             cleanUrl.search = '';
 

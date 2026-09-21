@@ -43,7 +43,7 @@
         <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
         <meta name="theme-color" content="@GetVitrineThemeColorMeta()" />
         <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=6.5.1" />
-        <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css" />
+        <link rel="stylesheet" href="/assets/vitrine/css/vitrine.css?v=@AppVersion" />
         @if (!string.IsNullOrWhiteSpace(VitrinePrimaryColor) || !string.IsNullOrWhiteSpace(VitrineAccentColor) || !string.IsNullOrWhiteSpace(VitrineBackgroundColor) || !string.IsNullOrWhiteSpace(VitrineSurfaceColor))
         {
             <style>
@@ -111,20 +111,76 @@
     {
         <script src=@Assets["app.js"]></script>
     }
+    else
+    {
+        <script src="/assets/vitrine/js/vitrine.js?v=@AppVersion"></script>
+    }
+
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
-        Blazor.start();
+        (async function () {
+            @if (IsVitrineRoute())
+            {
+                <text>
+                try {
+                    // 1. Unregister active service workers on Vitrine routes & custom domains
+                    if ('serviceWorker' in navigator) {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        if (regs.length > 0) {
+                            for (const r of regs) {
+                                await r.unregister();
+                            }
+                            const swKey = 'gex_sw_cleared_once';
+                            if (navigator.serviceWorker.controller && !sessionStorage.getItem(swKey)) {
+                                sessionStorage.setItem(swKey, '1');
+                                if ('caches' in window) {
+                                    const keys = await caches.keys();
+                                    for (const k of keys) {
+                                        await caches.delete(k);
+                                    }
+                                }
+                                window.location.reload();
+                                return;
+                            }
+                        }
+                    }
+
+                    // 2. Version-based Cache Eviction
+                    const serverVer = '@AppVersion';
+                    const localVer = localStorage.getItem('gex_vitrine_wasm_ver');
+                    if (serverVer && localVer !== serverVer) {
+                        if ('caches' in window) {
+                            const keys = await caches.keys();
+                            for (const k of keys) {
+                                await caches.delete(k);
+                            }
+                        }
+                        localStorage.setItem('gex_vitrine_wasm_ver', serverVer);
+                    }
+                } catch (e) {
+                    console.warn('[GoldEx Vitrine Boot] Cache sync warning:', e);
+                }
+                </text>
+            }
+
+            // 3. Start Blazor with guaranteed fresh blazor.boot.json
+            Blazor.start({
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        if (type === 'manifest' || name === 'blazor.boot.json') {
+                            return fetch(defaultUri, { cache: 'no-store' });
+                        }
+                        return null;
+                    }
+                }
+            });
+        })();
     </script>
     @if (!IsVitrineRoute())
     {
         <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
         <script src="@Assets["js/pwa-helper.js"]"></script>
     }
-    else
-    {
-        <script src="/assets/vitrine/js/vitrine.js"></script>
-    }
 </body>
-
 
 </html>

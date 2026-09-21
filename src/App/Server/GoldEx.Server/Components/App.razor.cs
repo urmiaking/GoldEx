@@ -18,11 +18,13 @@ public partial class App
 
     [Inject] private ILicenseService LicenceService { get; set; } = default!;
     [Inject] private LicenseState LicenseState { get; set; } = default!;
+    [Inject] private IAppReleaseService AppReleaseService { get; set; } = default!;
     [Inject] private IWebHostEnvironment Env { get; set; } = default!;
     [Inject] private IStoreContext StoreContext { get; set; } = default!;
     [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
+    public string AppVersion { get; private set; } = "1.0.70";
     private string SplashTitle { get; set; } = "GoldEx";
     private string? SplashLogoUrl { get; set; }
     private string? StoreLogoUrl { get; set; }
@@ -83,6 +85,19 @@ public partial class App
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            var releases = await AppReleaseService.GetListAsync();
+            if (releases.Count > 0 && !string.IsNullOrWhiteSpace(releases[0].Version))
+            {
+                AppVersion = releases[0].Version;
+            }
+        }
+        catch
+        {
+            AppVersion = "1.0.70";
+        }
+
         await GetLicenseAsync();
         await LoadStoreMetadataAsync();
         await base.OnInitializedAsync();
