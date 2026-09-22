@@ -2584,6 +2584,12 @@
   text-align: right;
 }
 
+.vitrine-root .vitrine-hero-search-box-wrap {
+  position: relative;
+  width: 100%;
+  z-index: 104;
+}
+
 .vitrine-root .vitrine-hero-search-bar {
   display: flex;
   align-items: center;
@@ -2755,7 +2761,7 @@
 /* Dropdown Container */
 .vitrine-root .vitrine-hero-search-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
   left: 0;
   background: var(--white);
@@ -3030,6 +3036,7 @@
   }
 
   .vitrine-root .vitrine-hero-search-dropdown {
+    top: calc(100% + 4px);
     max-height: 380px;
   }
 

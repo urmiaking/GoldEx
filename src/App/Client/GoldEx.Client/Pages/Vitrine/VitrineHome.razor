@@ -74,61 +74,39 @@
 
             <!-- Luxury Hero Search Widget -->
             <div class="vitrine-hero-search-wrapper">
-                <div class="vitrine-hero-search-bar @(_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery) ? "has-dropdown" : "")">
-                    <div class="vitrine-hero-search-icon">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
-                    <input type="text"
-                           class="vitrine-hero-search-input"
-                           value="@_searchQuery"
-                           @oninput="OnInputChanged"
-                           @onfocus="OnInputFocus"
-                           @onkeydown="HandleSearchKeyDown"
-                           placeholder="جستجوی مدل، دسته‌بندی، النگو، انگشتر، دستبند، کد کالا..."
-                           autocomplete="off" />
+                <div class="vitrine-hero-search-box-wrap">
+                    <div class="vitrine-hero-search-bar @(_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery) ? "has-dropdown" : "")">
+                        <div class="vitrine-hero-search-icon">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <input type="text"
+                               class="vitrine-hero-search-input"
+                               value="@_searchQuery"
+                               @oninput="OnInputChanged"
+                               @onfocus="OnInputFocus"
+                               @onkeydown="HandleSearchKeyDown"
+                               placeholder="جستجوی مدل، دسته‌بندی، النگو، انگشتر، دستبند، کد کالا..."
+                               autocomplete="off" />
 
-                    @if (!string.IsNullOrWhiteSpace(_searchQuery))
-                    {
-                        <button type="button" class="vitrine-search-clear-btn" @onclick="ClearSearch" title="پاک کردن جستجو">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    }
-
-                    <button type="button" class="vitrine-search-submit-btn" @onclick="() => NavigateToCatalogSearch(_searchQuery)">
-                        <span>جستجو</span>
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                </div>
-
-                <!-- Quick Search Popular Tags -->
-                @if (_categories.Count > 0)
-                {
-                    <div class="vitrine-search-quick-tags">
-                        <span class="vitrine-search-tags-label">
-                            <i class="fa-solid fa-fire"></i>
-                            <span>بیشترین جستجوها:</span>
-                        </span>
-                        @foreach (var cat in _categories.Take(5))
+                        @if (!string.IsNullOrWhiteSpace(_searchQuery))
                         {
-                            <button type="button" class="vitrine-search-tag-btn" @onclick="() => SelectQuickTag(cat.Title)">
-                                @cat.Title
+                            <button type="button" class="vitrine-search-clear-btn" @onclick="ClearSearch" title="پاک کردن جستجو">
+                                <i class="fa-solid fa-xmark"></i>
                             </button>
                         }
-                        <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("کم‌اجرت")'>
-                            کم‌اجرت
-                        </button>
-                        <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("سبک")'>
-                            طلای سبک
+
+                        <button type="button" class="vitrine-search-submit-btn" @onclick="() => NavigateToCatalogSearch(_searchQuery)">
+                            <span>جستجو</span>
+                            <i class="fa-solid fa-arrow-left"></i>
                         </button>
                     </div>
-                }
 
-                <!-- Live Dropdown Results -->
-                @if (_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery))
-                {
-                    <div class="vitrine-search-backdrop" @onclick="CloseDropdown"></div>
+                    <!-- Live Dropdown Results -->
+                    @if (_isSearchDropdownOpen && !string.IsNullOrWhiteSpace(_searchQuery))
+                    {
+                        <div class="vitrine-search-backdrop" @onclick="CloseDropdown"></div>
 
-                    <div class="vitrine-hero-search-dropdown animate-fade-in-up">
+                        <div class="vitrine-hero-search-dropdown animate-fade-in-up">
                         @if (MatchedCategories.Count > 0)
                         {
                             <div class="vitrine-dropdown-section">
@@ -221,6 +199,30 @@
                     </div>
                 }
             </div>
+
+            <!-- Quick Search Popular Tags -->
+            @if (_categories.Count > 0)
+            {
+                <div class="vitrine-search-quick-tags">
+                    <span class="vitrine-search-tags-label">
+                        <i class="fa-solid fa-fire"></i>
+                        <span>بیشترین جستجوها:</span>
+                    </span>
+                    @foreach (var cat in _categories.Take(5))
+                    {
+                        <button type="button" class="vitrine-search-tag-btn" @onclick="() => SelectQuickTag(cat.Title)">
+                            @cat.Title
+                        </button>
+                    }
+                    <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("کم‌اجرت")'>
+                        کم‌اجرت
+                    </button>
+                    <button type="button" class="vitrine-search-tag-btn" @onclick='() => SelectQuickTag("سبک")'>
+                        طلای سبک
+                    </button>
+                </div>
+            }
+        </div>
 
             <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
                 <a href="@CatalogUrl" class="btn-gisu btn-gisu-accent" style="padding: 15px 34px;">
