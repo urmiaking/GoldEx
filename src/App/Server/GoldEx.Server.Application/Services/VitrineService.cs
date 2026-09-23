@@ -169,6 +169,8 @@ internal class VitrineService(
                 baseQuery = baseQuery.Where(p => p.IsFeatured);
             }
 
+            baseQuery = baseQuery.OrderByDescending(p => p.CreatedAt).ThenByDescending(p => p.Id);
+
             var rawProducts = await baseQuery
                 .Select(p => new VitrineProductRawProjection
                 {

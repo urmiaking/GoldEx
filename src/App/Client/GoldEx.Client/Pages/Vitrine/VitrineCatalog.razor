@@ -265,7 +265,7 @@
             }
             else if (FilteredProducts.Count == 0)
             {
-                <div class="text-center py-5 animate-fade-in" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
+                <div class="text-center py-5 animate-catalog-filter" @key="_filterSequence" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
                     <i class="fa-solid fa-magnifying-glass mb-3" style="font-size: 3rem; color: var(--accent-color); display: block;"></i>
                     <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">موردی با مشخصات انتخابی یافت نشد</h3>
                     <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 24px; font-size: 0.92rem; line-height: 1.8;">
@@ -278,10 +278,10 @@
             }
             else
             {
-                <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
+                <div class="vitrine-grid animate-catalog-filter" @key="_filterSequence" style="padding-top: 0;">
                     @foreach (var product in VisibleProducts)
                     {
-                        <a href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
+                        <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
                                 @if (!product.IsAvailable)
                                 {
@@ -392,6 +392,7 @@
     private const int PageSize = 24;
     private int _visibleCount = PageSize;
     private bool _isLoadingMore = false;
+    private int _filterSequence = 0;
 
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineCategoryDto> _categories = [];
@@ -797,6 +798,7 @@
     private void ResetVisibleCount()
     {
         _visibleCount = PageSize;
+        _filterSequence++;
     }
 
     private async Task LoadMoreAsync()

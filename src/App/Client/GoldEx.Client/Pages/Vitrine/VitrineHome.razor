@@ -433,7 +433,7 @@
             <div class="vitrine-home-slider">
                 @foreach (var product in FilteredHomeProducts)
                 {
-                    <a href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
+                    <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
                             @if (!product.IsAvailable)
                             {
@@ -682,7 +682,13 @@
         {
             _categories = restoredCategories;
             _products = restoredProducts;
-            _featuredProducts = _products.Where(x => x.IsFeatured).Take(4).ToList();
+            _featuredProducts = _products
+                .Where(x => x.IsFeatured)
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.IsAvailable)
+                .ThenByDescending(x => x.Id)
+                .Take(4)
+                .ToList();
             _isLoading = false;
         }
         else
@@ -735,7 +741,13 @@
             var allProducts = (await VitrineService.GetVitrineProductsAsync(EffectiveStoreSlug)).ToList();
 
             _products = allProducts;
-            _featuredProducts = allProducts.Where(x => x.IsFeatured).Take(4).ToList();
+            _featuredProducts = allProducts
+                .Where(x => x.IsFeatured)
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.IsAvailable)
+                .ThenByDescending(x => x.Id)
+                .Take(4)
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -752,7 +764,12 @@
         _persistingSubscription.Dispose();
     }
 
-    private List<VitrineProductSummaryDto> FilteredHomeProducts => _products.Take(8).ToList();
+    private List<VitrineProductSummaryDto> FilteredHomeProducts => _products
+        .OrderByDescending(x => x.CreatedAt)
+        .ThenByDescending(x => x.IsAvailable)
+        .ThenByDescending(x => x.Id)
+        .Take(8)
+        .ToList();
 
     private string GetCategoryIcon(string title)
     {

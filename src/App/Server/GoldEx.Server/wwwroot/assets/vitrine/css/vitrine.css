@@ -2229,6 +2229,61 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* 15.1 Catalog Filter & Sort Transition Animations */
+@keyframes vitrineCatalogEntrance {
+  0% {
+    opacity: 0.2;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vitrineCardEntrance {
+  0% {
+    opacity: 0.2;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vitrine-root .animate-catalog-filter {
+  animation: vitrineCatalogEntrance 0.24s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  will-change: opacity, transform;
+}
+
+.vitrine-root .animate-catalog-filter .product-card {
+  animation: vitrineCardEntrance 0.24s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  will-change: opacity, transform;
+}
+
+.vitrine-root .animate-catalog-filter .product-card:nth-child(1) { animation-delay: 0ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(2) { animation-delay: 15ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(3) { animation-delay: 30ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(4) { animation-delay: 45ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(5) { animation-delay: 60ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(6) { animation-delay: 75ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(7) { animation-delay: 90ms; }
+.vitrine-root .animate-catalog-filter .product-card:nth-child(8) { animation-delay: 105ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-root .animate-catalog-filter,
+  .vitrine-root .animate-catalog-filter .product-card {
+    animation: vitrineCardFadeOnly 0.15s ease-out backwards !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+@keyframes vitrineCardFadeOnly {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 /* 16. Skeleton Shimmer & Progressive Loading */
 .vitrine-root .vitrine-card-skeleton {
   background: var(--white) !important;
