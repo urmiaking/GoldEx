@@ -157,11 +157,15 @@
                                                     {
                                                         <span class="product-badge badge-sold" style="position: static; font-size: 0.65rem; padding: 2px 6px;">فروخته شد</span>
                                                     }
+                                                    else if (prod.IsPartiallySold)
+                                                    {
+                                                        <span class="product-badge badge-partial" style="position: static; font-size: 0.65rem; padding: 2px 6px;">بخشی فروخته شده</span>
+                                                    }
                                                 </div>
                                                 <div class="vitrine-dropdown-product-sub">
                                                     <span>@(prod.CategoryTitle ?? "طلا")</span>
                                                     <span class="vitrine-dot-separator">•</span>
-                                                    <span>@prod.Weight.ToString("G29") گرم</span>
+                                                    <span>@(prod.IsPartiallySold ? $"باقی‌مانده: {prod.Weight:G29} گرم" : $"{prod.Weight:G29} گرم")</span>
                                                     <span class="vitrine-dot-separator">•</span>
                                                     <span>عیار @(prod.Fineness > 0 ? prod.Fineness.ToString("G29") : "750")</span>
                                                 </div>
@@ -335,6 +339,10 @@
                 {
                     <a href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
+                            @if (product.IsPartiallySold)
+                            {
+                                <span class="product-badge badge-partial">بخشی فروخته شده</span>
+                            }
                             @if (!product.IsAvailable)
                             {
                                 <span class="product-badge badge-sold">فروخته شد</span>
@@ -375,7 +383,7 @@
                             <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
                             <h3 class="product-title" title="@product.Name">@product.Name</h3>
                             <div class="product-price-container">
-                                <span class="product-price-label">مبلغ با مظنه روز:</span>
+                                <span class="product-price-label">@(product.IsPartiallySold ? "مبلغ بخش باقی‌مانده با مظنه روز:" : "مبلغ با مظنه روز:")</span>
                                 <div class="product-price">
                                     @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                 </div>
@@ -435,6 +443,10 @@
                 {
                     <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
+                            @if (product.IsPartiallySold)
+                            {
+                                <span class="product-badge badge-partial">بخشی فروخته شده</span>
+                            }
                             @if (!product.IsAvailable)
                             {
                                 <span class="product-badge badge-sold">فروخته شد</span>
@@ -475,7 +487,7 @@
                             <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
                             <h3 class="product-title" title="@product.Name">@product.Name</h3>
                             <div class="product-price-container">
-                                <span class="product-price-label">مبلغ با مظنه روز:</span>
+                                <span class="product-price-label">@(product.IsPartiallySold ? "مبلغ بخش باقی‌مانده با مظنه روز:" : "مبلغ با مظنه روز:")</span>
                                 <div class="product-price">
                                     @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                 </div>

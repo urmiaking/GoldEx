@@ -119,7 +119,7 @@
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
         (async function () {
-            @if (IsVitrineRoute())
+            @if (StoreContext.IsCustomDomain)
             {
                 <text>
                 try {

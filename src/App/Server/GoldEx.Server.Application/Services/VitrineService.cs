@@ -229,8 +229,12 @@ internal class VitrineService(
 
             return rawProducts.Select(p =>
             {
-                var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
-                var effectiveWeight = isAvailable ? qty : (p.Weight > 0 ? p.Weight : 0m);
+                var remainingWeight = stockQuantities.TryGetValue(p.Id, out var qty) ? Math.Max(qty, 0m) : 0m;
+                var isAvailable = remainingWeight > 0.0001m;
+                var isPartiallySold = isAvailable
+                    && p.Weight > 0.0001m
+                    && remainingWeight < p.Weight - 0.0001m;
+                var effectiveWeight = isAvailable ? remainingWeight : (p.Weight > 0 ? p.Weight : 0m);
                 var wageExchangeRate = ResolveWageExchangeRate(p.WageType, p.WagePriceUnitId, wageRates);
                 var priceBreakdown = CalculateVitrinePriceFromRaw(
                     weight: p.Weight,
@@ -275,7 +279,10 @@ internal class VitrineService(
                     Wage: p.Wage,
                     WageType: p.WageType,
                     WageAmount: priceBreakdown.WageAmount,
-                    CreatedAt: p.CreatedAt);
+                    CreatedAt: p.CreatedAt,
+                    OriginalWeight: p.Weight,
+                    RemainingWeight: remainingWeight,
+                    IsPartiallySold: isPartiallySold);
             }).ToList();
         }
         finally
@@ -364,8 +371,12 @@ internal class VitrineService(
                 .Where(s => s.StoreId == storeId && s.ProductId == new ProductId(rawProduct.Id))
                 .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
 
-            var isAvailable = quantity > 0.0001m;
-            var effectiveWeight = isAvailable ? quantity : (rawProduct.Weight > 0 ? rawProduct.Weight : 0m);
+            var remainingWeight = Math.Max(quantity, 0m);
+            var isAvailable = remainingWeight > 0.0001m;
+            var isPartiallySold = isAvailable
+                && rawProduct.Weight > 0.0001m
+                && remainingWeight < rawProduct.Weight - 0.0001m;
+            var effectiveWeight = isAvailable ? remainingWeight : (rawProduct.Weight > 0 ? rawProduct.Weight : 0m);
             var gemStoneTotalCost = rawProduct.GemStones.Sum(s => s.Cost);
             var wageExchangeRate = ResolveWageExchangeRate(rawProduct.WageType, rawProduct.WagePriceUnitId, wageRates);
             var priceBreakdown = CalculateVitrinePriceFromRaw(
@@ -425,7 +436,10 @@ internal class VitrineService(
                 UpdatedAt: DateTime.Now,
                 IsAvailable: isAvailable,
                 Attributes: attributes,
-                WagePriceUnitTitle: rawProduct.WagePriceUnitTitle);
+                WagePriceUnitTitle: rawProduct.WagePriceUnitTitle,
+                OriginalWeight: rawProduct.Weight,
+                RemainingWeight: remainingWeight,
+                IsPartiallySold: isPartiallySold);
         }
         finally
         {

@@ -283,6 +283,10 @@
                     {
                         <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
+                                @if (product.IsPartiallySold)
+                                {
+                                    <span class="product-badge badge-partial">بخشی فروخته شده</span>
+                                }
                                 @if (!product.IsAvailable)
                                 {
                                     <span class="product-badge badge-sold">فروخته شد</span>
@@ -326,7 +330,7 @@
                                 <h3 class="product-title" title="@product.Name">@product.Name</h3>
 
                                 <div class="product-price-container">
-                                    <span class="product-price-label">مبلغ با مظنه روز:</span>
+                                    <span class="product-price-label">@(product.IsPartiallySold ? "مبلغ بخش باقی‌مانده با مظنه روز:" : "مبلغ با مظنه روز:")</span>
                                     <div class="product-price">
                                         @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                     </div>

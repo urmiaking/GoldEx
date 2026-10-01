@@ -30,7 +30,8 @@ const PRECACHE_INCLUDE = [
 ];
 
 const PRECACHE_EXCLUDE = [
-    /^service-worker\.js$/
+    /^service-worker\.js$/,
+    /^GoldEx\.Client\.styles\.css$/
 ];
 
 const BASE_PATH = '/';
@@ -70,8 +71,8 @@ self.addEventListener('install', event => {
  * ============================ */
 self.addEventListener('activate', event => {
     event.waitUntil((async () => {
-        const host = self.location.hostname.toLowerCase();
-        const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
+        const swHost = self.location.hostname.toLowerCase();
+        const isPlatformHost = swHost === 'localhost' || swHost === '127.0.0.1' || swHost.endsWith('goldexsoft.ir');
         if (!isPlatformHost) {
             await self.registration.unregister();
             const keys = await caches.keys();
@@ -97,20 +98,30 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
 
-    const url = new URL(event.request.url);
-
-    const host = url.hostname.toLowerCase();
-    const isPlatformHost = host === 'localhost' || host.endsWith('goldexsoft.ir');
-
     // 0. A. CUSTOM SHOWCASE DOMAIN BYPASS & SELF-DESTRUCT
-    // Custom domains (e.g. fanijewellery.ir) are pure online showcases and must NEVER be intercepted by the Service Worker.
+    // Check the host where the service worker is installed, NOT event.request.url!
+    const swHost = self.location.hostname.toLowerCase();
+    const isPlatformHost = swHost === 'localhost' || swHost === '127.0.0.1' || swHost.endsWith('goldexsoft.ir');
     if (!isPlatformHost) {
         self.registration.unregister();
         return;
     }
 
+    const url = new URL(event.request.url);
+
+    // 0. B. CROSS-ORIGIN REQUESTS BYPASS
+    // Never intercept or cache cross-origin requests (CDNs, Google Fonts, external APIs, etc.)
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
+    // 0. C. Blazor Server / SignalR bypass
+    if (url.pathname.startsWith('/_blazor')) {
+        return;
+    }
+
     /* ============================
-     * 0. B. BYPASS FOR VITRINE ROUTES & MEDIA ON PLATFORM HOSTS
+     * 0. D. BYPASS FOR VITRINE ROUTES & MEDIA ON PLATFORM HOSTS
      *    Never intercept Vitrine routes, Vitrine assets, range or video requests.
      *    Returning early without calling event.respondWith allows direct browser network handling.
      * ============================ */
@@ -198,7 +209,7 @@ self.addEventListener('fetch', event => {
          * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
             // Boot manifest and boot scripts must ALWAYS be network-first
-            if (url.pathname.endsWith('blazor.boot.json') || url.pathname.endsWith('blazor.web.js') || url.pathname.includes('/dotnet')) {
+            if (url.pathname.endsWith('blazor.boot.json') || url.pathname.endsWith('blazor.web.js')) {
                 try {
                     const response = await fetch(event.request);
                     if (response.ok) {
@@ -241,10 +252,15 @@ self.addEventListener('fetch', event => {
         }
 
         /* ============================
-         * 3. Navigation requests
+         * 3. Navigation and HTML requests (including Blazor Enhanced Navigation)
          *    network-first
          * ============================ */
-        if (event.request.mode === 'navigate') {
+        const isHtmlRequest =
+            event.request.mode === 'navigate' ||
+            event.request.headers.get('accept')?.includes('text/html') ||
+            event.request.headers.has('blazor-enhanced-nav');
+
+        if (isHtmlRequest) {
             try {
                 return await fetch(event.request);
             } catch {
@@ -266,21 +282,35 @@ self.addEventListener('fetch', event => {
          * 4. Static assets
          *    cache-first
          * ============================ */
-        const cache = await caches.open(CACHE_NAME);
-        const cached = await cache.match(event.request);
-        if (cached) return cached;
+        const isStaticAsset =
+            PRECACHE_INCLUDE.some(r => r.test(url.pathname)) ||
+            url.pathname.startsWith('/_content/') ||
+            url.pathname.startsWith('/css/') ||
+            url.pathname.startsWith('/js/') ||
+            url.pathname.startsWith('/fonts/') ||
+            url.pathname.startsWith('/images/') ||
+            url.pathname.startsWith('/icons/');
 
-        try {
-            const response = await fetch(event.request);
+        if (isStaticAsset) {
+            const cache = await caches.open(CACHE_NAME);
+            const cached = await cache.match(event.request);
+            if (cached) return cached;
 
-            if (response.ok && response.status === 200) {
-                await cache.put(event.request, response.clone());
+            try {
+                const response = await fetch(event.request);
+
+                if (response.ok && response.status === 200) {
+                    await cache.put(event.request, response.clone());
+                }
+
+                return response;
+            } catch {
+                return new Response('', { status: 503, statusText: 'Offline' });
             }
-
-            return response;
-        } catch {
-            return new Response('', { status: 503, statusText: 'Offline' });
         }
+
+        // For any other request, pass directly to network
+        return fetch(event.request);
 
     })());
 });

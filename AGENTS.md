@@ -368,6 +368,16 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - Legacy price units whose `PriceId` is missing may resolve the live price by an exact `Price.Title` match. A missing non-base live rate must never silently fall back to `1`, because that would treat a foreign-currency wage as Toman.
    - Vitrine price breakdowns must use the current store's `Setting.GoldProfitPercent`, `Setting.JewelryProfitPercent`, and `Setting.TaxPercent` and the shared `CalculatorHelper.Product` formulas. Do not hard-code 7% profit or 9% tax: jewelry commonly uses a different configured profit percentage, and tax settings can change.
 
+9. **Partial Sale State in Public Vitrine**:
+   - Product.Weight is the original/full product weight; the current public remaining weight comes from the net InventoryStock balance.
+   - A vitrine product is partially sold when its positive remaining stock is lower than Product.Weight (using a small decimal tolerance).
+   - Public DTOs expose OriginalWeight, RemainingWeight, and IsPartiallySold. Catalog, home/search, product detail, WhatsApp inquiry, and share/story content must explicitly say that weight and price refer to the remaining portion so a partially sold set is never presented as a complete set.
+
+10. **Custom-Domain Deployment Cache Checks**:
+   - Vitrine pages prerender on the server and then rerender from `GoldEx.Client` WebAssembly. An element present in SSR but absent after hydration can indicate an older client bundle or a client-side rendering difference; compare the actual HTML, loaded framework asset URLs, and browser network responses before changing component markup.
+   - On `fanijewellery.ir`, Nginx has separate locations for framework scripts, WebAssembly binaries, static files, and HTML. Only its framework-script location hides COEP/COOP; the general HTML and binary locations can still pass those headers through. Apply any embedded-browser header policy consistently to the document and all required assets.
+   - The binary location sets a 30-day `immutable` policy for `.wasm` and related files. Use long immutable caching only for URLs proven to change when content changes; version changes and Cache Storage deletion cannot clear the browser HTTP cache or the CDN. Verify ArvanCloud response headers and cache status at the public hostname when diagnosing deployments.
+
 ---
 
 ## Coin Payment & Trade-In Architecture (تهاتر و پرداخت با سکه در فاکتورها)

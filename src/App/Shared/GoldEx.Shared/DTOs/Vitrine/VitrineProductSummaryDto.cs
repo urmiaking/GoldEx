@@ -19,4 +19,7 @@ public record VitrineProductSummaryDto(
     decimal Wage = 0,
     WageType? WageType = null,
     decimal WageAmount = 0,
-    DateTime CreatedAt = default);
+    DateTime CreatedAt = default,
+    decimal OriginalWeight = 0,
+    decimal RemainingWeight = 0,
+    bool IsPartiallySold = false);

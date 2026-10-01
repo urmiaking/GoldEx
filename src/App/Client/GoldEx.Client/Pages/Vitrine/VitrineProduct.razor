@@ -28,9 +28,13 @@
         var storeName = _storeInfo?.Name ?? "گالری طلا";
         var finenessText = _product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750";
         var pageTitle = $"{_product.Name} (عیار {finenessText}) | {storeName}";
-        var pageDesc = !string.IsNullOrWhiteSpace(_product.Description)
+        var partialSaleDesc = _product.IsPartiallySold
+            ? $" بخشی از این محصول فروخته شده و {_product.RemainingWeight:G29} گرم از وزن اولیه {_product.OriginalWeight:G29} گرم باقی مانده است."
+            : string.Empty;
+        var pageDesc = (!string.IsNullOrWhiteSpace(_product.Description)
             ? _product.Description
-            : $"خرید و استعلام آنلاین {_product.Name} با وزن {_product.Weight:G29} گرم و عیار {finenessText} در {storeName}. محاسبه زنده قیمت با مظنه روز طلا: {_product.EstimatedPrice:N0} تومان.";
+            : $"خرید و استعلام آنلاین {_product.Name} با وزن {_product.Weight:G29} گرم و عیار {finenessText} در {storeName}. محاسبه زنده قیمت با مظنه روز طلا: {_product.EstimatedPrice:N0} تومان.")
+            + partialSaleDesc;
 
         <link rel="canonical" href="@canonicalUrl" />
         <meta name="description" content="@pageDesc" />
@@ -118,7 +122,13 @@ else
                         <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
                     }
                     <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
-                    @if (_product.IsAvailable)
+                    @if (_product.IsPartiallySold)
+                    {
+                        <span class="vitrine-tag tag-partial">
+                            <i class="fa-solid fa-circle-half-stroke"></i> بخشی از محصول فروخته شده
+                        </span>
+                    }
+                    else if (_product.IsAvailable)
                     {
                         <span class="vitrine-tag tag-available">
                             <i class="fa-solid fa-check"></i> موجود در گالری
@@ -187,7 +197,13 @@ else
                             <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
                         }
                         <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
-                        @if (_product.IsAvailable)
+                        @if (_product.IsPartiallySold)
+                        {
+                            <span class="vitrine-tag tag-partial">
+                                <i class="fa-solid fa-circle-half-stroke"></i> بخشی از محصول فروخته شده
+                            </span>
+                        }
+                        else if (_product.IsAvailable)
                         {
                             <span class="vitrine-tag tag-available">
                                 <i class="fa-solid fa-check"></i> موجود در گالری
@@ -215,7 +231,20 @@ else
 
                 <!-- Price Hero Card -->
                 <div style="background: var(--gray-100); border: 1px solid var(--accent-color); border-radius: var(--border-radius-sm); padding: 16px 20px; box-shadow: var(--shadow-subtle);">
-                    @if (!_product.IsAvailable)
+                    @if (_product.IsPartiallySold)
+                    {
+                        <div class="mb-3 p-3 rounded vitrine-partial-sale-notice">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                            <span>
+                                بخشی از این محصول فروخته شده است. وزن اولیه
+                                <strong>@_product.OriginalWeight.ToString("G29") گرم</strong>
+                                بوده و اکنون
+                                <strong>@_product.RemainingWeight.ToString("G29") گرم</strong>
+                                باقی مانده است. وزن و قیمت زیر مربوط به بخش باقی‌مانده است.
+                            </span>
+                        </div>
+                    }
+                    else if (!_product.IsAvailable)
                     {
                         <div class="mb-3 p-3 rounded" style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.3); color: #dc2626; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-circle-exclamation"></i>
@@ -225,7 +254,7 @@ else
 
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                         <div>
-                            <span style="font-size: 0.92rem; font-weight: 800; color: var(--primary-color); display: block;">قیمت نهایی قطعه:</span>
+                            <span style="font-size: 0.92rem; font-weight: 800; color: var(--primary-color); display: block;">@(_product.IsPartiallySold ? "قیمت تقریبی بخش باقی‌مانده:" : "قیمت نهایی قطعه:")</span>
                             <span style="font-size: 0.78rem; color: var(--gray-600); margin-top: 2px; display: block;">
                                 نرخ هر گرم: <strong>@_product.GramPrice750.ToString("N0") تومان</strong>
                             </span>
@@ -244,11 +273,24 @@ else
                         <span>مشخصات و شناسنامه قطعه</span>
                     </h4>
 
-                    <!-- وزن کل قطعه -->
-                    <div class="vitrine-spec-row">
-                        <span style="color: var(--gray-600);">وزن کل قطعه:</span>
-                        <strong style="color: var(--primary-color); font-size: 1.02rem;">@_product.Weight.ToString("G29") گرم</strong>
-                    </div>
+                    @if (_product.IsPartiallySold)
+                    {
+                        <div class="vitrine-spec-row">
+                            <span style="color: var(--gray-600);">وزن اولیه محصول:</span>
+                            <strong style="color: var(--primary-color); font-size: 1.02rem;">@_product.OriginalWeight.ToString("G29") گرم</strong>
+                        </div>
+                        <div class="vitrine-spec-row">
+                            <span style="color: var(--gray-600);">وزن باقی‌مانده:</span>
+                            <strong style="color: #b45309; font-size: 1.02rem;">@_product.RemainingWeight.ToString("G29") گرم</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="vitrine-spec-row">
+                            <span style="color: var(--gray-600);">وزن کل قطعه:</span>
+                            <strong style="color: var(--primary-color); font-size: 1.02rem;">@_product.Weight.ToString("G29") گرم</strong>
+                        </div>
+                    }
 
                     <!-- عیار استاندارد -->
                     <div class="vitrine-spec-row">
@@ -327,7 +369,7 @@ else
                         var waUrl = GetWhatsAppInquiryUrl();
                         <a href="@waUrl" target="_blank" class="btn-gisu btn-gisu-whatsapp" style="padding: 15px;">
                             <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i>
-                            <span>@(_product.IsAvailable ? "استعلام موجودی و رزرو قطعه در واتساپ" : "سفارش ساخت مجدد در واتساپ")</span>
+                            <span>@(_product.IsPartiallySold ? "استعلام و رزرو بخش باقی‌مانده در واتساپ" : _product.IsAvailable ? "استعلام موجودی و رزرو قطعه در واتساپ" : "سفارش ساخت مجدد در واتساپ")</span>
                         </a>
                     }
 
@@ -335,7 +377,7 @@ else
                     {
                         <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-bale" style="padding: 15px;">
                             <i class="fa-solid fa-comment"></i>
-                            <span>@(_product.IsAvailable ? "استعلام و پیام در پیام‌رسان بله" : "سفارش ساخت مجدد در پیام‌رسان بله")</span>
+                            <span>@(_product.IsPartiallySold ? "استعلام بخش باقی‌مانده در پیام‌رسان بله" : _product.IsAvailable ? "استعلام و پیام در پیام‌رسان بله" : "سفارش ساخت مجدد در پیام‌رسان بله")</span>
                         </a>
                     }
 
@@ -486,9 +528,11 @@ else
             phone = "98" + phone.Substring(1);
 
         var currentUrl = Navigation.Uri;
-        var text = _product.IsAvailable
-            ? $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}"
-            : $"سلام وقت بخیر، قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین به عنوان فروخته‌شده ثبت شده است. آیا امکان سفارش ساخت مجدد این مدل وجود دارد؟\n{currentUrl}";
+        var text = _product.IsPartiallySold
+            ? $"سلام وقت بخیر، بخشی از محصول «{_product.Name}» با کد بارکد {_product.Barcode} فروخته شده است. وزن اولیه {_product.OriginalWeight:G29} گرم بوده و {_product.RemainingWeight:G29} گرم باقی مانده است. درباره بخش باقی‌مانده سوال داشتم:\n{currentUrl}"
+            : _product.IsAvailable
+                ? $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}"
+                : $"سلام وقت بخیر، قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین به عنوان فروخته‌شده ثبت شده است. آیا امکان سفارش ساخت مجدد این مدل وجود دارد؟\n{currentUrl}";
         return $"https://wa.me/{phone}?text={Uri.EscapeDataString(text)}";
     }
 
@@ -670,6 +714,10 @@ else
             barcode = _product.Barcode,
             categoryTitle = _product.CategoryTitle,
             weight = _product.Weight.ToString("G29"),
+            originalWeight = _product.OriginalWeight.ToString("G29"),
+            remainingWeight = _product.RemainingWeight.ToString("G29"),
+            isPartiallySold = _product.IsPartiallySold,
+            statusText = _product.IsPartiallySold ? "بخشی از محصول فروخته شده؛ قیمت و وزن مربوط به بخش باقی‌مانده است." : null,
             fineness = _product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750",
             priceFormatted = _product.EstimatedPrice.ToString("N0"),
             imageUrl = mainImg,

@@ -215,7 +215,8 @@ window.goldexVitrine = {
           // Badges on Image
           drawPill(ctx, 115, 265, 170, 52, "#181b24", "#d4af37", "عیار " + (data.fineness || "۷۵۰"));
           if (data.weight) {
-            drawPill(ctx, 775, 265, 190, 52, "#181b24", "#f3f4f6", "وزن: " + data.weight + " گرم");
+            var weightCaption = data.isPartiallySold ? "باقی‌مانده: " : "وزن: ";
+            drawPill(ctx, 745, 265, 220, 52, "#181b24", "#f3f4f6", weightCaption + data.weight + " گرم");
           }
 
           // 5. Product Details Section
@@ -257,7 +258,7 @@ window.goldexVitrine = {
           // Price Label
           ctx.font = "22px 'IRANSans', system-ui, -apple-system, sans-serif";
           ctx.fillStyle = "#9ca3af";
-          ctx.fillText("محاسبه زنده بر اساس مظنه روز طلا", 540, priceBoxY + 45);
+          ctx.fillText(data.isPartiallySold ? "قیمت بخش باقی‌مانده بر اساس مظنه روز" : "محاسبه زنده بر اساس مظنه روز طلا", 540, priceBoxY + 45);
 
           // Price Amount
           ctx.font = "900 48px 'IRANSans', system-ui, -apple-system, sans-serif";
@@ -379,8 +380,9 @@ window.goldexVitrine = {
 
     var encodedUrl = encodeURIComponent(productUrl);
     var shareMsg = (data.productName ? data.productName + "\n" : "") +
-                   (data.priceFormatted ? "قیمت روز: " + data.priceFormatted + " تومان\n" : "") +
-                   (data.weight ? "وزن: " + data.weight + " گرم - عیار " + (data.fineness || "750") + "\n" : "") +
+                   (data.statusText ? data.statusText + "\n" : "") +
+                   (data.priceFormatted ? (data.isPartiallySold ? "قیمت بخش باقی‌مانده: " : "قیمت روز: ") + data.priceFormatted + " تومان\n" : "") +
+                   (data.weight ? (data.isPartiallySold ? "وزن باقی‌مانده: " : "وزن: ") + data.weight + " گرم - عیار " + (data.fineness || "750") + "\n" : "") +
                    "مشاهده در ویترین:";
     var encodedText = encodeURIComponent(shareMsg);
 
@@ -455,7 +457,7 @@ window.goldexVitrine = {
     var productUrl = data.url || window.location.href;
     var sharePayload = {
       title: data.productName || "طلا و جواهر",
-      text: (data.productName ? data.productName + " - " : "") + (data.priceFormatted ? ("قیمت: " + data.priceFormatted + " تومان - ") : "") + "مشاهده در ویترین: " + productUrl,
+      text: (data.productName ? data.productName + " - " : "") + (data.statusText ? data.statusText + " - " : "") + (data.priceFormatted ? ((data.isPartiallySold ? "قیمت بخش باقی‌مانده: " : "قیمت: ") + data.priceFormatted + " تومان - ") : "") + "مشاهده در ویترین: " + productUrl,
       url: productUrl
     };
     if (navigator.share) {
