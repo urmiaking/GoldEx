@@ -435,6 +435,39 @@ public class Invoice : EntityBase<InvoiceId>, IStoreFiltered
             : TotalAmountWithDiscountsAndExtraCosts
               - TotalPaidAmount;
 
+    public decimal CalculateTotalWeightEquivalent()
+    {
+        if (PriceUnit != null && PriceUnit.IsGoldBased)
+            return TotalAmountWithDiscountsAndExtraCosts;
+
+        decimal totalItemWeight = 0;
+        decimal totalItemFinalAmount = 0;
+
+        if (ProductItems != null)
+        {
+            foreach (var item in ProductItems)
+            {
+                if (item.GramPrice > 0)
+                {
+                    totalItemWeight += item.ItemFinalAmount / item.GramPrice;
+                    totalItemFinalAmount += item.ItemFinalAmount;
+                }
+            }
+        }
+
+        if (totalItemWeight == 0)
+        {
+            return (ProductItems?.Sum(x => x.TotalWeight) ?? 0) + (UsedProducts?.Sum(x => x.Weight) ?? 0);
+        }
+
+        decimal effectiveRate = totalItemFinalAmount / totalItemWeight;
+        if (effectiveRate == 0) return totalItemWeight;
+
+        var discountWeight = TotalDiscountAmount / effectiveRate;
+        var extraCostWeight = TotalExtraCostAmount / effectiveRate;
+        return totalItemWeight - discountWeight + extraCostWeight;
+    }
+
     #endregion
 
     public void SetPayments(List<InvoicePayment> finalPayments)

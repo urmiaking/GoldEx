@@ -2,11 +2,11 @@
 @using GoldEx.Calculator.Client.ViewModels
 @inherits GoldExComponentBase
 
-<MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
+<MudCard Elevation="@Elevation" Class="@($"pa-2 pa-sm-4 {Class}")">
     <MudGrid Spacing="3">
         <!-- پنل تنظیم نرخ بازار و پله‌های خرید -->
         <MudItem xs="12" lg="7">
-            <MudPaper Outlined="true" Class="pa-4 h-100 rounded-lg">
+            <MudPaper Outlined="true" Class="pa-3 pa-sm-4 h-100 rounded-lg">
                 <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-3 pb-2 border-b">
                     <div class="d-flex align-center gap-2">
                         <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" />
@@ -20,68 +20,18 @@
                                Color="Color.Primary"
                                Size="Size.Small"
                                StartIcon="@Icons.Material.Filled.Add"
-                               OnClick="AddPurchaseItem">
+                               OnClick="AddPurchaseItem"
+                               Class="w-100 w-sm-auto">
                         افزودن پله جدید
                     </MudButton>
                 </div>
 
-                <div class="d-flex align-center gap-3 mb-3 pa-2 rounded-lg" style="background: rgba(0, 0, 0, 0.03);">
-                    <MudNumericField T="decimal"
-                                     @bind-Value="_model.LiveGramPrice"
-                                     Label="نرخ روز هر گرم طلای ۱۸"
-                                     Format="#,##0.##"
-                                     Immediate="true"
-                                     HideSpinButtons="true"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="تومان"
-                                     dir="ltr"
-                                     Class="flex-grow-1" />
-
-                    <MudNumericField T="decimal"
-                                     @bind-Value="_model.SalesFeePercent"
-                                     Label="کارمزد فروش (%)"
-                                     Format="0.###"
-                                     Immediate="true"
-                                     HideSpinButtons="true"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="%"
-                                     dir="ltr"
-                                     Style="max-width: 140px;" />
-                </div>
-
-                <div class="d-flex flex-column gap-2 overflow-y-auto" style="max-height: 380px;">
-                    @for (var i = 0; i < _model.Purchases.Count; i++)
-                    {
-                        var item = _model.Purchases[i];
-                        var index = i;
-
-                        <div class="d-flex align-center gap-2 flex-wrap pa-2 border rounded-lg" style="background: rgba(0, 0, 0, 0.02);">
-                            <MudTextField @bind-Value="item.Title"
-                                          Label="عنوان پله"
-                                          Variant="Variant.Outlined"
-                                          Margin="Margin.Dense"
-                                          Style="max-width: 150px;" />
-
+                <div class="pa-3 rounded-lg mb-3" style="background: var(--mud-palette-background, rgba(0, 0, 0, 0.03)); border: 1px solid var(--mud-palette-divider);">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="8">
                             <MudNumericField T="decimal"
-                                             @bind-Value="item.WeightGrams"
-                                             Label="وزن (گرم)"
-                                             Format="0.###"
-                                             Immediate="true"
-                                             HideSpinButtons="true"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense"
-                                             Adornment="Adornment.End"
-                                             AdornmentText="گرم"
-                                             dir="ltr"
-                                             Style="max-width: 130px;" />
-
-                            <MudNumericField T="decimal"
-                                             @bind-Value="item.BuyGramPrice"
-                                             Label="قیمت خرید هر گرم"
+                                             @bind-Value="_model.LiveGramPrice"
+                                             Label="نرخ روز هر گرم طلای ۱۸"
                                              Format="#,##0.##"
                                              Immediate="true"
                                              HideSpinButtons="true"
@@ -89,30 +39,134 @@
                                              Margin="Margin.Dense"
                                              Adornment="Adornment.End"
                                              AdornmentText="تومان"
-                                             dir="ltr"
-                                             Class="flex-grow-1" />
+                                             dir="ltr" />
+                        </MudItem>
 
-                            <div class="d-flex flex-column justify-center px-1">
-                                <span style="font-size: 0.72rem; color: #71717a;">کل پرداخت:</span>
-                                <span class="font-weight-bold" style="font-size: 0.82rem; direction: ltr;">@item.TotalCost.ToString("N0")</span>
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField T="decimal"
+                                             @bind-Value="_model.SalesFeePercent"
+                                             Label="کارمزد فروش (%)"
+                                             Format="0.###"
+                                             Immediate="true"
+                                             HideSpinButtons="true"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="%"
+                                             dir="ltr" />
+                        </MudItem>
+                    </MudGrid>
+                </div>
+
+                @if (_model.TotalWeight > 0)
+                {
+                    <div class="d-flex d-lg-none justify-space-between align-center pa-2 px-3 mb-3 rounded-lg"
+                         style="background: @(_model.IsProfitable ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)"); border: 1px solid @(_model.IsProfitable ? "rgba(16, 185, 129, 0.25)" : "rgba(239, 68, 68, 0.25)");">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary" style="font-size: 0.72rem;">میانگین قیمت خرید:</span>
+                            <span class="font-weight-black text-primary" style="font-size: 0.88rem; direction: ltr;">
+                                @_model.WeightedAverageBuyPrice.ToString("N0") <small style="font-size: 0.65rem; color: var(--mud-palette-text-secondary);">تومان</small>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column align-end">
+                            <span class="text-secondary" style="font-size: 0.72rem;">سود / زیان تخمینی:</span>
+                            <span class="font-weight-black" style="font-size: 0.88rem; color: @(_model.IsProfitable ? "#10b981" : "#ef4444"); direction: ltr;">
+                                @(_model.IsProfitable ? "+" : "")@_model.NetProfitLossAmount.ToString("N0")
+                                <span style="font-size: 0.75rem; font-weight: normal;">(@(_model.IsProfitable ? "+" : "")@_model.NetProfitLossPercent.ToString("0.#")%)</span>
+                            </span>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex flex-column gap-2 overflow-y-auto pr-1" style="max-height: 480px;">
+                    @for (var i = 0; i < _model.Purchases.Count; i++)
+                    {
+                        var item = _model.Purchases[i];
+                        var index = i;
+
+                        <div class="pa-3 border rounded-lg dca-step-card" style="background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-divider);">
+                            <div class="d-flex justify-space-between align-center mb-2 pb-2 border-b">
+                                <div class="d-flex align-center gap-2">
+                                    <span class="dca-step-badge">پله @(index + 1)</span>
+                                    <span class="text-secondary d-none d-sm-inline" style="font-size: 0.82rem;">
+                                        @(string.IsNullOrWhiteSpace(item.Title) ? $"خرید پله {index + 1}" : item.Title)
+                                    </span>
+                                </div>
+
+                                <div class="d-flex align-center gap-2">
+                                    <div class="dca-step-total px-2 py-1 rounded d-flex align-center gap-1">
+                                        <span class="text-secondary" style="font-size: 0.72rem;">پرداخت:</span>
+                                        <span class="font-weight-bold" style="font-size: 0.82rem; direction: ltr;">
+                                            @item.TotalCost.ToString("N0")
+                                        </span>
+                                        <span class="text-secondary" style="font-size: 0.68rem;">تومان</span>
+                                    </div>
+
+                                    @if (_model.Purchases.Count > 1)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       Title="حذف این پله"
+                                                       OnClick="() => RemovePurchaseItem(index)" />
+                                    }
+                                </div>
                             </div>
 
-                            @if (_model.Purchases.Count > 1)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="() => RemovePurchaseItem(index)" />
-                            }
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="item.Title"
+                                                  Label="عنوان پله"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense" />
+                                </MudItem>
+
+                                <MudItem xs="6" sm="4">
+                                    <MudNumericField T="decimal"
+                                                     @bind-Value="item.WeightGrams"
+                                                     Label="وزن (گرم)"
+                                                     Format="0.###"
+                                                     Immediate="true"
+                                                     HideSpinButtons="true"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Adornment="Adornment.End"
+                                                     AdornmentText="گرم"
+                                                     dir="ltr" />
+                                </MudItem>
+
+                                <MudItem xs="6" sm="4">
+                                    <MudNumericField T="decimal"
+                                                     @bind-Value="item.BuyGramPrice"
+                                                     Label="قیمت هر گرم"
+                                                     Format="#,##0.##"
+                                                     Immediate="true"
+                                                     HideSpinButtons="true"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Adornment="Adornment.End"
+                                                     AdornmentText="تومان"
+                                                     dir="ltr" />
+                                </MudItem>
+                            </MudGrid>
                         </div>
                     }
                 </div>
+
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                           FullWidth="true"
+                           OnClick="AddPurchaseItem"
+                           Class="mt-2 py-2 dca-add-step-btn">
+                    افزودن پله خرید جدید
+                </MudButton>
             </MudPaper>
         </MudItem>
 
         <!-- پنل تحلیل سود/زیان و نقطه سربه سر -->
         <MudItem xs="12" lg="5">
-            <MudPaper Outlined="true" Class="pa-4 h-100 d-flex flex-column justify-space-between rounded-lg">
+            <MudPaper Outlined="true" Class="pa-3 pa-sm-4 h-100 d-flex flex-column justify-space-between rounded-lg">
                 <div>
                     <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
                         <MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Success" />
@@ -120,60 +174,64 @@
                     </div>
 
                     <!-- کارت سود / زیان اصلی -->
-                    @{
-                        var isProfitable = _model.NetProfitLossAmount >= 0;
-                    }
-                    <div class="pa-3 rounded-lg mb-3 text-center" style="background: @(isProfitable ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)"); border: 1px solid @(isProfitable ? "rgba(16, 185, 129, 0.4)" : "rgba(239, 68, 68, 0.4)");">
-                        <span style="font-size: 0.85rem; color: #71717a;">سود / زیان کل پورتفوی طلا:</span>
-                        <div class="d-flex justify-center align-center gap-2 my-1">
-                            <MudIcon Icon="@(isProfitable ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward)"
-                                     Color="@(isProfitable ? Color.Success : Color.Error)" />
-                            <span class="font-weight-black" style="font-size: 1.4rem; color: @(isProfitable ? "#10b981" : "#ef4444"); direction: ltr;">
-                                @(isProfitable ? "+" : "")@_model.NetProfitLossAmount.ToString("N0") تومان
+                    <div class="pa-3 rounded-lg mb-3 text-center"
+                         style="background: @(_model.IsProfitable ? "rgba(16, 185, 129, 0.10)" : "rgba(239, 68, 68, 0.10)"); border: 1px solid @(_model.IsProfitable ? "rgba(16, 185, 129, 0.35)" : "rgba(239, 68, 68, 0.35)");">
+                        <span class="text-secondary" style="font-size: 0.85rem;">سود / زیان کل پورتفوی طلا</span>
+                        <div class="d-flex justify-center align-center gap-2 my-2">
+                            <MudIcon Icon="@(_model.IsProfitable ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward)"
+                                     Color="@(_model.IsProfitable ? Color.Success : Color.Error)"
+                                     Size="Size.Medium" />
+                            <span class="font-weight-black" style="font-size: 1.45rem; color: @(_model.IsProfitable ? "#10b981" : "#ef4444"); direction: ltr;">
+                                @(_model.IsProfitable ? "+" : "")@_model.NetProfitLossAmount.ToString("N0") <small style="font-size: 0.85rem; font-weight: normal;">تومان</small>
                             </span>
                         </div>
-                        <span class="font-weight-bold" style="font-size: 0.95rem; color: @(isProfitable ? "#10b981" : "#ef4444");">
-                            بازدهی: @(isProfitable ? "+" : "")@_model.NetProfitLossPercent.ToString("0.##")%
-                        </span>
+                        <div class="d-inline-flex align-center gap-1 px-3 py-1 rounded-pill"
+                             style="background: @(_model.IsProfitable ? "rgba(16, 185, 129, 0.18)" : "rgba(239, 68, 68, 0.18)");">
+                            <span class="font-weight-bold" style="font-size: 0.88rem; color: @(_model.IsProfitable ? "#10b981" : "#ef4444"); direction: ltr;">
+                                بازدهی: @(_model.IsProfitable ? "+" : "")@_model.NetProfitLossPercent.ToString("0.##")%
+                            </span>
+                        </div>
                     </div>
 
                     <div class="d-flex flex-column gap-2 mb-3" style="font-size: 0.88rem;">
-                        <div class="d-flex justify-space-between align-center pa-2 border-b">
+                        <div class="d-flex justify-space-between align-center pa-2 rounded" style="background: var(--mud-palette-background, rgba(0, 0, 0, 0.02));">
                             <span class="text-secondary">کل وزن طلای اندوخته:</span>
                             <span class="font-weight-bold">@_model.TotalWeight.ToString("0.###") گرم</span>
                         </div>
 
-                        <div class="d-flex justify-space-between align-center pa-2 border-b">
+                        <div class="d-flex justify-space-between align-center pa-2 rounded" style="background: var(--mud-palette-background, rgba(0, 0, 0, 0.02));">
                             <span class="text-secondary">کل سرمایه‌گذاری شده:</span>
                             <span class="font-weight-bold">@_model.TotalInvested.ToString("N0") تومان</span>
                         </div>
 
-                        <div class="d-flex justify-space-between align-center pa-2 border-b">
+                        <div class="d-flex justify-space-between align-center pa-2 rounded" style="background: var(--mud-palette-background, rgba(0, 0, 0, 0.02));">
                             <span class="text-secondary">میانگین موزون قیمت خرید:</span>
-                            <span class="font-weight-black" style="color: var(--mud-palette-primary);">
+                            <span class="font-weight-black text-primary">
                                 @_model.WeightedAverageBuyPrice.ToString("N0") تومان
                             </span>
                         </div>
 
-                        <div class="d-flex justify-space-between align-center pa-2 border-b">
+                        <div class="d-flex justify-space-between align-center pa-2 rounded" style="background: var(--mud-palette-background, rgba(0, 0, 0, 0.02));">
                             <span class="text-secondary">ارزش روز دارایی:</span>
                             <span class="font-weight-bold">@_model.CurrentMarketValue.ToString("N0") تومان</span>
                         </div>
 
-                        <div class="d-flex justify-space-between align-center pa-2 rounded-lg" style="background: rgba(212, 175, 55, 0.1);">
+                        <div class="d-flex justify-space-between align-center pa-2 rounded-lg" style="background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.35);">
                             <span class="font-weight-bold text-secondary">قیمت سر‌به‌سر فروش (با کارمزد):</span>
-                            <span class="font-weight-black" style="color: #d97706; font-size: 1.05rem;">
+                            <span class="font-weight-black" style="color: #f59e0b; font-size: 1.05rem;">
                                 @_model.BreakEvenGramPrice.ToString("N0") تومان
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-end mt-2">
+                <div class="d-flex justify-end mt-3">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.BookmarkAdd"
-                               OnClick="SaveToHistoryAsync">
+                               OnClick="SaveToHistoryAsync"
+                               Class="w-100 w-sm-auto"
+                               Size="Size.Medium">
                         ذخیره در تاریخچه
                     </MudButton>
                 </div>

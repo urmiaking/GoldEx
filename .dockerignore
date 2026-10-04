@@ -24,6 +24,8 @@
 **/*.bak
 LICENSE
 README.md
+.docker-build-version
+scripts/__pycache__
 !**/.gitignore
 !.git/HEAD
 !.git/config

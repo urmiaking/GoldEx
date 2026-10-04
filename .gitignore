@@ -182,6 +182,9 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
+# Local Docker build allocation state.
+/.docker-build-version
+/scripts/__pycache__/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml

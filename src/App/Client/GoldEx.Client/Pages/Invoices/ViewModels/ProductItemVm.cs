@@ -256,7 +256,7 @@ public class ProductItemVm
         if (!productItem.TotalWeight.HasValue)
             throw new ValidationException("وزن کل جنس وارد نشده است");
 
-        if (productItem.Product.Weight == null || productItem.Product.Weight == 0)
+        if ((productItem.Product.Weight == null || productItem.Product.Weight == 0) && productItem.InvoiceType is not InvoiceType.Sell)
         {
             productItem.Product.Weight = productItem.TotalWeight;
         }

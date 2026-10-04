@@ -4,10 +4,10 @@ stages:
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_NOLOGO: "true"
-  Version: "1.1.${CI_PIPELINE_IID}"
 
 docker-image:
   stage: docker
+  resource_group: goldex-docker-production
   tags:
     - self-hosted   # match your runner tag
   rules:
@@ -23,12 +23,15 @@ docker-image:
     - when: manual
 
   script:
+    - Version=$(python3 scripts/docker-version.py --image localhost:5000/goldex --image localhost:5000/goldex-karat)
+    - export Version
     - echo "Building Docker image for GoldEx with version $Version"
 
     - |
       docker build --push \
-        -t localhost:5000/goldex:latest \
         -t localhost:5000/goldex:$Version \
+        --build-arg APP_VERSION="$Version" \
+        --build-arg APP_REVISION="$CI_COMMIT_SHA" \
         -f src/App/Server/GoldEx.Server/Dockerfile \
         .
 
@@ -38,12 +41,17 @@ docker-image:
 
     - |
       docker build --push \
-        -t localhost:5000/goldex-karat:latest \
         -t localhost:5000/goldex-karat:$Version \
+        --build-arg APP_VERSION="$Version" \
+        --build-arg APP_REVISION="$CI_COMMIT_SHA" \
         -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
         .
 
     - echo "Docker image for GoldEx Karat with version $Version built and pushed successfully"
+
+    - python3 scripts/docker-version.py --check "$Version" --image localhost:5000/goldex --image localhost:5000/goldex-karat
+    - docker buildx imagetools create --tag localhost:5000/goldex:latest localhost:5000/goldex:$Version
+    - docker buildx imagetools create --tag localhost:5000/goldex-karat:latest localhost:5000/goldex-karat:$Version
 
     - echo "Running initialization script"
     - sudo chmod +x /masoud/initialize.sh

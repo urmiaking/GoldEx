@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 
@@ -32,4 +32,6 @@ public interface IInventoryStockService
     Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default);
 
     Task<GetInventoryItemTitleResponse> GetTitleAsync(ItemType itemType, Guid id, CancellationToken cancellationToken = default);
+
+    Task<GetInventoryOverviewResponse> GetInventoryOverviewAsync(CancellationToken cancellationToken = default);
 }

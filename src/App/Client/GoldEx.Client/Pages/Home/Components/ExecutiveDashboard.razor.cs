@@ -1,7 +1,5 @@
-using GoldEx.Sdk.Common.Data;
-using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Dashboard;
 using GoldEx.Shared.DTOs.InventoryStocks;
-using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
@@ -16,17 +14,24 @@ namespace GoldEx.Client.Pages.Home.Components;
 
 public partial class ExecutiveDashboard : IAsyncDisposable
 {
-    [Inject] private IInvoiceService InvoiceService { get; set; } = default!;
+    [Inject] private IDashboardService DashboardService { get; set; } = default!;
     [Inject] private IInventoryStockService InventoryStockService { get; set; } = default!;
     [Inject] private IReportingService ReportingService { get; set; } = default!;
-    [Inject] private ICustomerService CustomerService { get; set; } = default!;
+
+    // --- Progressive Loading Flags ---
+    private bool _isSalesLoaded;
+    private bool _isInventoryLoaded;
+    private bool _isCustomerBalancesLoaded;
+    private bool _isTrendLoaded;
+    private bool _isCategoryLoaded;
+    private bool _isUnpaidLoaded;
 
     // --- State & Carousels ---
     private List<PriceUnitSummary> _salesSummaries = [];
     private List<PriceUnitSummary> _receivableSummaries = [];
     private List<PriceUnitSummary> _payableSummaries = [];
     private List<CategoryStockSummary> _stockCategorySummaries = [];
-    private List<GetInvoiceListResponse> _unpaidInvoices = [];
+    private List<TopUnpaidInvoiceDto> _unpaidInvoices = [];
 
     private int _salesIndex;
     private int _receivableIndex;
@@ -41,7 +46,7 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     private decimal _usedWeight;
     private decimal TotalStockGoldWeight => _manufacturedWeight + _moltenWeight + _usedWeight;
 
-    // --- MudChart 1: 7-Day Gold Trade Trend Line Chart ---
+    // --- MudChart 1: 30-Day Gold Trade Trend Line Chart ---
     private string[] _trendXLabels = [];
     private List<ChartSeries<double>> _trendSeries = [];
     private readonly LineChartOptions _lineChartOptions = new()
@@ -62,266 +67,216 @@ public partial class ExecutiveDashboard : IAsyncDisposable
         ShowLegend = true
     };
 
-    private bool _isLoaded;
-
     protected override async Task OnInitializedAsync()
     {
-        await LoadDashboardDataAsync();
         StartCarouselTimer();
+
+        // Launch progressive parallel loading for all dashboard widgets
+        _ = LoadTodaySalesAsync();
+        _ = LoadInventoryOverviewAsync();
+        _ = LoadCustomerBalancesAsync();
+        _ = LoadTradeTrendAsync();
+        _ = LoadCategorySalesAsync();
+        _ = LoadTopUnpaidInvoicesAsync();
+
         await base.OnInitializedAsync();
     }
 
-    private async Task LoadDashboardDataAsync()
+    private async Task LoadTodaySalesAsync()
     {
         try
         {
-            var requestFilter = new RequestFilter(0, 500, null, null, Sdk.Common.Definitions.SortDirection.Descending);
-
-            // 1. Fetch Invoices
-            var invoiceFilter = new InvoiceFilter(null, null, null, null, null);
-            await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
-                action: (service, token) => service.GetListAsync(requestFilter, invoiceFilter, null, token),
+            await SendRequestAsync<IDashboardService, List<TodaySalesSummaryDto>>(
+                action: (service, token) => service.GetTodaySalesAsync(token),
                 afterSend: response =>
                 {
-                    CalculateSalesByPriceUnit(response.Data);
-                    BuildTrendLineChart(response.Data);
-
-                    // High Unpaid Remaining Balance Invoices
-                    _unpaidInvoices = response.Data
-                        .Where(x => x.PaymentStatus != InvoicePaymentStatus.Paid && x.TotalUnpaidAmount > 0)
-                        .OrderByDescending(x => x.TotalUnpaidAmount)
-                        .Take(5)
-                        .ToList();
-
-                    if (!_unpaidInvoices.Any())
+                    _salesSummaries = response.Select(x => new PriceUnitSummary
                     {
-                        _unpaidInvoices = response.Data.Take(5).ToList();
-                    }
-                },
-                createScope: true
-            );
-
-            // 1.1 Fetch Product Category Sales Breakdown (including MoltenGold)
-            var categorySalesRequest = new CategorySalesRpRequest(null, null, null, null);
-            await SendRequestAsync<IReportingService, List<CategorySalesRpResponse>>(
-                action: (service, token) => service.GetCategorySalesSummaryAsync(categorySalesRequest, token),
-                afterSend: response => BuildCategoryBarChart(response),
-                createScope: true
-            );
-
-            // 2. Fetch Inventory Stocks breakdown by Category and Molten
-            var manufacturedFilter = new InventoryFilter(WarehouseActionType.In, ItemType.Product, null, null, null, null, null);
-            List<GetInventoryStockResponse> manufacturedItems = [];
-            await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
-                action: (service, token) => service.GetListAsync(requestFilter, manufacturedFilter, token),
-                afterSend: response =>
-                {
-                    manufacturedItems = response.Data;
-                    _manufacturedWeight = response.Data.Sum(x => x.CurrentAmount);
-                },
-                createScope: true
-            );
-
-            var moltenFilter = new InventoryFilter(WarehouseActionType.In, ItemType.MoltenGold, null, null, null, null, null);
-            List<GetInventoryStockResponse> moltenItems = [];
-            await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
-                action: (service, token) => service.GetListAsync(filter: requestFilter, moltenFilter, token),
-                afterSend: response =>
-                {
-                    moltenItems = response.Data;
-                    _moltenWeight = response.Data.Sum(x => x.CurrentAmount);
-                },
-                createScope: true
-            );
-
-            var usedFilter = new InventoryFilter(WarehouseActionType.In, ItemType.UsedProduct, null, null, null, null, null);
-            await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
-                action: (service, token) => service.GetListAsync(filter: requestFilter, usedFilter, token),
-                afterSend: response => _usedWeight = response.Data.Sum(x => x.CurrentAmount),
-                createScope: true
-            );
-
-            // Build Inventory Category Stock Summaries (Excluding used gold as requested)
-            BuildStockCategorySummaries(manufacturedItems, moltenItems);
-
-            // Build Donut Chart Series (using standard MudBlazor ChartSeries array wrapper)
-            var w1 = (double)_manufacturedWeight;
-            var w2 = (double)_moltenWeight;
-            var w3 = (double)_usedWeight;
-
-            if (w1 == 0 && w2 == 0 && w3 == 0)
-            {
-                _donutSeries = [new ChartSeries<double> { Data = new double[] { 40, 35, 25 } }];
-            }
-            else
-            {
-                _donutSeries = [new ChartSeries<double> { Data = new double[] { w1 > 0 ? w1 : 1, w2 > 0 ? w2 : 1, w3 > 0 ? w3 : 1 } }];
-            }
-
-            // 3. Fetch Customer Balances Summary grouped by PriceUnit
-            var balanceRequest = new CustomerRemainingBalanceRpRequest(null, null, null, null, null);
-            await SendRequestAsync<IReportingService, List<CustomerRemainingBalanceRpResponse>>(
-                action: (service, token) => service.GetCustomerRemainingBalanceAsync(balanceRequest, token),
-                afterSend: response =>
-                {
-                    CalculateCustomerBalancesByPriceUnit(response);
+                        PriceUnit = x.PriceUnit,
+                        Amount = x.Amount,
+                        Count = x.Count,
+                        Subtitle = x.Subtitle
+                    }).ToList();
                 },
                 createScope: true
             );
         }
         finally
         {
-            _isLoaded = true;
+            _isSalesLoaded = true;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void CalculateSalesByPriceUnit(List<GetInvoiceListResponse> invoices)
+    private async Task LoadInventoryOverviewAsync()
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var todaySellInvoices = invoices.Where(x => x.InvoiceDate == today && x.InvoiceType == InvoiceType.Sell).ToList();
-
-        if (todaySellInvoices.Any())
+        try
         {
-            _salesSummaries = todaySellInvoices
-                .GroupBy(x => x.PriceUnit ?? "تومان")
-                .Select(g => new PriceUnitSummary
+            await SendRequestAsync<IInventoryStockService, GetInventoryOverviewResponse>(
+                action: (service, token) => service.GetInventoryOverviewAsync(token),
+                afterSend: response =>
                 {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.TotalAmount),
-                    Count = g.Count(),
-                    Subtitle = $"تعداد فاکتور امروز: {g.Count()} عدد"
-                })
-                .ToList();
+                    _manufacturedWeight = response.ManufacturedGoldWeight;
+                    _moltenWeight = response.MoltenGoldWeight;
+                    _usedWeight = response.UsedGoldWeight;
+
+                    _stockCategorySummaries =
+                    [
+                        new CategoryStockSummary
+                        {
+                            Title = "طلای ساخته‌شده",
+                            Weight = response.ManufacturedGoldWeight,
+                            Count = response.ManufacturedGoldCount,
+                            ItemTypeTitle = "طلا و جواهر"
+                        },
+                        new CategoryStockSummary
+                        {
+                            Title = "طلای آبشده",
+                            Weight = response.MoltenGoldWeight,
+                            Count = response.MoltenGoldCount,
+                            ItemTypeTitle = "قطعات آبشده"
+                        }
+                    ];
+
+                    if (response.UsedGoldWeight > 0 || response.UsedGoldCount > 0)
+                    {
+                        _stockCategorySummaries.Add(new CategoryStockSummary
+                        {
+                            Title = "طلای مستعمل",
+                            Weight = response.UsedGoldWeight,
+                            Count = response.UsedGoldCount,
+                            ItemTypeTitle = "مستعمل و متفرقه"
+                        });
+                    }
+
+                    // Build Donut Chart Series
+                    var w1 = (double)_manufacturedWeight;
+                    var w2 = (double)_moltenWeight;
+                    var w3 = (double)_usedWeight;
+
+                    if (w1 == 0 && w2 == 0 && w3 == 0)
+                    {
+                        _donutSeries = [new ChartSeries<double> { Data = new double[] { 40, 35, 25 } }];
+                    }
+                    else
+                    {
+                        _donutSeries = [new ChartSeries<double> { Data = new double[] { w1 > 0 ? w1 : 1, w2 > 0 ? w2 : 1, w3 > 0 ? w3 : 1 } }];
+                    }
+                },
+                createScope: true
+            );
         }
-        else
+        finally
         {
-            _salesSummaries = [new PriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "امروز فاکتوری ثبت نشده است" }];
+            _isInventoryLoaded = true;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void CalculateCustomerBalancesByPriceUnit(List<CustomerRemainingBalanceRpResponse> balances)
+    private async Task LoadCustomerBalancesAsync()
     {
-        var receivables = balances.Where(x => x.PayableAmount > 0).ToList();
-        if (receivables.Any())
+        try
         {
-            _receivableSummaries = receivables
-                .GroupBy(x => x.PriceUnitTitle ?? "تومان")
-                .Select(g => new PriceUnitSummary
+            await SendRequestAsync<IDashboardService, CustomerBalancesSummaryDto>(
+                action: (service, token) => service.GetCustomerBalancesSummaryAsync(token),
+                afterSend: response =>
                 {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.PayableAmount),
-                    Count = g.Count(),
-                    Subtitle = "مانده بدهکاری مشتریان به ما"
-                })
-                .ToList();
-        }
-        else
-        {
-            _receivableSummaries = [new PriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "هیچ طلبی از مشتریان ثبت نشده" }];
-        }
+                    _receivableSummaries = response.Receivables.Select(x => new PriceUnitSummary
+                    {
+                        PriceUnit = x.PriceUnit,
+                        Amount = x.Amount,
+                        Count = x.Count,
+                        Subtitle = x.Subtitle
+                    }).ToList();
 
-        var payables = balances.Where(x => x.ReceivableAmount > 0).ToList();
-        if (payables.Any())
+                    _payableSummaries = response.Payables.Select(x => new PriceUnitSummary
+                    {
+                        PriceUnit = x.PriceUnit,
+                        Amount = x.Amount,
+                        Count = x.Count,
+                        Subtitle = x.Subtitle
+                    }).ToList();
+                },
+                createScope: true
+            );
+        }
+        finally
         {
-            _payableSummaries = payables
-                .GroupBy(x => x.PriceUnitTitle ?? "تومان")
-                .Select(g => new PriceUnitSummary
+            _isCustomerBalancesLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadTradeTrendAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, List<TradeTrendPointDto>>(
+                action: (service, token) => service.GetTradeTrend30DaysAsync(token),
+                afterSend: points =>
                 {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.ReceivableAmount),
-                    Count = g.Count(),
-                    Subtitle = "مانده بستانکاری مشتریان نزد ما"
-                })
-                .ToList();
+                    var pc = new System.Globalization.PersianCalendar();
+                    _trendXLabels = points.Select(p =>
+                    {
+                        var dt = p.Date.ToDateTime(TimeOnly.MinValue);
+                        return pc.GetDayOfMonth(dt).ToString();
+                    }).ToArray();
+
+                    var sellValues = points.Select(p => (double)Math.Round(p.SellWeight, 3)).ToArray();
+                    var purchaseValues = points.Select(p => (double)Math.Round(p.PurchaseWeight, 3)).ToArray();
+
+                    _trendSeries =
+                    [
+                        new ChartSeries<double> { Name = "فروش (گرم طلا)", Data = sellValues },
+                        new ChartSeries<double> { Name = "خرید (گرم طلا)", Data = purchaseValues }
+                    ];
+                },
+                createScope: true
+            );
         }
-        else
+        finally
         {
-            _payableSummaries = [new PriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "هیچ بدهی به مشتریان ثبت نشده" }];
+            _isTrendLoaded = true;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void BuildStockCategorySummaries(List<GetInventoryStockResponse> manufactured, List<GetInventoryStockResponse> molten)
+    private async Task LoadCategorySalesAsync()
     {
-        var list = new List<CategoryStockSummary>();
-
-        var categoryGroups = manufactured
-            .Where(x => x.Product != null && x.CurrentAmount > 0)
-            .GroupBy(x => x.Product!.ProductCategoryTitle ?? "طلا و جواهر متفرقه")
-            .Select(g => new CategoryStockSummary
-            {
-                Title = g.Key,
-                Weight = g.Sum(x => x.CurrentAmount),
-                Count = g.Count(),
-                ItemTypeTitle = "طلای ساخته‌شده"
-            })
-            .OrderByDescending(x => x.Weight)
-            .ToList();
-
-        list.AddRange(categoryGroups);
-
-        var moltenWeight = molten.Sum(x => x.CurrentAmount);
-        if (moltenWeight > 0 || molten.Any())
+        try
         {
-            list.Add(new CategoryStockSummary
-            {
-                Title = "طلای آبشده",
-                Weight = moltenWeight,
-                Count = molten.Count,
-                ItemTypeTitle = "قطعات آبشده"
-            });
+            var categorySalesRequest = new CategorySalesRpRequest(null, null, null, null);
+            await SendRequestAsync<IReportingService, List<CategorySalesRpResponse>>(
+                action: (service, token) => service.GetCategorySalesSummaryAsync(categorySalesRequest, token),
+                afterSend: response => BuildCategoryBarChart(response),
+                createScope: true
+            );
         }
-
-        if (!list.Any())
+        finally
         {
-            list.Add(new CategoryStockSummary
-            {
-                Title = "انبار طلا",
-                Weight = 0,
-                Count = 0,
-                ItemTypeTitle = "موجودی ثبت‌نشده"
-            });
+            _isCategoryLoaded = true;
+            await InvokeAsync(StateHasChanged);
         }
-
-        _stockCategorySummaries = list;
     }
 
-    private void BuildTrendLineChart(List<GetInvoiceListResponse> invoices)
+    private async Task LoadTopUnpaidInvoicesAsync()
     {
-        var pc = new System.Globalization.PersianCalendar();
-        var daysList = Enumerable.Range(0, 30)
-            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-29 + i)))
-            .ToList();
-
-        _trendXLabels = daysList.Select(d =>
+        try
         {
-            var dt = d.ToDateTime(TimeOnly.MinValue);
-            var pDay = pc.GetDayOfMonth(dt);
-            return pDay.ToString();
-        }).ToArray();
-
-        var sellValues = new double[30];
-        var purchaseValues = new double[30];
-
-        for (int i = 0; i < 30; i++)
-        {
-            var date = daysList[i];
-            var sellWeight = invoices
-                .Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Sell)
-                .Sum(x => x.TotalWeightEquivalent);
-
-            var purchaseWeight = invoices
-                .Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Purchase)
-                .Sum(x => x.TotalWeightEquivalent);
-
-            sellValues[i] = Math.Round((double)sellWeight, 3);
-            purchaseValues[i] = Math.Round((double)purchaseWeight, 3);
+            await SendRequestAsync<IDashboardService, List<TopUnpaidInvoiceDto>>(
+                action: (service, token) => service.GetTopUnpaidInvoicesAsync(5, token),
+                afterSend: response =>
+                {
+                    _unpaidInvoices = response;
+                },
+                createScope: true
+            );
         }
-
-        _trendSeries =
-        [
-            new ChartSeries<double> { Name = "فروش (گرم طلا)", Data = sellValues },
-            new ChartSeries<double> { Name = "خرید (گرم طلا)", Data = purchaseValues }
-        ];
+        finally
+        {
+            _isUnpaidLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private void BuildCategoryBarChart(List<CategorySalesRpResponse> categorySales)

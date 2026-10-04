@@ -133,9 +133,10 @@ public static class WebHostingExtensions
                     {
                         var path = ctx.Context.Request.Path.Value ?? "";
 
-                        // Manifests, boot configs, service workers, and vitrine assets must always revalidate
+                        // Manifests, boot configs, service workers, framework scripts, and vitrine assets must always revalidate
                         if (path.EndsWith("blazor.boot.json", StringComparison.OrdinalIgnoreCase) ||
                             path.EndsWith("blazor.web.js", StringComparison.OrdinalIgnoreCase) ||
+                            (path.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) && path.EndsWith(".js", StringComparison.OrdinalIgnoreCase)) ||
                             path.EndsWith("service-worker.js", StringComparison.OrdinalIgnoreCase) ||
                             path.EndsWith("service-worker-assets.js", StringComparison.OrdinalIgnoreCase) ||
                             path.EndsWith("manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||

@@ -354,6 +354,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             .Select(x => new
             {
                 x.Id,
+                x.CustomerId,
                 x.InvoiceType,
                 x.InvoiceDate,
                 x.DueDate,
@@ -385,13 +386,16 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
                 ? (totalWithDiscExtra - item.UsedProductAmount - netPaid)
                 : (totalWithDiscExtra - totalPaid);
 
-            var isPaid = Math.Abs(totalUnpaid) < 0.01m;
+            // A zero or negative remainder means the invoice itself is settled. A negative
+            // value is a customer credit/overpayment and must never be counted as debt.
+            var isPaid = totalUnpaid < 0.01m;
             var isOverdue = !isPaid && item.DueDate.HasValue && item.DueDate.Value < today;
             var hasDebt = !isPaid && (!item.DueDate.HasValue || item.DueDate.Value >= today);
 
             return new
             {
                 item.Id,
+                item.CustomerId,
                 item.InvoiceType,
                 item.InvoiceDate,
                 item.DueDate,
@@ -412,15 +416,29 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
         var overdueCount = calculated.Count(x => x.IsOverdue);
         var averageValue = totalCount > 0 ? calculated.Average(x => x.TotalAmount) : 0m;
 
-        // 1. Outstanding Unpaid Invoices by PriceUnit
-        var unpaidGroups = calculated
-            .Where(x => !x.IsPaid && x.TotalUnpaid > 0)
+        // 1. Outstanding sales receivables by customer and price unit. Purchase invoice
+        // remainders are store payables, not receivables. Customer credits/overpayments
+        // offset that same customer's open sales invoices before the summary is shown.
+        var customerReceivables = calculated
+            .Where(x => x.InvoiceType == InvoiceType.Sell)
+            .GroupBy(x => new { x.CustomerId, x.PriceUnitTitle })
+            .Select(g => new
+            {
+                g.Key.PriceUnitTitle,
+                Amount = g.Sum(x => x.TotalUnpaid),
+                OpenInvoiceCount = g.Count(x => x.TotalUnpaid >= 0.01m),
+                OverdueInvoiceCount = g.Count(x => x.TotalUnpaid >= 0.01m && x.IsOverdue)
+            })
+            .Where(x => x.Amount >= 0.01m)
+            .ToList();
+
+        var unpaidGroups = customerReceivables
             .GroupBy(x => x.PriceUnitTitle)
             .Select(g => new InvoicePriceUnitSummaryDto(
                 g.Key,
-                g.Sum(x => x.TotalUnpaid),
-                g.Count(),
-                $"بدهکار: {g.Count(x => x.HasDebt)} فاکتور | معوقه: {g.Count(x => x.IsOverdue)}"
+                g.Sum(x => x.Amount),
+                g.Sum(x => x.OpenInvoiceCount),
+                $"بدهکار: {g.Sum(x => x.OpenInvoiceCount)} فاکتور | معوقه: {g.Sum(x => x.OverdueInvoiceCount)}"
             ))
             .OrderByDescending(x => x.Amount)
             .ToList();

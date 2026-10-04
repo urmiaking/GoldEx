@@ -586,5 +586,10 @@ internal class InventoryStockService(
         return new GetInventoryItemTitleResponse(itemName);
     }
 
+    public async Task<GetInventoryOverviewResponse> GetInventoryOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        return await repository.GetInventoryOverviewAsync(cancellationToken);
+    }
+
     #endregion
 }

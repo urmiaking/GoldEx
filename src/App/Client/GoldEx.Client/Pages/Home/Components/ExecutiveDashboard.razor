@@ -1,29 +1,22 @@
 @using GoldEx.Shared.Helpers
+@using GoldEx.Shared.DTOs.Dashboard
 @inherits GoldExComponentBase
 @implements IAsyncDisposable
 
 <div class="executive-dashboard">
-    @* Loading State *@
-    @if (IsBusy && !_isLoaded)
-    {
-        <div class="row g-3 mb-4">
-            @for (int i = 0; i < 4; i++)
+    @* Top Executive KPI Row with Animated Carousels & Independent Progressive Loading *@
+    <div class="row g-3 mb-4">
+        @* KPI Card 1: Today's Sales Volume (Multi-PriceUnit Carousel) *@
+        <div class="col-12 col-sm-6 col-md-3">
+            @if (!_isSalesLoaded)
             {
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="goldex-glass-card pa-3">
-                        <MudSkeleton Width="60%" Height="20px" />
-                        <MudSkeleton Width="80%" Height="32px" Class="mt-2" />
-                    </div>
+                <div class="goldex-glass-card pa-3">
+                    <MudSkeleton Width="60%" Height="20px" />
+                    <MudSkeleton Width="80%" Height="32px" Class="mt-2" />
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        @* Top Executive KPI Row with Animated Carousels *@
-        <div class="row g-3 mb-4">
-            @* KPI Card 1: Today's Sales Volume (Multi-PriceUnit Carousel) *@
-            <div class="col-12 col-sm-6 col-md-3">
+            else
+            {
                 <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleSalesIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">حجم فروش امروز</span>
@@ -45,10 +38,20 @@
                         <div class="kpi-subtext mt-2">@currentSales.Subtitle</div>
                     }
                 </div>
-            </div>
+            }
+        </div>
 
-            @* KPI Card 2: Inventory Weight by Category & Molten Gold (Category Carousel) *@
-            <div class="col-12 col-sm-6 col-md-3">
+        @* KPI Card 2: Inventory Weight by Category & Molten Gold (Category Carousel) *@
+        <div class="col-12 col-sm-6 col-md-3">
+            @if (!_isInventoryLoaded)
+            {
+                <div class="goldex-glass-card pa-3">
+                    <MudSkeleton Width="60%" Height="20px" />
+                    <MudSkeleton Width="80%" Height="32px" Class="mt-2" />
+                </div>
+            }
+            else
+            {
                 <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleStockCategoryIndex" title="جهت تغییر دسته انبار کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">موجودی انبار طلا</span>
@@ -69,10 +72,20 @@
                         <div class="kpi-subtext mt-2">@currentStock.Title (@currentStock.ItemTypeTitle: @currentStock.Count مورد)</div>
                     }
                 </div>
-            </div>
+            }
+        </div>
 
-            @* KPI Card 3: Net Customer Receivable Balance (Multi-PriceUnit Carousel) *@
-            <div class="col-12 col-sm-6 col-md-3">
+        @* KPI Card 3: Net Customer Receivable Balance (Multi-PriceUnit Carousel) *@
+        <div class="col-12 col-sm-6 col-md-3">
+            @if (!_isCustomerBalancesLoaded)
+            {
+                <div class="goldex-glass-card pa-3">
+                    <MudSkeleton Width="60%" Height="20px" />
+                    <MudSkeleton Width="80%" Height="32px" Class="mt-2" />
+                </div>
+            }
+            else
+            {
                 <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleReceivableIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">طلب کل ما از مشتریان</span>
@@ -94,10 +107,20 @@
                         <div class="kpi-subtext mt-2">@currentRec.Subtitle</div>
                     }
                 </div>
-            </div>
+            }
+        </div>
 
-            @* KPI Card 4: Net Customer Payable Balance (Multi-PriceUnit Carousel) *@
-            <div class="col-12 col-sm-6 col-md-3">
+        @* KPI Card 4: Net Customer Payable Balance (Multi-PriceUnit Carousel) *@
+        <div class="col-12 col-sm-6 col-md-3">
+            @if (!_isCustomerBalancesLoaded)
+            {
+                <div class="goldex-glass-card pa-3">
+                    <MudSkeleton Width="60%" Height="20px" />
+                    <MudSkeleton Width="80%" Height="32px" Class="mt-2" />
+                </div>
+            }
+            else
+            {
                 <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="TogglePayableIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">بدهی کل ما به مشتریان</span>
@@ -119,49 +142,64 @@
                         <div class="kpi-subtext mt-2">@currentPay.Subtitle</div>
                     }
                 </div>
+            }
+        </div>
+    </div>
+
+    @* Executive Charts Grid - Row 1: Line Chart (8 cols) & Donut Chart (4 cols) *@
+    <div class="row g-4 mb-4">
+        @* Chart 1: 30-Day Gold Trade Trend (Line Chart) *@
+        <div class="col-12 col-lg-8">
+            <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                <div>
+                    <div class="d-flex align-center justify-space-between mb-2">
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Small" Class="text-primary" />
+                            <span class="card-section-title">روند ۳۰ روزه مبادلات (فروش vs خرید)</span>
+                        </div>
+                        <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
+                    </div>
+
+                    @if (!_isTrendLoaded)
+                    {
+                        <div class="d-flex align-center justify-center" style="height: 260px;">
+                            <MudSkeleton Width="100%" Height="240px" />
+                        </div>
+                    }
+                    else if (_trendSeries.Any())
+                    {
+                        <div class="chart-wrapper smooth-line-chart w-100">
+                            <MudChart T="double"
+                                      ChartType="ChartType.Line"
+                                      ChartSeries="_trendSeries"
+                                      ChartLabels="_trendXLabels"
+                                      MatchBoundsToSize="true"
+                                      Width="100%"
+                                      Height="260px"
+                                      ChartOptions="_lineChartOptions" />
+                        </div>
+                    }
+                </div>
             </div>
         </div>
 
-        @* Executive Charts Grid - Row 1: Line Chart (8 cols) & Donut Chart (4 cols) *@
-        <div class="row g-4 mb-4">
-            @* Chart 1: 30-Day Gold Trade Trend (Line Chart) *@
-            <div class="col-12 col-lg-8">
-                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
-                    <div>
-                        <div class="d-flex align-center justify-space-between mb-2">
-                            <div class="d-flex align-center gap-2">
-                                <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Small" Class="text-primary" />
-                                <span class="card-section-title">روند ۳۰ روزه مبادلات (فروش vs خرید)</span>
-                            </div>
-                            <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
-                        </div>
-
-                        @if (_trendSeries.Any())
-                        {
-                            <div class="chart-wrapper smooth-line-chart w-100">
-                                <MudChart T="double"
-                                          ChartType="ChartType.Line"
-                                          ChartSeries="_trendSeries"
-                                          ChartLabels="_trendXLabels"
-                                          MatchBoundsToSize="true"
-                                          Width="100%"
-                                          Height="260px"
-                                          ChartOptions="_lineChartOptions" />
-                            </div>
-                        }
+        @* Chart 2: Inventory Capital Distribution (Donut Chart with Center Label) *@
+        <div class="col-12 col-lg-4">
+            <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                <div>
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="text-warning" />
+                        <span class="card-section-title">ترکیب دارایی انبار طلا</span>
                     </div>
-                </div>
-            </div>
 
-            @* Chart 2: Inventory Capital Distribution (Donut Chart with Center Label) *@
-            <div class="col-12 col-lg-4">
-                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
-                    <div>
-                        <div class="d-flex align-center gap-2 mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="text-warning" />
-                            <span class="card-section-title">ترکیب دارایی انبار طلا</span>
+                    @if (!_isInventoryLoaded)
+                    {
+                        <div class="d-flex align-center justify-center my-2" style="height: 220px;">
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="180px" Height="180px" />
                         </div>
-
+                    }
+                    else
+                    {
                         <div class="chart-wrapper d-flex justify-center my-2">
                             <MudChart T="double"
                                       ChartType="ChartType.Donut"
@@ -179,59 +217,80 @@
                                 </CustomGraphics>
                             </MudChart>
                         </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-space-between border-top-subtle pt-2 text-secondary font-xs">
+                    <span>وزن کل طلا: @TotalStockGoldWeight.ToCurrencyFormat() گرم</span>
+                    <a href="@ClientRoutes.InventoryStocks.List" class="text-primary font-weight-500">مشاهده انبار</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Secondary Charts & Glance Section - Row 2: Bar Chart (6 cols) & Glance Table (6 cols) *@
+    <div class="row g-4">
+        @* Chart 3: Product Category & Molten Gold Sales Breakdown (Bar Chart) *@
+        <div class="col-12 col-lg-6">
+            <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                <div>
+                    <div class="d-flex align-center justify-space-between mb-2">
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" Class="text-info" />
+                            <span class="card-section-title">حجم فروش به تفکیک دسته‌بندی و طلای آبشده</span>
+                        </div>
+                        <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
                     </div>
 
-                    <div class="d-flex justify-space-between border-top-subtle pt-2 text-secondary font-xs">
-                        <span>وزن کل طلا: @TotalStockGoldWeight.ToCurrencyFormat() گرم</span>
-                        <a href="@ClientRoutes.InventoryStocks.List" class="text-primary font-weight-500">مشاهده انبار</a>
-                    </div>
+                    @if (!_isCategoryLoaded)
+                    {
+                        <div class="d-flex align-center justify-center" style="height: 310px;">
+                            <MudSkeleton Width="100%" Height="290px" />
+                        </div>
+                    }
+                    else if (_categorySeries.Any())
+                    {
+                        <div class="chart-wrapper w-100">
+                            <MudChart T="double"
+                                      ChartType="ChartType.Bar"
+                                      ChartSeries="_categorySeries"
+                                      ChartLabels="_categoryXLabels"
+                                      MatchBoundsToSize="true"
+                                      Width="100%"
+                                      Height="310px"
+                                      ChartOptions="_barChartOptions" />
+                        </div>
+                    }
                 </div>
             </div>
         </div>
 
-        @* Secondary Charts & Glance Section - Row 2: Bar Chart (6 cols) & Glance Table (6 cols) *@
-        <div class="row g-4">
-            @* Chart 3: Product Category & Molten Gold Sales Breakdown (Bar Chart) *@
-            <div class="col-12 col-lg-6">
-                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
-                    <div>
-                        <div class="d-flex align-center justify-space-between mb-2">
-                            <div class="d-flex align-center gap-2">
-                                <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" Class="text-info" />
-                                <span class="card-section-title">حجم فروش به تفکیک دسته‌بندی و طلای آبشده</span>
-                            </div>
-                            <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
+        @* Quick Glance Table: Invoices with Highest Unpaid Remaining Balance *@
+        <div class="col-12 col-lg-6">
+            <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                <div>
+                    <div class="d-flex align-center justify-space-between mb-3">
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="text-warning" />
+                            <span class="card-section-title">فاکتورهای دارای بیشترین مانده تسویه‌نشده</span>
                         </div>
-
-                        @if (_categorySeries.Any())
-                        {
-                            <div class="chart-wrapper w-100">
-                                <MudChart T="double"
-                                          ChartType="ChartType.Bar"
-                                          ChartSeries="_categorySeries"
-                                          ChartLabels="_categoryXLabels"
-                                          MatchBoundsToSize="true"
-                                          Width="100%"
-                                          Height="310px"
-                                          ChartOptions="_barChartOptions" />
-                            </div>
-                        }
+                        <a href="@ClientRoutes.Invoices.Index" class="font-xs text-primary">مشاهده همه</a>
                     </div>
-                </div>
-            </div>
 
-            @* Quick Glance Table: Invoices with Highest Unpaid Remaining Balance *@
-            <div class="col-12 col-lg-6">
-                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
-                    <div>
-                        <div class="d-flex align-center justify-space-between mb-3">
-                            <div class="d-flex align-center gap-2">
-                                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="text-warning" />
-                                <span class="card-section-title">فاکتورهای دارای بیشترین مانده تسویه‌نشده</span>
-                            </div>
-                            <a href="@ClientRoutes.Invoices.Index" class="font-xs text-primary">مشاهده همه</a>
+                    @if (!_isUnpaidLoaded)
+                    {
+                        <div class="dashboard-glance-list">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <div class="glance-item d-flex align-center justify-space-between pa-2 mb-2 rounded-lg border-subtle">
+                                    <MudSkeleton Width="40%" Height="32px" />
+                                    <MudSkeleton Width="30%" Height="32px" />
+                                </div>
+                            }
                         </div>
-
+                    }
+                    else
+                    {
                         <div class="dashboard-glance-list">
                             @foreach (var invoice in _unpaidInvoices)
                             {
@@ -255,16 +314,16 @@
                                 </div>
                             }
                         </div>
-                    </div>
+                    }
+                </div>
 
-                    <div class="mt-3 pt-3 border-top-subtle d-flex align-center justify-space-between">
-                        <span class="text-secondary font-xs">پیگیری تسویه و صدور فاکتور</span>
-                        <MudButton Href="@ClientRoutes.Invoices.Index" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">
-                            مدیریت فاکتورها
-                        </MudButton>
-                    </div>
+                <div class="mt-3 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                    <span class="text-secondary font-xs">پیگیری تسویه و صدور فاکتور</span>
+                    <MudButton Href="@ClientRoutes.Invoices.Index" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">
+                        مدیریت فاکتورها
+                    </MudButton>
                 </div>
             </div>
         </div>
-    }
+    </div>
 </div>

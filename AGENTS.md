@@ -10,11 +10,23 @@ Read these documents before generating code:
 
 Every time that you learn something new about the project update the AGENTS.md file with the new information.
 This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
-- **AUTOMATIC VERSIONING & RELEASE NOTES**: Whenever you complete a feature implementation or fix a bug, you **must** add a new release entry (or append to current version changes) in `src/App/Server/GoldEx.Server/releases.json`. Increment the version number (SemVer), set the release date (`yyyy-MM-dd`), and add a bulleted array of Persian descriptions summarizing what changed.
+- **AUTOMATIC VERSIONING & RELEASE NOTES**:
+  - **Scope**: `src/App/Server/GoldEx.Server/releases.json` belongs **exclusively to the main enterprise GoldEx project** (`src/App/`). Do **NOT** add or modify entries in `releases.json` for changes made to `GoldEx.Calculator` (`src/Calculator/`) or standalone SDK libraries.
+  - **End-User Friendly & Non-Technical Language**: All change descriptions in `releases.json` **MUST** be written in very simple, plain, and non-technical Persian (فارسی روان، ساده و کاملاً غیرفنی برای کاربر نهایی و زرگرها). Strictly avoid technical developer jargon (such as SSR, WASM, PersistentComponentState, Cache-Control, DI, EF Core, etc.); instead, describe the change from the end-user's perspective and the practical benefit (e.g., «رفع مشکل نمایش فاکتور در موبایل»، «بهبود سرعت باز شدن صفحات»، «نمایش زنده تغییرات قیمت»).
+  - **Execution**: Whenever you complete a feature implementation or fix a bug in the main GoldEx application, add a new release entry (or append to current version changes) in `src/App/Server/GoldEx.Server/releases.json`. Increment the version number (SemVer), set the release date (`yyyy-MM-dd`), and add a bulleted array of simple, user-facing Persian descriptions.
 
 ### AI Build Execution Policy
 - **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
 - Only run `dotnet build` when introducing structural C# backend changes, adding new API endpoints/aggregates, making architectural refactorings, or when specifically requested by the user.
+
+### Docker Build Versioning and Publishing
+
+- Docker image versions are independent from the application release notes in `releases.json`. Do not increment or recreate the old tracked `.version` file.
+- `scripts/docker-version.py` is the shared allocator used by `deploy.ps1`, GitHub Actions, and GitLab CI. Tags use `1.2.<UTC days since 2026-06-01>.<milliseconds within that UTC day>`, following the time-based approach of ITAM's Agent build script. The `1.2` family sorts above legacy `1.0` local/GitHub and `1.1` GitLab tags.
+- Ignored `.docker-build-version` stores the last local allocation under a file lock. The allocator also reads the version label of each selected registry `latest` image and advances past the highest known build, even if the machine clock has moved backwards. Registry inspection errors must stop publication.
+- Both Dockerfiles accept `APP_VERSION` and `APP_REVISION`, storing them as OCI image labels; these Docker build numbers must not be passed as assembly/file versions or replace user-facing release notes.
+- Use the dedicated `ir.goldex.build.version` label for registry comparisons. Legacy images inherit `org.opencontainers.image.version = 24.04` from Ubuntu, so the generic OCI version alone must never be interpreted as a GoldEx version.
+- Publish the numbered images first and check published versions again before promoting `latest`. GitHub concurrency and GitLab `resource_group` serialize their respective production jobs. This is not a distributed lock across local/CI machines; the accepted operating assumption is that those publish paths do not run simultaneously. See `docs/ai/DEPLOYMENT.md` for prerequisites and limits.
 
 ## Project Overview
 GoldEx is a modern jewelry store management, accounting, and gold trading platform for gold/jewelry stores built with .NET 10, Blazor Web App, MudBlazor, and Domain-Driven Design (DDD).
@@ -283,6 +295,15 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
 
 ---
 
+## Mobile Navigation and Notification Layering
+
+- Below `960px`, `Drawer.razor` renders a dedicated `MudOverlay` (`mobile-navigation-backdrop`) while the navigation drawer is open. Its black scrim has 60% opacity and sits at `--mud-zindex-drawer - 1`, below the drawer and top AppBar. Clicking it closes the drawer through `IsDrawerOpenChanged`, keeping the layout state synchronized.
+- `MobileNav.razor` uses `mobile-navigation-bar` at `--mud-zindex-drawer - 2` on mobile, so both drawer backdrops and the notification panel cover the bottom navigation.
+- `Notifications` is rendered inside the top AppBar's stacking context. Raising only the notification drawer's own z-index cannot place it above a sibling bottom AppBar with the same stacking level; keep the bottom navigation below that context.
+- `.notification-drawer` fills the viewport using `100vh` with a `100dvh` override, rather than subtracting the bottom navigation's 80px height. Desktop notification width remains 400px.
+
+---
+
 ## Model Context Protocol (MCP) & AI Integration Architecture (اتصال هوش مصنوعی و کلیدهای دسترسی)
 
 1. **Multi-Tenancy, OAuth 2.0 & PAT Authentication**:
@@ -342,6 +363,38 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - Stores support optional `CustomDomain` (configured strictly by Administrators in `/settings/stores`).
    - `VitrineUrlHelper` generates public vitrine product and catalog links using `CustomDomain` (e.g. `https://fanijewellery.ir/{slug}/p/{barcode}`), falling back to current base URL if unconfigured.
    - Inventory management (`VitrineQuickEditDialog` and `InventoryStockList`) includes 1-click clipboard copy and open buttons for public product URLs.
+6. **WebAssembly Bootstrap Footprint & Embedded Browser Compatibility**:
+   - The public vitrine currently uses `InteractiveWebAssemblyRenderMode(prerender: true)` from the same `GoldEx.Client` project as the full administration application; it is not a separately trimmed vitrine client.
+   - A representative .NET 10 release publish contains roughly 396 files and about 51.5 MB of uncompressed `_framework` assets, including large administration-only dependencies such as DevExpress and EF Core. This can make first-load hydration fragile in memory-constrained embedded browsers such as Instagram's in-app WebView even though SSR content remains visible.
+   - The application currently sends `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin-allow-popups` on vitrine HTML and framework assets. Instagram's in-app WebView was confirmed to lose all Blazor interactivity in both `InteractiveWebAssembly` and `InteractiveServer` modes while these headers were present; ordinary mobile Chrome was unaffected. Hiding both response headers for the public custom domain in Nginx immediately restored interactivity.
+   - Public vitrine routes must therefore remain exempt from COEP/COOP unless a future feature demonstrably requires cross-origin isolation and has been tested in embedded browsers. The WASM payload size remains a secondary first-load performance risk, not the cause of this confirmed Instagram failure.
+   - Vitrine startup must unregister active service workers and delete `blazor-cache-*` Cache Storage entries **before** calling `Blazor.start()`. Cleanup after startup is too late: a stale WASM bundle can hydrate over correct SSR markup and display obsolete UI or DTO behavior.
+   - **Multi-Layer Cache & Hydration Management**:
+     1. `App.razor` executes an asynchronous pre-boot routine before `Blazor.start()`:
+        - Unregisters all service workers on Vitrine routes. If a Service Worker controller is active at load time, it wipes `caches` and triggers a safe, one-time reload (guarded by `sessionStorage.getItem('gex_sw_cleared_once')`).
+        - Enforces version-based cache eviction: Compares server version (`@AppVersion` from `IAppReleaseService` / `releases.json`) with `localStorage('gex_vitrine_wasm_ver')`. If different, it wipes all browser Cache Storage entries (`caches.delete()`) before boot.
+        - Configures `Blazor.start({ webAssembly: { loadBootResource: ... } })` so that `blazor.boot.json` is always fetched with `{ cache: 'no-store' }`, guaranteeing that hash comparisons always reflect the latest deployment.
+     2. `service-worker.published.js` actively self-destructs on non-platform custom domains (e.g. `fanijewellery.ir`), and treats `blazor.boot.json` and boot scripts as Network-First on platform domains.
+     3. Vitrine static assets (`vitrine.css?v=@AppVersion` and `vitrine.js?v=@AppVersion`) are strictly version-stamped, and `vitrine.js` is loaded prior to `Blazor.start()`.
+7. **Catalog "Newest" Sorting**:
+   - The `VitrineCatalog.razor` `newest` option uses `Product.CreatedAt` as its chronology field. `GetVitrineProductsAsync` propagates it through `VitrineProductRawProjection` and `VitrineProductSummaryDto`.
+   - For the `newest` option, `CreatedAt` descending is the primary ordering key. Availability is only a secondary tie-breaker, followed by `Id` descending for deterministic ordering. Do not place availability before `CreatedAt`, because that makes older in-stock products appear ahead of genuinely newer sold products while the UI says «جدیدترین».
+8. **Vitrine Wage Unit & Conversion**:
+   - The public vitrine reads the product's current configured wage (`Product.Wage`, `WageType`, and `WagePriceUnitId`). Purchase and sale invoice workflows retain their own wage snapshots, while the product remains the source of the current public/catalog wage.
+   - Fixed wages must display `Product.WagePriceUnit.Title`; they must never be labeled with a hard-coded currency title. Percentage wages remain unitless percentages.
+   - Vitrine prices are always displayed in Toman, independently of the system default price unit. Before calculating the estimated catalog price, a fixed wage uses its linked `Price.PriceHistory.CurrentValue` (stored in Rial), divides it by `10` to obtain the live Toman rate, and applies `Wage × LiveTomanRate × Weight`. `UnitType.TMN` uses rate `1`, while `UnitType.IRR` uses rate `0.1`.
+   - Legacy price units whose `PriceId` is missing may resolve the live price by an exact `Price.Title` match. A missing non-base live rate must never silently fall back to `1`, because that would treat a foreign-currency wage as Toman.
+   - Vitrine price breakdowns must use the current store's `Setting.GoldProfitPercent`, `Setting.JewelryProfitPercent`, and `Setting.TaxPercent` and the shared `CalculatorHelper.Product` formulas. Do not hard-code 7% profit or 9% tax: jewelry commonly uses a different configured profit percentage, and tax settings can change.
+
+9. **Partial Sale State in Public Vitrine**:
+   - Product.Weight is the original/full product weight; the current public remaining weight comes from the net InventoryStock balance.
+   - A vitrine product is partially sold when its positive remaining stock is lower than Product.Weight (using a small decimal tolerance).
+   - Public DTOs expose OriginalWeight, RemainingWeight, and IsPartiallySold. Catalog, home/search, product detail, WhatsApp inquiry, and share/story content must explicitly say that weight and price refer to the remaining portion so a partially sold set is never presented as a complete set.
+
+10. **Custom-Domain Deployment Cache Checks**:
+   - Vitrine pages prerender on the server and then rerender from `GoldEx.Client` WebAssembly. An element present in SSR but absent after hydration can indicate an older client bundle or a client-side rendering difference; compare the actual HTML, loaded framework asset URLs, and browser network responses before changing component markup.
+   - On `fanijewellery.ir`, Nginx has separate locations for framework scripts, WebAssembly binaries, static files, and HTML. Only its framework-script location hides COEP/COOP; the general HTML and binary locations can still pass those headers through. Apply any embedded-browser header policy consistently to the document and all required assets.
+   - The binary location sets a 30-day `immutable` policy for `.wasm` and related files. Use long immutable caching only for URLs proven to change when content changes; version changes and Cache Storage deletion cannot clear the browser HTTP cache or the CDN. Verify ArvanCloud response headers and cache status at the public hostname when diagnosing deployments.
 
 ---
 
@@ -393,7 +446,61 @@ GoldEx uses an event-driven, real-time push architecture for market prices, repl
    - `PriceCard.razor` and `MarketPriceDeck.razor` subscribe to `OnPriceChanged` and `OnPriceBatchChanged`.
    - When a price increase is received: activates `.price-card-flash-up` / `.market-ticker-card.flash-up` (soft emerald glow and border pulse).
    - When a price decrease is received: activates `.price-card-flash-down` / `.market-ticker-card.flash-down` (soft ruby glow and border pulse).
-   - Driven by hardware-accelerated CSS keyframes (`price-flash-green` / `price-flash-red`) in `app.css` that gracefully fade back to the card's native theme styling after 1.8-2 seconds.
 
+---
 
+## Inventory Overview & Executive Stock Statistics Architecture (خلاصه وضعیت و موجودی کل انبار در پیش‌خوان)
 
+GoldEx calculates store-wide inventory stock totals and weights directly at the database level using a dedicated high-performance aggregate endpoint:
+
+1. **Database-Level Aggregation (`GetInventoryOverviewAsync`)**:
+   - Instead of fetching paged records into client memory (which truncated results when stores exceeded 200 or 500 products), `IInventoryStockRepository.GetInventoryOverviewAsync` executes group aggregations in SQL via EF Core.
+   - Converts mesghal to gram using the store's configured `GramPerMesghal` (e.g. 4.6083) for products and molten gold.
+   - Accurately counts and sums total active stock (`CurrentQuantity > 0`) across:
+     - **Manufactured Gold (`ProductType.Gold`, `ProductType.Jewelry`)**: Exact total weight in grams and total product count (e.g. 4,389 items).
+     - **Molten Gold (`ProductType.MoltenGold`)**: Exact total weight in grams and count of molten gold pieces.
+     - **Used Gold (`ProductType.UsedGold`)**: Exact total weight in grams and count of scrap/used items.
+     - **Coins (`CoinInstance`)**: Exact count of coin instances in stock and total quantity.
+     - **Currencies (`PriceUnit`)**: Distinct active currencies with formatted balance amounts, sorted descending.
+2. **Unified DTO & Endpoint (`ApiRoutes.InventoryStocks.Overview`)**:
+   - `GetInventoryOverviewResponse` encapsulates all stock metrics in a single lightweight payload (~200 bytes), replacing 5 separate heavy HTTP requests previously made by `RecentInventoryOverview.razor.cs`.
+3. **Executive Presentation (`RecentInventoryOverview.razor` & `ExecutiveDashboard.razor`)**:
+   - **Tab 3 («اجناس من»)**:
+     - Top KPI cards display exact total weight and item count without any paging bias.
+     - Stock composition section groups all physical inventory items together (Manufactured Gold, Molten Gold, Used Gold, and Coins) with distinct visual progress bars.
+     - Average weight per manufactured item is derived from the complete database-wide inventory.
+     - Currency section features distinct currency balance cards, active currency count pill badges, and an executive empty-state banner with direct 1-click action shortcuts when no currency balances exist.
+
+---
+
+## Executive Home Dashboard Architecture & Progressive Parallel Loading (پیش‌خوان اصلی و لود موازی و مستقل کارت‌ها)
+
+GoldEx employs a high-performance, non-blocking dashboard architecture on the executive home view (`/?tab=0`):
+
+1. **Problem Solved**:
+   - Previously, `ExecutiveDashboard.razor.cs` executed sequential monolithic requests: fetching 500 full invoice entities with nested joins, calculating customer ledger balances across every customer and transaction in the system, querying category sales, and reading inventory overview all behind a single global `_isLoaded` flag.
+   - As a result, users experienced multiple seconds of blank/skeleton screen time where all 4 KPI cards, trade charts, capital distribution donut, and unpaid invoice lists were blocked simultaneously until the slowest query finished.
+2. **Dedicated Backend Aggregation Endpoints (`IDashboardService` & `IDashboardRepository`)**:
+   - Registered under `ApiRoutes.Dashboard` (`/api/dashboard`):
+     - `GetTodaySalesAsync`: Instant SQL aggregate filtering `InvoiceDate == Today && InvoiceType == Sell`, grouped by `PriceUnit` (returns amount and invoice count).
+     - `GetCustomerBalancesSummaryAsync`: High-speed summary aggregating net customer receivables (our claims) and payables (our debts to customers) grouped by currency/unit, without transferring thousands of customer records over the network.
+     - `GetTradeTrend30DaysAsync`: Scoped specifically to the last 30 days (`InvoiceDate >= Today - 29`), grouping invoices by date and type (`Sell` vs `Purchase`) and calculating exact 18K gold weight equivalents via the domain method `Invoice.CalculateTotalWeightEquivalent()`.
+     - `GetTopUnpaidInvoicesAsync`: Evaluates recent open invoices, sorting by unpaid balance (`TotalUnpaidAmount`) and returning the top 5 records projected directly into `TopUnpaidInvoiceDto`.
+3. **Progressive, Non-Blocking Parallel Client-Side Loading**:
+   - In `ExecutiveDashboard.razor.cs`, the monolithic pipeline is replaced with independent parallel asynchronous tasks launched concurrently:
+     - `LoadTodaySalesAsync()`
+     - `LoadInventoryOverviewAsync()`
+     - `LoadCustomerBalancesAsync()`
+     - `LoadTradeTrendAsync()`
+     - `LoadCategorySalesAsync()`
+     - `LoadTopUnpaidInvoicesAsync()`
+   - Each card and widget maintains its own state flag (`_isSalesLoaded`, `_isInventoryLoaded`, `_isCustomerBalancesLoaded`, `_isTrendLoaded`, `_isCategoryLoaded`, `_isUnpaidLoaded`).
+   - In `ExecutiveDashboard.razor`, each KPI card and chart has dedicated skeleton placeholders. As each individual request resolves (often in under 100-200ms), that specific card smoothly transitions into its active data view and carousel without waiting for other components to finish.
+
+### Customer Balance Sign Semantics
+
+- Customer balances must be netted per customer and price unit across both the receivable and payable customer sub-ledgers using `Debit - Credit`.
+- A positive net balance means the store has a receivable from the customer («طلب ما»); a negative net balance means the store owes the customer («بدهی ما») and must be displayed using its absolute value.
+- Dashboard totals must classify and sum these per-customer net balances; they must not classify raw receivable/payable ledger columns independently, because one customer can have activity in both sub-ledgers.
+- Invoice overview statistics must keep invoice direction explicit: a positive unpaid **sale** invoice is a store receivable, while a positive unpaid **purchase** invoice is a store payable. Purchase balances must not be included in a card labeled «مانده مطالبات».
+- Negative invoice balances represent overpayments/credits and must be reported separately or netted at the appropriate customer-and-price-unit level; silently dropping them while summing only positive invoices can materially overstate outstanding receivables.

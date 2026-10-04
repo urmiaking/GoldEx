@@ -24,4 +24,8 @@ public record VitrineProductDetailDto(
     decimal GramPrice750,
     DateTime UpdatedAt,
     bool IsAvailable = true,
-    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null);
+    IReadOnlyList<VitrineAttributeValueDto>? Attributes = null,
+    string? WagePriceUnitTitle = null,
+    decimal OriginalWeight = 0,
+    decimal RemainingWeight = 0,
+    bool IsPartiallySold = false);

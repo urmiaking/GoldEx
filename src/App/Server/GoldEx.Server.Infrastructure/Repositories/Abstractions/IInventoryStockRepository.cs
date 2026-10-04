@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
@@ -34,4 +34,5 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
     Task<List<InventorySummaryData>> GetProductsReportAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default);
     Task<List<InventorySummaryData>> GetCoinsReportAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default);
     Task<List<InventorySummaryData>> GetCurrenciesReportAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
+    Task<GetInventoryOverviewResponse> GetInventoryOverviewAsync(CancellationToken cancellationToken = default);
 }

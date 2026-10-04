@@ -1,5 +1,10 @@
 ﻿<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert>
-    <MudDrawer @bind-Open="IsDrawerOpen"
+    <MudOverlay Visible="IsDrawerOpen"
+                DarkBackground="true"
+                Class="mobile-navigation-backdrop"
+                OnClick="@(() => HandleNavigate(false))" />
+    <MudDrawer Open="IsDrawerOpen"
+               OpenChanged="HandleNavigate"
                Elevation="1"
                Breakpoint="Breakpoint.Xxl"
                Overlay="false"

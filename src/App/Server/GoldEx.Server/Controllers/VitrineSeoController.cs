@@ -26,13 +26,76 @@ public class VitrineSeoController(
     public async Task<IActionResult> GetMasterSitemapAsync(CancellationToken cancellationToken)
     {
         var scheme = Request.Scheme;
-        var host = Request.Host.Value;
+        var host = Request.Host.Value ?? string.Empty;
         var baseUrl = $"{scheme}://{host}";
 
         var activeStores = await storeRepository.Get(new ActiveStoresSpecification())
             .AsNoTracking()
             .IgnoreQueryFilters()
             .ToListAsync(cancellationToken);
+
+        // Check if the current host is a custom domain for one of the active stores
+        var cleanHost = host.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? host[4..] : host;
+        var customStore = activeStores.FirstOrDefault(s =>
+            !string.IsNullOrWhiteSpace(s.CustomDomain) &&
+            (s.CustomDomain.Trim().ToLowerInvariant().Replace("https://", "").Replace("http://", "").TrimEnd('/').Equals(cleanHost, StringComparison.OrdinalIgnoreCase) ||
+             s.CustomDomain.Trim().ToLowerInvariant().Replace("https://", "").Replace("http://", "").TrimEnd('/').Equals(host, StringComparison.OrdinalIgnoreCase)));
+
+        if (customStore != null)
+        {
+            var customUrlset = new XElement(SitemapNs + "urlset",
+                new XAttribute(XNamespace.Xmlns + "image", ImageNs.NamespaceName));
+
+            // 1. Store Home Page
+            customUrlset.Add(CreateUrlElement(
+                $"{baseUrl}/",
+                DateTime.UtcNow,
+                "daily",
+                "1.0",
+                customStore.LogoUrl != null ? $"{baseUrl}{customStore.LogoUrl}" : null,
+                $"ویترین طلا و جواهر {customStore.Name}"));
+
+            // 2. Store Catalog Page
+            customUrlset.Add(CreateUrlElement(
+                $"{baseUrl}/catalog",
+                DateTime.UtcNow,
+                "daily",
+                "0.9"));
+
+            // 3. Store About Page
+            customUrlset.Add(CreateUrlElement(
+                $"{baseUrl}/about",
+                DateTime.UtcNow,
+                "weekly",
+                "0.6"));
+
+            // 4. Products in Vitrine
+            var customProducts = await productRepository.Get(new ProductsForVitrineSpecification(customStore.Id.Value))
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .ToListAsync(cancellationToken);
+
+            foreach (var product in customProducts)
+            {
+                var mainImage = product.Images.FirstOrDefault(img => img.IsMain)?.Url
+                                ?? product.Images.FirstOrDefault()?.Url;
+
+                var imgFullUrl = !string.IsNullOrWhiteSpace(mainImage)
+                    ? (mainImage.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? mainImage : $"{baseUrl}{mainImage}")
+                    : null;
+
+                customUrlset.Add(CreateUrlElement(
+                    $"{baseUrl}/p/{product.Barcode}",
+                    product.CreatedAt,
+                    "daily",
+                    product.IsFeatured ? "0.9" : "0.8",
+                    imgFullUrl,
+                    $"{product.Name} عیار {product.Fineness:G29} - {customStore.Name}"));
+            }
+
+            var customXmlDoc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), customUrlset);
+            return Content(customXmlDoc.Declaration + Environment.NewLine + customXmlDoc, "application/xml", Encoding.UTF8);
+        }
 
         var urlset = new XElement(SitemapNs + "urlset",
             new XAttribute(XNamespace.Xmlns + "image", ImageNs.NamespaceName));

@@ -41,4 +41,6 @@ public sealed class GoldDcaVm
         SalesFeePercent < 100m && SalesFeePercent >= 0m
             ? WeightedAverageBuyPrice / (1m - (SalesFeePercent / 100m))
             : WeightedAverageBuyPrice;
+
+    public bool IsProfitable => NetProfitLossAmount >= 0;
 }
