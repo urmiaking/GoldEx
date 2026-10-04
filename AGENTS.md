@@ -19,6 +19,15 @@ This file should be the single source of truth for all AI agents working on the 
 - **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
 - Only run `dotnet build` when introducing structural C# backend changes, adding new API endpoints/aggregates, making architectural refactorings, or when specifically requested by the user.
 
+### Docker Build Versioning and Publishing
+
+- Docker image versions are independent from the application release notes in `releases.json`. Do not increment or recreate the old tracked `.version` file.
+- `scripts/docker-version.py` is the shared allocator used by `deploy.ps1`, GitHub Actions, and GitLab CI. Tags use `1.2.<UTC days since 2026-06-01>.<milliseconds within that UTC day>`, following the time-based approach of ITAM's Agent build script. The `1.2` family sorts above legacy `1.0` local/GitHub and `1.1` GitLab tags.
+- Ignored `.docker-build-version` stores the last local allocation under a file lock. The allocator also reads the version label of each selected registry `latest` image and advances past the highest known build, even if the machine clock has moved backwards. Registry inspection errors must stop publication.
+- Both Dockerfiles accept `APP_VERSION` and `APP_REVISION`, storing them as OCI image labels; these Docker build numbers must not be passed as assembly/file versions or replace user-facing release notes.
+- Use the dedicated `ir.goldex.build.version` label for registry comparisons. Legacy images inherit `org.opencontainers.image.version = 24.04` from Ubuntu, so the generic OCI version alone must never be interpreted as a GoldEx version.
+- Publish the numbered images first and check published versions again before promoting `latest`. GitHub concurrency and GitLab `resource_group` serialize their respective production jobs. This is not a distributed lock across local/CI machines; the accepted operating assumption is that those publish paths do not run simultaneously. See `docs/ai/DEPLOYMENT.md` for prerequisites and limits.
+
 ## Project Overview
 GoldEx is a modern jewelry store management, accounting, and gold trading platform for gold/jewelry stores built with .NET 10, Blazor Web App, MudBlazor, and Domain-Driven Design (DDD).
 

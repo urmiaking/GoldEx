@@ -9,124 +9,71 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
+Set-Location $PSScriptRoot
 
-# Handle case where user passes target as the first positional argument (e.g. .\deploy.ps1 goldex)
 if ($CustomVersion -in @("all", "both", "goldex", "goldex-karat", "karat")) {
     $Target = $CustomVersion
     $CustomVersion = ""
 }
 
 $Registry = "reg.goldexsoft.ir"
-$VersionFile = ".version"
-
-# 1. Version Management
-if (-not [string]::IsNullOrWhiteSpace($CustomVersion)) {
-    $Version = $CustomVersion
-} elseif (Test-Path $VersionFile) {
-    $Current = (Get-Content $VersionFile).Trim()
-    if ($Current -match '^(\d+\.\d+\.)(\d+)$') {
-        $Prefix = $Matches[1]
-        $BuildNum = [int]$Matches[2] + 1
-        $Version = "$Prefix$BuildNum"
-    } else {
-        $Version = "1.0.239"
-    }
-} else {
-    $Version = "1.0.239"
+$Python = Get-Command python, python3 -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $Python) {
+    throw "Python 3 is required to generate Docker build versions."
 }
 
-Set-Content -Path $VersionFile -Value $Version
+$Images = @()
+if ($Target -in @("all", "both", "goldex")) {
+    $Images += @{ Name = "goldex"; Dockerfile = "src/App/Server/GoldEx.Server/Dockerfile" }
+}
+if ($Target -in @("all", "both", "goldex-karat", "karat")) {
+    $Images += @{ Name = "goldex-karat"; Dockerfile = "src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile" }
+}
 
-$BuildGoldEx = $Target.ToLower() -in @("all", "both", "goldex")
-$BuildGoldExKarat = $Target.ToLower() -in @("all", "both", "goldex-karat", "karat")
-
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " GoldEx Docker Build & Push" -ForegroundColor Cyan
-Write-Host " Version: $Version" -ForegroundColor Yellow
-Write-Host " Target : $Target" -ForegroundColor Yellow
-Write-Host "========================================" -ForegroundColor Cyan
-
-# Login
-Write-Host "`nLogging in to $Registry..." -ForegroundColor Yellow
+Write-Host "Logging in to $Registry..." -ForegroundColor Yellow
 docker login $Registry
+if ($LASTEXITCODE -ne 0) { throw "Docker login failed." }
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Docker login failed."
+$VersionArguments = @("scripts/docker-version.py")
+foreach ($Image in $Images) {
+    $VersionArguments += @("--image", "$Registry/$($Image.Name)")
+}
+$GenerateArguments = $VersionArguments
+if (-not [string]::IsNullOrWhiteSpace($CustomVersion)) {
+    $GenerateArguments += @("--version", $CustomVersion)
+}
+$Version = & $Python.Source @GenerateArguments
+if ($LASTEXITCODE -ne 0) { throw "Docker build version allocation failed." }
+$Version = "$Version".Trim()
+
+$Revision = git rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw "Cannot determine the Git revision." }
+
+Write-Host "GoldEx Docker publish: $Version (target: $Target)" -ForegroundColor Cyan
+
+# Build and publish immutable version tags before updating any latest alias.
+foreach ($Image in $Images) {
+    $VersionedImage = "$Registry/$($Image.Name):$Version"
+    Write-Host "Building $VersionedImage..." -ForegroundColor Yellow
+    docker build --tag $VersionedImage --build-arg "APP_VERSION=$Version" --build-arg "APP_REVISION=$Revision" --file $Image.Dockerfile .
+    if ($LASTEXITCODE -ne 0) { throw "$($Image.Name) build failed." }
+}
+foreach ($Image in $Images) {
+    docker push "$Registry/$($Image.Name):$Version"
+    if ($LASTEXITCODE -ne 0) { throw "$($Image.Name) version push failed." }
 }
 
-if ($BuildGoldEx) {
-    # Build GoldEx
-    Write-Host "`nBuilding GoldEx..." -ForegroundColor Yellow
-
-    docker build `
-        --tag "$Registry/goldex:latest" `
-        --tag "$Registry/goldex:$Version" `
-        --file "src/App/Server/GoldEx.Server/Dockerfile" `
-        .
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx build failed."
-    }
-
-    # Push GoldEx
-    Write-Host "`nPushing GoldEx..." -ForegroundColor Yellow
-
-    docker push "$Registry/goldex:latest"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx latest push failed."
-    }
-
-    docker push "$Registry/goldex:$Version"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx version push failed."
-    }
+# Re-check after the potentially long builds: a later CI/local build may have completed.
+& $Python.Source @VersionArguments --check $Version
+if ($LASTEXITCODE -ne 0) { throw "A newer build is already published; latest was not updated." }
+foreach ($Image in $Images) {
+    $LatestImage = "$Registry/$($Image.Name):latest"
+    docker tag "$Registry/$($Image.Name):$Version" $LatestImage
+    if ($LASTEXITCODE -ne 0) { throw "$($Image.Name) latest tag failed." }
+    docker push $LatestImage
+    if ($LASTEXITCODE -ne 0) { throw "$($Image.Name) latest push failed." }
 }
 
-if ($BuildGoldExKarat) {
-    # Build GoldEx-Karat
-    Write-Host "`nBuilding GoldEx-Karat..." -ForegroundColor Yellow
-
-    docker build `
-        --tag "$Registry/goldex-karat:latest" `
-        --tag "$Registry/goldex-karat:$Version" `
-        --file "src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile" `
-        .
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx-Karat build failed."
-    }
-
-    # Push GoldEx-Karat
-    Write-Host "`nPushing GoldEx-Karat..." -ForegroundColor Yellow
-
-    docker push "$Registry/goldex-karat:latest"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx-Karat latest push failed."
-    }
-
-    docker push "$Registry/goldex-karat:$Version"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "GoldEx-Karat version push failed."
-    }
-}
-
-Write-Host "`n========================================" -ForegroundColor Green
-Write-Host " Build & Push completed successfully!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
-
-Write-Host "`nImages built/pushed:"
-if ($BuildGoldEx) {
-    Write-Host "  $Registry/goldex:latest"
-    Write-Host "  $Registry/goldex:$Version"
-}
-if ($BuildGoldExKarat) {
-    Write-Host "  $Registry/goldex-karat:latest"
-    Write-Host "  $Registry/goldex-karat:$Version"
-}
-
-Write-Host "`nRun this on server to deploy:" -ForegroundColor Yellow
+Write-Host "Build & push completed. Published version: $Version" -ForegroundColor Green
+Write-Host "Run this on the server to deploy:" -ForegroundColor Yellow
 Write-Host "/home/user/docker/goldex/refresh-apps.sh $Version" -ForegroundColor Magenta

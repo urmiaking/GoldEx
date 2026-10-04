@@ -32,6 +32,11 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./GoldEx.Calculator.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+ARG APP_VERSION=development
+ARG APP_REVISION=unknown
+LABEL org.opencontainers.image.version=$APP_VERSION \
+      org.opencontainers.image.revision=$APP_REVISION \
+      ir.goldex.build.version=$APP_VERSION
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "GoldEx.Calculator.Server.dll"]

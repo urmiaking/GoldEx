@@ -14,7 +14,11 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  Version: 1.0.${{ github.run_number }}
+
+# One production publish at a time, including release and manual workflow triggers.
+concurrency:
+  group: goldex-docker-production
+  cancel-in-progress: false
 
 jobs:
   create-image:
@@ -27,21 +31,35 @@ jobs:
             ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 0
 
+      - name: Generate UTC Docker build version
+        run: |
+          Version=$(python3 scripts/docker-version.py --image reg.goldexsoft.ir/goldex --image reg.goldexsoft.ir/goldex-karat)
+          echo "Version=$Version" >> "$GITHUB_ENV"
+          echo "Docker build version: $Version"
+
       - name: Build and push Docker image for goldex
         run: |
           docker build --push \
-            -t reg.goldexsoft.ir/goldex:latest \
             -t reg.goldexsoft.ir/goldex:${Version} \
+            --build-arg APP_VERSION="${Version}" \
+            --build-arg APP_REVISION="${GITHUB_SHA}" \
             -f src/App/Server/GoldEx.Server/Dockerfile \
             .
 
       - name: Build and push Docker image for goldex-karat
         run: |
           docker build --push \
-            -t reg.goldexsoft.ir/goldex-karat:latest \
             -t reg.goldexsoft.ir/goldex-karat:${Version} \
+            --build-arg APP_VERSION="${Version}" \
+            --build-arg APP_REVISION="${GITHUB_SHA}" \
             -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
             .
+
+      - name: Check version and promote latest aliases
+        run: |
+          python3 scripts/docker-version.py --check "${Version}" --image reg.goldexsoft.ir/goldex --image reg.goldexsoft.ir/goldex-karat
+          docker buildx imagetools create --tag reg.goldexsoft.ir/goldex:latest reg.goldexsoft.ir/goldex:${Version}
+          docker buildx imagetools create --tag reg.goldexsoft.ir/goldex-karat:latest reg.goldexsoft.ir/goldex-karat:${Version}
 
       - name: Deploy
         run: |
