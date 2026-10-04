@@ -705,12 +705,29 @@ h1:focus {
     height: max-content !important;
 }
 
+@media (max-width: 959.98px) {
+    /* Keep the bottom bar below drawers and their backdrops. */
+    .mud-appbar.mobile-navigation-bar {
+        z-index: calc(var(--mud-zindex-drawer) - 2);
+    }
+
+    /* Dim page content without changing the drawer or top app bar colors. */
+    .mobile-navigation-backdrop {
+        z-index: calc(var(--mud-zindex-drawer) - 1) !important;
+    }
+
+    .mobile-navigation-backdrop.mud-overlay .mud-overlay-scrim.mud-overlay-dark {
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+}
+
 /* Mobile Navbar */
 
 /* Notification drawer */
 
 .notification-drawer {
-    height: calc(100vh - 80px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
 }
 
 @media (min-width: 960px) {

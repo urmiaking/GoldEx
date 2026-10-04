@@ -286,6 +286,15 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
 
 ---
 
+## Mobile Navigation and Notification Layering
+
+- Below `960px`, `Drawer.razor` renders a dedicated `MudOverlay` (`mobile-navigation-backdrop`) while the navigation drawer is open. Its black scrim has 60% opacity and sits at `--mud-zindex-drawer - 1`, below the drawer and top AppBar. Clicking it closes the drawer through `IsDrawerOpenChanged`, keeping the layout state synchronized.
+- `MobileNav.razor` uses `mobile-navigation-bar` at `--mud-zindex-drawer - 2` on mobile, so both drawer backdrops and the notification panel cover the bottom navigation.
+- `Notifications` is rendered inside the top AppBar's stacking context. Raising only the notification drawer's own z-index cannot place it above a sibling bottom AppBar with the same stacking level; keep the bottom navigation below that context.
+- `.notification-drawer` fills the viewport using `100vh` with a `100dvh` override, rather than subtracting the bottom navigation's 80px height. Desktop notification width remains 400px.
+
+---
+
 ## Model Context Protocol (MCP) & AI Integration Architecture (اتصال هوش مصنوعی و کلیدهای دسترسی)
 
 1. **Multi-Tenancy, OAuth 2.0 & PAT Authentication**:
