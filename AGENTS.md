@@ -504,3 +504,42 @@ GoldEx employs a high-performance, non-blocking dashboard architecture on the ex
 - Dashboard totals must classify and sum these per-customer net balances; they must not classify raw receivable/payable ledger columns independently, because one customer can have activity in both sub-ledgers.
 - Invoice overview statistics must keep invoice direction explicit: a positive unpaid **sale** invoice is a store receivable, while a positive unpaid **purchase** invoice is a store payable. Purchase balances must not be included in a card labeled «مانده مطالبات».
 - Negative invoice balances represent overpayments/credits and must be reported separately or netted at the appropriate customer-and-price-unit level; silently dropping them while summing only positive invoices can materially overstate outstanding receivables.
+
+---
+
+## Smart Showcase Tray Architecture (سینی هوشمند پیش‌خوان)
+
+GoldEx provides a real-time smart tray system designed to track items removed from jewelry showcases during customer viewings and counter negotiations:
+
+1. **Domain Aggregate & Multi-Tenancy**:
+   - `SmartTray` aggregate root (`GoldEx.Server.Domain/SmartTrayAggregate`) and child entity `SmartTrayItem`.
+   - Both entities implement `IStoreFiltered` with explicit `StoreId` properties to prevent EF Core global filter mismatch warnings.
+   - Indices on `[StoreId, TrayNumber]` (non-unique index with auto-incrementing sequential numbering to prevent duplicate crashes) and `[StoreId, Barcode]` guarantee sub-millisecond barcode lookups.
+   - States: `SmartTrayStatus` (`Active`, `Closed`, `HasDiscrepancy`) and `SmartTrayItemStatus` (`OnTray`, `Sold`, `Returned`, `Missing`).
+
+2. **Dual-Mode Barcode Scanning**:
+   - **Desktop HID Wedge Listener**: `smart-tray-scanner.js` detects barcode scanner keystrokes (velocity < 50ms), normalizes Persian numerals (`۰-۹` to `0-9`), filters out manual typing inside inputs, and calls Blazor via `[JSInvokable]`.
+   - **Mobile Camera Continuous Scanner**: `ContinuousBarcodeScanner.razor` uses ZXingBlazor with `Decodeonce = false`, frame error suppression, 1.5s debounce, camera switching, and persistent DOM preservation via Blazor `@key`.
+   - **Manual Search & Input**: Direct text entry field with instant autofocus.
+
+3. **Zero-Latency Audio & Haptic Feedback**:
+   - `smart-tray-audio.js` synthesizes sounds in real-time via the HTML5 Web Audio API (no audio file downloads or lag):
+     - Scan success: Double chime (C6 $\to$ E6) + short vibration.
+     - Return success: Mellow chord (A5 $\to$ E5) + pulse vibration.
+     - Warning: Low sawtooth alert tone.
+     - Discrepancy alarm: Pulsing two-tone siren.
+     - Tray completed: Uplifting major arpeggio.
+
+4. **Safety & Missing Item Audit Flow**:
+   - Salesperson selects between mode 1 (خروج به پیش‌خوان) and mode 2 (برگشت به ویترین).
+   - Real-time dwell stopwatch (`DurationSeconds`) tracks how long each jewelry item has remained on the tray.
+   - Closing a tray while items are still present launches `SmartTrayDiscrepancyDialog.razor`, requiring discrepancy reason logging and sounding local audio/visual alarms (no external SMS).
+
+5. **Multi-Item Invoice Transfer**:
+   - Salesperson checks desired items and clicks «انتقال به فاکتور فروش».
+   - Navigates to `/invoices/new/sell?barcodes=BC1,BC2,...`.
+   - `SetInvoice.razor` and `EditorForm.razor.cs` automatically parse and append all selected items into the active invoice grid.
+
+6. **Real-Time Store Sync**:
+   - `SmartTrayHub` (`/hubs/smart-tray`) streams real-time state changes (`ItemAdded`, `ItemReturned`, `ItemTransferredToInvoice`, `DiscrepancyLogged`) across all active devices in the store via SignalR.
+

@@ -173,7 +173,16 @@ public partial class EditorForm
             _model.InvoiceType = InvoiceType.Sell;
             await OnInvoiceTypeChanged(InvoiceType.Sell);
 
-            await OnProductBarcodeChanged(Barcode);
+            var barcodes = Barcode.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var code in barcodes)
+            {
+                await OnProductBarcodeChanged(code);
+                if (!_model.ProductItems.Any(p => p.Product.Barcode == code))
+                {
+                    await OnCoinBarcodeChanged(code);
+                }
+            }
+
             StateHasChanged();
         }
     }

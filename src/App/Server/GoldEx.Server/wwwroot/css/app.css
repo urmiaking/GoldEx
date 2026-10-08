@@ -1958,6 +1958,149 @@ h1:focus {
     font-size: 0.7rem;
 }
 
+/* Smart Tray Scan Mode Controller & Mobile Layout */
+.smart-tray-scan-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.smart-tray-scan-mode-container {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(var(--mud-palette-action-default-rgb), 0.06);
+    border: 1px solid rgba(var(--mud-palette-action-default-rgb), 0.12);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 4px;
+    flex: 1 1 auto;
+    max-width: 520px;
+    direction: rtl;
+}
+
+.smart-tray-mode-btn {
+    flex: 1 1 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--mud-palette-text-primary);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 40px;
+}
+
+.smart-tray-mode-btn .mode-text-main {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.smart-tray-mode-btn .mode-text-sub {
+    font-size: 0.72rem;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+.smart-tray-mode-btn:hover {
+    background: rgba(var(--mud-palette-action-default-rgb), 0.08);
+}
+
+.smart-tray-mode-btn.active-out {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    border-color: #f59e0b !important;
+}
+
+.smart-tray-mode-btn.active-out .mud-icon-root {
+    color: #ffffff !important;
+}
+
+.smart-tray-mode-btn.active-return {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    border-color: #10b981 !important;
+}
+
+.smart-tray-mode-btn.active-return .mud-icon-root {
+    color: #ffffff !important;
+}
+
+.smart-tray-camera-btn {
+    border-radius: 10px !important;
+    height: 40px;
+    white-space: nowrap;
+}
+
+/* Smart Tray Live Timer Pulsing Indicator */
+.smart-tray-pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #f59e0b;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 6px #f59e0b;
+    animation: smart-tray-pulse 1.4s infinite;
+}
+
+@keyframes smart-tray-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.7); }
+}
+
+.smart-tray-duration-timer {
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    direction: ltr;
+}
+
+.smart-tray-duration-timer.active-in-tray {
+    color: var(--mud-palette-warning);
+}
+
+/* Mobile Optimizations for Smart Tray (< 600px) */
+@media (max-width: 600px) {
+    .smart-tray-scan-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .smart-tray-scan-mode-container {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .smart-tray-mode-btn {
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 4px;
+        min-height: 44px;
+    }
+
+    .smart-tray-mode-btn .mode-text-main {
+        font-size: 0.8rem;
+    }
+
+    .smart-tray-mode-btn .mode-text-sub {
+        font-size: 0.68rem;
+    }
+
+    .smart-tray-camera-btn {
+        width: 100%;
+    }
+}
+
 
 
 

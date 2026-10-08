@@ -1,4 +1,5 @@
 @inherits GoldExComponentBase
+@using GoldEx.Client.Pages.SmartTrays
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@ContainerClass" Gutters="false">
     @if (HideTabs)
@@ -20,6 +21,9 @@
             </MudTabPanel>
             <AuthorizeView>
                 <Authorized>
+                    <MudTabPanel Text="سینی هوشمند" Icon="@Icons.Material.Filled.Inbox">
+                        <SmartTrayPage Elevation="0" IsEmbedded="true" />
+                    </MudTabPanel>
                     <MudTabPanel Text="محاسبه معکوس" Icon="@Icons.Material.Outlined.SettingsBackupRestore">
                         <ReverseCalculator Elevation="0" />
                     </MudTabPanel>

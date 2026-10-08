@@ -9,13 +9,22 @@ public partial class Calculator
     [Parameter] public string? ContainerClass { get; set; }
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool HideTabs { get; set; }
+    [Parameter] [SupplyParameterFromQuery(Name = "tab")] public string? Tab { get; set; }
     [Inject] private HelpContext HelpContext { get; set; } = default!;
 
     private int _activeTabIndex;
 
     protected override void OnInitialized()
     {
-        SetHelpContext(0);
+        if (string.Equals(Tab, "smart-tray", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Tab, "tray", StringComparison.OrdinalIgnoreCase))
+        {
+            SetHelpContext(1);
+        }
+        else
+        {
+            SetHelpContext(0);
+        }
         base.OnInitialized();
     }
 
@@ -29,6 +38,7 @@ public partial class Calculator
             case 2:
             case 3:
             case 4:
+            case 5:
                 HelpContext.Slug = "calculator-video";
                 break;
         }

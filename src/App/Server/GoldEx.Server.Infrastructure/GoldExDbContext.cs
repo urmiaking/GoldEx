@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.ProductAttributeAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.SmartTrayAggregate;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -22,6 +23,8 @@ public class GoldExDbContext(
     public DbSet<CustomerTransferVoucher> CustomerTransferVouchers => Set<CustomerTransferVoucher>();
     public DbSet<ProductAttribute> ProductAttributes => Set<ProductAttribute>();
     public DbSet<CategoryAttribute> CategoryAttributes => Set<CategoryAttribute>();
+    public DbSet<SmartTray> SmartTrays => Set<SmartTray>();
+    public DbSet<SmartTrayItem> SmartTrayItems => Set<SmartTrayItem>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(CustomerConfiguration).Assembly);
