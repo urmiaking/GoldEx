@@ -1,0 +1,261 @@
+@using ZXingBlazor.Components
+@implements IAsyncDisposable
+
+<MudPaper Class="pa-4 my-2 position-relative" Elevation="6" Outlined="true" Style="border-radius: 12px; overflow: hidden; background: #1a1a24;">
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="d-flex justify-center align-center flex-column gap-3 pa-6" style="min-height: 280px;">
+            <MudIcon Icon="@Icons.Material.Filled.VideocamOff" Color="Color.Error" Size="Size.Large" />
+            <MudText Color="Color.Error" Typo="Typo.body2" Align="Align.Center">@_errorMessage</MudText>
+            <div class="d-flex gap-2 mt-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh" OnClick="RestartProcess">تلاش مجدد</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Surface" Size="Size.Small" OnClick="CloseScanner">بستن</MudButton>
+            </div>
+        </div>
+    }
+    else if (!_isInitialized)
+    {
+        <div class="d-flex justify-center align-center flex-column gap-3" style="min-height: 280px;">
+            <MudProgressCircular Color="Color.Warning" Indeterminate="true" Size="Size.Medium" />
+            <MudText Typo="Typo.caption" Style="color: #eee;">درحال اتصال به دوربین...</MudText>
+        </div>
+    }
+    else
+    {
+        <div class="scanner-wrapper position-relative" style="min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <BarcodeReader @ref="_reader"
+                           ScanResult="HandleBarcodeScanned"
+                           OnError="HandleError"
+                           UseBuiltinDiv="true"
+                           DeviceID="@_selectedDeviceId"
+                           Options="_options" />
+
+            <!-- Top Camera Controls Bar -->
+            <div style="position: absolute; top: 12px; right: 12px; left: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 10000;">
+                <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.QrCodeScanner">
+                    اسکن پیوسته فعال
+                </MudChip>
+
+                <div class="d-flex gap-2">
+                    @if (_cameraDevices.Count > 1)
+                    {
+                        <MudMenu Icon="@Icons.Material.Filled.Cameraswitch"
+                                 Color="Color.Surface"
+                                 Variant="Variant.Filled"
+                                 Size="Size.Small"
+                                 AnchorOrigin="Origin.BottomLeft"
+                                 TransformOrigin="Origin.TopLeft">
+                            @foreach (var dev in _cameraDevices)
+                            {
+                                <MudMenuItem OnClick="() => ChangeCamera(dev.DeviceId)">
+                                    <MudText Typo="Typo.body2">@CleanLabel(dev.Label)</MudText>
+                                </MudMenuItem>
+                            }
+                        </MudMenu>
+                    }
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Variant="Variant.Filled" Size="Size.Small" OnClick="CloseScanner" />
+                </div>
+            </div>
+
+            <!-- Last Scanned Flash Indicator -->
+            @if (!string.IsNullOrEmpty(_lastScannedCode))
+            {
+                <div style="position: absolute; bottom: 58px; z-index: 10000; background: rgba(0, 200, 83, 0.9); padding: 4px 14px; border-radius: 20px; color: white; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="ml-1 align-text-bottom" />
+                    بارکد شناسایی شد: @_lastScannedCode
+                </div>
+            }
+
+            <!-- Bottom Close Button -->
+            <div style="position: absolute; bottom: 12px; width: 100%; text-align: center; z-index: 9999;">
+                <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" StartIcon="@Icons.Material.Filled.Stop" OnClick="CloseScanner">
+                    توقف و بستن دوربین
+                </MudButton>
+            </div>
+        </div>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback<string> OnBarcodeScanned { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private BarcodeReader? _reader;
+    private string? _errorMessage;
+    private string? _lastScannedCode;
+    private DateTime _lastScanTime = DateTime.MinValue;
+    private bool _isInitialized = false;
+
+    public class CameraDevice { public string DeviceId { get; set; } = ""; public string Label { get; set; } = ""; }
+    private List<CameraDevice> _cameraDevices = new();
+    private string? _selectedDeviceId;
+
+    private readonly ZXingOptions _options = new()
+    {
+        DecodeAllFormats = false,
+        formats = [BarcodeFormat.CODE_128],
+        TRY_HARDER = true,
+        Decodeonce = false
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeCameraAsync();
+        }
+    }
+
+    private async Task InitializeCameraAsync()
+    {
+        try
+        {
+            _errorMessage = null;
+
+            List<CameraDevice>? devices = null;
+            try
+            {
+                devices = await JsRuntime.InvokeAsync<List<CameraDevice>>("GoldExSmartTrayScanner.getVideoDevices");
+            }
+            catch (Exception jsEx)
+            {
+                Console.WriteLine($"[Camera Warning] Device enumeration failed: {jsEx.Message}");
+            }
+
+            if (devices != null && devices.Any())
+            {
+                _cameraDevices = devices
+                    .Where(x => !string.IsNullOrEmpty(x.Label))
+                    .GroupBy(x => x.DeviceId)
+                    .Select(g => g.First())
+                    .ToList();
+
+                var backCamera = _cameraDevices.FirstOrDefault(x => x.Label.ToLower().Contains("back") || x.Label.ToLower().Contains("محیط") || x.Label.ToLower().Contains("rear"))
+                                 ?? _cameraDevices.LastOrDefault();
+
+                _selectedDeviceId = backCamera?.DeviceId ?? _cameraDevices.First().DeviceId;
+            }
+            else
+            {
+                _selectedDeviceId = null;
+            }
+
+            _isInitialized = true;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            _errorMessage = "امکان اتصال به دوربین فراهم نشد. لطفاً از اتصال امن (HTTPS) و اعطای مجوز دسترسی دوربین در مرورگر اطمینان حاصل فرمایید.";
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangeCamera(string deviceId)
+    {
+        _isInitialized = false;
+        StateHasChanged();
+
+        await Task.Delay(100);
+        _selectedDeviceId = deviceId;
+
+        _isInitialized = true;
+        StateHasChanged();
+    }
+
+    private async Task RestartProcess()
+    {
+        _isInitialized = false;
+        _errorMessage = null;
+        StateHasChanged();
+        await Task.Delay(300);
+        await InitializeCameraAsync();
+    }
+
+    private async Task HandleBarcodeScanned(string result)
+    {
+        if (string.IsNullOrWhiteSpace(result)) return;
+
+        var now = DateTime.UtcNow;
+        if (result == _lastScannedCode && (now - _lastScanTime).TotalMilliseconds < 1500)
+        {
+            return;
+        }
+
+        _lastScannedCode = result;
+        _lastScanTime = now;
+        StateHasChanged();
+
+        await OnBarcodeScanned.InvokeAsync(result);
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(1800);
+            if (_lastScannedCode == result)
+            {
+                _lastScannedCode = null;
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private async Task CloseScanner()
+    {
+        await SafelyStopReaderAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SafelyStopReaderAsync()
+    {
+        if (_reader != null)
+        {
+            try
+            {
+                await _reader.Stop();
+            }
+            catch { }
+        }
+    }
+
+    private Task HandleError(string message)
+    {
+        if (!_isInitialized || string.IsNullOrWhiteSpace(message)) return Task.CompletedTask;
+
+        // Ignore transient frame decoding errors and non-fatal exceptions
+        if (message.Contains("NotFoundException") ||
+            message.Contains("ChecksumException") ||
+            message.Contains("FormatException") ||
+            message.Contains("No MultiFormat Readers were able to detect the code"))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (message.Contains("NotAllowedError") || message.Contains("Permission denied"))
+            _errorMessage = "دسترسی به دوربین توسط مرورگر مسدود شده است. لطفاً در تنظیمات مرورگر مجوز دوربین را تایید نمایید.";
+        else if (message.Contains("NotFoundError") || message.Contains("DevicesNotFoundError"))
+            _errorMessage = "هیچ دوربینی روی این دستگاه یافت نشد.";
+        else if (message.Contains("NotReadableError") || message.Contains("TrackStartError"))
+            _errorMessage = "دوربین توسط برنامه دیگری درگیر است یا در حال حاضر پاسخ نمی‌دهد.";
+        else if (message.Contains("OverconstrainedError"))
+            _errorMessage = "تنظیمات دوربین انتخابی پشتیبانی نمی‌شود. لطفاً دوربین دیگری انتخاب کنید.";
+        else
+        {
+            Console.WriteLine($"[Camera Warning] Ignored non-fatal scanner message: {message}");
+            return Task.CompletedTask;
+        }
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private string CleanLabel(string label)
+    {
+        if (string.IsNullOrEmpty(label)) return "دوربین";
+        return label.Length > 20 ? label[..20] + "..." : label;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await SafelyStopReaderAsync();
+    }
+}

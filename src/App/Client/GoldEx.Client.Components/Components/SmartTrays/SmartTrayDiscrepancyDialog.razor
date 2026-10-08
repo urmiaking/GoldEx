@@ -1,0 +1,84 @@
+@using GoldEx.Shared.DTOs.SmartTrays
+@using GoldEx.Shared.Enums
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2" style="color: var(--mud-palette-error);">
+            <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Size="Size.Medium" Color="Color.Error" />
+            <MudText Typo="Typo.h6">ثبت کسری و مغایرت سینی هوشمند</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3">
+            توجه: اقلام زیر هنوز به ویترین بازگردانده نشده‌اند و به فاکتور فروش نیز منتقل نگشته‌اند.
+            با تایید این فرم، این اقلام به عنوان <b>«مفقود شده (Missing)»</b> ثبت و سینی بسته می‌شود.
+        </MudAlert>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">
+            لیست اقلام دارای مغایرت (@UnresolvedItems.Count قلم به وزن کل @UnresolvedItems.Sum(x => x.Weight).ToString("G29") گرم):
+        </MudText>
+
+        <MudPaper Elevation="0" Outlined="true" Class="pa-2 mb-3" Style="max-height: 220px; overflow-y: auto;">
+            <MudList T="string" Dense="true">
+                @foreach (var item in UnresolvedItems)
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex align-center gap-2">
+                                <div style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.05); flex-shrink: 0;">
+                                    <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "/assets/placeholder-product.svg" : item.ImageUrl)"
+                                         alt="@item.Title"
+                                         onerror="this.onerror=null; this.src='/assets/placeholder-product.svg';"
+                                         style="width: 100%; height: 100%; object-fit: cover;" />
+                                </div>
+                                <div>
+                                    <span class="font-weight-bold">@item.Title</span>
+                                    <span class="text-muted mr-1" style="font-size: 0.8rem;">(کد: @item.Barcode)</span>
+                                </div>
+                            </div>
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined">
+                                @item.Weight.ToString("G29") گرم
+                            </MudChip>
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+
+        <MudTextField @bind-Value="_notes"
+                      Label="توضیحات و گزارش بازبینی (الزامی) *"
+                      Placeholder="مثال: بررسی شد، قطعه روی میز یافت نشد. دوربین‌ها در حال بازبینی هستند..."
+                      Lines="3"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Required="true"
+                      RequiredError="ثبت توضیحات مغایرت الزامی است." />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">انصراف و ادامه تطبیق</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Error"
+                   StartIcon="@Icons.Material.Filled.ReportProblem"
+                   Disabled="@(string.IsNullOrWhiteSpace(_notes))"
+                   OnClick="Submit">
+            ثبت مغایرت و بستن سینی
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public List<SmartTrayItemDto> UnresolvedItems { get; set; } = [];
+
+    private string _notes = string.Empty;
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_notes))
+            return;
+
+        MudDialog.Close(DialogResult.Ok(_notes.Trim()));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

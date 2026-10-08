@@ -487,8 +487,24 @@ public static class ApiRoutes
         public const string GetTopUnpaidInvoices = "top-unpaid";
     }
 
+    public class SmartTrays
+    {
+        public const string Base = "/api/smart-trays";
+        public const string GetActive = "active";
+        public const string GetById = "{id:guid}";
+        public const string Create = "";
+        public const string AddItem = "{trayId:guid}/items";
+        public const string ReturnItem = "{trayId:guid}/items/{barcode}/return";
+        public const string RemoveItem = "{trayId:guid}/items/{barcode}";
+        public const string MarkSold = "{trayId:guid}/items/{barcode}/sold/{invoiceId:guid}";
+        public const string Close = "{trayId:guid}/close";
+        public const string Discrepancy = "{trayId:guid}/discrepancy";
+        public const string Cancel = "{trayId:guid}/cancel";
+    }
+
     public class Hubs
     {
         public const string Prices = "/hubs/prices";
+        public const string SmartTrays = "/hubs/smart-trays";
     }
 }

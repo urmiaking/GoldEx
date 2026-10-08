@@ -1,0 +1,67 @@
+@using GoldEx.Shared.DTOs.SmartTrays
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Primary" Size="Size.Medium" />
+            <MudText Typo="Typo.h6">ایجاد سینی هوشمند جدید</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_isValid">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_request.Title"
+                                  Label="عنوان سینی یا نام مشتری *"
+                                  Placeholder="مثال: بررسی سرویس طلا - مشتری آقای رضایی"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  RequiredError="عنوان سینی الزامی است."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.DriveFileRenameOutline"
+                                  AutoFocus="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_request.ClerkName"
+                                  Label="نام فروشنده / متصدی (اختیاری)"
+                                  Placeholder="نام همکار تحویل‌دهنده طلا"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Badge" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">انصراف</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Check"
+                   Disabled="@(!_isValid)"
+                   OnClick="Submit">
+            ایجاد و شروع سینی
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm _form = null!;
+    private bool _isValid;
+    private CreateSmartTrayRequest _request = new();
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (_isValid)
+        {
+            MudDialog.Close(DialogResult.Ok(_request));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

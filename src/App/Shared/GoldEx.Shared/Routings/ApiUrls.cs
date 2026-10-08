@@ -941,8 +941,23 @@ public class ApiUrls
                 .AppendQueryString(new { count });
     }
 
+    public class SmartTrays
+    {
+        public static string GetActive() => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.GetActive);
+        public static string GetById(Guid id) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.GetById).FormatRoute(new { id });
+        public static string Create() => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.Create);
+        public static string AddItem(Guid trayId) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.AddItem).FormatRoute(new { trayId });
+        public static string ReturnItem(Guid trayId, string barcode) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.ReturnItem).FormatRoute(new { trayId, barcode });
+        public static string RemoveItem(Guid trayId, string barcode) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.RemoveItem).FormatRoute(new { trayId, barcode });
+        public static string MarkSold(Guid trayId, string barcode, Guid invoiceId) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.MarkSold).FormatRoute(new { trayId, barcode, invoiceId });
+        public static string Close(Guid trayId) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.Close).FormatRoute(new { trayId });
+        public static string Discrepancy(Guid trayId) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.Discrepancy).FormatRoute(new { trayId });
+        public static string Cancel(Guid trayId) => BuildUrl(ApiRoutes.SmartTrays.Base, ApiRoutes.SmartTrays.Cancel).FormatRoute(new { trayId });
+    }
+
     public class Hubs
     {
         public static string Prices => ApiRoutes.Hubs.Prices;
+        public static string SmartTrays => ApiRoutes.Hubs.SmartTrays;
     }
 }

@@ -81,6 +81,13 @@ public static class ClientRoutes
         public const string Index = $"{CalculatorPrefix}";
     }
 
+    public static class SmartTrays
+    {
+        private const string SmartTraysPrefix = "/smart-tray";
+        public const string Index = $"{SmartTraysPrefix}";
+        public const string Detail = $"{SmartTraysPrefix}/{{id:guid}}";
+    }
+
     public static class PriceBoard
     {
         private const string PriceBoardPrefix = "/price-board";
@@ -332,7 +339,7 @@ public static class ClientRoutes
                     "calculator", "customers", "invoices", "finances", "inventory-stocks",
                     "reporting", "base-info", "dashboard", "blogs", "products",
                     "product-categories", "price-board", "transactions", "register-product",
-                    "user-accounts", "about", "under-development", "not-found", "NoStore"
+                    "user-accounts", "about", "under-development", "not-found", "NoStore", "smart-tray"
                 };
                 foreach (var f in fallbacks) segments.Add(f);
             }

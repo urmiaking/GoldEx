@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -10,8 +10,11 @@ public partial class SetInvoice
     [Parameter] public string? Id { get; set; }
     [Parameter, SupplyParameterFromQuery] public Guid? CustomerId { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? Barcode { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "barcodes")] public string? Barcodes { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? TradeScale { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? InvoiceType { get; set; }
+
+    private string? EffectiveBarcode => !string.IsNullOrWhiteSpace(Barcodes) ? Barcodes : Barcode;
 
     private Guid? IdValue => string.IsNullOrEmpty(Id) ? null : Guid.Parse(Id);
     private TradeScale TradeScaleValue => Enum.TryParse<TradeScale>(TradeScale, out var scale) ? scale : Shared.Enums.TradeScale.Wholesale;

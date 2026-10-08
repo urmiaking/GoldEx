@@ -1,0 +1,375 @@
+@page "/smart-tray"
+@page "/smart-tray/{Id:guid}"
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+@if (!IsEmbedded)
+{
+    <PageTitle>سینی هوشمند پیش‌خوان | گلدکس</PageTitle>
+}
+
+<div class="@(IsEmbedded ? "smart-tray-tab-wrapper pa-0 pa-sm-2" : "my-4 px-2 px-sm-4")">
+    <!-- Header & Tray Selector Toolbar -->
+    <div class="d-flex flex-wrap justify-space-between align-center gap-3 mb-4">
+        @if (!IsEmbedded)
+        {
+            <div class="d-flex align-center gap-2">
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium">
+                    <MudIcon Icon="@Icons.Material.Filled.Inbox" />
+                </MudAvatar>
+                <div>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">سینی هوشمند پیش‌خوان</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">مدیریت بلادرنگ طلاهای خارج شده از ویترین و جلوگیری از مفقودی</MudText>
+                </div>
+            </div>
+        }
+
+        <div class="d-flex flex-wrap align-center gap-2 w-100 w-sm-auto justify-space-between justify-sm-end">
+            @if (_activeTrays.Any())
+            {
+                <MudSelect T="Guid"
+                           Value="_selectedTrayId"
+                           ValueChanged="OnTraySelectionChanged"
+                           Label="سینی فعال"
+                           Variant="Variant.Outlined"
+                           Dense="true"
+                           Margin="Margin.Dense"
+                           AnchorOrigin="Origin.BottomCenter"
+                           TransformOrigin="Origin.TopCenter"
+                           Class="flex-grow-1 flex-sm-grow-0"
+                           Style="min-width: 220px; background: var(--mud-palette-surface);">
+                    @foreach (var tray in _activeTrays)
+                    {
+                        <MudSelectItem Value="@tray.Id">
+                            <div class="d-flex align-center justify-space-between py-1" style="width: 100%;">
+                                <span class="font-weight-bold">@tray.Title</span>
+                                <span class="mud-text-secondary mr-2" style="font-size: 0.8rem;">(@tray.InTrayCount قلم)</span>
+                            </div>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Medium"
+                       OnClick="OpenCreateTrayDialogAsync">
+                سینی جدید
+            </MudButton>
+        </div>
+    </div>
+
+    @if (_currentTray is null)
+    {
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-center align-center py-12 flex-column gap-3">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">درحال بارگذاری اطلاعات سینی...</MudText>
+            </div>
+        }
+        else
+        {
+            <MudPaper Class="pa-12 text-center my-6" Elevation="1" Outlined="true" Style="border-radius: 16px;">
+                <MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Secondary" Style="font-size: 4rem; opacity: 0.5;" />
+                <MudText Typo="Typo.h6" Class="mt-3 font-weight-bold">در حال حاضر هیچ سینی فعالی روی پیش‌خوان نیست</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1 mb-6">
+                    برای شروع، با زدن دکمه زیر یک سینی جدید ایجاد کنید و طلاها را اسکن نمایید.
+                </MudText>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Large"
+                           OnClick="OpenCreateTrayDialogAsync">
+                    ایجاد اولین سینی پیش‌خوان
+                </MudButton>
+            </MudPaper>
+        }
+    }
+    else
+    {
+        <!-- KPI Cards Section -->
+        <MudGrid Class="mb-4" Spacing="3">
+            <MudItem xs="6" sm="6" md="3">
+                <MudPaper Class="pa-4 d-flex align-center justify-space-between" Elevation="2" Style="border-radius: 12px; border-right: 4px solid var(--mud-palette-warning);">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">اقلام روی پیش‌خوان</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Warning">
+                            @_currentTray.InTrayCount <span style="font-size: 0.9rem; font-weight: normal;">از @_currentTray.TotalItemCount قلم</span>
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Medium">
+                        <MudIcon Icon="@Icons.Material.Filled.PanTool" />
+                    </MudAvatar>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" sm="6" md="3">
+                <MudPaper Class="pa-4 d-flex align-center justify-space-between" Elevation="2" Style="border-radius: 12px; border-right: 4px solid var(--mud-palette-primary);">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">وزن کل طلا</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Primary">
+                            @_currentTray.TotalWeight.ToString("G29") <span style="font-size: 0.9rem; font-weight: normal;">گرم</span>
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Medium">
+                        <MudIcon Icon="@Icons.Material.Filled.Scale" />
+                    </MudAvatar>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" sm="6" md="3">
+                <MudPaper Class="pa-4 d-flex align-center justify-space-between" Elevation="2" Style="border-radius: 12px; border-right: 4px solid var(--mud-palette-info);">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">مدت زمان روی پیش‌خوان</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Info" Style="font-family: monospace;">
+                            @_elapsedTimeString
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Info" Variant="Variant.Outlined" Size="Size.Medium">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" />
+                    </MudAvatar>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" sm="6" md="3">
+                <MudPaper Class="pa-4 d-flex align-center justify-space-between" Elevation="2" Style="border-radius: 12px; border-right: 4px solid var(--mud-palette-success);">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">بازگردانده شده به ویترین</MudText>
+                        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Success">
+                            @_currentTray.ReturnedCount <span style="font-size: 0.9rem; font-weight: normal;">(@_auditProgressPercentage%)</span>
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Success" Variant="Variant.Outlined" Size="Size.Medium">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" />
+                    </MudAvatar>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Operation Mode Banner & Barcode Scanner Zone -->
+        <MudPaper Class="pa-3 pa-sm-4 mb-4" Elevation="@(IsEmbedded ? 1 : 3)" Style="border-radius: 16px;">
+            <div class="smart-tray-scan-header mb-3">
+                <div class="smart-tray-scan-mode-container">
+                    <button type="button"
+                            class="smart-tray-mode-btn @(_scanMode == ScanMode.OutToShowroom ? "active-out" : "")"
+                            @onclick="() => SetScanMode(ScanMode.OutToShowroom)">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" />
+                        <span class="mode-text-main">خروج از ویترین</span>
+                        <span class="mode-text-sub">(تحویل به مشتری)</span>
+                    </button>
+                    <button type="button"
+                            class="smart-tray-mode-btn @(_scanMode == ScanMode.ReturnToShowcase ? "active-return" : "")"
+                            @onclick="() => SetScanMode(ScanMode.ReturnToShowcase)">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" />
+                        <span class="mode-text-main">بازگشت به ویترین</span>
+                        <span class="mode-text-sub">(تطبیق طلا)</span>
+                    </button>
+                </div>
+
+                <MudButton Variant="Variant.Outlined"
+                           Color="@(_showCameraScanner ? Color.Error : Color.Primary)"
+                           StartIcon="@(_showCameraScanner ? Icons.Material.Filled.VideocamOff : Icons.Material.Filled.QrCodeScanner)"
+                           Size="Size.Small"
+                           Class="smart-tray-camera-btn"
+                           OnClick="ToggleCameraScanner">
+                    @(_showCameraScanner ? "بستن دوربین" : "اسکن با دوربین")
+                </MudButton>
+            </div>
+
+            <!-- Optional Mobile Camera Scanner Area -->
+            @if (_showCameraScanner)
+            {
+                <ContinuousBarcodeScanner @key="@("smart-tray-camera-scanner")" OnBarcodeScanned="OnBarcodeProcessedAsync" OnClose="ToggleCameraScanner" />
+            }
+
+            <!-- Manual Barcode Input Field -->
+            <div class="d-flex align-center gap-2 mt-2">
+                <MudTextField @ref="_barcodeInputRef"
+                              @bind-Value="_barcodeInput"
+                              Placeholder="@(_scanMode == ScanMode.OutToShowroom ? "بارکد طلا را اسکن کنید یا دستی بنویسید (خروج از ویترین)..." : "بارکد طلای در حال بازگشت به ویترین را اسکن کنید...")"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.QrCode"
+                              AdornmentColor="@(_scanMode == ScanMode.OutToShowroom ? Color.Warning : Color.Success)"
+                              Clearable="true"
+                              OnKeyDown="OnBarcodeKeyDown"
+                              Immediate="true"
+                              Disabled="_isProcessingBarcode" />
+
+                <MudButton Variant="Variant.Filled"
+                           Color="@(_scanMode == ScanMode.OutToShowroom ? Color.Warning : Color.Success)"
+                           OnClick="OnSubmitManualBarcodeAsync"
+                           Disabled="@(string.IsNullOrWhiteSpace(_barcodeInput) || _isProcessingBarcode)"
+                           Style="min-width: 100px; height: 40px; white-space: nowrap;">
+                    @if (_isProcessingBarcode)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <span>ثبت بارکد</span>
+                    }
+                </MudButton>
+            </div>
+        </MudPaper>
+
+        <!-- Tray Items Table & Batch Actions -->
+        <MudPaper Elevation="2" Style="border-radius: 16px; overflow: hidden;" Class="mb-4">
+            <div class="pa-4 d-flex flex-wrap justify-space-between align-center gap-2 border-b">
+                <div class="d-flex align-center gap-2">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">
+                        اقلام سینی (#@_currentTray.TrayNumber - @_currentTray.Title)
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                        @_currentTray.TotalItemCount قلم
+                    </MudChip>
+                </div>
+
+                <div class="d-flex flex-wrap align-center gap-2">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.ReceiptLong"
+                               Size="Size.Small"
+                               Disabled="@(!_selectedItemBarcodes.Any())"
+                               OnClick="TransferSelectedToInvoice">
+                        صدور فاکتور فروش (@_selectedItemBarcodes.Count قلم)
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.FactCheck"
+                               Size="Size.Small"
+                               OnClick="CloseOrAuditTrayAsync">
+                        تکمیل و بستن سینی
+                    </MudButton>
+
+                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense="true">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error" OnClick="CancelTrayAsync">
+                            لغو کل سینی
+                        </MudMenuItem>
+                    </MudMenu>
+                </div>
+            </div>
+
+            @if (!_currentTray.Items.Any())
+            {
+                <div class="pa-8 text-center text-muted">
+                    <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Style="opacity: 0.4;" />
+                    <MudText Typo="Typo.body2" Class="mt-2">هیچ کالایی هنوز وارد سینی نشده است. بارکد اولین جنس را اسکن کنید.</MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@_currentTray.Items"
+                          Hover="true"
+                          Dense="true"
+                          Elevation="0"
+                          Class="smart-tray-table">
+                    <HeaderContent>
+                        <MudTh Style="width: 45px;">
+                            <MudCheckBox T="bool"
+                                         Value="@IsAllSelected()"
+                                         ValueChanged="ToggleSelectAll"
+                                         Color="Color.Primary"
+                                         Dense="true" />
+                        </MudTh>
+                        <MudTh>تصویر / نوع</MudTh>
+                        <MudTh>عنوان کالا</MudTh>
+                        <MudTh>بارکد</MudTh>
+                        <MudTh>وزن (گرم)</MudTh>
+                        <MudTh>اجرت</MudTh>
+                        <MudTh>مدت در سینی</MudTh>
+                        <MudTh>وضعیت</MudTh>
+                        <MudTh Style="text-align: left;">عملیات</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="انتخاب">
+                            <MudCheckBox T="bool"
+                                         Value="@_selectedItemBarcodes.Contains(context.Barcode)"
+                                         ValueChanged="(val) => ToggleItemSelection(context.Barcode, val)"
+                                         Color="Color.Primary"
+                                         Dense="true"
+                                         Disabled="@(context.Status == SmartTrayItemStatus.Sold)" />
+                        </MudTd>
+                        <MudTd DataLabel="تصویر">
+                            <div class="d-flex align-center justify-center" style="width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08);">
+                                <img src="@(string.IsNullOrWhiteSpace(context.ImageUrl) ? "/assets/placeholder-product.svg" : context.ImageUrl)"
+                                     alt="@context.Title"
+                                     onerror="this.onerror=null; this.src='/assets/placeholder-product.svg';"
+                                     style="width: 100%; height: 100%; object-fit: cover;" />
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="عنوان کالا">
+                            <span class="font-weight-bold">@context.Title</span>
+                            @if (!string.IsNullOrEmpty(context.CategoryTitle))
+                            {
+                                <div class="text-muted" style="font-size: 0.75rem;">@context.CategoryTitle</div>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="بارکد">
+                            <code class="px-2 py-1 rounded" style="background: rgba(125,125,125,0.1); font-weight: bold;">@context.Barcode</code>
+                        </MudTd>
+                        <MudTd DataLabel="وزن">
+                            <span class="font-weight-bold">@context.Weight.ToString("G29")</span>
+                        </MudTd>
+                        <MudTd DataLabel="اجرت">
+                            @(context.Wage.HasValue ? (context.WageType == WageType.Percent ? $"{context.Wage.Value.ToString("G29")}%" : context.Wage.Value.ToString("N0")) : "---")
+                        </MudTd>
+                        <MudTd DataLabel="مدت در سینی">
+                            <div class="d-flex align-center gap-1">
+                                @if (context.Status == SmartTrayItemStatus.InTray)
+                                {
+                                    <span class="smart-tray-pulse-dot" title="در حال محاسبه بلادرنگ"></span>
+                                }
+                                <span class="smart-tray-duration-timer @(context.Status == SmartTrayItemStatus.InTray ? "active-in-tray" : "")">
+                                    @FormatItemDuration(context)
+                                </span>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="وضعیت">
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@GetItemStatusColor(context.Status)"
+                                     Variant="Variant.Filled"
+                                     Icon="@GetItemStatusIcon(context.Status)">
+                                @context.StatusTitle
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="عملیات" Style="text-align: left;">
+                            <div class="d-flex justify-end gap-1">
+                                @if (context.Status == SmartTrayItemStatus.InTray)
+                                {
+                                    <MudTooltip Text="بازگشت به ویترین">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                                       Color="Color.Success"
+                                                       Size="Size.Small"
+                                                       OnClick="() => MarkItemReturnedAsync(context.Barcode)" />
+                                    </MudTooltip>
+
+                                    <MudTooltip Text="حذف اشتباه از سینی">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="() => RemoveItemFromTrayAsync(context.Barcode)" />
+                                    </MudTooltip>
+                                }
+                                else if (context.Status == SmartTrayItemStatus.Returned)
+                                {
+                                    <MudTooltip Text="خروج مجدد به سینی">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Replay"
+                                                       Color="Color.Warning"
+                                                       Size="Size.Small"
+                                                       OnClick="() => ReAddReturnedItemAsync(context.Barcode)" />
+                                    </MudTooltip>
+                                }
+                            </div>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    }
+</div>

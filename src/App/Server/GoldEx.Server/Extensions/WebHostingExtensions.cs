@@ -44,6 +44,7 @@ public static class WebHostingExtensions
                 .AddInfrastructure(configuration);
 
             builder.Services.AddScoped<IPriceNotificationPublisher, SignalRPriceNotificationPublisher>();
+            builder.Services.AddScoped<ISmartTrayNotificationPublisher, SignalRSmartTrayNotificationPublisher>();
 
             return builder.Build();
         }
@@ -245,6 +246,7 @@ public static class WebHostingExtensions
 
             app.MapControllers();
             app.MapHub<PriceHub>(ApiRoutes.Hubs.Prices);
+            app.MapHub<SmartTrayHub>(ApiRoutes.Hubs.SmartTrays);
             app.MapRazorComponents<App>()
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddInteractiveServerRenderMode()

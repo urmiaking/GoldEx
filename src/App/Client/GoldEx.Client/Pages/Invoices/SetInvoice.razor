@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 @attribute [Route(ClientRoutes.Invoices.SetInvoice)]
 @attribute [Route(ClientRoutes.Invoices.Create)]
@@ -13,6 +13,6 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <EditorForm Id="@IdValue" CustomerId="@CustomerId" Barcode="@Barcode" TradeScale="@TradeScaleValue" InvoiceType="@InvoiceTypeValue" />
+    <EditorForm Id="@IdValue" CustomerId="@CustomerId" Barcode="@EffectiveBarcode" TradeScale="@TradeScaleValue" InvoiceType="@InvoiceTypeValue" />
 
 </MudContainer>

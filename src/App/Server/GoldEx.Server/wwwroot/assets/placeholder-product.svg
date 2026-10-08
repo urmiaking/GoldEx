@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="goldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8e7" />
+      <stop offset="100%" stop-color="#f5e6c4" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6d365" />
+      <stop offset="50%" stop-color="#fda085" />
+      <stop offset="100%" stop-color="#d4af37" />
+    </linearGradient>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd700" />
+      <stop offset="100%" stop-color="#b8860b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded box -->
+  <rect width="120" height="120" rx="20" fill="url(#goldBg)" />
+  <rect width="118" height="118" x="1" y="1" rx="19" fill="none" stroke="#e6c987" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.6" />
+
+  <!-- Jewelry / Diamond Icon -->
+  <g transform="translate(24, 26)">
+    <!-- Gem table & crown -->
+    <polygon points="20,8 52,8 68,26 4,26" fill="url(#goldGrad)" opacity="0.9" />
+    <!-- Gem pavilion (bottom triangle) -->
+    <polygon points="4,26 68,26 36,62" fill="url(#goldShine)" />
+    <!-- Facet highlights -->
+    <polygon points="20,8 36,26 52,8" fill="#fff" opacity="0.4" />
+    <polygon points="36,26 4,26 36,62" fill="#fff" opacity="0.15" />
+    <polygon points="36,26 68,26 36,62" fill="#000" opacity="0.12" />
+    <!-- Sparkle stars -->
+    <circle cx="58" cy="14" r="2" fill="#fff" opacity="0.9" />
+    <path d="M58,10 L59,14 L63,14 L60,16 L61,20 L58,17 L55,20 L56,16 L53,14 L57,14 Z" fill="#ffd700" opacity="0.75" />
+  </g>
+
+  <!-- Persian label -->
+  <text x="60" y="103" text-anchor="middle" font-family="Vazirmatn, Tahoma, sans-serif" font-size="11" font-weight="bold" fill="#9c7a28" opacity="0.85">طلا و جواهر</text>
+</svg>
