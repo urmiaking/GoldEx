@@ -480,14 +480,17 @@ internal class ProductService(
                 if (existingItem != null)
                 {
                     var productDto = itemDto.Product;
-                    if (productDto.Weight <= 0 && itemDto.TotalWeight > 0)
+                    if (invoice.InvoiceType is InvoiceType.Purchase && itemDto.TotalWeight > 0)
+                    {
+                        productDto = productDto with { Weight = itemDto.TotalWeight };
+                    }
+                    else if (productDto.Weight <= 0 && itemDto.TotalWeight > 0)
                     {
                         productDto = productDto with { Weight = itemDto.TotalWeight };
                     }
 
                     // Update product
                     var product = await UpdateAsync(existingItem.ProductId, productDto, invoice.InvoiceType, cancellationToken);
-
                     if (invoice.InvoiceType is InvoiceType.Sell)
                     {
                         existingItem.UpdateSaleItem(itemDto.GramPrice,
@@ -507,21 +510,17 @@ internal class ProductService(
                     }
                     else
                     {
-                        existingItem.UpdatePurchaseItem(itemDto.GramPrice,
+                        existingItem.UpdatePurchaseItem(
+                            itemDto.GramPrice,
                             itemDto.Quantity,
                             itemDto.TotalWeight,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
-                            itemDto.CostPriceUnitId.HasValue
-                                ? new PriceUnitId(itemDto.CostPriceUnitId.Value)
-                                : null,
+                            itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
                             itemDto.PurchaseWage,
                             itemDto.PurchaseWageType,
-                            itemDto.Product.WagePriceUnitId.HasValue
-                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
-                                : null,
-                            itemDto.WagePriceUnitExchangeRate
-                            );
+                            itemDto.Product.WagePriceUnitId.HasValue ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) : null,
+                            itemDto.WagePriceUnitExchangeRate);
                     }
 
                     existingItem.RecalculateAmounts(product, invoice.InvoiceType);
@@ -534,7 +533,7 @@ internal class ProductService(
                 if (invoice.InvoiceType is InvoiceType.Purchase)
                 {
                     var productDto = itemDto.Product;
-                    if (productDto.Weight <= 0 && itemDto.TotalWeight > 0)
+                    if (itemDto.TotalWeight > 0)
                     {
                         productDto = productDto with { Weight = itemDto.TotalWeight };
                     }
