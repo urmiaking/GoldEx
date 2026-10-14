@@ -2101,6 +2101,217 @@ h1:focus {
     }
 }
 
+/* ==========================================================================
+   GoldEx Page & Element Smooth Transition System (Choreographed Motion)
+   Inspired by MeetFlow & Modern High-Performance Motion Standards
+   ========================================================================== */
+
+/* 1. Stable single page scroller during navigation transitions */
+html {
+    scrollbar-gutter: stable;
+    overflow-x: clip;
+}
+body {
+    overflow-x: clip;
+}
+
+:root {
+    --gex-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --gex-motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --gex-motion-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 2. Core Keyframes */
+@keyframes gex-page-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gex-section-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.992);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes gex-soft-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes gex-dialog-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes gex-side-drawer {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 3. Page Level Transitions */
+.page-transition,
+.animate-page-enter {
+    animation: gex-page-reveal 0.32s var(--gex-motion-ease) both;
+    will-change: opacity, transform;
+}
+
+/* Top-level page container content when switching routes */
+.goldex-main-content .goldex-page-container > *,
+.goldex-settings-content > *,
+.goldex-manage-content > *,
+.vitrine-page-content > * {
+    animation: gex-page-reveal 0.34s var(--gex-motion-ease) backwards;
+}
+
+/* 4. Element-Level Choreography */
+/* Page headings, breadcrumbs, search bars and toolbars */
+:is(.goldex-page-container, .goldex-settings-content, .goldex-manage-content, .vitrine-page-content) :is(.mud-breadcrumbs, .gex-page-header, .page-header, .mud-toolbar) {
+    animation: gex-section-reveal 0.32s var(--gex-motion-ease) backwards;
+}
+
+/* Primary cards, tables, data grids, and dashboards */
+:is(.goldex-page-container, .goldex-settings-content, .goldex-manage-content, .vitrine-page-content) :is(.mud-card, .mud-paper, .mud-table, .mud-table-container, .mud-data-grid, .mud-expansion-panels, .goldex-segmented-container, .goldex-glass-card, .price-board-card, .inventory-card, .action-card, .mud-action-card):not(.mud-popover .mud-paper):not(.mud-dialog .mud-paper) {
+    animation: gex-section-reveal 0.38s var(--gex-motion-ease) backwards;
+    transform-origin: center top;
+}
+
+/* Staggered entrance rhythm for sibling cards/items */
+:is(.goldex-page-container, .goldex-settings-content, .goldex-manage-content, .vitrine-page-content) :is(.mud-card, .mud-paper, .action-card, .price-board-card, .quick-action-pill, .inventory-card):nth-of-type(2) {
+    animation-delay: 45ms;
+}
+:is(.goldex-page-container, .goldex-settings-content, .goldex-manage-content, .vitrine-page-content) :is(.mud-card, .mud-paper, .action-card, .price-board-card, .quick-action-pill, .inventory-card):nth-of-type(3) {
+    animation-delay: 85ms;
+}
+:is(.goldex-page-container, .goldex-settings-content, .goldex-manage-content, .vitrine-page-content) :is(.mud-card, .mud-paper, .action-card, .price-board-card, .quick-action-pill, .inventory-card):nth-of-type(n+4) {
+    animation-delay: 125ms;
+}
+
+/* Grid items stagger */
+.mud-grid > .mud-grid-item:nth-child(1) { animation: gex-section-reveal 0.32s var(--gex-motion-ease) backwards; }
+.mud-grid > .mud-grid-item:nth-child(2) { animation: gex-section-reveal 0.34s var(--gex-motion-ease) 35ms backwards; }
+.mud-grid > .mud-grid-item:nth-child(3) { animation: gex-section-reveal 0.36s var(--gex-motion-ease) 70ms backwards; }
+.mud-grid > .mud-grid-item:nth-child(4) { animation: gex-section-reveal 0.38s var(--gex-motion-ease) 105ms backwards; }
+.mud-grid > .mud-grid-item:nth-child(n+5) { animation: gex-section-reveal 0.40s var(--gex-motion-ease) 140ms backwards; }
+
+/* Dialogs & Popovers */
+.mud-dialog {
+    animation: gex-dialog-pop 0.26s var(--gex-motion-ease) backwards;
+}
+
+/* Empty states, badges, chips */
+:is(.mud-alert, .mud-chip, .empty-state, .goldex-empty):not(.mud-popover *) {
+    animation: gex-soft-pop 0.28s var(--gex-motion-ease) backwards;
+}
+
+/* 5. Tactile Micro-Interactions (Hover & Active Transitions) */
+:is(.action-card, .quick-action-pill, .price-board-card, .segmented-tab-btn, .inventory-card):not(.locked) {
+    transition: transform 0.22s var(--gex-motion-ease), box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    :is(.action-card, .price-board-card, .inventory-card):not(.locked):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+    }
+    .quick-action-pill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+    :is(.mud-button, .mud-icon-button):not(:disabled) {
+        transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s var(--gex-motion-ease);
+    }
+    :is(.mud-button, .mud-icon-button):not(:disabled):active {
+        transform: translateY(1px) scale(0.98);
+    }
+}
+
+/* 6. Navigation Transitions (Drawer & Mobile Nav) */
+.mud-nav-link {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s var(--gex-motion-ease);
+}
+.mobile-navigation-bar .mud-nav-link {
+    transition: color 0.2s ease, transform 0.2s var(--gex-motion-ease);
+}
+.mobile-navigation-bar .mud-nav-link.active .mud-nav-link-icon {
+    transform: translateY(-2px) scale(1.08);
+    transition: transform 0.24s var(--gex-motion-ease);
+}
+
+/* 7. Modern Browser View Transitions API */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+}
+
+::view-transition-old(root) {
+    animation: 160ms cubic-bezier(0.2, 0, 0, 1) both gex-vt-exit;
+}
+::view-transition-new(root) {
+    animation: 240ms cubic-bezier(0.2, 0, 0, 1) both gex-vt-enter;
+}
+
+@keyframes gex-vt-exit {
+    to {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+@keyframes gex-vt-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 8. Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
+}
+
+
 
 
 

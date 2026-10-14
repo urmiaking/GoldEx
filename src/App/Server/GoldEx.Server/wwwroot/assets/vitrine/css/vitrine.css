@@ -3140,3 +3140,74 @@
     font-size: 0.88rem;
   }
 }
+
+/* ==========================================================================
+   Vitrine Smooth Page & Element Transition Choreography
+   ========================================================================== */
+
+@keyframes vitrinePageReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vitrineSectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Vitrine Page Root Transition */
+.vitrine-page-content.page-transition,
+.vitrine-root .page-transition {
+  animation: vitrinePageReveal 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Vitrine Top-Level Sections */
+.vitrine-page-content > * {
+  animation: vitrinePageReveal 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Elements Choreography: Hero, filters, headers */
+.vitrine-root :is(.vitrine-hero, .catalog-header, .about-hero, .catalog-filter-bar) {
+  animation: vitrineSectionReveal 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Product Cards & Category Pills Entrance */
+.vitrine-root :is(.vitrine-product-card, .catalog-card, .category-card) {
+  animation: vitrineSectionReveal 0.38s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  transform-origin: center top;
+}
+
+/* Staggered entrance rhythm for product catalog items */
+.vitrine-root :is(.vitrine-product-card, .catalog-card):nth-child(2) { animation-delay: 35ms; }
+.vitrine-root :is(.vitrine-product-card, .catalog-card):nth-child(3) { animation-delay: 70ms; }
+.vitrine-root :is(.vitrine-product-card, .catalog-card):nth-child(4) { animation-delay: 105ms; }
+.vitrine-root :is(.vitrine-product-card, .catalog-card):nth-child(n+5) { animation-delay: 140ms; }
+
+/* Category Pills Stagger */
+.vitrine-root .category-pill:nth-child(1) { animation: vitrineSectionReveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.vitrine-root .category-pill:nth-child(2) { animation: vitrineSectionReveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) 30ms backwards; }
+.vitrine-root .category-pill:nth-child(3) { animation: vitrineSectionReveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) 60ms backwards; }
+.vitrine-root .category-pill:nth-child(n+4) { animation: vitrineSectionReveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) 90ms backwards; }
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-root *,
+  .vitrine-page-content * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

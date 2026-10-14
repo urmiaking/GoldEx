@@ -29,6 +29,7 @@ public static class DependencyInjection
             services.AddScoped<StoreContext>();
             services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<StoreContext>());
             services.TryAddScoped<IPriceNotificationPublisher, NullPriceNotificationPublisher>();
+            services.TryAddScoped<ISmartTrayNotificationPublisher, NullSmartTrayNotificationPublisher>();
 
             services.DiscoverServices();
             return services;

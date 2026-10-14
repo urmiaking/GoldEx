@@ -543,3 +543,34 @@ GoldEx provides a real-time smart tray system designed to track items removed fr
 6. **Real-Time Store Sync**:
    - `SmartTrayHub` (`/hubs/smart-tray`) streams real-time state changes (`ItemAdded`, `ItemReturned`, `ItemTransferredToInvoice`, `DiscrepancyLogged`) across all active devices in the store via SignalR.
 
+---
+
+## Page & Element Smooth Motion Choreography Architecture (انیمیشن نرم جابجایی بین صفحات و عناصر)
+
+GoldEx implements a unified, high-performance page and element transition choreography system inspired by Apple interface design standards and MeetFlow:
+
+1. **Jitter-Free Stable Scroller**:
+   - `html { scrollbar-gutter: stable; overflow-x: clip; } body { overflow-x: clip; }` prevents horizontal scrollbar layout shifts (jumps) when navigating between short and tall pages.
+2. **Motion Tokens & Natural Curves**:
+   - `--gex-motion-ease: cubic-bezier(0.22, 1, 0.36, 1)` provides an organic, decelerated ease-out curve.
+   - Core keyframes: `gex-page-reveal` (subtle vertical rise + fade), `gex-section-reveal` (staggered cards & panels), `gex-soft-pop` (badges, chips, empty states), and `gex-dialog-pop` (modals).
+3. **Route Navigation Transitions**:
+   - `MainLayout.razor` wraps `@Body` in `<div class="goldex-page-container page-transition">`.
+   - `SettingsLayout.razor` wraps `@Body` in `<div class="goldex-settings-content page-transition">`.
+   - `VitrineLayout.razor` wraps `@Body` in `<div class="vitrine-page-content page-transition">`.
+   - `EmptyBoxLayout.razor` applies `.page-transition`.
+   - `GoldEx.Calculator.Client` layout (`MainLayout.razor`) wraps `@Body` in `<div class="px-2 px-md-4 calc-page-container page-transition" @key="Navigation.Uri">` with `IDisposable` subscribing to `Navigation.LocationChanged` to auto-close drawers.
+   - Dual CSS synchronization: `calculator-luxury.css` is maintained identically in both `src/Calculator/Client/GoldEx.Calculator.Client/wwwroot/assets/css/` and `src/Calculator/Server/GoldEx.Calculator.Server/wwwroot/css/`.
+4. **Staggered Element-Level Choreography**:
+   - Page headings, breadcrumbs, search bars, and toolbars animate first (`gex-section-reveal` / `calcSectionReveal`, 0.32s).
+   - Primary cards, tables, data grids, and dashboards cascade with staggered delays (`:nth-of-type(2)`: 45ms, `:nth-of-type(3)`: 85ms, `:nth-of-type(n+4)`: 125ms).
+   - Grid items animate with incremental stagger (`35ms`, `70ms`, `105ms`, `140ms`).
+   - Calculator-specific elements: `.calc-segmented-nav` with smooth active indicator glow, `.coin-card` with hover elevation and staggered entrances, `.calc-breakdown-bar` animated segment widths, and quick invoice floating FAB (`quick-invoice-fab.css`) with `calcFabSpring` and speed-dial pop.
+5. **Tactile Micro-Interactions**:
+   - Action cards, quick-action pills, price boards, and inventory items feature hardware-accelerated hover lift (`translateY(-2px)`) and smooth shadow elevation.
+   - Buttons respond with tactile press feedback (`:active { transform: translateY(1px) scale(0.98); }`).
+   - Mobile navigation bar tab icons animate with smooth lift and scale (`translateY(-2px) scale(1.08)`).
+6. **Modern View Transitions API & Accessibility**:
+   - `@view-transition { navigation: auto; }` enables seamless cross-document view transitions in modern browsers (Chromium 126+, Safari 18+).
+   - Full `@media (prefers-reduced-motion: reduce)` compliance disables all transitions for users with motion sensitivity.
+
