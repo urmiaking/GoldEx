@@ -4,9 +4,11 @@
 @using Microsoft.JSInterop
 
 @inherits LayoutComponentBase
+@implements IDisposable
 @layout BaseLayout
 
 @inject IStoreContext StoreContext
+@inject NavigationManager Navigation
 
 @if (StoreContext.IsCustomDomain)
 {
@@ -17,8 +19,10 @@ else
     <MudLayout>
         <AppBar @bind-DrawerOpen="_drawerOpen" />
         <Drawer @bind-IsDrawerOpen="_drawerOpen" />
-        <MudMainContent Class="mt-10 mb-md-4 mb-20 pa-md-4 py-4">
-            @Body
+        <MudMainContent Class="mt-10 mb-md-4 mb-20 pa-md-4 py-4 goldex-main-content">
+            <div class="goldex-page-container page-transition">
+                @Body
+            </div>
 
             <MobileNav Class="d-md-none d-block" />
         </MudMainContent>
@@ -53,6 +57,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Navigation.LocationChanged += OnLocationChanged;
+
         if (!StoreContext.IsCustomDomain)
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -64,9 +70,23 @@ else
         await base.OnInitializedAsync();
     }
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_drawerOpen)
+        {
+            _drawerOpen = false;
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     private async Task GetLicenseAsync()
     {
         _license = await LicenceService.GetLicenseAsync();
         LicenseState.Set(_license);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

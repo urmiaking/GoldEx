@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @layout BaseLayout
 @using GoldEx.Calculator.Client.Components
 @inject NavigationManager Navigation
@@ -8,7 +9,7 @@
     <CalcDrawer @bind-IsDrawerOpen="_drawerOpen" />
 
     <MudMainContent Class="mt-12 mb-sm-4 mb-20 pa-md-4 py-3">
-        <div class="px-2 px-md-4 animate-page-enter" @key="Navigation.Uri">
+        <div class="px-2 px-md-4 calc-page-container page-transition" @key="Navigation.Uri">
             @Body
         </div>
         <MobileNav Class="d-sm-none d-block" />
@@ -22,4 +23,23 @@
 {
     private bool _drawerOpen;
     private bool _historyDrawerOpen;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_drawerOpen)
+        {
+            _drawerOpen = false;
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
 }
