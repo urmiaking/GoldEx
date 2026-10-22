@@ -507,6 +507,14 @@ GoldEx employs a high-performance, non-blocking dashboard architecture on the ex
 
 ---
 
+## Customer Overview Statistics (Home Tab 4)
+
+- `CustomersInsightOverview` must get total and customer-type counts from `ICustomerService.GetOverviewAsync` (`GET /api/customers/overview`), which aggregates all customers under the active store's global query filter. Never derive these statistics from the paged recent-customer list.
+- The recent-customer request fetches only five records. Retail counts include `RetailCustomer` and `Retailer`; the colleague group includes `Wholesaler`, `MeltedGoldDealer`, `Workshop`, and `AssayingLab`, covering every current customer type.
+- Customer percentages use decimal arithmetic and invariant formatting so fractional percentages remain valid CSS widths. Refresh both the overview and recent list after creating a customer from the home tab.
+
+---
+
 ## Smart Showcase Tray Architecture (سینی هوشمند پیش‌خوان)
 
 GoldEx provides a real-time smart tray system designed to track items removed from jewelry showcases during customer viewings and counter negotiations:

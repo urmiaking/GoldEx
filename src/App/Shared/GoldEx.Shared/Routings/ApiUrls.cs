@@ -188,6 +188,7 @@ public class ApiUrls
 
     public class Customers
     {
+        public static string GetOverview() => BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Overview);
         public static string GetList(RequestFilter filter, CustomerFilter customerFilter) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetList)
                 .AppendQueryString(filter)

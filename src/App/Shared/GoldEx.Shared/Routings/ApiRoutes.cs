@@ -105,6 +105,7 @@ public static class ApiRoutes
     public class Customers
     {
         public const string Base = "/api/customers";
+        public const string Overview = "overview";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string GetByNationalId = "national-id/{nationalId}";

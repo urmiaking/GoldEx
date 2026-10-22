@@ -14,6 +14,18 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class CustomerService(HttpClient client, JsonSerializerOptions jsonOptions) : ICustomerService
 {
+    public async Task<GetCustomerOverviewResponse> GetOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Customers.GetOverview(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetCustomerOverviewResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter,
         CancellationToken cancellationToken = default)
     {

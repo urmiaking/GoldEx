@@ -10,6 +10,7 @@ public interface ICustomerRepository : IRepository<Customer>,
     IUpdateRepository<Customer>,
     IDeleteRepository<Customer>
 {
+    Task<GetCustomerOverviewResponse> GetOverviewAsync(CancellationToken cancellationToken = default);
     Task<PagedList<Customer>> GetListAsync(CustomerFilter customerFilter, RequestFilter filter,
         CancellationToken cancellationToken = default);
 }
