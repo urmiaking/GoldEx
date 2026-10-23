@@ -14,6 +14,13 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class CustomersController(ICustomerService service) : ApiControllerBase
 {
+    [HttpGet(ApiRoutes.Customers.Overview)]
+    public async Task<IActionResult> GetOverviewAsync(CancellationToken cancellationToken)
+    {
+        var overview = await service.GetOverviewAsync(cancellationToken);
+        return Ok(overview);
+    }
+
     [HttpGet(ApiRoutes.Customers.GetList)]
     public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] CustomerFilter customerFilter, 
         CancellationToken cancellationToken)

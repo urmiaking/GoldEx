@@ -139,7 +139,7 @@
                         <div class="customer-insight-list">
                             @foreach (var customer in _customers.Take(5))
                             {
-                                var isWholesale = customer.CustomerType == CustomerType.Wholesaler || customer.CustomerType == CustomerType.MeltedGoldDealer || customer.CustomerType == CustomerType.Workshop;
+                                var isWholesale = customer.CustomerType == CustomerType.Wholesaler || customer.CustomerType == CustomerType.MeltedGoldDealer || customer.CustomerType == CustomerType.Workshop || customer.CustomerType == CustomerType.AssayingLab;
 
                                 <div class="customer-insight-item d-flex align-center justify-space-between pa-2 mb-2 rounded-lg border-subtle">
                                     <div class="d-flex align-center gap-2">
@@ -186,20 +186,20 @@
                         <div class="breakdown-stat-row mb-3">
                             <div class="d-flex justify-space-between mb-1">
                                 <span class="stat-name">مشتریان خرده‌فروشی</span>
-                                <span class="stat-num">@RetailCustomersCount نفر (@(TotalCustomersCount > 0 ? (RetailCustomersCount * 100 / TotalCustomersCount) : 0)%)</span>
+                                <span class="stat-num">@RetailCustomersCount نفر (@GetCustomerPercentage(RetailCustomersCount)%)</span>
                             </div>
                             <div class="stat-progress-bar">
-                                <div class="progress-fill info" style="width: @(TotalCustomersCount > 0 ? (RetailCustomersCount * 100 / TotalCustomersCount) : 0)%"></div>
+                                <div class="progress-fill info" style="width: @GetCustomerPercentage(RetailCustomersCount)%"></div>
                             </div>
                         </div>
 
                         <div class="breakdown-stat-row mb-4">
                             <div class="d-flex justify-space-between mb-1">
                                 <span class="stat-name">همکاران، بنکداران و کارگاه‌ها</span>
-                                <span class="stat-num">@WholesaleCustomersCount نفر (@(TotalCustomersCount > 0 ? (WholesaleCustomersCount * 100 / TotalCustomersCount) : 0)%)</span>
+                                <span class="stat-num">@WholesaleCustomersCount نفر (@GetCustomerPercentage(WholesaleCustomersCount)%)</span>
                             </div>
                             <div class="stat-progress-bar">
-                                <div class="progress-fill warning" style="width: @(TotalCustomersCount > 0 ? (WholesaleCustomersCount * 100 / TotalCustomersCount) : 0)%"></div>
+                                <div class="progress-fill warning" style="width: @GetCustomerPercentage(WholesaleCustomersCount)%"></div>
                             </div>
                         </div>
 

@@ -1,5 +1,8 @@
 using FluentValidation;
 using FluentValidation.Results;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Application.Validators.Reporting;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -24,6 +27,15 @@ internal class ReportingService(
     IInventoryStockRepository inventoryStockRepository,
     IMapper mapper) : IReportingService
 {
+    public async Task<ProfitAnalysisRpResponse> GetProfitAnalysisAsync(ProfitAnalysisRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await new ProfitAnalysisRpRequestValidator()
+            .ValidateAndThrowAsync(request, cancellationToken);
+        var data = await invoiceRepository.GetProfitAnalysisDataAsync(request, cancellationToken);
+        return ProfitAnalysisBuilder.Build(data.Lines, data.ProductsWithOtherMovements, request);
+    }
+
     public async Task<List<LedgerAccountStatementRpResponse>> GetLedgerAccountStatementsAsync(
         LedgerAccountStatementRpRequest request,
         CancellationToken cancellationToken = default)

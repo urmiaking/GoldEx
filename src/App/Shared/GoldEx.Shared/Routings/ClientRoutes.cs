@@ -146,6 +146,7 @@ public static class ClientRoutes
 
     public static class Reporting
     {
+        public const string ProfitAnalysis = "/reporting/profit-analysis";
         private const string ReportingPrefix = "/reporting";
         public const string Index = $"{ReportingPrefix}";
         public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
@@ -167,6 +168,7 @@ public static class ClientRoutes
         public static class Print
         {
             private const string PrintPrefix = "/reporting/print";
+            public const string ProfitAnalysis = $"{PrintPrefix}/profit-analysis";
 
             public const string LedgerAccountDetails = $"{PrintPrefix}/ledger-account-details";
             public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";

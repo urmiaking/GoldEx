@@ -17,6 +17,25 @@ namespace GoldEx.Server.Infrastructure.Repositories;
 internal class CustomerRepository(GoldExDbContext dbContext)
     : RepositoryBase<Customer>(dbContext), ICustomerRepository
 {
+    public async Task<GetCustomerOverviewResponse> GetOverviewAsync(CancellationToken cancellationToken = default)
+    {
+        // Aggregate the active store's complete customer set, independently of list pagination.
+        return await Query
+            .AsNoTracking()
+            .GroupBy(c => 1)
+            .Select(g => new GetCustomerOverviewResponse
+            {
+                TotalCustomersCount = g.Count(),
+                RetailCustomersCount = g.Count(c => c.CustomerType == CustomerType.RetailCustomer
+                    || c.CustomerType == CustomerType.Retailer),
+                WholesaleCustomersCount = g.Count(c => c.CustomerType == CustomerType.Wholesaler
+                    || c.CustomerType == CustomerType.MeltedGoldDealer
+                    || c.CustomerType == CustomerType.Workshop
+                    || c.CustomerType == CustomerType.AssayingLab)
+            })
+            .SingleOrDefaultAsync(cancellationToken) ?? new GetCustomerOverviewResponse();
+    }
+
     public async Task<PagedList<Customer>> GetListAsync(
         CustomerFilter customerFilter,
         RequestFilter filter,

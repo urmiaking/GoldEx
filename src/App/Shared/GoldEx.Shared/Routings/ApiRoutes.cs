@@ -105,6 +105,7 @@ public static class ApiRoutes
     public class Customers
     {
         public const string Base = "/api/customers";
+        public const string Overview = "overview";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string GetByNationalId = "national-id/{nationalId}";
@@ -337,6 +338,7 @@ public static class ApiRoutes
 
     public class Reporting
     {
+        public const string GetProfitAnalysis = "profit-analysis";
         public const string Base = "/api/reporting";
         public const string GetLedgerAccountStatements = "ledger-account-statements";
         public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";

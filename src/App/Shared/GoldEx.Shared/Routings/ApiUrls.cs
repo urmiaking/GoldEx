@@ -188,6 +188,7 @@ public class ApiUrls
 
     public class Customers
     {
+        public static string GetOverview() => BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Overview);
         public static string GetList(RequestFilter filter, CustomerFilter customerFilter) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetList)
                 .AppendQueryString(filter)
@@ -640,6 +641,9 @@ public class ApiUrls
 
     public class Reporting
     {
+        public static string GetProfitAnalysis(ProfitAnalysisRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetProfitAnalysis).AppendQueryString(request);
+
         public static string GetLedgerAccountStatements(LedgerAccountStatementRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountStatements)
                 .AppendQueryString(request);

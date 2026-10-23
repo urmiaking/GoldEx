@@ -12,6 +12,11 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class ReportingController(IReportingService service) : ApiControllerBase
 {
+    [HttpGet(ApiRoutes.Reporting.GetProfitAnalysis)]
+    public async Task<IActionResult> GetProfitAnalysisAsync([FromQuery] ProfitAnalysisRpRequest request,
+        CancellationToken cancellationToken = default)
+        => Ok(await service.GetProfitAnalysisAsync(request, cancellationToken));
+
     [HttpGet(ApiRoutes.Reporting.GetLedgerAccountStatements)]
     public async Task<IActionResult> GetLedgerAccountStatementsAsync(
         [FromQuery] LedgerAccountStatementRpRequest request,

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Invoice>(dbContext), IInvoiceRepository
+internal partial class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Invoice>(dbContext), IInvoiceRepository
 {
     public async Task<long> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {

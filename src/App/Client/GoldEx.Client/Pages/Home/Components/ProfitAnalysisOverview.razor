@@ -1,0 +1,81 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.Reporting
+@using GoldEx.Shared.Services.Abstractions
+
+<div class="goldex-glass-card pa-4 profit-overview">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-3">
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Insights" Size="Size.Small" />
+            <span class="card-section-title">سود فروش ماه جاری</span>
+        </div>
+        <MudButton Href="@_reportUrl" Color="Color.Default" Variant="Variant.Text" Size="Size.Small"
+                   EndIcon="@Icons.Material.Filled.ArrowBack">مشاهده گزارش</MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="row g-3" role="status" aria-label="در حال دریافت خلاصه سود">
+            @for (var i = 0; i < 4; i++)
+            { <div class="col-6 col-lg-3"><MudSkeleton Height="72px" /></div> }
+        </div>
+    }
+    else if (_data is null)
+    { <MudText Typo="Typo.body2">خلاصه دریافت نشد. برای تلاش دوباره، گزارش را باز کنید.</MudText> }
+    else if (SelectedSummary is { } summary)
+    {
+        <div class="d-flex align-center gap-3 mb-3">
+            @if (_data.Summaries.Count > 1)
+            {
+                <MudSelect T="Guid?" Label="واحد گزارش" @bind-Value="_selectedUnitId" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    @foreach (var unit in _data.Summaries)
+                    { <MudSelectItem T="Guid?" Value="@((Guid?)unit.PriceUnitId)">@unit.PriceUnit</MudSelectItem> }
+                </MudSelect>
+            }
+            else
+            { <MudText Typo="Typo.body2">واحد: @summary.PriceUnit</MudText> }
+        </div>
+        <div class="row g-3">
+            @foreach (var stat in new[] { ("سود ناخالص", summary.GrossProfit), ("اثر نرخ طلا", summary.GoldPriceEffect), ("اثر ارز", summary.ExchangeRateEffect), ("حاشیه معامله", summary.TradingMargin) })
+            {
+                <div class="col-6 col-lg-3">
+                    <div class="rounded-lg border-subtle pa-3 h-100">
+                        <MudText Typo="Typo.body2">@stat.Item1</MudText>
+                        <div class="profit-overview-number">@stat.Item2.ToCurrencyFormat(summary.PriceUnit)</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    { <MudText Typo="Typo.body2">در این ماه فروش قابل محاسبه‌ای ثبت نشده است.</MudText> }
+
+    @if (!_loading && _data is not null)
+    {
+        <div class="profit-overview-footer d-flex align-center justify-space-between flex-wrap gap-2">
+            <MudText Typo="Typo.body2">@_data.CalculatedCount ردیف فروش</MudText>
+            <MudText Typo="Typo.body2">پیش از هزینه‌های مغازه</MudText>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private ProfitAnalysisRpResponse? _data;
+    private Guid? _selectedUnitId;
+    private string _reportUrl = ClientRoutes.Reporting.ProfitAnalysis;
+    private GoldEx.Shared.DTOs.Reporting.ProfitAnalysisSummary? SelectedSummary
+        => _data?.Summaries.FirstOrDefault(s => s.PriceUnitId == _selectedUnitId) ?? _data?.Summaries.FirstOrDefault();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var today = DateTime.Today;
+        var start = today.GetMonthStart();
+        _reportUrl = ClientRoutes.Reporting.ProfitAnalysis.AppendQueryString(new { Start = start, End = today });
+        try
+        {
+            _data = await SendRequestAsync<IReportingService, ProfitAnalysisRpResponse>(
+                (s, ct) => s.GetProfitAnalysisAsync(new(start, today, SummaryOnly: true), ct), createScope: true);
+        }
+        finally { _loading = false; }
+    }
+}

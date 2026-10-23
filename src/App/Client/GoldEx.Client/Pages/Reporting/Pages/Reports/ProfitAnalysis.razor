@@ -1,0 +1,19 @@
+@attribute [Route(ClientRoutes.Reporting.ProfitAnalysis)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits ProfitAnalysisPageBase
+
+<PageTitle>گزارش تحلیل سود فروش</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
+        <SeparatorTemplate><MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" /></SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <ReportFiltersBase Model="Filters" OnSubmit="OnSubmit">
+        <ProfitAnalysisFilters Model="Filters" />
+    </ReportFiltersBase>
+
+    <ProfitAnalysisReportView Report="Data" IsLoading="IsLoading" OnPrintReport="PrintReport" />
+</MudContainer>
+
+<script src="@Assets["js/report-print.js"]"></script>

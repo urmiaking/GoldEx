@@ -21,15 +21,17 @@ public partial class CustomersInsightOverview : IAsyncDisposable
     private List<CustomerBalanceRpSummary> _overallBalances = [];
     private int _currentBalanceIndex = 0;
     private Timer? _slideTimer;
-    private int _totalCustomersCount;
+    private GetCustomerOverviewResponse _customerOverview = new();
 
-    private int TotalCustomersCount => _totalCustomersCount > 0 ? _totalCustomersCount : _customers.Count;
+    private int TotalCustomersCount => _customerOverview.TotalCustomersCount;
 
-    private int RetailCustomersCount => _customers
-        .Count(x => x.CustomerType == CustomerType.RetailCustomer || x.CustomerType == CustomerType.Retailer);
+    private int RetailCustomersCount => _customerOverview.RetailCustomersCount;
 
-    private int WholesaleCustomersCount => _customers
-        .Count(x => x.CustomerType == CustomerType.Wholesaler || x.CustomerType == CustomerType.MeltedGoldDealer || x.CustomerType == CustomerType.Workshop);
+    private int WholesaleCustomersCount => _customerOverview.WholesaleCustomersCount;
+
+    private string GetCustomerPercentage(int count) =>
+        (TotalCustomersCount > 0 ? count * 100m / TotalCustomersCount : 0m)
+            .ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 
     private CustomerBalanceRpSummary? CurrentOverallBalance =>
         _overallBalances.Count > 0 ? _overallBalances[_currentBalanceIndex % _overallBalances.Count] : null;
@@ -43,7 +45,13 @@ public partial class CustomersInsightOverview : IAsyncDisposable
 
     private async Task LoadCustomersAsync()
     {
-        var filter = new RequestFilter(0, 200, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+        await SendRequestAsync<ICustomerService, GetCustomerOverviewResponse>(
+            action: (service, token) => service.GetOverviewAsync(token),
+            afterSend: response => _customerOverview = response,
+            createScope: true
+        );
+
+        var filter = new RequestFilter(0, 5, null, null, Sdk.Common.Definitions.SortDirection.Descending);
         var customerFilter = new CustomerFilter(null, null, null, null);
 
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
@@ -51,7 +59,6 @@ public partial class CustomersInsightOverview : IAsyncDisposable
             afterSend: response =>
             {
                 _customers = response.Data;
-                _totalCustomersCount = response.Total;
             },
             createScope: true
         );

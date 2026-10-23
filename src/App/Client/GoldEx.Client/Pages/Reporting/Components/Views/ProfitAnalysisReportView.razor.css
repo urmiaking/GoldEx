@@ -1,0 +1,29 @@
+::deep .profit-number {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--mud-palette-text-primary);
+}
+
+::deep .profit-margin {
+    font-weight: 600;
+}
+
+::deep .profit-meta {
+    color: var(--mud-palette-text-primary);
+}
+
+::deep .profit-actions-cell {
+    min-width: 88px;
+}
+
+.profit-row-actions {
+    flex-wrap: nowrap;
+}
+
+::deep .profit-row-actions .mud-icon-button {
+    flex-shrink: 0;
+}
+
+::deep .mud-table-cell {
+    vertical-align: middle;
+}

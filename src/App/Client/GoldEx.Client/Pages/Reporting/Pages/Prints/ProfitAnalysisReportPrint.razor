@@ -1,0 +1,45 @@
+@attribute [Route(ClientRoutes.Reporting.Print.ProfitAnalysis)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@layout PrintLayout
+@inherits ProfitAnalysisPageBase
+
+<link href="/css/reports/report-base.css" rel="stylesheet" />
+<link href="/css/reports/report-components.css" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css" rel="stylesheet" />
+<link href="/css/reports/report-print.css" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="IsLoading" FromDate="Filters.DateRange?.Start" ToDate="Filters.DateRange?.End"
+                 Data="Data" ReportTitle="گزارش تحلیل سود فروش" Summary="PrintSummary">
+    @if (Data is not null)
+    {
+        <p>تعداد ردیف‌های گزارش: @Data.CalculatedCount</p>
+        <p>مبالغ بدون مالیات، پس از سهم تخفیف و پیش از هزینه‌های مغازه هستند. فقط فروش‌های دارای اطلاعات خرید و نرخ تاریخی قابل محاسبه در این گزارش آمده‌اند.</p>
+        <table class="table">
+            <thead><tr>
+                <th>فروش / تاریخ</th><th>کالا / مشتری</th><th>گرم ۱۸</th><th>فروش خالص</th>
+                <th>بهای خرید</th><th>سود ناخالص</th><th>اثر نرخ طلا</th><th>اثر ارز</th><th>حاشیه معامله</th>
+            </tr></thead>
+            <tbody>
+                @foreach (var item in Data.Items)
+                {
+                    <tr>
+                        <td>#@item.InvoiceNumber<br />@item.InvoiceDate.ToShortDateString()</td>
+                        <td>@item.ProductName (@item.Barcode)<br />@item.CustomerName</td>
+                        <td>@Math.Round(item.WeightEquivalent, 3).ToWeightFormat(GoldUnitType.Gram)</td>
+                        <td>@Money(item.NetSales, item.PriceUnit)</td>
+                        <td>@Money(item.PurchaseCost, item.PriceUnit)</td>
+                        <td>@Money(item.GrossProfit, item.PriceUnit)</td>
+                        <td>@Money(item.GoldPriceEffect, item.PriceUnit)</td>
+                        <td>@Money(item.ExchangeRateEffect, item.PriceUnit)</td>
+                        <td>@Money(item.TradingMargin, item.PriceUnit)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</ReportPrintBase>
+
+@if (!IsLoading && Data is null)
+{ <MudText>گزارش کامل دریافت نشد. صفحه را دوباره باز کنید.</MudText> }
+
+<script src="@Assets["js/report-print.js"]"></script>

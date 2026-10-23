@@ -4,6 +4,8 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IReportingService
 {
+    Task<ProfitAnalysisRpResponse> GetProfitAnalysisAsync(ProfitAnalysisRpRequest request, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Get ledger account transactions report for given ledger account
     /// </summary>

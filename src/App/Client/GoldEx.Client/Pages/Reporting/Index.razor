@@ -15,6 +15,12 @@
     <MudDivider Class="mb-4" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="تحلیل سود فروش"
+                           Description="سود معامله و اثر تغییر نرخ طلا"
+                           StartIcon="@Icons.Material.Filled.Insights"
+                           Href="@ClientRoutes.Reporting.ProfitAnalysis" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="گردش حساب"
                            Locked="_license?.IsExpired ?? false"
                            Description="ریز بدهکار/بستانکار حساب های دفتری"

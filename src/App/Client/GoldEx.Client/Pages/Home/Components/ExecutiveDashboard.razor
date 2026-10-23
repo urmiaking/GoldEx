@@ -326,4 +326,11 @@
             </div>
         </div>
     </div>
+    <AuthorizeView Roles="@($"{BuiltinRoles.Administrators},{BuiltinRoles.Owners}")">
+        <Authorized>
+            <div class="row g-4 mt-1">
+                <div class="col-12"><ProfitAnalysisOverview /></div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 </div>

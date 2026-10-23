@@ -38,6 +38,9 @@ internal class CustomerService(
     CustomerRequestDtoValidator validator,
     DeleteCustomerValidator deleteValidator) : ICustomerService, IServerCustomerService
 {
+    public Task<GetCustomerOverviewResponse> GetOverviewAsync(CancellationToken cancellationToken = default)
+        => repository.GetOverviewAsync(cancellationToken);
+
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter,
         CancellationToken cancellationToken = default)
     {
