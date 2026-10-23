@@ -11,6 +11,16 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOptions) : IReportingService
 {
+    public async Task<ProfitAnalysisRpResponse> GetProfitAnalysisAsync(ProfitAnalysisRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetProfitAnalysis(request), cancellationToken);
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+        return await response.Content.ReadFromJsonAsync<ProfitAnalysisRpResponse>(jsonOptions, cancellationToken)
+            ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<List<LedgerAccountStatementRpResponse>> GetLedgerAccountStatementsAsync(
         LedgerAccountStatementRpRequest request, CancellationToken cancellationToken = default)
     {

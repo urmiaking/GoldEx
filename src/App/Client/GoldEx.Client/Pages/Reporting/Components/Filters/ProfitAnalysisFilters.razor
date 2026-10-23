@@ -1,0 +1,27 @@
+@using GoldEx.Shared.DTOs.Customers
+@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="ProductType?" Label="@Model.GetDisplayName(() => Model.ProductType)"
+               @bind-Value="Model.ProductType" Variant="Variant.Outlined" Margin="Margin.Dense">
+        <MudSelectItem T="ProductType?" Value="@((ProductType?)null)">طلا و جواهر</MudSelectItem>
+        <MudSelectItem T="ProductType?" Value="@((ProductType?)ProductType.Gold)">طلای ساخته‌شده</MudSelectItem>
+        <MudSelectItem T="ProductType?" Value="@((ProductType?)ProductType.Jewelry)">جواهر</MudSelectItem>
+    </MudSelect>
+</MudItem>
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?" Label="@Model.GetDisplayName(() => Model.CategoryId)" @bind-Value="Model.CategoryId"
+               Clearable="true" Variant="Variant.Outlined" Margin="Margin.Dense">
+        @foreach (var category in _categories)
+        {
+            <MudSelectItem T="Guid?" Value="@((Guid?)category.Id)">@category.Title</MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+<MudItem xs="12" sm="6" md="2">
+    <MudAutocomplete T="GetCustomerResponse" Label="@Model.GetDisplayName(() => Model.CustomerId)"
+                     Value="_customer" ValueChanged="CustomerChanged" SearchFunc="SearchCustomers"
+                     ToStringFunc="@(c => c?.FullName ?? string.Empty)" Placeholder="جستجوی طرف حساب…"
+                     Clearable="true" ResetValueOnEmptyText="true" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Person" Variant="Variant.Outlined" Margin="Margin.Dense" />
+</MudItem>

@@ -338,6 +338,7 @@ public static class ApiRoutes
 
     public class Reporting
     {
+        public const string GetProfitAnalysis = "profit-analysis";
         public const string Base = "/api/reporting";
         public const string GetLedgerAccountStatements = "ledger-account-statements";
         public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";

@@ -307,7 +307,11 @@ internal class AccountingTransactionService(
                         foreach (var saleItem in invoice.ProductItems)
                         {
                             var purchaseInvoice = await invoiceRepository
-                                .Get(new InvoicesByProductIdSpecification(saleItem.ProductId))
+                                .Get(new InvoicesByProductIdSpecification(saleItem.ProductId, InvoiceType.Purchase))
+                                .Where(x => x.ProductItems.Any(p => p.ProductId == saleItem.ProductId) &&
+                                    (x.InvoiceDate < invoice.InvoiceDate ||
+                                     (x.InvoiceDate == invoice.InvoiceDate && x.CreatedAt <= invoice.CreatedAt)))
+                                .OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.CreatedAt)
                                 .FirstOrDefaultAsync(cancellationToken)
                                     ?? throw new NotFoundException($"Purchase invoice for product {saleItem.ProductId.Value} not found.");
 

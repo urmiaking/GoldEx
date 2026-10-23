@@ -1,0 +1,53 @@
+@using GoldEx.Shared.DTOs.Reporting
+
+@if (Report is not null)
+{
+    <MudCard Elevation="24" Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent><MudText Typo="Typo.h6">خلاصه گزارش</MudText></CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="3" Class="mb-4">
+                <MudText Typo="Typo.body2">تعداد ردیف‌های گزارش: @Report.CalculatedCount</MudText>
+            </MudStack>
+            <MudGrid Spacing="3">
+                @foreach (var unit in Report.Summaries)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Elevation="12">
+                            <MudCardHeader Class="pa-3">
+                                <CardHeaderContent><MudText Typo="Typo.h6">@unit.PriceUnit</MudText></CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent Class="pa-3">
+                                <MudStack Spacing="3">
+                                    @foreach (var item in SummaryItems(unit))
+                                    {
+                                        <div class="d-flex justify-space-between align-center gap-3">
+                                            <MudText Typo="Typo.body2">@item.Label</MudText>
+                                            <MudText Typo="Typo.body2" Style="font-variant-numeric: tabular-nums;">@item.Value.ToCurrencyFormat(unit.PriceUnit)</MudText>
+                                        </div>
+                                    }
+                                    <MudDivider />
+                                    <div class="d-flex justify-space-between align-center gap-3">
+                                        <MudText Typo="Typo.body1" Style="font-weight: 600;">حاشیه معامله</MudText>
+                                        <MudText Typo="Typo.body1" Style="font-weight: 600; font-variant-numeric: tabular-nums;">@unit.TradingMargin.ToCurrencyFormat(unit.PriceUnit)</MudText>
+                                    </div>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+            <MudText Typo="Typo.body2" Class="mt-4">مبالغ پیش از هزینه‌های مغازه هستند؛ اثر تغییر قیمت طلا از زمان خرید تا فروش محاسبه شده است.</MudText>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public ProfitAnalysisRpResponse? Report { get; set; }
+    private static (string Label, decimal Value)[] SummaryItems(GoldEx.Shared.DTOs.Reporting.ProfitAnalysisSummary unit) =>
+    [
+        ("فروش خالص", unit.NetSales), ("بهای خرید", unit.PurchaseCost), ("سود ناخالص", unit.GrossProfit),
+        ("اثر نرخ طلا", unit.GoldPriceEffect), ("اثر ارز", unit.ExchangeRateEffect)
+    ];
+}

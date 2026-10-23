@@ -641,6 +641,9 @@ public class ApiUrls
 
     public class Reporting
     {
+        public static string GetProfitAnalysis(ProfitAnalysisRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetProfitAnalysis).AppendQueryString(request);
+
         public static string GetLedgerAccountStatements(LedgerAccountStatementRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountStatements)
                 .AppendQueryString(request);

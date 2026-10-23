@@ -1,5 +1,6 @@
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
@@ -14,6 +15,7 @@ public interface IInvoiceRepository : IRepository<Invoice>,
     IUpdateRepository<Invoice>,
     IDeleteRepository<Invoice>
 {
+    Task<ProfitAnalysisData> GetProfitAnalysisDataAsync(ProfitAnalysisRpRequest request, CancellationToken cancellationToken = default);
     Task<long> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default);
     Task<List<Invoice>> GetOverdueInvoicesAsync(CancellationToken cancellationToken = default);
     Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(CategorySalesRpRequest request, CancellationToken cancellationToken = default);

@@ -1,0 +1,17 @@
+.profit-overview {
+    color: var(--mud-palette-text-primary);
+}
+
+.profit-overview-number {
+    margin-top: 8px;
+    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.profit-overview-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--mud-palette-divider);
+}
