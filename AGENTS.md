@@ -138,6 +138,7 @@ Never:
 - Change accounting logic casually
 - Break inventory balance consistency
 - Modify invoice calculation formulas without validation
+- Keep profit-analysis reporting isolated from invoice posting: do not alter AccountingTransactionService.BuildTransactionsForInvoiceAsync or its purchase/COGS lookup solely for report logic.
 
 Prefer:
 - decimal types
