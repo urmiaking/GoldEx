@@ -1,0 +1,187 @@
+/* Workspace geometry is shared by the top bar, drawers, body and viewport-sized tables. */
+:root {
+    --gex-appbar-height: 60px;
+    --gex-content-gap: 12px;
+    --gex-viewport-height: 100vh;
+    --gex-table-layout-delta: 0px;
+}
+@supports (height: 100dvh) {
+    :root { --gex-viewport-height: 100dvh; }
+}
+.goldex-shell {
+    --mud-appbar-height: var(--gex-appbar-height);
+    --gex-content-offset: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + var(--gex-content-gap));
+    /* Previous shell started its content at 40px margin + 16px padding. */
+    --gex-table-layout-delta: calc(var(--gex-content-offset) - 56px);
+}
+.goldex-shell .gex-appbar {
+    height: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    background: var(--mud-palette-appbar-background);
+    color: var(--mud-palette-text-primary);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    box-shadow: 0 3px 14px rgba(10, 30, 40, .035);
+}
+.gex-appbar .gex-appbar-toolbar {
+    height: var(--gex-appbar-height);
+    min-height: var(--gex-appbar-height);
+    padding: 0 20px;
+    gap: 8px;
+}
+.gex-appbar .mud-icon-button {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    margin: 0;
+}
+.gex-appbar .gex-appearance-button { width: 40px; height: 40px; padding: 8px; color: var(--mud-palette-appbar-text); }
+.gex-appbar-brand { margin-inline: 0 12px; flex-shrink: 0; }
+.gex-appbar-clock { color: var(--mud-palette-appbar-text); margin-inline-end: 8px; }
+.gex-appbar .license-badge { min-width: 0; max-height: none; margin-right: 0; }
+.gex-appbar .license-info { min-width: 0; }
+.goldex-shell .goldex-main-content {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: var(--gex-content-offset) 16px 32px;
+}
+.goldex-shell .mud-drawer-fixed.mud-drawer-clipped-always {
+    top: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px));
+    height: calc(100% - var(--gex-appbar-height) - env(safe-area-inset-top, 0px));
+}
+.store-switcher-btn {
+    min-height: 40px;
+    max-width: 240px;
+    padding: 6px 12px;
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: 12px;
+    background: var(--mud-palette-background);
+    color: var(--mud-palette-text-primary);
+    font: inherit;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 160ms ease, background-color 160ms ease;
+}
+.store-switcher-btn:hover { border-color: var(--mud-palette-primary); }
+.store-switcher-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.store-switcher-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    overflow: hidden;
+}
+.store-switcher-logo img { width: 100%; height: 100%; object-fit: cover; }
+.gex-appearance-controls { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.gex-appearance-label { color: var(--mud-palette-text-secondary); margin-inline-end: auto; font-size: 13px; }
+.gex-appearance-button {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--mud-palette-text-secondary);
+    cursor: pointer;
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+.gex-appearance-button:hover { background: var(--mud-palette-background-gray); color: var(--mud-palette-text-primary); }
+.gex-appearance-button:active { transform: scale(.96); }
+.gex-appearance-button:disabled, .gex-palette-option:disabled { cursor: wait; }
+.gex-appearance-button:focus-visible, .gex-palette-option:focus-visible, .store-switcher-btn:focus-visible {
+    outline: 3px solid var(--mud-palette-primary);
+    outline-offset: 3px;
+}
+.gex-palette-popover {
+    position: fixed;
+    inset: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + 12px)  auto auto 24px;
+    width: min(380px, calc(100vw - 24px));
+    max-height: calc(100dvh - var(--gex-appbar-height) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px);
+    margin: 0;
+    padding: 20px;
+    overflow-y: auto;
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: 18px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .16);
+    font-family: inherit;
+}
+.gex-palette-popover:popover-open { animation: gex-palette-open 180ms cubic-bezier(.22,1,.36,1); }
+.gex-palette-popover::backdrop { background: transparent; }
+.gex-palette-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+.gex-palette-heading h2 { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
+.gex-palette-heading p, .gex-palette-status { margin: 0; font-size: 12px; line-height: 1.8; color: var(--mud-palette-text-secondary); }
+.gex-palette-heading .gex-appearance-button { margin-top: -8px; margin-inline-end: -8px; }
+.gex-palette-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gex-palette-option {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: 12px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    font: inherit;
+    cursor: pointer;
+}
+.gex-palette-option.selected { border-color: var(--mud-palette-primary); box-shadow: 0 0 0 1px var(--mud-palette-primary); }
+.gex-palette-preview { display: flex; width: 100%; height: 46px; overflow: hidden; border-radius: 7px; }
+.gex-palette-preview > span { display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 5px; padding: 9px; }
+.gex-palette-preview i { display: block; height: 5px; border-radius: 3px; background: currentColor; }
+.gex-palette-preview i + i { width: 65%; opacity: .55; }
+.gex-palette-name { min-height: 34px; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; }
+.gex-palette-status { margin-top: 16px; }
+@keyframes gex-palette-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Only explicit appearance changes own these root snapshots. Keep the dark snapshot above light on return. */
+html[data-gex-appearance-transition]::view-transition-old(root),
+html[data-gex-appearance-transition]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+html[data-gex-appearance-transition]::view-transition-old(root) { z-index: 1; }
+html[data-gex-appearance-transition]::view-transition-new(root) { z-index: 2; }
+html[data-gex-appearance-transition=contract]::view-transition-old(root) { z-index: 2; }
+html[data-gex-appearance-transition=contract]::view-transition-new(root) { z-index: 1; }
+html[data-gex-appearance-transition]::view-transition-group(root) { animation-duration: .8s; }
+html[data-gex-appearance-transition] *,
+html[data-gex-appearance-transition] *::before,
+html[data-gex-appearance-transition] *::after { transition: none !important; }
+
+@media (max-width: 959.98px) {
+    :root { --gex-appbar-height: 56px; }
+    .gex-appbar .gex-appbar-toolbar { padding-inline: 16px; gap: 8px; }
+    .gex-appbar .mud-icon-button,
+    .gex-appbar .gex-appearance-button { width: 44px; height: 44px; padding: 10px; }
+    .gex-appbar .store-switcher-btn { min-height: 44px; }
+    .gex-appbar-help { display: none; }
+    .goldex-shell .goldex-main-content { padding-inline: 12px; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 960px) and (max-width: 1279.98px) {
+    .gex-appbar .gex-appbar-toolbar { padding-inline: 20px; gap: 8px; }
+    .gex-appbar .store-switcher-btn { max-width: 170px; }
+    .gex-appbar-brand { margin-inline-end: 0; }
+    .gex-appbar .license-badge { gap: 6px; max-width: 230px; }
+}
+@media (max-width: 599.98px) {
+    .gex-appbar .gex-appbar-toolbar { padding-inline: 8px; gap: 6px; }
+    .gex-appbar-settings { display: none; }
+    .gex-appbar .store-switcher-btn { width: 44px; padding: 6px; }
+    .gex-appbar .store-switcher-btn > .mud-icon-root { display: none; }
+    .gex-palette-popover { left: 12px; padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-appearance-button, .store-switcher-btn { transition: none; }
+    .gex-palette-popover:popover-open { animation: none; }
+}

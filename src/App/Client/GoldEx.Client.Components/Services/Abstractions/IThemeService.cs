@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+using MudBlazor;
+using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Components.Services.Abstractions;
 
@@ -7,10 +8,11 @@ public interface IThemeService
     bool IsDarkMode { get; }
     string CurrentPalette { get; }
     MudTheme CurrentTheme { get; }
-    event EventHandler OnToggleMode;
-    event EventHandler OnPaletteChanged;
-
+    bool IsChanging { get; }
+    event Func<Task>? OnAppearanceChanged;
     void ToggleMode();
-    Task SetPaletteAsync(string paletteName);
+    Task ToggleModeAsync(ElementReference source);
+    Task SetPaletteAsync(string paletteName, ElementReference source);
     Task LoadSettingsAsync();
+    Task SyncBrowserAsync();
 }

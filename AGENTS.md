@@ -117,6 +117,7 @@ Rules:
 - Prefer strongly typed value objects
 
 ### Frontend
+- When reading or rewriting Persian source files through Python on Windows, always specify `encoding="utf-8-sig"` for reads (accepting existing BOMs) and `encoding="utf-8"` for writes. Never rely on `Path.read_text()`'s platform default: decoding UTF-8 through Windows-1252 corrupts Persian C# strings even when Razor text remains intact. The palette-name Unicode regression check is included in `scripts/tests/appearance.test.mjs`.
 - Use MudBlazor components
 - Keep components reusable
 - Minimize code-behind complexity
@@ -209,6 +210,8 @@ GoldEx supports a hybrid licensing system designed for multi-tenant and multi-st
 
 GoldEx Calculator (`GoldEx.Calculator.Client`) is an offline-first client-side tool (PWA/Wasm) designed to manage invoices and store profiles independently of the backend database.
 
+- **Server startup dependency**: `GoldEx.Calculator.Server` still requires `ConnectionStrings:GoldEx` for the shared `GoldExDbContext` and SQL-backed data-protection keys, and its startup checks/applies that context's migrations. The offline-first behavior describes client invoice/profile storage, not a database-free server host. For local runs, supply the existing development database configuration through the calculator process environment when its own configuration does not contain the connection string; never record the value in documentation.
+
 ### 1. Local Storage Management
 - All profile settings, invoice drafts, and generated invoice histories are persisted in the browser's `localStorage` via the `Blazored.LocalStorage` library.
 - **LocalStorage Keys**:
@@ -285,15 +288,15 @@ GoldEx displays each customer's running balance immediately after an invoice dir
 
 GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
 
-1. **Antigravity-Style Desktop Appbar Top Menu**:
-   - `AppBar.razor` includes a top navigation bar (`.desktop-top-nav`) featuring direct 1-click access buttons and clean dropdown menus (`MudMenu`) for **فاکتورها**, **انبار و اجناس**, **امور مالی**, and **ابزارها و گزارشات**.
-   - Allows instant navigation without opening the sidebar drawer on desktop viewports.
+1. **Current Desktop Navigation**:
+   - `GoldEx.Client.Components/Layouts/Components/AppBar.razor` currently renders the drawer trigger, brand, store selector, license status, clock, help, notifications and profile. It does not render the previously documented `.desktop-top-nav` menu; the corresponding styles remain in `wwwroot/css/app.css`.
+   - Navigation uses the drawer and contextual shortcuts, including the home page quick actions. Treat restoring a desktop top menu as a proposed change, not an existing capability.
 2. **Lazy-Loaded View Rendering**:
-   - On `Index.razor`, heavy table components (`InvoicesList`, `InventoryStockList`, `CustomersList`, `CheckPaymentsList`) are unmounted when inactive and rendered conditionally via `@if (_activePanelIndex == N)`.
-   - Reduces initial DOM nodes by ~80% and eliminates MudBlazor tab-switching stutter.
+   - `Pages/Home/Index.razor` conditionally renders the active panel: market/executive dashboard, calculator, `RecentInvoicesOverview`, `RecentInventoryOverview`, or `CustomersInsightOverview` via `@if (_activePanelIndex == N)`.
+   - Preserve conditional rendering during visual redesign; performance improvements require measurement rather than assuming a fixed DOM reduction.
 3. **Custom Segmented Tab Controller & Smooth CSS Entrance Animations**:
    - Replaces default heavy MudBlazor tabs with `.goldex-segmented-container` pill tabs.
-   - Hardware-accelerated CSS animations (`.animate-fade-in-up`) provide smooth 60fps view transitions.
+   - CSS entrance animations (`.animate-fade-in-up`) accompany panel changes; actual frame rate depends on the target device.
 
 ---
 
@@ -303,6 +306,17 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
 - `MobileNav.razor` uses `mobile-navigation-bar` at `--mud-zindex-drawer - 2` on mobile, so both drawer backdrops and the notification panel cover the bottom navigation.
 - `Notifications` is rendered inside the top AppBar's stacking context. Raising only the notification drawer's own z-index cannot place it above a sibling bottom AppBar with the same stacking level; keep the bottom navigation below that context.
 - `.notification-drawer` fills the viewport using `100vh` with a `100dvh` override, rather than subtracting the bottom navigation's 80px height. Desktop notification width remains 400px.
+
+## UI Design Review Reference
+
+- The initial code-based comparison with the sibling `Mkx.Templates.Blazor` template is recorded in [UI_DESIGN_REVIEW.md](./docs/ai/UI_DESIGN_REVIEW.md). The implemented palette, mode transition and AppBar phase is documented in [APPEARANCE.md](./docs/ai/APPEARANCE.md); the remaining review proposals are not implementation decisions.
+- GoldEx already has six paired light/dark palettes in `GoldEx.Client.Components/Themes/ColorPalettes.cs` and persisted appearance in `ThemeService`; improve these existing mechanisms before adding another theme system.
+- Mkx uses native Blazor UI primitives, while GoldEx uses MudBlazor. Its visual and interaction patterns can inform GoldEx without copying its control implementation or changing GoldEx render modes.
+- Shared presentation rules in `GoldEx.Server/wwwroot/css/app.css` affect nested MudBlazor surfaces and animations. Inspect both these rules and component-local styles before changing card borders, shadows, motion or dialog scrolling. The current `.goldex-glass-card` has an opaque theme surface despite its name.
+- `AppearanceControls` in AppBar and Profile shares `ThemeService.IsChanging` and the asynchronous `OnAppearanceChanged` event. BaseLayout acknowledges its completed render before the appearance module captures the new MudBlazor stylesheet; preserve this acknowledgement and release event subscriptions on disposal.
+- The appearance module is served from the shared Razor library at `_content/GoldEx.Client.Components/js/appearance.js`. Calculator imports the same BaseLayout and theme contract, so do not move that module into enterprise-only server assets or remove its legacy `ToggleMode()` entry point without updating Calculator.
+- Enterprise geometry is scoped to `.goldex-shell` in `appearance.css`: AppBar is 60px desktop / 56px below 960px; content starts another 12px lower, plus safe-area top. The earlier 82px/70px bar and 24px/16px gaps were rejected as too large in visual review. Clipped drawer offsets and all five responsive-table variants must track the shared values. Keep the default table delta zero outside the enterprise shell and do not globally hide body overflow.
+- Preserve the original `CreateGoldTheme` light/dark palette and its base theme exactly, including vivid Info/Success/Error colors, contrast text, secondary text and default neutral table/input lines, warm surfaces and 24px radius. The user rejected both the initial darker gold redesign and the partial restoration: darkened blue/green/red actions, dark gold-button text and gold table lines still looked less lively. The Gold factory and base theme were therefore restored verbatim from the original revision. Keep the redesigned non-Gold palettes, appearance animations and compact AppBar. Do not reinterpret Gold's colors again without a new explicit user request, or globally mute semantic AppBar icon colors.
 
 ---
 

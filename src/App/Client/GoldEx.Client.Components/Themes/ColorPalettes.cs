@@ -1,9 +1,23 @@
-﻿using MudBlazor;
+using MudBlazor;
 
 namespace GoldEx.Client.Components.Themes;
 
 public static class ColorPalettes
 {
+    // Keep persisted keys compatible; labels describe the redesigned palette families.
+    public static IReadOnlyList<(string Id, string Title)> Options { get; } =
+        [("Gold", "طلایی"), ("Blue", "اقیانوس"), ("Green", "یشم"), ("Purple", "زنبق"), ("Red", "رز"), ("Orange", "کهربا")];
+
+    public static readonly Dictionary<string, MudTheme> Palettes = new()
+    {
+        ["Gold"] = CreateGoldTheme(),
+        ["Blue"] = Create("#174E9B", "#245FBB", "#F3F7FD", "#FFFFFF", "#FBFCFF", "#192C47", "#5B6E88", "#E0E7F2", "#78AAFF", "#8DB9FF", "#101725", "#192337", "#141E30", "#E7EEFC", "#A4B5D0", "#30415F"),
+        ["Green"] = Create("#123D51", "#187F87", "#F4F8FB", "#FFFFFF", "#FFFFFF", "#172B35", "#5D707B", "#E1EAF0", "#32CBA4", "#45DAB6", "#10191E", "#19272E", "#142128", "#E8F1F1", "#A1B5BA", "#2E454D"),
+        ["Purple"] = Create("#593D96", "#7051B7", "#F7F5FC", "#FFFFFF", "#FFFFFF", "#302641", "#736780", "#E8E1F1", "#B99AEF", "#C6A8FF", "#191422", "#251E30", "#1F1929", "#F0E9FA", "#BAACCB", "#493A5A"),
+        ["Red"] = Create("#984353", "#A44058", "#FCF5F6", "#FFFFFF", "#FFFAFB", "#40272E", "#7D626B", "#EEDFE3", "#ED9EAF", "#F3B3C3", "#21161C", "#30212A", "#291C23", "#F8E9EE", "#CCADB8", "#553B46"),
+        ["Orange"] = Create("#7D471C", "#9B5719", "#FBF7F0", "#FFFDF9", "#FFFDF9", "#392D21", "#7A6957", "#EBDFCD", "#EFB85E", "#F7C77C", "#1C1711", "#2A2219", "#241D15", "#EFE7D8", "#C3B297", "#4D4030")
+    };
+
     private static MudTheme CreateBaseTheme()
     {
         return new MudTheme
@@ -21,16 +35,6 @@ public static class ColorPalettes
             }
         };
     }
-
-    public static readonly Dictionary<string, MudTheme> Palettes = new()
-    {
-        ["Gold"] = CreateGoldTheme(),
-        ["Blue"] = CreateBlueTheme(),
-        ["Green"] = CreateGreenTheme(),
-        ["Purple"] = CreatePurpleTheme(),
-        ["Red"] = CreateRedTheme(),
-        ["Orange"] = CreateOrangeTheme()
-    };
 
     private static MudTheme CreateGoldTheme()
     {
@@ -90,304 +94,50 @@ public static class ColorPalettes
         return theme;
     }
 
-    private static MudTheme CreateBlueTheme()
+    private static MudTheme Create(
+        string primary, string secondary, string background, string surface, string drawer,
+        string text, string muted, string border, string darkPrimary, string darkSecondary,
+        string darkBackground, string darkSurface, string darkDrawer, string darkText,
+        string darkMuted, string darkBorder, string onPrimary = "#FFFFFF")
     {
-        var theme = CreateBaseTheme();
-        theme.PaletteLight = new PaletteLight
+        return new MudTheme
         {
-            Primary = "#1E88E5",         
-            Secondary = "#64B5F6",        
-            Background = "#F7FAFF",       
-            Surface = "#F3F8FE",          
-            AppbarBackground = "#E3F2FD", 
-            AppbarText = "#0D1B2A",
-            DrawerBackground = "#F1F6FC", 
-            TextPrimary = "#0D1B2A",      
-            TextSecondary = "#1E88E5",    
-            TextDisabled = "#1E88E580",   
-            Divider = "#B0C9E6",          
-            Info = "#42A5F5",             
-            Success = "#43A047",          
-            Warning = "#FFB300",          
-            Error = "#E53935"             
+            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "16px" },
+            Typography = new Typography
+            {
+                Default = new DefaultTypography { FontFamily = ["IRANSans", "Vazirmatn", "Helvetica", "Arial", "sans-serif"] }
+            },
+            PaletteLight = new PaletteLight
+            {
+                Primary = primary, PrimaryContrastText = onPrimary,
+                Secondary = secondary, SecondaryContrastText = "#FFFFFF",
+                Background = background, BackgroundGray = background, Surface = surface,
+                AppbarBackground = surface, AppbarText = text, DrawerBackground = drawer,
+                DrawerText = text, DrawerIcon = muted, TextPrimary = text, TextSecondary = muted,
+                TextDisabled = "#94918B", ActionDefault = muted, ActionDisabled = "#94918B",
+                ActionDisabledBackground = background, Divider = border, LinesDefault = border,
+                LinesInputs = "#A19F99", TableLines = border, TableStriped = background, TableHover = background,
+                Info = "#245FBB", InfoContrastText = "#FFFFFF",
+                Success = "#14634E", SuccessContrastText = "#FFFFFF",
+                Warning = "#825719", WarningContrastText = "#FFFFFF",
+                Error = "#B33639", ErrorContrastText = "#FFFFFF"
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary = darkPrimary, PrimaryContrastText = "#151D23",
+                Secondary = darkSecondary, SecondaryContrastText = "#151D23",
+                Background = darkBackground, BackgroundGray = darkDrawer, Surface = darkSurface,
+                AppbarBackground = darkSurface, AppbarText = darkText, DrawerBackground = darkDrawer,
+                DrawerText = darkText, DrawerIcon = darkMuted, TextPrimary = darkText, TextSecondary = darkMuted,
+                TextDisabled = "#8B8E92", ActionDefault = darkMuted, ActionDisabled = "#8B8E92",
+                ActionDisabledBackground = darkDrawer, Divider = darkBorder, LinesDefault = darkBorder,
+                LinesInputs = darkMuted, TableLines = darkBorder, TableStriped = darkDrawer, TableHover = darkDrawer,
+                Info = "#8DB9FF", InfoContrastText = "#151D23",
+                Success = "#65DFB1", SuccessContrastText = "#151D23",
+                Warning = "#EED08A", WarningContrastText = "#151D23",
+                Error = "#FFB0AC", ErrorContrastText = "#151D23",
+                OverlayLight = "#10191E80"
+            }
         };
-
-        theme.PaletteDark = new PaletteDark
-        {
-            Primary = "#1976D2",           
-            Secondary = "#1565C0",         
-            Surface = "#1E1E1E",
-            Background = "#121212",
-            BackgroundGray = "#2A2A2A",
-
-            AppbarText = "#E3F2FD",        
-            AppbarBackground = "#1E1E1E",
-            DrawerBackground = "#121212",
-
-            ActionDefault = "#1976D2",
-            ActionDisabled = "#1976D280",
-            ActionDisabledBackground = "#1E1E1E80",
-
-            TextPrimary = "#E3F2FD",       
-            TextSecondary = "#64B5F6",     
-            TextDisabled = "#64B5F680",
-
-            DrawerIcon = "#E3F2FD",
-            DrawerText = "#E3F2FD",
-
-            GrayLight = "#4A4F50",
-            GrayLighter = "#2A2A2A",
-
-            Info = "#4A86FF",
-            Success = "#3DCB6C",
-            Warning = "#FFB74D",
-            Error = "#EF5350",
-
-            Divider = "#1976D2",
-            OverlayLight = "#12121280"
-        };
-
-        return theme;
-    }
-
-    private static MudTheme CreateGreenTheme()
-    {
-        var theme = CreateBaseTheme();
-        theme.PaletteLight = new PaletteLight
-        {
-            Primary = "#388E3C",
-            Secondary = "#81C784",
-            Background = "#F7FBF8",
-            Surface = "#F3F8F4",
-            AppbarBackground = "#C8E6C9",
-            AppbarText = "#1C1C1C",        
-            DrawerBackground = "#F5FAF6",
-            TextPrimary = "#1C1C1C",       
-            TextSecondary = "#2E7D32",     
-            TextDisabled = "#2E7D3280",
-            Divider = "#A5D6A7",
-            Info = "#4A86FF",
-            Success = "#43A047",
-            Warning = "#FBC02D",
-            Error = "#E53935"
-        };
-
-        theme.PaletteDark = new PaletteDark
-        {
-            Primary = "#43A047",            
-            Secondary = "#2E7D32",          
-            Surface = "#1E1E1E",
-            Background = "#121212",
-            BackgroundGray = "#2A2A2A",
-
-            AppbarText = "#E8F5E9",         
-            AppbarBackground = "#1E1E1E",
-            DrawerBackground = "#121212",
-
-            ActionDefault = "#43A047",
-            ActionDisabled = "#43A04780",
-            ActionDisabledBackground = "#1E1E1E80",
-
-            TextPrimary = "#E8F5E9",       
-            TextSecondary = "#66BB6A",  
-            TextDisabled = "#66BB6A80",
-
-            DrawerIcon = "#E8F5E9",
-            DrawerText = "#E8F5E9",
-
-            GrayLight = "#4A4F50",
-            GrayLighter = "#2A2A2A",
-
-            Info = "#4A86FF",
-            Success = "#3DCB6C",
-            Warning = "#FDD835",
-            Error = "#EF5350",
-
-            Divider = "#43A047",
-            OverlayLight = "#12121280"
-        };
-
-
-        return theme;
-    }
-
-    private static MudTheme CreatePurpleTheme()
-    {
-        var theme = CreateBaseTheme();
-        theme.PaletteLight = new PaletteLight
-        {
-            Primary = "#8E24AA",
-            Secondary = "#BA68C8",
-            Background = "#F9F6FB",
-            Surface = "#F5F0FA",
-            AppbarBackground = "#E1BEE7",
-            AppbarText = "#1C1C1C",        
-            DrawerBackground = "#F6F2FA",
-            TextPrimary = "#1C1C1C",       
-            TextSecondary = "#6A1B9A",     
-            TextDisabled = "#6A1B9A80",
-            Divider = "#C7A9D6",
-            Info = "#4A86FF",
-            Success = "#43A047",
-            Warning = "#FBC02D",
-            Error = "#E53935"
-        };
-
-        theme.PaletteDark = new PaletteDark
-        {
-            Primary = "#AB47BC",            
-            Secondary = "#7B1FA2",          
-            Surface = "#1E1E1E",
-            Background = "#121212",
-            BackgroundGray = "#2A2A2A",
-
-            AppbarText = "#E1BEE7",         
-            AppbarBackground = "#1E1E1E",
-            DrawerBackground = "#121212",
-
-            ActionDefault = "#AB47BC",
-            ActionDisabled = "#AB47BC80",
-            ActionDisabledBackground = "#1E1E1E80",
-
-            TextPrimary = "#F3E5F5",        
-            TextSecondary = "#AB47BC",      
-            TextDisabled = "#AB47BC80",
-
-            DrawerIcon = "#F3E5F5",
-            DrawerText = "#F3E5F5",
-
-            GrayLight = "#4A4F50",
-            GrayLighter = "#2A2A2A",
-
-            Info = "#4A86FF",
-            Success = "#3DCB6C",
-            Warning = "#FBC02D",
-            Error = "#EF5350",
-
-            Divider = "#AB47BC",
-            OverlayLight = "#12121280"
-        };
-
-
-        return theme;
-    }
-
-    private static MudTheme CreateRedTheme()
-    {
-        var theme = CreateBaseTheme();
-        theme.PaletteLight = new PaletteLight
-        {
-            Primary = "#D32F2F",           
-            Secondary = "#FF8A80",         
-            Background = "#FFF6F6",        
-            Surface = "#FFF9F8",           
-            AppbarBackground = "#FFCDD2",  
-            AppbarText = "#1C1C1C",        
-            DrawerBackground = "#FFF9F8",
-            TextPrimary = "#1C1C1C",       
-            TextSecondary = "#C62828",     
-            TextDisabled = "#C6282880",    
-            Divider = "#E57373",           
-            Info = "#4A86FF",
-            Success = "#43A047",
-            Warning = "#FBC02D",
-            Error = "#E53935"
-        };
-        theme.PaletteDark = new PaletteDark
-        {
-            Primary = "#D32F2F",            
-            Secondary = "#B71C1C",          
-            Surface = "#1E1E1E",
-            Background = "#121212",
-            BackgroundGray = "#2A2A2A",
-
-            AppbarText = "#FFCDD2",         
-            AppbarBackground = "#1E1E1E",
-            DrawerBackground = "#121212",
-
-            ActionDefault = "#D32F2F",
-            ActionDisabled = "#D32F2F80",
-            ActionDisabledBackground = "#1E1E1E80",
-
-            TextPrimary = "#FFEBEE",        
-            TextSecondary = "#EF5350",      
-            TextDisabled = "#EF535080",
-
-            DrawerIcon = "#FFEBEE",
-            DrawerText = "#FFEBEE",
-
-            GrayLight = "#4A4F50",
-            GrayLighter = "#2A2A2A",
-
-            Info = "#4A86FF",
-            Success = "#3DCB6C",
-            Warning = "#FFB74D",
-            Error = "#EF5350",
-
-            Divider = "#D32F2F",
-            OverlayLight = "#12121280"
-        };
-
-        return theme;
-    }
-
-    private static MudTheme CreateOrangeTheme()
-    {
-        var theme = CreateBaseTheme();
-        theme.PaletteLight = new PaletteLight
-        {
-            Primary = "#F57C00",           
-            Secondary = "#FFB74D",         
-            Background = "#FFF8F2",        
-            Surface = "#FFF9F4",           
-            AppbarBackground = "#FFE0B2",  
-            AppbarText = "#1C1C1C",        
-            DrawerBackground = "#FFF9F4",
-            TextPrimary = "#1C1C1C",       
-            TextSecondary = "#E65100",     
-            TextDisabled = "#E6510080",
-            Divider = "#FFB74D",           
-            Info = "#4A86FF",
-            Success = "#43A047",
-            Warning = "#FBC02D",
-            Error = "#E53935"
-        };
-
-        theme.PaletteDark = new PaletteDark
-        {
-            Primary = "#FB8C00",           
-            Secondary = "#EF6C00",         
-            Surface = "#1E1E1E",
-            Background = "#121212",
-            BackgroundGray = "#2A2A2A",
-
-            AppbarText = "#FFE0B2",        
-            AppbarBackground = "#1E1E1E",
-            DrawerBackground = "#121212",
-
-            ActionDefault = "#FB8C00",
-            ActionDisabled = "#FB8C0080",
-            ActionDisabledBackground = "#1E1E1E80",
-
-            TextPrimary = "#FFF3E0",       
-            TextSecondary = "#FB8C00",     
-            TextDisabled = "#FB8C0080",
-
-            DrawerIcon = "#FFF3E0",
-            DrawerText = "#FFF3E0",
-
-            GrayLight = "#4A4F50",
-            GrayLighter = "#2A2A2A",
-
-            Info = "#4A86FF",
-            Success = "#3DCB6C",
-            Warning = "#FFB74D",
-            Error = "#EF5350",
-
-            Divider = "#FB8C00",
-            OverlayLight = "#12121280"
-        };
-
-        return theme;
     }
 }

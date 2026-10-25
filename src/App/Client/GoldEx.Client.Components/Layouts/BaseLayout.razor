@@ -1,9 +1,11 @@
-@using GoldEx.Client.Components.Constants
-@using GoldEx.Client.Components.Services
 @using GoldEx.Shared.Services.Abstractions
 @using Microsoft.JSInterop
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject IStoreContext StoreContext
+@inject GoldEx.Client.Components.Services.Abstractions.IThemeService ThemeService
+@inject ISnackbar ToastService
+@inject IJSRuntime JSRuntime
 
 @if (StoreContext.IsCustomDomain)
 {
@@ -12,15 +14,12 @@
 else
 {
     <PageTitle>گلدکس</PageTitle>
-
     <MudRTLProvider RightToLeft="true">
-        <MudThemeProvider Theme="@ThemeService?.CurrentTheme" IsDarkMode="@(ThemeService?.IsDarkMode ?? false)" />
+        <MudThemeProvider Theme="@ThemeService.CurrentTheme" IsDarkMode="@ThemeService.IsDarkMode" ObserveSystemDarkModeChange="false" />
         <MudPopoverProvider />
         <MudDialogProvider />
         <MudSnackbarProvider />
-
         @Body
-
         <div id="blazor-error-ui" data-nosnippet>
             خطایی در حین اجرای برنامه رخ داد
             <a href="." class="reload">بارگیری مجدد</a>
@@ -31,85 +30,51 @@ else
 
 @code {
     private static ISnackbar? _staticToastService;
+    private TaskCompletionSource? _appearanceRendered;
 
-    public bool IsDarkMode { get; set; }
-
-    [Inject] private IThemeService? ThemeService { get; set; }
-    [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
-    [Inject] private ISnackbar ToastService { get; set; } = default!;
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
-
-    protected override async Task OnInitializedAsync()  
-    {  
+    protected override async Task OnInitializedAsync()
+    {
         _staticToastService = ToastService;
-
-        if (ThemeService is ThemeService service)  
-        {  
-            await service.LoadSettingsAsync(); 
-            service.OnToggleMode += OnToggleMode;  
-            service.OnPaletteChanged += OnPaletteChanged;
-            IsDarkMode = service.IsDarkMode;  
-        }  
-  
-        await base.OnInitializedAsync();  
+        if (!StoreContext.IsCustomDomain)
+        {
+            await ThemeService.LoadSettingsAsync();
+            ThemeService.OnAppearanceChanged += RenderAppearanceAsync;
+        }
+        await base.OnInitializedAsync();
     }
 
-    public void OnPaletteChanged(object? sender, EventArgs e)
+    private async Task RenderAppearanceAsync()
     {
-        StateHasChanged();
-    }
-
-    public void OnToggleMode(object? sender, EventArgs e)
-    {
-        IsDarkMode = ThemeService?.IsDarkMode ?? false;
-        SetThemeMode(IsDarkMode);
-        StateHasChanged();
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _appearanceRendered = rendered;
+        await InvokeAsync(StateHasChanged);
+        await rendered.Task;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        _appearanceRendered?.TrySetResult();
+        _appearanceRendered = null;
+        if (firstRender && !StoreContext.IsCustomDomain)
         {
-            try
-            {
-                // Dismiss the WASM loading splash screen (no-op if splash doesn't exist)
-                await JSRuntime.InvokeVoidAsync("GoldEx.removeSplash");
-            }
-            catch
-            {
-                // ignore
-            }
-
-            await LoadTheme();
-            StateHasChanged();
+            try { await ThemeService.SyncBrowserAsync(); }
+            catch (JSException) { /* Browser metadata must not prevent the app from starting. */ }
+            try { await JSRuntime.InvokeVoidAsync("GoldEx.removeSplash"); }
+            catch (JSException) { }
         }
-
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task LoadTheme()
+    public void Dispose()
     {
-        var themeMode = await LocalStorage.GetItemAsStringAsync(LocalStorageKeys.IsDarkMode);
-
-        if (!string.IsNullOrEmpty(themeMode) && bool.TryParse(themeMode, out var isDarkMode))
-            SetThemeMode(isDarkMode);
-    }
-
-    private void SetThemeMode(bool isDarkMode)
-    {
-        IsDarkMode = isDarkMode;
-        LocalStorage.SetItemAsStringAsync(LocalStorageKeys.IsDarkMode, IsDarkMode.ToString());
-        StateHasChanged();
+        ThemeService.OnAppearanceChanged -= RenderAppearanceAsync;
+        _appearanceRendered?.TrySetResult();
     }
 
     [JSInvokable]
     public static Task OnServiceWorkerInstalling()
     {
-        if (_staticToastService is not null)
-        {
-            _ = _staticToastService.Add("در حال بروز رسانی و نصب نسخه جدید ...", Severity.Info);
-        }
-
+        _staticToastService?.Add("در حال بروز رسانی و نصب نسخه جدید ...", Severity.Info);
         return Task.CompletedTask;
     }
 }
