@@ -65,3 +65,11 @@ jobs:
         run: |
           chmod +x /home/user/docker/goldex/refresh-apps.sh
           /home/user/docker/goldex/refresh-apps.sh "${Version}"
+
+      - name: Validate and reload Nginx
+        shell: bash
+        env:
+          NGINX_CONTAINER: ${{ vars.NGINX_CONTAINER || 'nginx' }}
+        run: |
+          docker exec "$NGINX_CONTAINER" nginx -t
+          docker exec "$NGINX_CONTAINER" nginx -s reload

@@ -73,6 +73,32 @@ Versions identify build order, not source freshness: intentionally building an
 older checkout creates a new build number. Directly deploying an old tag remains
 a possible deliberate rollback outside these scripts.
 
+## Nginx reload after CI deployment
+
+After successful deployment, both CI pipelines run these commands against the
+existing Nginx container on the runner's Docker host:
+
+```sh
+docker exec "$NGINX_CONTAINER" nginx -t
+docker exec "$NGINX_CONTAINER" nginx -s reload
+```
+
+The default container name is `nginx`. GitHub Actions accepts an optional
+`NGINX_CONTAINER` repository variable; GitLab accepts a CI/CD variable with the
+same name. The runner must have Docker access to the host running this container.
+
+GitHub runs this step after `/home/user/docker/goldex/refresh-apps.sh` returns
+success; GitLab runs it after `/masoud/initialize.sh` returns success. These
+external scripts must complete the application container replacement before
+returning and return a nonzero exit code when deployment fails. They are not
+tracked here, so the pipelines rely on their exit status rather than independently
+checking application readiness.
+
+A failed deployment skips the reload. A missing/stopped Nginx container or an
+invalid configuration fails the job before sending the reload signal. A failed
+reload command also fails the job. Reload is graceful and does not restart the
+container. Local `deploy.ps1` only publishes images and is unaffected.
+
 ## Application release notes
 
 `src/App/Server/GoldEx.Server/releases.json` retains its existing semantic

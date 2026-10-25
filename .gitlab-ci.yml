@@ -4,6 +4,7 @@ stages:
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_NOLOGO: "true"
+  NGINX_CONTAINER: "nginx"
 
 docker-image:
   stage: docker
@@ -56,3 +57,7 @@ docker-image:
     - echo "Running initialization script"
     - sudo chmod +x /masoud/initialize.sh
     - sudo /masoud/initialize.sh
+
+    - echo "Validating and reloading Nginx"
+    - docker exec "$NGINX_CONTAINER" nginx -t
+    - docker exec "$NGINX_CONTAINER" nginx -s reload
