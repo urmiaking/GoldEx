@@ -1,4 +1,6 @@
-﻿using GoldEx.Client.Pages.Customers.Validators;
+using GoldEx.Client.Components.Components.Dialogs;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
@@ -14,6 +16,8 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class Editor
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
     [Parameter] public bool ReturnModel { get; set; }
@@ -25,11 +29,16 @@ public partial class Editor
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private bool _processing;
+    private CustomerVm? _initializedModel;
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadPriceUnitsAsync();
-        await PopulateCustomerNationalId();
+        if (!ReferenceEquals(_initializedModel, Model))
+        {
+            _initializedModel = Model;
+            await LoadPriceUnitsAsync();
+            await PopulateCustomerNationalId();
+        }
         await base.OnParametersSetAsync();
     }
 
@@ -64,77 +73,98 @@ public partial class Editor
             return;
 
         _processing = true;
+        Session?.SetBusy(true);
+        try
+        {
+            await _form.ValidateAsync();
 
-        await _form.ValidateAsync();
+            if (!_form.IsValid)
+            {
+                return;
+            }
 
-        if (!_form.IsValid)
+            var request = CustomerVm.ToRequest(Model);
+
+            if (!Model.Id.HasValue)
+            {
+                await SendRequestAsync<ICustomerService, Guid>(
+                    action: (s, ct) => s.CreateAsync(request, cancellationToken: ct),
+                    afterSend: async response =>
+                    {
+                        if (ReturnModel)
+                        {
+                            await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                                action: (s, ct) => s.GetAsync(response, ct),
+                                afterSend: customerResponse => Complete(CustomerVm.CreateFrom(customerResponse)));
+                        }
+                        else
+                        {
+                            Complete(true);
+                        }
+                    });
+            }
+            else
+            {
+                await SendRequestAsync<ICustomerService>(
+                    action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
+                    afterSend: () =>
+                    {
+                        Complete(true);
+                        return Task.CompletedTask;
+                    });
+            }
+        }
+        finally
         {
             _processing = false;
-            return;
+            Session?.SetBusy(false);
         }
-
-        var request = CustomerVm.ToRequest(Model);
-
-        if (!Model.Id.HasValue)
-        {
-            await SendRequestAsync<ICustomerService, Guid>(
-                action: (s, ct) => s.CreateAsync(request, cancellationToken: ct),
-                afterSend: async response =>
-                {
-                    if (ReturnModel)
-                    {
-                        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
-                            action: (s, ct) => s.GetAsync(response, ct),
-                            afterSend: customerResponse => MudDialog.Close(DialogResult.Ok(CustomerVm.CreateFrom(customerResponse))));
-                    }
-                    else
-                    {
-                        MudDialog.Close(DialogResult.Ok(true));
-                    }
-                });
-        }
-        else
-        {
-            await SendRequestAsync<ICustomerService>(
-                action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
-                afterSend: () =>
-                {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
-                });
-        }
-
-        _processing = false;
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Complete(object? data)
+    {
+        if (Session is not null) Session.Close(data);
+        else MudDialog.Close(DialogResult.Ok(data));
+    }
+
+    private void Close()
+    {
+        if (_processing) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
 
     private async Task OnEditFinancialAccount(FinancialAccountVm financialAccount)
     {
         var parameters = new DialogParameters<FinancialAccountEditor>
         {
-            { x => x.Model, financialAccount },
+            { x => x.Model, Session is null ? financialAccount : EditorDraft.Copy(financialAccount) },
             { x => x.PriceUnits, _priceUnits },
-            { x => x.CustomerId, Model.Id },
+            { x => x.CustomerId, Model.Id }
         };
-
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}",
-            parameters, _bankAccountsDialogOptions);
-        await dialog.Result;
+        var result = await ShowAccountEditor($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}", parameters);
+        if (Session is not null && !result.Canceled && result.Data is FinancialAccountVm updated && Model.FinancialAccounts is not null)
+        {
+            var index = Model.FinancialAccounts.IndexOf(financialAccount);
+            if (index >= 0) Model.FinancialAccounts[index] = updated;
+        }
     }
 
     private async Task OnRemoveFinancialAccount(FinancialAccountVm financialAccount)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            $"آیا برای حذف حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()} مطمئن هستید؟",
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is true)
+        var message = $"آیا برای حذف حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()} مطمئن هستید؟";
+        bool confirmed;
+        if (Session is not null)
         {
-            Model.FinancialAccounts?.Remove(financialAccount);
-            StateHasChanged();
+            var confirmation = ResponsiveDialogs.Show<ResponsiveConfirmation>("حذف حساب مالی", new() { [nameof(ResponsiveConfirmation.Message)] = message });
+            var result = await confirmation.Result;
+            confirmed = !result.Canceled && result.Data is true;
         }
+        else
+        {
+            confirmed = await DialogService.ShowMessageBoxAsync("هشدار", message, yesText: "بله", cancelText: "لغو") is true;
+        }
+        if (confirmed) Model.FinancialAccounts?.Remove(financialAccount);
     }
 
     private async Task OnAddFinancialAccount()
@@ -145,15 +175,24 @@ public partial class Editor
             { x => x.CustomerId, Model.Id },
             { x => x.AccountHolderName, Model.FullName }
         };
-
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی", parameters, _bankAccountsDialogOptions);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: FinancialAccountVm bankAccount })
+        var result = await ShowAccountEditor("افزودن حساب مالی", parameters);
+        if (!result.Canceled && result.Data is FinancialAccountVm account)
         {
             Model.FinancialAccounts ??= [];
-            Model.FinancialAccounts.Add(bankAccount);
+            Model.FinancialAccounts.Add(account);
         }
+    }
+
+    private async Task<ResponsiveDialogResult> ShowAccountEditor(string title, DialogParameters<FinancialAccountEditor> parameters)
+    {
+        if (Session is not null)
+        {
+            var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>(title, parameters.ToDictionary(pair => pair.Key, pair => pair.Value!));
+            return await dialog.Result;
+        }
+        var legacy = await DialogService.ShowAsync<FinancialAccountEditor>(title, parameters, _bankAccountsDialogOptions);
+        var result = await legacy.Result;
+        return new(result?.Canceled != false, result?.Data);
     }
 
     private async Task RenewNationalIdAsync()

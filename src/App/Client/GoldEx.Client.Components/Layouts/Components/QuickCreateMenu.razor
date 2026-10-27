@@ -1,0 +1,64 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<button type="button" @ref="_trigger" class="gex-bottom-create" aria-label="ثبت جدید" aria-haspopup="dialog" aria-expanded="false" aria-controls="@_id">
+    <span class="gex-create-circle"><ShellIcon Name="plus" /></span><span>ثبت جدید</span>
+</button>
+<dialog @ref="_panel" id="@_id" class="gex-quick-create" aria-labelledby="@(_id + "-title")" dir="rtl">
+    <header class="gex-quick-create-heading">
+        <div><span class="gex-quick-create-symbol"><ShellIcon Name="plus" /></span><h2 id="@(_id + "-title")">ثبت جدید</h2></div>
+        <button type="button" class="gex-icon-button" data-quick-close aria-label="بستن منوی ثبت جدید" autofocus><ShellIcon Name="close" /></button>
+    </header>
+    <nav class="gex-quick-create-actions" aria-label="عملیات ثبت جدید">
+        <a class="gex-quick-create-action gex-quick-create-featured" href="@ClientRoutes.Invoices.Create">
+            <span class="gex-quick-create-icon"><ShellIcon Name="file" /></span>
+            <span><strong>فاکتور جدید</strong><small>ثبت فروش یا خرید</small></span>
+            <span class="gex-quick-create-arrow"><ShellIcon Name="forward" /></span>
+        </a>
+        <a class="gex-quick-create-action gex-quick-create-customer" href="@($"{ClientRoutes.Customers.Index}?create=true")">
+            <span class="gex-quick-create-icon"><ShellIcon Name="user-plus" /></span><span><strong>مشتری جدید</strong><small>افزودن طرف حساب</small></span>
+        </a>
+        <a class="gex-quick-create-action gex-quick-create-product" href="@ClientRoutes.InventoryStocks.InventoryEntry.Index">
+            <span class="gex-quick-create-icon"><ShellIcon Name="package-plus" /></span><span><strong>افزودن دستی جنس</strong><small>ورود کالا به انبار</small></span>
+        </a>
+        <a class="gex-quick-create-action gex-quick-create-transfer" href="@($"{ClientRoutes.Finances.CustomerTransfers}?create=true")">
+            <span class="gex-quick-create-icon"><ShellIcon Name="transfer" /></span><span><strong>ثبت حواله</strong><small>انتقال بین مشتریان</small></span>
+        </a>
+        <a class="gex-quick-create-action gex-quick-create-payment" href="@($"{ClientRoutes.Finances.PaymentVouchers}?create=true")">
+            <span class="gex-quick-create-icon"><ShellIcon Name="wallet" /></span><span><strong>ثبت سند پرداخت</strong><small>پرداخت به طرف حساب</small></span>
+        </a>
+    </nav>
+</dialog>
+
+@code {
+    private readonly string _id = $"gex-quick-create-{Guid.NewGuid():N}";
+    private ElementReference _trigger, _panel;
+    private IJSObjectReference? _module, _binding;
+    private bool _disposed;
+    protected override void OnInitialized() => Navigation.LocationChanged += LocationChanged;
+    private void LocationChanged(object? sender, LocationChangedEventArgs args) => _ = InvokeAsync(CloseAsync);
+    private async Task CloseAsync()
+    {
+        if (_disposed || _binding is null) return;
+        try { await _binding.InvokeVoidAsync("close"); }
+        catch (JSDisconnectedException) { }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/quick-create.js");
+        _binding = await _module.InvokeAsync<IJSObjectReference>("bind", _trigger, _panel);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        Navigation.LocationChanged -= LocationChanged;
+        try
+        {
+            if (_binding is not null) { await _binding.InvokeVoidAsync("dispose"); await _binding.DisposeAsync(); }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+    }
+}

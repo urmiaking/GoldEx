@@ -1,106 +1,25 @@
-@inherits GoldExComponentBase
-@using GoldEx.Shared.DTOs.Stores
-@using GoldEx.Shared.Routings
-@using GoldEx.Shared.Services.Abstractions
-@using MudBlazor
-<MudAppBar Class="gex-appbar" ToolBarClass="gex-appbar-toolbar" Elevation="0" Dense="false" Color="Color.Surface">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" aria-label="باز و بسته کردن منوی اصلی" />
-    <a class="brand-text fs-3 gex-appbar-brand d-none d-sm-inline-block" href="@ClientRoutes.Home.Index">GoldEx</a>
-    
-    <AuthorizeView>
-        <Authorized>
-            @if (_currentStore != null)
-            {
-                <button type="button" class="store-switcher-btn d-flex align-center gap-2" aria-label="@($"انتخاب فروشگاه؛ فروشگاه فعلی: {_currentStore.Name}")" @onclick="OpenStoreSelector">
-                    <div class="store-switcher-logo d-flex align-center justify-center">
-                        @if (!string.IsNullOrWhiteSpace(_currentStore.LogoUrl))
-                        {
-                            <img src="@_currentStore.LogoUrl" alt="@_currentStore.Name" />
-                        }
-                        else
-                        {
-                            <span>@_currentStore.Name.Substring(0, 1)</span>
-                        }
-                    </div>
-                    <span class="store-switcher-name d-none d-sm-inline">@_currentStore.Name</span>
-                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" />
-                </button>
-            }
-        </Authorized>
-    </AuthorizeView>
-
-    <AuthorizeView>
-        <Authorized>
-            <LicenseStatusBanner />
-        </Authorized>
-    </AuthorizeView>
-
-    <MudSpacer />
-    <div class="gex-appbar-clock d-none d-lg-flex align-center">
-        <Clock />
+<header class="gex-topbar">
+    <button type="button" class="gex-icon-button gex-menu-toggle" aria-label="باز کردن منوی اصلی" aria-controls="gex-navigation"
+            aria-expanded="@DrawerOpen.ToString().ToLowerInvariant()" @onclick="() => DrawerOpenChanged.InvokeAsync(!DrawerOpen)"><ShellIcon Name="menu" /></button>
+    <div class="gex-mobile-brand"><ShellBrand Compact="true" /></div>
+    <div class="gex-topbar-date"><Clock /></div>
+    <div class="gex-topbar-actions">
+        <AppearanceControls ModeOnly="true" />
+        <div class="gex-topbar-help"><Help /></div>
+        <AuthorizeView Roles="Administrators,Owners">
+            <button type="button" class="gex-icon-button" aria-label="@NotificationsLabel" title="اعلان‌ها" aria-haspopup="dialog" @onclick="OnNotificationsRequested">
+                <ShellIcon Name="bell" />
+                @if (NotificationCount > 0) { <span class="gex-unread-dot" aria-hidden="true"></span> }
+            </button>
+        </AuthorizeView>
+        <Profile />
     </div>
-    
-    <AppearanceControls />
-    <div class="gex-appbar-help"><Help /></div>
+</header>
 
-    <AuthorizeView>
-        <Authorized>
-            <Notifications />
-        </Authorized>
-    </AuthorizeView>
-    
-    <div class="gex-appbar-settings d-md-none d-block">
-        <Settings />
-    </div>
-
-    <Profile />
-</MudAppBar>
-
-@code
-{
-    [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
-
+@code {
     [Parameter] public bool DrawerOpen { get; set; }
-    private UserStoreDto? _currentStore;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        // Register event subscription or load current store
-        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        if (state.User.Identity?.IsAuthenticated == true)
-        {
-            await LoadCurrentStoreAsync();
-        }
-    }
-
-    private async Task LoadCurrentStoreAsync()
-    {
-        var stores = await SendRequestAsync<IStoreService, List<UserStoreDto>>(
-            (service, token) => service.GetUserStoresAsync(token));
-
-        if (stores != null)
-        {
-            _currentStore = stores.FirstOrDefault(s => s.IsCurrent);
-            StateHasChanged();
-        }
-    }
-
-    private async Task OpenStoreSelector()
-    {
-        var options = new DialogOptions 
-        { 
-            CloseButton = true, 
-            MaxWidth = MaxWidth.Medium, 
-            FullWidth = true
-        };
-        await DialogService.ShowAsync<StoreSelectorDialog>("", options);
-    }
-
-    private void DrawerToggle()
-    {
-        DrawerOpen = !DrawerOpen;
-        DrawerOpenChanged.InvokeAsync(DrawerOpen);
-    }
+    [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
+    [Parameter] public EventCallback OnNotificationsRequested { get; set; }
+    [Parameter] public int NotificationCount { get; set; }
+    private string NotificationsLabel => NotificationCount > 0 ? $"اعلان‌ها، {NotificationCount} خوانده‌نشده" : "اعلان‌ها";
 }

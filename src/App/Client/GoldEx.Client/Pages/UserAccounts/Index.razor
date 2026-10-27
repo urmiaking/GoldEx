@@ -65,4 +65,19 @@
             </MudGrid>
         </MudItem>
     </MudGrid>
+    <MudExpansionPanels Class="mt-6">
+        <MudExpansionPanel Text="ظاهر و وضعیت برنامه" @bind-Expanded="_showSystemDetails">
+            @if (_showSystemDetails)
+            {
+                <MudStack Spacing="3">
+                    <AppearanceControls ShowLabels="true" />
+                    <LicenseStatus />
+                    <HealthMonitor />
+                    <AuthorizeView Roles="@BuiltinRoles.Administrators" Context="systemAccess">
+                        <MudLink Href="@ClientRoutes.Logs.Base">گزارش خطاهای برنامه</MudLink>
+                    </AuthorizeView>
+                </MudStack>
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 </MudContainer>

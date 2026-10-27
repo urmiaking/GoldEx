@@ -1,0 +1,23 @@
+<div class="customer-card-skeleton" aria-hidden="true">
+    <div class="skeleton-heading">
+        <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Circle" Width="40px" Height="40px" />
+        <div>
+            <MudSkeleton Animation="Animation.Wave" Width="70%" Height="22px" />
+            <MudSkeleton Animation="Animation.Wave" Width="45%" Height="16px" />
+        </div>
+    </div>
+    <div class="skeleton-details">
+        @for (var i = 0; i < 3; i++)
+        {
+            <div>
+                <MudSkeleton Animation="Animation.Wave" Width="55%" Height="15px" />
+                <MudSkeleton Animation="Animation.Wave" Width="90%" Height="22px" />
+            </div>
+        }
+    </div>
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="44px" Class="rounded-lg" />
+    <div class="skeleton-actions">
+        <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="44px" />
+        <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="44px" />
+    </div>
+</div>

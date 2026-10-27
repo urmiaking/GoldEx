@@ -28,6 +28,8 @@ public static class DependencyInjection
 
             services.AddScoped<StoreContext>();
             services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<StoreContext>());
+            services.AddHttpClient("GoldExWebPush", client => client.Timeout = TimeSpan.FromSeconds(20))
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
             services.TryAddScoped<IPriceNotificationPublisher, NullPriceNotificationPublisher>();
             services.TryAddScoped<ISmartTrayNotificationPublisher, NullSmartTrayNotificationPublisher>();
 

@@ -1,37 +1,50 @@
-﻿<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert>
-    <MudOverlay Visible="IsDrawerOpen"
-                DarkBackground="true"
-                Class="mobile-navigation-backdrop"
-                OnClick="@(() => HandleNavigate(false))" />
-    <MudDrawer Open="IsDrawerOpen"
-               OpenChanged="HandleNavigate"
-               Elevation="1"
-               Breakpoint="Breakpoint.Xxl"
-               Overlay="false"
-               Variant="DrawerVariant.Responsive"
-               ClipMode="DrawerClipMode.Always">
-        <NavMenu OnNavigate="HandleNavigate" />
-    </MudDrawer>
-</MudHidden>
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
-<MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
-    <MudDrawer @bind-Open="IsDrawerOpen"
-               Elevation="1"
-               Breakpoint="Breakpoint.Xxl"
-               Overlay="false"
-               Variant="DrawerVariant.Mini"
-               ClipMode="DrawerClipMode.Always">
-        <NavMenu OnNavigate="HandleNavigate" />
-    </MudDrawer>
-</MudHidden>
-
-@code
+@if (IsDrawerOpen)
 {
+    <button type="button" class="gex-menu-scrim" tabindex="-1" aria-label="بستن منوی اصلی" @onclick="CloseAsync"></button>
+}
+<aside id="gex-navigation" @ref="_panel" class="gex-sidebar @(IsDrawerOpen ? "mobile-open" : null)" aria-label="ناوبری اصلی" tabindex="-1" @onkeydown="HandleKeyDown">
+    <button type="button" class="gex-icon-button gex-menu-close" aria-label="بستن منو" @onclick="CloseAsync"><ShellIcon Name="close" /></button>
+    <ShellBrand />
+    <StoreSwitcher OnOpen="CloseAsync" />
+    <AuthorizeView>
+        <a class="gex-sidebar-create" href="@ClientRoutes.Invoices.Create" @onclick="CloseAsync"><ShellIcon Name="plus" /><span>فاکتور جدید</span></a>
+    </AuthorizeView>
+    <div class="gex-menu-scroll"><NavMenu OnNavigate="HandleNavigate" /></div>
+    <div class="gex-sidebar-license"><AuthorizeView><LicenseStatusBanner /></AuthorizeView></div>
+    <ShellIdentity />
+</aside>
+
+@code {
     [Parameter] public bool IsDrawerOpen { get; set; }
     [Parameter] public EventCallback<bool> IsDrawerOpenChanged { get; set; }
-
-    private async Task HandleNavigate(bool shouldOpen)
+    private ElementReference _panel;
+    private IJSObjectReference? _module, _menu;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await IsDrawerOpenChanged.InvokeAsync(shouldOpen);
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/navigation.js");
+            _menu = await _module.InvokeAsync<IJSObjectReference>("bind", _panel);
+        }
+        if (_menu is not null) await _menu.InvokeVoidAsync("update", IsDrawerOpen);
+    }
+    public async Task CloseAsync()
+    {
+        if (_menu is not null) await _menu.InvokeVoidAsync("update", false);
+        await IsDrawerOpenChanged.InvokeAsync(false);
+    }
+    private Task HandleNavigate(bool _) => CloseAsync();
+    private Task HandleKeyDown(KeyboardEventArgs args) => args.Key == "Escape" ? CloseAsync() : Task.CompletedTask;
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_menu is not null) { await _menu.InvokeVoidAsync("dispose"); await _menu.DisposeAsync(); }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
     }
 }

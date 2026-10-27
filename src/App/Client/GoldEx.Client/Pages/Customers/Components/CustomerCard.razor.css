@@ -1,0 +1,88 @@
+.customer-card {
+    min-width: 0;
+    padding: 12px;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,.06), 0 2px 6px -1px rgba(0,0,0,.03);
+    transition: border-color .18s ease, box-shadow .18s ease;
+    animation: customer-card-enter .3s cubic-bezier(.2,.7,.3,1) var(--customer-entrance-delay, 0ms) backwards;
+}
+@keyframes customer-card-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.customer-card:focus-within { border-color: var(--mud-palette-primary); }
+.customer-card-heading { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.directory-avatar {
+    display: grid; place-items: center; flex: 0 0 40px; height: 40px;
+    border-radius: 13px; font-size: 17px; font-weight: 800; white-space: nowrap; line-height: 1;
+    color: var(--mud-palette-text-primary); background: color-mix(in srgb, var(--avatar-color) 12%, transparent);
+}
+.directory-avatar-0 { --avatar-color: var(--mud-palette-primary); }
+.directory-avatar-1 { --avatar-color: var(--mud-palette-info); }
+.directory-avatar-2 { --avatar-color: var(--mud-palette-success); }
+.directory-avatar-3 { --avatar-color: var(--mud-palette-secondary); }
+.directory-avatar-4 { --avatar-color: var(--mud-palette-tertiary); }
+.directory-avatar-5 { --avatar-color: var(--mud-palette-text-primary); }
+.customer-identity { flex: 1; min-width: 0; }
+.customer-identity h2 { font-size: .95rem; font-weight: 800; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
+.customer-type { display: block; margin-top: 2px; font-size: .7rem; color: var(--mud-palette-text-secondary); }
+.customer-card-heading ::deep .customer-more { flex: 0 0 44px; align-self: flex-start; }
+.customer-card-heading ::deep .customer-more > button { width: 44px; height: 44px; color: var(--mud-palette-text-secondary); }
+.customer-details { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .85fr) minmax(0, 1fr); gap: 8px; margin: 10px 0; }
+.customer-details > div, .customer-contact { min-width: 0; min-height: 44px; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.customer-contact { text-decoration: none; }
+.customer-detail-label { font-size: .7rem; color: var(--mud-palette-text-secondary); }
+.customer-phone, .customer-code { font-size: .8rem; font-weight: 600; color: var(--mud-palette-text-primary); overflow-wrap: anywhere; }
+.customer-date { font-size: .75rem; font-weight: 500; white-space: nowrap; }
+.customer-contact:hover .customer-phone { text-decoration: underline; color: var(--mud-palette-primary); }
+.customer-detail-empty { color: var(--mud-palette-text-secondary); font-size: .85rem; }
+.customer-balance { display: flex; align-items: center; gap: 8px; border-radius: 10px; background: color-mix(in srgb, var(--mud-palette-text-primary) 4%, transparent); padding: 6px 10px; }
+.customer-balance > .customer-detail-label { flex-shrink: 0; }
+.customer-balance ::deep .customer-remaining-container { flex: 1; min-width: 0; }
+.customer-balance ::deep .remaining-item { justify-content: flex-end; }
+.customer-balance ::deep .mud-typography { font-size: .88rem; font-weight: 750; }
+.customer-card-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; }
+.customer-card-actions ::deep .customer-action-ledger { --customer-action-accent: var(--mud-palette-primary); }
+.customer-card-actions ::deep .customer-action-invoices { --customer-action-accent: var(--mud-palette-info); }
+.customer-card-actions ::deep .mud-button {
+    min-height: 44px; min-width: 0; font-size: .8rem; font-weight: 700; padding: 6px 8px;
+    color: var(--mud-palette-text-primary);
+    background: color-mix(in srgb, var(--customer-action-accent) 9%, var(--mud-palette-surface));
+    border: 1px solid color-mix(in srgb, var(--customer-action-accent) 30%, var(--mud-palette-surface));
+    box-shadow: 0 2px 3px -2px color-mix(in srgb, var(--customer-action-accent) 25%, transparent);
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.customer-card-actions ::deep .mud-button-label { gap: 7px; white-space: nowrap; }
+.customer-card-actions ::deep .mud-button-icon-start {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 27px; height: 27px; margin: 0; border-radius: 8px;
+    background: color-mix(in srgb, var(--customer-action-accent) 13%, var(--mud-palette-surface));
+    color: var(--customer-action-accent);
+}
+.customer-card-actions ::deep .mud-icon-root { font-size: 18px; }
+.customer-card-actions ::deep .mud-button:focus-visible {
+    outline: 2px solid var(--customer-action-accent); outline-offset: 2px;
+}
+.customer-card-actions ::deep .mud-button:active { transform: scale(.98); box-shadow: none; }
+.customer-card a:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 4px; border-radius: 3px; }
+@media (hover: hover) {
+    .customer-card:hover { border-color: rgba(var(--mud-palette-primary-rgb), .4); box-shadow: 0 8px 24px -6px rgba(0,0,0,.12); }
+    .customer-card-actions ::deep .mud-button:hover {
+        background: color-mix(in srgb, var(--customer-action-accent) 15%, var(--mud-palette-surface));
+        border-color: color-mix(in srgb, var(--customer-action-accent) 55%, var(--mud-palette-surface));
+        box-shadow: 0 3px 8px -4px color-mix(in srgb, var(--customer-action-accent) 40%, transparent);
+        transform: translateY(-1px);
+    }
+}
+@media (max-width: 374px) {
+    .customer-card-heading { gap: 8px; }
+    .customer-balance { gap: 6px; padding-inline: 8px; }
+    .customer-balance ::deep .mud-typography { font-size: .8rem; }
+    .customer-date { font-size: .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .customer-card, .customer-card-actions ::deep .mud-button { transition: none; animation: none; }
+    .customer-card-actions ::deep .mud-button:hover, .customer-card-actions ::deep .mud-button:active { transform: none; }
+}

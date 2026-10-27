@@ -723,23 +723,6 @@ h1:focus {
 
 /* Mobile Navbar */
 
-/* Notification drawer */
-
-.notification-drawer {
-    height: 100vh !important;
-    height: 100dvh !important;
-}
-
-@media (min-width: 960px) {
-    .notification-drawer {
-        height: 100% !important;
-        width: 400px !important;
-        max-width: 400px !important;
-    }
-}
-
-/* Notification drawer */
-
 /* Animation */
 
 .pulse-icon {

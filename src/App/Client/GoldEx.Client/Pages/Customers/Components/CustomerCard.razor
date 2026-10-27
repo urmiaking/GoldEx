@@ -1,0 +1,88 @@
+@using System.Globalization
+
+<article class="customer-card" aria-label="@Customer.FullName" tabindex="-1" @ref="_card"
+         style="@($"--customer-entrance-delay: {Math.Min(EntranceIndex, 5) * 25}ms")">
+    <div class="customer-card-heading">
+        <div class="directory-avatar directory-avatar-@AvatarTone" aria-hidden="true">@Initials</div>
+        <div class="customer-identity">
+            <h2>@Customer.FullName</h2>
+            <span class="customer-type">@Customer.CustomerType.GetDisplayName()</span>
+        </div>
+        <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" Class="customer-more">
+            <ActivatorContent>
+                <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz" OnClick="context.ToggleAsync"
+                               aria-label="@($"عملیات {Customer.FullName}")" />
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Edit" OnClick="() => OnEdit.InvokeAsync(Customer)">ویرایش اطلاعات</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="Color.Error" OnClick="() => OnRemove.InvokeAsync(Customer)">حذف مشتری</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </div>
+
+    <div class="customer-details">
+        @if (!string.IsNullOrWhiteSpace(Customer.PhoneNumber))
+        {
+            <a href="@($"tel:{Customer.PhoneNumber}")" class="customer-contact" aria-label="@($"تماس با {Customer.FullName}")">
+                <span class="customer-detail-label">شماره تماس</span>
+                <span class="customer-phone" dir="ltr">@Customer.PhoneNumber</span>
+            </a>
+        }
+        else
+        {
+            <div>
+                <span class="customer-detail-label">شماره تماس</span>
+                <span class="customer-detail-empty">ثبت نشده</span>
+            </div>
+        }
+        <div>
+            <span class="customer-detail-label">کد مشتری</span>
+            <span class="customer-code">@(string.IsNullOrWhiteSpace(Customer.NationalId) ? "—" : Customer.NationalId)</span>
+        </div>
+        <div>
+            <span class="customer-detail-label">تاریخ ثبت</span>
+            <time class="customer-date" datetime="@Customer.CreatedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@Customer.CreatedAt.ToShortDateString()</time>
+        </div>
+    </div>
+
+    <div class="customer-balance">
+        <span class="customer-detail-label">مانده حساب</span>
+        <CustomerRemaining CustomerId="Customer.Id!.Value" EnableManualSlide="true" ShowStatus="true" TextTypo="Typo.body1" />
+    </div>
+
+    <div class="customer-card-actions">
+        <MudButton Class="customer-action-ledger" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
+                   OnClick="() => OnViewTransaction.InvokeAsync(Customer)" aria-label="@($"گردش حساب {Customer.FullName}")">گردش حساب</MudButton>
+        <MudButton Class="customer-action-invoices" Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Material.Outlined.ReceiptLong"
+                   OnClick="() => OnViewInvoices.InvokeAsync(Customer)" aria-label="@($"فاکتورهای {Customer.FullName}")">فاکتورها</MudButton>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public CustomerVm Customer { get; set; } = default!;
+    [Parameter] public int EntranceIndex { get; set; }
+    [Parameter] public bool FocusOnLoad { get; set; }
+    [Parameter] public EventCallback<CustomerVm> OnEdit { get; set; }
+    [Parameter] public EventCallback<CustomerVm> OnRemove { get; set; }
+    [Parameter] public EventCallback<CustomerVm> OnViewTransaction { get; set; }
+    [Parameter] public EventCallback<CustomerVm> OnViewInvoices { get; set; }
+    private ElementReference _card;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && FocusOnLoad) await _card.FocusAsync(preventScroll: true);
+    }
+
+    private int AvatarTone => Customer.FullName.Aggregate(0, (tone, character) => (tone + character) % 6);
+
+    private string Initials
+    {
+        get
+        {
+            var words = Customer.FullName.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 0) return "؟";
+            var first = StringInfo.GetNextTextElement(words[0]);
+            return words.Length == 1 ? first : $"{first} {StringInfo.GetNextTextElement(words[^1])}";
+        }
+    }
+}

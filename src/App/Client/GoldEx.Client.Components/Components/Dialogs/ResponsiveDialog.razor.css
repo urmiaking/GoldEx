@@ -1,0 +1,33 @@
+/* MeetFlow MfDialog geometry, using GoldEx theme tokens and a native top layer. */
+.gex-modal-layer:not(.is-active) { display: contents; }
+.gex-modal-panel[hidden] { display: none; }
+.gex-modal-layer.is-active[open] { position: fixed; inset: var(--gex-modal-viewport-offset, 0px) 0 auto; box-sizing: border-box; width: 100vw; max-width: none; height: var(--gex-modal-viewport-height, 100dvh); max-height: none; margin: 0; border: 0; border-radius: 0; outline: 0; padding: clamp(12px,3vw,28px); background: transparent; color: var(--mud-palette-text-primary); overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; font: inherit; }
+.gex-modal-layer::backdrop { background: transparent; }
+.gex-modal-backdrop { position: absolute; inset: 0; border: 0; background: rgba(6,30,45,.6); backdrop-filter: blur(6px); cursor: default; animation: gex-modal-shade .2s ease-out; }
+.gex-modal-panel { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(100%,610px); max-height: min(calc(var(--gex-modal-viewport-height, 100dvh) * .9),920px); min-width: 0; min-height: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--mud-default-borderradius); background: var(--mud-palette-surface); box-shadow: 0 35px 90px rgba(2,30,46,.32); animation: gex-modal-rise .33s cubic-bezier(.2,1,.3,1) backwards; }
+.gex-modal-wide { width: min(100%,920px); }
+.gex-modal-header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+.gex-modal-header h2 { font: inherit; font-size: 19px; line-height: 1.65; font-weight: 800; margin: 0; }
+.gex-modal-close { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 10px; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--mud-default-borderradius); background: var(--mud-palette-surface); color: var(--mud-palette-text-primary); cursor: pointer; }
+.gex-modal-close:disabled { opacity: .45; cursor: wait; }
+.gex-modal-close:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
+.gex-modal-content { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.gex-modal-content ::deep .gex-modal-session:not([hidden]), .gex-modal-content ::deep .mud-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.gex-modal-content ::deep .gex-editor-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 20px 24px; }
+.gex-modal-content ::deep .gex-editor-actions { display: flex; flex: none; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 24px; border-top: 1px solid var(--mud-palette-lines-default); }
+.gex-modal-content ::deep .gex-editor-actions .mud-button { min-height: 44px; margin: 0 !important; }
+.gex-modal-content ::deep .gex-modal-session[hidden] { display: none; }
+/* Providers remain inside the native modal, but outside the animated panel. */
+.gex-modal-layer.is-active ::deep .mud-popover { position: fixed; }
+@keyframes gex-modal-shade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gex-modal-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) {
+    .gex-modal-layer.is-active[open] { align-items: flex-end; padding: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom,0px)); }
+    .gex-modal-panel { width: 100%; max-height: calc(var(--gex-modal-viewport-height, 100dvh) * .95 - env(safe-area-inset-bottom,0px)); border-radius: 20px 20px 12px 12px; animation-name: gex-modal-sheet; }
+    .gex-modal-header { padding: 14px 16px 10px; }
+    .gex-modal-header h2 { font-size: 17px; }
+    .gex-modal-content ::deep .gex-editor-body { padding: 16px; }
+    .gex-modal-content ::deep .gex-editor-actions { padding: 12px 16px; }
+}
+@keyframes gex-modal-sheet { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .gex-modal-panel, .gex-modal-backdrop { animation: none; } }

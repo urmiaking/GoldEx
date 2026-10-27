@@ -16,22 +16,29 @@
 }
 else
 {
-    <MudLayout Class="goldex-shell">
-        <AppBar @bind-DrawerOpen="_drawerOpen" />
-        <Drawer @bind-IsDrawerOpen="_drawerOpen" />
-        <MudMainContent Class="goldex-main-content">
-            <div class="goldex-page-container page-transition">
-                @Body
-            </div>
-
-            <MobileNav Class="d-md-none d-block" />
-        </MudMainContent>
-    </MudLayout>
+    <div class="goldex-shell" dir="rtl">
+        <a class="gex-skip-link" href="#gex-main-content">رفتن به محتوای اصلی</a>
+        <Drawer @ref="_navigation" @bind-IsDrawerOpen="_drawerOpen" />
+        <div class="gex-workspace">
+            <AppBar @bind-DrawerOpen="_drawerOpen" NotificationCount="_unreadCount" OnNotificationsRequested="OpenNotificationsAsync" />
+            <main id="gex-main-content" class="goldex-main-content" tabindex="-1">
+                <div class="goldex-page-container page-transition">@Body</div>
+            </main>
+        </div>
+        <MobileNav />
+        <PalettePicker />
+        <AuthorizeView Roles="Administrators,Owners">
+            <Notifications @ref="_notifications" ShowTrigger="false" UnreadCountChanged="@((int count) => _unreadCount = count)" />
+        </AuthorizeView>
+    </div>
 }
 
 @code
 {
     private bool _drawerOpen;
+    private int _unreadCount;
+    private Drawer? _navigation;
+    private Notifications? _notifications;
     private GetLicenseResponse? _license;
 
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
@@ -76,7 +83,13 @@ else
         {
             _drawerOpen = false;
         }
-        _ = InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(async () => { if (_notifications is not null) await _notifications.CloseAsync(); StateHasChanged(); });
+    }
+
+    private async Task OpenNotificationsAsync()
+    {
+        if (_navigation is not null) await _navigation.CloseAsync();
+        if (_notifications is not null) await _notifications.OpenAsync();
     }
 
     private async Task GetLicenseAsync()

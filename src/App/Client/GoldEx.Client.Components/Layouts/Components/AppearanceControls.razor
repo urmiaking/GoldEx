@@ -13,19 +13,21 @@
             title="@(Theme.IsDarkMode ? "حالت روشن" : "حالت تاریک")"
             aria-pressed="@Theme.IsDarkMode.ToString().ToLowerInvariant()" disabled="@Theme.IsChanging"
             @onclick="ToggleAsync">
-        <MudIcon Icon="@(Theme.IsDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Outlined.DarkMode)" />
+        <ShellIcon Name="@(Theme.IsDarkMode ? "sun" : "moon")" />
     </button>
+    @if (!ModeOnly)
+    {
     <button type="button" @ref="_paletteButton" class="gex-appearance-button"
             popovertarget="@_pickerId" aria-controls="@_pickerId" aria-haspopup="dialog"
             aria-label="انتخاب رنگ برنامه" title="رنگ برنامه" disabled="@Theme.IsChanging">
-        <MudIcon Icon="@Icons.Material.Outlined.Palette" />
+        <ShellIcon Name="palette" />
     </button>
     <section id="@_pickerId" popover="auto" role="dialog" aria-labelledby="@(_pickerId + "-title")"
              class="gex-palette-popover" dir="rtl" aria-busy="@Theme.IsChanging.ToString().ToLowerInvariant()">
         <header class="gex-palette-heading">
             <div><h2 id="@(_pickerId + "-title")">رنگ فضای کار</h2><p>رنگ دلخواه شما، در حالت روشن و تاریک</p></div>
             <button type="button" class="gex-appearance-button" popovertarget="@_pickerId" popovertargetaction="hide" aria-label="بستن انتخاب رنگ">
-                <MudIcon Icon="@Icons.Material.Filled.Close" />
+                <ShellIcon Name="close" />
             </button>
         </header>
         <div class="gex-palette-options" role="group" aria-label="پالت‌های رنگ">
@@ -40,16 +42,18 @@
                         <span style="@($"background:{palette.PaletteLight.Background};color:{palette.PaletteLight.Primary}")"><i></i><i></i></span>
                         <span style="@($"background:{palette.PaletteDark.Background};color:{palette.PaletteDark.Primary}")"><i></i><i></i></span>
                     </span>
-                    <span class="gex-palette-name">@option.Title @if (selected) { <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" /> }</span>
+                    <span class="gex-palette-name">@option.Title @if (selected) { <ShellIcon Name="check" /> }</span>
                 </button>
             }
         </div>
         <p class="gex-palette-status" role="status">رنگ انتخاب‌شده: @ColorPalettes.Options.First(p => p.Id == Theme.CurrentPalette).Title</p>
     </section>
+    }
 </div>
 
 @code {
     [Parameter] public bool ShowLabels { get; set; }
+    [Parameter] public bool ModeOnly { get; set; }
     private readonly string _pickerId = $"gex-palette-{Guid.NewGuid():N}";
     private ElementReference _modeButton, _paletteButton;
     protected override void OnInitialized() => Theme.OnAppearanceChanged += RefreshAsync;

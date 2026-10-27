@@ -25,9 +25,18 @@ public partial class CustomerTransferList
     private DateRange _filterDateRange = new();
     private GetPriceUnitTitleResponse? _selectedPriceUnit;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
+    private Task? _priceUnitsLoad;
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
 
     protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await EnsurePriceUnitsAsync();
+    }
+
+    private Task EnsurePriceUnitsAsync() => _priceUnitsLoad ??= LoadPriceUnitsAsync();
+
+    private async Task LoadPriceUnitsAsync()
     {
         try
         {
@@ -112,8 +121,9 @@ public partial class CustomerTransferList
         _table.NavigateTo(i - 1);
     }
 
-    private async Task OnCreate()
+    public async Task OnCreate()
     {
+        await EnsurePriceUnitsAsync();
         var model = new CustomerTransferVoucherVm
         {
             TransferDate = DateTime.Now

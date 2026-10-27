@@ -1,179 +1,150 @@
-@using System.Globalization
 @inherits GoldExComponentBase
 
-@if (ShowTitle)
-{
-    <div class="d-flex justify-content-center">
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">لیست مشتریان</MudText>
-    </div>
-    <MudDivider />
-}
-
-<MudTable T="CustomerVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
-          Dense="true" ServerData="LoadCustomersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
-    <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" DebounceInterval="500" ValueChanged="@(s => OnSearch(s))"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        <MudSpacer />
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange"
-                                DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense"
-                                Variant="Variant.Outlined"
-                                Class="ml-3"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Rounded="true"
-                                ShowToolbar="false"
-                                Style="max-width: 320px;"
-                                PlaceholderStart="از"
-                                PlaceholderEnd="تا"
-                                Label="تاریخ ثبت مشتری"
-                                Clearable="true" />
-
-            <MudButtonGroup Size="Size.Small" Color="@TransactionTypeColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@TransactionTypeIcon">
-                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        @(_transactionType?.GetDisplayName() ?? "وضعیت حساب")
-                    </MudHidden>
-                </MudButton>
-
-                <MudMenu Size="Size.Small"
-                         Icon="@Icons.Material.Filled.ArrowDropDown"
-                         Style="align-self: auto;">
-                    <MudMenuItem OnClick="() => SetTransactionTypeFilterText(null)">
-                        <MudIcon Icon="@GetTransactionTypeIcon(null)" Color="@GetTransactionTypeIconColor(null)" Class="mr-2" />
-                        بدهکار / بستانکار
-                    </MudMenuItem>
-
-                    @foreach (var type in Enum.GetValues<TransactionType>())
-                    {
-                        <MudMenuItem OnClick="() => SetTransactionTypeFilterText(type)">
-                            <MudIcon Icon="@GetTransactionTypeIcon(type)" Color="@GetTransactionTypeIconColor(type)" Class="mr-2" />
-                            فقط @type.GetDisplayName()
-                        </MudMenuItem>
-                    }
-
-                </MudMenu>
-            </MudButtonGroup>
-
-            <MudButtonGroup Size="Size.Small" Color="@CustomerTypeColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@CustomerTypeIcon">
-                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        @(_customerType?.GetDisplayName() ?? "نوع مشتری")
-                    </MudHidden>
-                </MudButton>
-
-                <MudMenu Size="Size.Small"
-                         Icon="@Icons.Material.Filled.ArrowDropDown"
-                         Style="align-self: auto;">
-                    <MudMenuItem OnClick="() => SetCustomerTypeFilterText(null)">
-                        <MudIcon Icon="@GetCustomerTypeIcon(null)" Color="@GetCustomerTypeIconColor(null)" Class="mr-2" />
-                        همه
-                    </MudMenuItem>
-
-                    @foreach (var type in Enum.GetValues<CustomerType>())
-                    {
-                        <MudMenuItem OnClick="() => SetCustomerTypeFilterText(type)">
-                            <MudIcon Icon="@GetCustomerTypeIcon(type)" Color="@GetCustomerTypeIconColor(type)" Class="mr-2" />
-                            @type.GetDisplayName()
-                        </MudMenuItem>
-                    }
-
-                </MudMenu>
-            </MudButtonGroup>
-
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">ثبت مشتری جدید</MudButton>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Icon="@Icons.Material.Filled.Tune"
-                           Color="Color.Success"
-                           Variant="Variant.Filled"
-                           Class="mr-3"
-                           Size="Size.Small"
-                           OnClick="OpenMobileFilters" />
-
-            <MudIconButton Color="@Color.Primary"
-                           Icon="@Icons.Material.Filled.Add"
-                           Class="mr-3" OnClick="@(_ => OnCreate())"
-                           Size="@Size.Small" Variant="@Variant.Filled"/>
-        </MudHidden>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="FullName" T="CustomerVm">نام مشتری</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="CustomerType" T="CustomerVm">نوع</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد مشتری</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="CustomerVm">شماره تماس</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="CreatedAt" T="CustomerVm">تاریخ ثبت</MudTableSortLabel></MudTh>
-        <MudTh>مانده</MudTh>
-        <MudTh>عملیات</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="نام مشتری">@context.FullName</MudTd>
-        <MudTd DataLabel="نوع">@context.CustomerType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="کد مشتری">@context.NationalId</MudTd>
-        <MudTd DataLabel="شماره تماس">@context.PhoneNumber</MudTd>
-        <MudTd DataLabel="تاریخ ثبت">
-            <MudTooltip Text="@context.CreatedAt.ToString(CultureInfo.CurrentUICulture)" Placement="Placement.Top" Arrow="true">
-                @context.CreatedAt.ToShortDateString()
-            </MudTooltip>
-        </MudTd>
-        <MudTd DataLabel="مانده">
-            <CustomerRemaining CustomerId="@context.Id!.Value" EnableManualSlide="true" ItemClass="justify-content-end justify-content-lg-start" />
-        </MudTd>
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
-                <MudTooltip Text="مشاهده تراکنش های مشتری">
-                    <MudIconButton Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Success" OnClick="_ => OnViewTransaction(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="مشاهده فاکتورهای مشتری">
-                    <MudIconButton Icon="@Icons.Material.Filled.LibraryBooks" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Info" OnClick="_ => OnViewInvoices(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="ویرایش">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="حذف">
-                    <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                </MudTooltip>
-            </div>
-        </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText>هیچ مشتری یافت نشد</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>در حال بارگیری</MudText>
-    </LoadingContent>
-    <PagerContent>
-        @{
-            var totalItems = _table.GetFilteredItemsCount();
-            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
-        }
-
-        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
-            <div class="mud-table-pagination-caption">
-                @infoText
-            </div>
-            <MudPagination SelectedChanged="PageChanged"
-                           Color="Color.Primary"
-                           Count="@pageCount"
-                           Class="justify-center"
-                           BoundaryCount="1"
-                           MiddleCount="3" />
-
-            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                @infoText
-            </div>
+<section class="customers-directory @Class" aria-labelledby="customers-title">
+    <header class="directory-heading">
+        <div class="directory-title">
+            <h1 id="customers-title">مشتریان <span class="directory-count">@(_loading ? "…" : $"{_totalItems:N0} نفر")</span></h1>
+            <p>حساب و اطلاعات هر مشتری</p>
         </div>
-    </PagerContent>
-</MudTable>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OnCreate" Class="directory-create">مشتری جدید</MudButton>
+    </header>
+
+    <div class="directory-filters">
+    <div class="directory-toolbar">
+        <div class="directory-search">
+            <MudTextField T="string" Value="_searchString" ValueChanged="OnSearch" Clearable="true" Immediate="true" DebounceInterval="500"
+                          Label="جستجوی مشتری" Placeholder="نام، کد مشتری یا شماره تماس" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Outlined.Search" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </div>
+        <MudButton Variant="Variant.Outlined" Color="@(ActiveOptionCount > 0 ? Color.Primary : Color.Default)"
+                   StartIcon="@Icons.Material.Outlined.Tune" OnClick="OpenMobileFilters" Class="directory-filter"
+                   aria-label="@FilterButtonLabel">
+            <span class="directory-filter-text">فیلترها</span>
+            @if (ActiveOptionCount > 0)
+            {
+                <span class="directory-filter-count" aria-hidden="true">@ActiveOptionCount</span>
+            }
+        </MudButton>
+        <div class="directory-sort">
+            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                <MudSelectItem Value="@nameof(CustomerVm.CreatedAt)">تاریخ ثبت</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.FullName)">نام مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.CustomerType)">نوع مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.NationalId)">کد مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.PhoneNumber)">شماره تماس</MudSelectItem>
+            </MudSelect>
+        </div>
+        <div class="directory-sort-toggle">
+        <MudTooltip Text="@(_sortDescending ? "نزولی؛ تغییر به صعودی" : "صعودی؛ تغییر به نزولی")">
+            <MudIconButton Icon="@(_sortDescending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                           OnClick="ToggleSortDirection" Class="directory-sort-direction"
+                           aria-label="@(_sortDescending ? "مرتب‌سازی نزولی؛ تغییر به صعودی" : "مرتب‌سازی صعودی؛ تغییر به نزولی")" />
+        </MudTooltip>
+        </div>
+    </div>
+
+    @if (ActiveFilterCount > 0)
+    {
+        <div class="directory-applied-filters" aria-label="فیلترهای فعال">
+            @if (_customerType.HasValue) { <span>@_customerType.Value.GetDisplayName()</span> }
+            @if (_transactionType.HasValue) { <span>@_transactionType.Value.GetDisplayName()</span> }
+            @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue)
+            {
+                <span>تاریخ ثبت: @(_filterDateRange.Start?.ToShortDateString() ?? "ابتدا") تا @(_filterDateRange.End?.ToShortDateString() ?? "امروز")</span>
+            }
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearFilters" StartIcon="@Icons.Material.Filled.Close">پاک کردن فیلترها</MudButton>
+        </div>
+    }
+
+    </div>
+
+    <div class="directory-results" aria-busy="@((_loading || _loadingMore).ToString().ToLowerInvariant())">
+        @if (_loading)
+        {
+            <div class="directory-grid" aria-label="در حال دریافت مشتریان">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <CustomerCardSkeleton />
+                }
+            </div>
+            <span class="directory-sr-only" role="status">در حال دریافت مشتریان…</span>
+        }
+        else if (_loadFailed)
+        {
+            <div class="directory-empty" role="alert">
+                <MudIcon Icon="@Icons.Material.Outlined.CloudOff" Size="Size.Large" />
+                <h2>دریافت مشتریان انجام نشد</h2>
+                <p>دوباره تلاش کنید.</p>
+                <MudButton OnClick="RefreshAsync" Color="Color.Primary" Variant="Variant.Outlined">تلاش دوباره</MudButton>
+            </div>
+        }
+        else if (_customers.Count == 0)
+        {
+            <div class="directory-empty" role="status">
+                <MudIcon Icon="@Icons.Material.Outlined.PeopleAlt" Size="Size.Large" />
+                <h2>@(HasQuery ? "مشتری با این مشخصات پیدا نشد" : "اولین مشتری‌تان را ثبت کنید")</h2>
+                <p>@(HasQuery ? "نام، شماره تماس یا فیلترهای جستجو را تغییر دهید." : "با ثبت مشتری، اطلاعات و مانده حساب او را همین‌جا می‌بینید.")</p>
+                @if (HasQuery)
+                {
+                    <MudButton OnClick="ClearQuery" Color="Color.Primary" Variant="Variant.Outlined">نمایش همه مشتریان</MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="OnCreate" Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add">مشتری جدید</MudButton>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="directory-grid">
+                @for (var index = 0; index < _customers.Count; index++)
+                {
+                    var customer = _customers[index];
+                    <CustomerCard @key="customer.Id" Customer="customer" EntranceIndex="@(index % BatchSize)"
+                                  FocusOnLoad="@(_appendStart > 0 && index == _appendStart)" OnEdit="OnEdit" OnRemove="OnRemove"
+                                  OnViewTransaction="OnViewTransaction" OnViewInvoices="OnViewInvoices" />
+                }
+                @if (_loadingMore)
+                {
+                    @for (var i = 0; i < 6; i++)
+                    {
+                        <CustomerCardSkeleton />
+                    }
+                }
+            </div>
+        }
+    </div>
+
+    @if (!_loading && !_loadFailed && _customers.Count > 0)
+    {
+        <footer class="directory-load-more">
+            <span role="status" aria-live="polite">نمایش @_customers.Count.ToString("N0") از @_totalItems.ToString("N0") مشتری</span>
+            @if (_hasMore)
+            {
+                @if (_loadMoreFailed)
+                {
+                    <span class="directory-load-error" role="alert">دریافت مشتریان بیشتر انجام نشد. دوباره تلاش کنید.</span>
+                }
+                <MudButton OnClick="LoadMoreAsync" Disabled="_loadingMore" Variant="Variant.Outlined" Color="Color.Primary"
+                           Class="directory-more-button" aria-label="@(_loadMoreFailed ? "تلاش دوباره برای دریافت مشتریان بیشتر" : "نمایش مشتریان بیشتر")">
+                    @if (_loadingMore)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" aria-hidden="true" />
+                        <span>در حال بارگذاری…</span>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@(_loadMoreFailed ? Icons.Material.Outlined.Refresh : Icons.Material.Filled.ExpandMore)" />
+                        <span>@(_loadMoreFailed ? "تلاش دوباره" : "نمایش بیشتر")</span>
+                    }
+                </MudButton>
+            }
+            else
+            {
+                <span class="directory-end">همه مشتریان نمایش داده شدند</span>
+            }
+        </footer>
+    }
+</section>

@@ -16,9 +16,8 @@ else
     <PageTitle>گلدکس</PageTitle>
     <MudRTLProvider RightToLeft="true">
         <MudThemeProvider Theme="@ThemeService.CurrentTheme" IsDarkMode="@ThemeService.IsDarkMode" ObserveSystemDarkModeChange="false" />
-        <MudPopoverProvider />
         <MudDialogProvider />
-        <MudSnackbarProvider />
+        <GoldEx.Client.Components.Components.Dialogs.ResponsiveDialogHost />
         @Body
         <div id="blazor-error-ui" data-nosnippet>
             خطایی در حین اجرای برنامه رخ داد

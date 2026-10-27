@@ -140,6 +140,12 @@ internal class CustomerRepository(GoldExDbContext dbContext)
             filter.SortDirection ?? SortDirection.None,
             defaultSortProperty: "CreatedAt");
 
+        // Code/type is unique within the active store: tied names/dates must keep
+        // the same order across successive "show more" requests.
+        query = ((IOrderedQueryable<Customer>)query)
+            .ThenBy(customer => customer.NationalId)
+            .ThenBy(customer => customer.CustomerType);
+
         #endregion
 
         var total = await query.CountAsync(cancellationToken);

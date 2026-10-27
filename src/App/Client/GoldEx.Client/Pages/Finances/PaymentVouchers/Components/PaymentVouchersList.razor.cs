@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
+using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PaymentVouchers;
@@ -111,7 +111,7 @@ public partial class PaymentVouchersList
         await RefreshAsync();
     }
 
-    private async Task OnCreate()
+    public async Task OnCreate()
     {
         var dialog = await DialogService.ShowAsync<Editor>("افزودن سند پرداخت جدید", _dialogOptions);
 

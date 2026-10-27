@@ -1,0 +1,12 @@
+@using GoldEx.Client.Components.Services
+<EditorDialogFrame>
+    <DialogContent><MudText>@Message</MudText></DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Session.Cancel">انصراف</MudButton>
+        <MudButton OnClick="() => Session.Close(true)" Variant="Variant.Filled" Color="Color.Error">تأیید</MudButton>
+    </DialogActions>
+</EditorDialogFrame>
+@code {
+    [CascadingParameter] public ResponsiveDialogSession Session { get; set; } = default!;
+    [Parameter] public string Message { get; set; } = "";
+}

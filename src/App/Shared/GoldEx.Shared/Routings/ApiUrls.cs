@@ -488,6 +488,10 @@ public class ApiUrls
 
     public class Notifications
     {
+        public static string PushConfiguration => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.PushConfiguration);
+        public static string PushSubscribe => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.PushSubscribe);
+        public static string PushRevoke => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.PushRevoke);
+        public static string PushTest => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.PushTest);
         public static string GetList(bool? isRead)
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList)
                 .AppendQueryString(new { isRead });

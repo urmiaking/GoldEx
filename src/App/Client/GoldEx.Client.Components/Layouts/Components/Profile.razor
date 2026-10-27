@@ -1,64 +1,19 @@
-@using GoldEx.Shared.Enums
-@using GoldEx.Shared.Routings
-@inherits GoldEx.Client.Components.Components.GoldExComponentBase
+@using GoldEx.Client.Components.Extensions
 
-<AuthorizeView>
-    <Authorized>
-        <MudIconButton Color="Color.Inherit" Edge="Edge.End" OnClick="ToggleProfile" Icon="@Icons.Material.Filled.Person">
-        </MudIconButton>
+<div class="gex-profile">
+    <AuthorizeView>
+        <Authorized Context="auth">
+            <a href="@ClientRoutes.UserAccounts.Index" class="gex-profile-trigger" aria-label="مدیریت پروفایل کاربری" title="مدیریت پروفایل کاربری">
+                <span class="gex-avatar">@Initials(auth.User.GetDisplayName())</span>
+            </a>
+        </Authorized>
+        <NotAuthorized>
+            <a href="@ClientRoutes.Accounts.Login" class="gex-icon-button" aria-label="ورود به حساب" title="ورود"><ShellIcon Name="user" /></a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
 
-        <MudPopover Open="@_isProfileOpen" Fixed="false" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" Class="px-4 pt-4" Elevation="24">
-            <MudIconButton OnClick="@ToggleProfile" Class="p-0 m-0" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
-
-            <div class="d-flex flex-column align-center">
-                <div class="d-flex flex-column align-center">
-                    <MudAvatar Size="Size.Large" Color="Color.Secondary">
-                        <MudImage Src="@ApiUrls.Icons.Get(IconType.App, Guid.Empty)" />
-                    </MudAvatar>
-                    <MudChip T="string" Class="mt-n2" Color="@_color" Size="Size.Small">@_status</MudChip>
-                </div>
-
-                <MudText Typo="Typo.h6" Class="mt-2">@_username</MudText>
-                <MudText Typo="Typo.body2">
-                    @context.User.Identity?.Name
-                </MudText>
-                <LicenseStatus />
-            </div>
-
-            <MudDivider Class="my-4" />
-
-
-            <AppearanceControls ShowLabels="true" />
-
-            <MudDivider Class="my-4" />
-
-
-            <div class="d-flex flex-column align-center">
-                <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-4">
-                    <MudTooltip Text="مدیریت حساب" Placement="Placement.Right" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" Href="@ClientRoutes.UserAccounts.Index"></MudIconButton>
-                    </MudTooltip>
-
-                    <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" OnClick="() => _healthMonitorOpen = !_healthMonitorOpen"></MudIconButton>
-                        <MudPopover Open="_healthMonitorOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                            <HealthMonitor />
-                        </MudPopover>
-                    </MudTooltip>
-
-                    <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
-                    </MudTooltip>
-
-                    <MudTooltip Text="خروج" Placement="Placement.Right" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Href="@ApiUrls.Account.Logout(_currentUrl)"></MudIconButton>
-                    </MudTooltip>
-                </MudButtonGroup>
-            </div>
-
-        </MudPopover>
-    </Authorized>
-    <NotAuthorized>
-        <MudIconButton Color="Color.Inherit" Edge="Edge.End" Icon="@Icons.Material.Filled.Key" Href="@ClientRoutes.Accounts.Login"></MudIconButton>
-    </NotAuthorized>
-</AuthorizeView>
+@code {
+    private static string Initials(string? name) => string.IsNullOrWhiteSpace(name) ? "گ" :
+        string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => part[0]));
+}

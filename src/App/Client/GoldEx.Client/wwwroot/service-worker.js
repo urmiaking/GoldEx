@@ -1,4 +1,5 @@
 // In development, always fetch from network and never cache static assets or HTML
+self.importScripts('/notification-worker.js');
 self.addEventListener('install', event => {
     self.skipWaiting();
 });

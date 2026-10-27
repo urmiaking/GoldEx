@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.FinancialAccounts.Validators;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.FinancialAccounts.Validators;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
@@ -10,6 +11,9 @@ namespace GoldEx.Client.Pages.FinancialAccounts.Components;
 
 public partial class FinancialAccountEditor
 {
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    private bool _processing;
+    private FinancialAccountVm? _initializedNativeModel;
     [Parameter] public string? AccountHolderName { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
@@ -32,6 +36,8 @@ public partial class FinancialAccountEditor
 
     protected override void OnParametersSet()
     {
+        if (Session is not null && ReferenceEquals(_initializedNativeModel, Model)) return;
+        _initializedNativeModel = Model;
         if (CustomerId.HasValue)
             Model.CustomerId = CustomerId.Value;
 
@@ -64,37 +70,59 @@ public partial class FinancialAccountEditor
             afterSend: response => PriceUnits = response);
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close()
+    {
+        if (_processing) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
+
+    private void Complete()
+    {
+        if (Session is not null) Session.Close(Model);
+        else MudDialog.Close(DialogResult.Ok(Model));
+    }
 
     private async Task Submit()
     {
-        await _form.ValidateAsync();
-
-        if (!_form.IsValid)
-            return;
-
-        if (SubmitIndependently)
+        if (_processing) return;
+        _processing = true;
+        Session?.SetBusy(true);
+        try
         {
-            if (Model.Id.HasValue)
-                await SendRequestAsync<IFinancialAccountService>(
-                    action: (s, ct) => s.UpdateAsync(Model.Id.Value, Model.ToRequest(), ct),
-                    afterSend: () =>
-                    {
-                        MudDialog.Close(DialogResult.Ok(Model));
-                        return Task.CompletedTask;
-                    });
+            await _form.ValidateAsync();
+
+            if (!_form.IsValid)
+                return;
+
+            if (SubmitIndependently)
+            {
+                if (Model.Id.HasValue)
+                    await SendRequestAsync<IFinancialAccountService>(
+                        action: (s, ct) => s.UpdateAsync(Model.Id.Value, Model.ToRequest(), ct),
+                        afterSend: () =>
+                        {
+                            Complete();
+                            return Task.CompletedTask;
+                        });
+                else
+                    await SendRequestAsync<IFinancialAccountService>(
+                        action: (s, ct) => s.CreateAsync(Model.ToRequest(), ct),
+                        afterSend: () =>
+                        {
+                            Complete();
+                            return Task.CompletedTask;
+                        });
+            }
             else
-                await SendRequestAsync<IFinancialAccountService>(
-                    action: (s, ct) => s.CreateAsync(Model.ToRequest(), ct),
-                    afterSend: () =>
-                    {
-                        MudDialog.Close(DialogResult.Ok(Model));
-                        return Task.CompletedTask;
-                    });
+            {
+                Complete();
+            }
         }
-        else
+        finally
         {
-            MudDialog.Close(DialogResult.Ok(Model));
+            _processing = false;
+            Session?.SetBusy(false);
         }
     }
 

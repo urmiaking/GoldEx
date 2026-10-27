@@ -49,8 +49,9 @@ public static class ColorPalettes
             GrayLighter = "#F8F8F8",
             Primary = "#C9A227",           
             Secondary = "#C9A227",
-            Background = "#FAFAF8",        
-            Surface = "#F9F8F5",           
+            // Match Ocean's white-card separation while keeping Gold's warm background.
+            Background = "#F5F3EE",
+            Surface = "#FFFFFF",
             TextPrimary = "#1C2526",
             TextSecondary = "#B8860B",     
             TextDisabled = "#B8860B80",

@@ -1,0 +1,68 @@
+@using GoldEx.Client.Components.Layouts.Components
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<dialog class="gex-modal-layer @(Open ? "is-active" : null)" open="@(!Open)" role="@(Open ? "dialog" : "presentation")"
+        aria-labelledby="@(Open ? _titleId : null)" aria-modal="@(Open ? "true" : null)" @ref="_dialog" @onkeydown="KeyDown">
+    @if (Open)
+    {
+        <button type="button" class="gex-modal-backdrop" tabindex="-1" aria-label="بستن پنجره" disabled="@Busy" @onclick="Close" />
+    }
+    <section class="gex-modal-panel @(Wide ? "gex-modal-wide" : null)" hidden="@(!Open)" dir="rtl">
+        <header class="gex-modal-header">
+            <h2 id="@_titleId">@Title</h2>
+            <button type="button" class="gex-modal-close" disabled="@Busy" aria-label="بستن پنجره" @onclick="Close"><ShellIcon Name="close" /></button>
+        </header>
+        <div class="gex-modal-content">@ChildContent</div>
+    </section>
+    @Overlays
+</dialog>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public bool Wide { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? SessionKey { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Overlays { get; set; }
+    private readonly string _titleId = "gex-dialog-" + Guid.NewGuid().ToString("N");
+    private ElementReference _dialog;
+    private IJSObjectReference? _module;
+    private bool? _wasOpen;
+    private string? _focusedSession;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/responsive-dialog.js");
+        if (_wasOpen != Open)
+        {
+            await _module.InvokeVoidAsync("setOpen", _dialog, Open);
+            _wasOpen = Open;
+        }
+        if (Open && SessionKey != _focusedSession)
+        {
+            await _module.InvokeVoidAsync("focusSession", _dialog, SessionKey);
+            _focusedSession = SessionKey;
+        }
+        if (!Open) _focusedSession = null;
+    }
+    private Task Close() => Busy ? Task.CompletedTask : OnClose.InvokeAsync();
+    private async Task KeyDown(KeyboardEventArgs args)
+    {
+        if (Open && args.Key == "Escape" && !Busy && _module is not null && await _module.InvokeAsync<bool>("canDismiss", _dialog))
+            await Close();
+    }
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is null) return;
+            await _module.InvokeVoidAsync("deactivate", _dialog);
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+    }
+}

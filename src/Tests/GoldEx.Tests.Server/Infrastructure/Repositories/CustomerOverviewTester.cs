@@ -115,6 +115,42 @@ public class CustomerOverviewTester
         });
     }
 
+    [TestCase("CreatedAt", GoldEx.Sdk.Common.Definitions.SortDirection.Descending)]
+    [TestCase("FullName", GoldEx.Sdk.Common.Definitions.SortDirection.Ascending)]
+    [TestCase("PhoneNumber", GoldEx.Sdk.Common.Definitions.SortDirection.Descending)]
+    public async Task DirectoryBatches_WithTiedSortValues_ReturnThirtyThirtySixInStableOrder(
+        string sortLabel, GoldEx.Sdk.Common.Definitions.SortDirection sortDirection)
+    {
+        var registeredAt = new DateTime(2026, 10, 27, 9, 0, 0);
+        // Insert reverse code/type order, including the same code in two customer types.
+        for (var code = 32; code >= 0; code--)
+        foreach (var type in new[] { CustomerType.Wholesaler, CustomerType.RetailCustomer })
+        {
+            var customer = Customer.Create(type, "Same name", code.ToString("D3"), "09120000000",
+                null, null, null, new StoreId(_storeId));
+            _dbContext.Add(customer);
+            _dbContext.Entry(customer).Property(c => c.CreatedAt).CurrentValue = registeredAt;
+        }
+        AddCustomers(CustomerType.RetailCustomer, 5, Guid.NewGuid());
+        await _dbContext.SaveChangesAsync();
+
+        var batches = new List<PagedList<Customer>>();
+        foreach (var skip in new[] { 0, 30, 60 })
+            batches.Add(await _repository.GetListAsync(new CustomerFilter(null, null, null, null),
+                new RequestFilter(skip, 30, null, sortLabel, sortDirection)));
+
+        var combined = batches.SelectMany(batch => batch.Data).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(batches.Select(batch => batch.Data.Count), Is.EqualTo(new[] { 30, 30, 6 }));
+            Assert.That(batches.All(batch => batch.Total == 66), Is.True);
+            Assert.That(combined.Select(customer => customer.Id).Distinct().Count(), Is.EqualTo(66));
+            Assert.That(combined.Select(customer => customer.NationalId),
+                Is.EqualTo(Enumerable.Range(0, 33).SelectMany(code => new[] { code.ToString("D3"), code.ToString("D3") })));
+            Assert.That(combined.All(customer => customer.StoreId == new StoreId(_storeId)), Is.True);
+        });
+    }
+
     private void AddCustomers(CustomerType type, int count, Guid? storeId = null)
     {
         for (var i = 0; i < count; i++)

@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Finances.PaymentVouchers)]
+@attribute [Route(ClientRoutes.Finances.PaymentVouchers)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits GoldExComponentBase
@@ -15,6 +15,6 @@
     <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست اسناد پرداخت</MudText>
     <MudDivider Class="mb-2 d-md-block d-none" />
 
-    <PaymentVouchersList ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
+    <PaymentVouchersList @ref="_list" ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
 
 </MudContainer>

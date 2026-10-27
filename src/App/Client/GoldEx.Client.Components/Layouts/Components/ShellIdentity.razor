@@ -1,0 +1,23 @@
+@using System.Security.Claims
+@using GoldEx.Client.Components.Extensions
+@inject NavigationManager Navigation
+
+<div class="gex-sidebar-identity">
+    <AuthorizeView>
+        <Authorized Context="auth">
+            <a href="@ClientRoutes.UserAccounts.Index" class="gex-identity-link" aria-label="حساب کاربری">
+                <span class="gex-avatar">@Initials(auth.User.GetDisplayName())</span>
+                <span class="gex-identity-copy"><strong>@auth.User.GetDisplayName()</strong><small>@auth.User.Identity?.Name</small></span>
+            </a>
+            <a href="@ApiUrls.Account.Logout(Navigation.ToBaseRelativePath(Navigation.Uri))" class="gex-icon-button gex-signout" aria-label="خروج از حساب" title="خروج"><ShellIcon Name="log-out" /></a>
+        </Authorized>
+        <NotAuthorized>
+            <a href="@ClientRoutes.Accounts.Login" class="gex-identity-link"><span class="gex-avatar"><ShellIcon Name="user" /></span><span class="gex-identity-copy"><strong>ورود به گلدکس</strong><small>حساب کاربری شما</small></span></a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    private static string Initials(string? name) => string.IsNullOrWhiteSpace(name) ? "گ" :
+        string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => part[0]));
+}

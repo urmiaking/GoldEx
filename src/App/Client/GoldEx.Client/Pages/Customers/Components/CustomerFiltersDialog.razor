@@ -2,7 +2,7 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">فیلترهای مشتریان</MudText>
+        <MudText Typo="Typo.h6">فیلتر و مرتب‌سازی مشتریان</MudText>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3">
@@ -56,6 +56,21 @@
                                 ShowToolbar="false"
                                 Clearable="true"
                                 Class="w-100" />
+
+            <MudDivider />
+            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-sort">
+                <MudSelectItem Value="@nameof(CustomerVm.CreatedAt)">تاریخ ثبت</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.FullName)">نام مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.CustomerType)">نوع مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.NationalId)">کد مشتری</MudSelectItem>
+                <MudSelectItem Value="@nameof(CustomerVm.PhoneNumber)">شماره تماس</MudSelectItem>
+            </MudSelect>
+            <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_sortDescending"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-direction">
+                <MudSelectItem T="bool" Value="false">صعودی (از کم به زیاد)</MudSelectItem>
+                <MudSelectItem T="bool" Value="true">نزولی (از زیاد به کم)</MudSelectItem>
+            </MudSelect>
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -64,7 +79,7 @@
                        Color="Color.Error"
                        OnClick="Clear"
                        StartIcon="@Icons.Material.Filled.Delete">
-                حذف فیلترها
+                بازنشانی همه
             </MudButton>
             <div class="d-flex gap-2">
                 <MudButton Color="Color.Default"

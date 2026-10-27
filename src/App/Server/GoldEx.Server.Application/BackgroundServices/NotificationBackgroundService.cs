@@ -1,73 +1,56 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Application.Services;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.NotificationAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.Routings;
+using GoldEx.Sdk.Common.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
-public class NotificationBackgroundService(
-    IServiceScopeFactory serviceScopeFactory, 
-    ILogger<NotificationBackgroundService> logger) : BackgroundService
+public sealed class NotificationBackgroundService(IServiceScopeFactory scopes, ILogger<NotificationBackgroundService> logger) : BackgroundService
 {
-    private const string ClassName = nameof(NotificationBackgroundService);
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("{Name} is running.", ClassName);
-
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                using var scope = serviceScopeFactory.CreateScope();
-
-                var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
-
-                var invoices = await invoiceRepository.GetOverdueInvoicesAsync(stoppingToken);
-
-                if (invoices.Any())
+                using var catalogScope = scopes.CreateScope();
+                var catalog = catalogScope.ServiceProvider.GetRequiredService<INotificationPushRepository>();
+                var stores = await catalog.ActiveStores.AsNoTracking().ToListAsync(stoppingToken);
+                foreach (var store in stores)
                 {
-                    var notificationService = scope.ServiceProvider.GetRequiredService<IServerNotificationService>();
-
-                    List<Notification> notifications = [];
-
-                    notifications.AddRange(invoices.Select(invoice => Notification.CreateInvoiceNotification(
-                        NotificationMessageBuilder.BuildTitle(),
-                        NotificationMessageBuilder.BuildMessage(invoice.InvoiceNumber,
-                            invoice.Customer!.FullName,
-                            invoice.TotalAmount,
-                            invoice.TotalUnpaidAmount,
-                            invoice.PriceUnit!.Title),
-                        [
-                                    NotificationButton.CreateViewButton(ClientRoutes.Invoices.SetInvoice.FormatRoute(new
-                                    {
-                                        id = invoice.Id.Value
-                                    })),
-                                    NotificationButton.CreateSendButton(ApiUrls.Invoices.SendReminder(invoice.Id.Value))
-                                ],
-                        invoice.Id)));
-
-                    await notificationService.CreateNotificationsAsync(notifications, stoppingToken);
+                    try
+                    {
+                        using var scope = scopes.CreateScope();
+                        scope.ServiceProvider.GetRequiredService<StoreContext>().SetStore(store.Id.Value, store.Slug);
+                        var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+                        await using var transaction = await invoiceRepository.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, stoppingToken);
+                        var invoices = await invoiceRepository.GetOverdueInvoicesAsync(stoppingToken);
+                        var notifications = invoices.Select(invoice => Notification.CreateInvoiceNotification(
+                            NotificationMessageBuilder.BuildTitle(),
+                            NotificationMessageBuilder.BuildMessage(invoice.InvoiceNumber, invoice.Customer!.FullName,
+                                invoice.TotalAmount, invoice.TotalUnpaidAmount, invoice.PriceUnit!.Title),
+                            [NotificationButton.CreateViewButton(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoice.Id.Value })),
+                             NotificationButton.CreateSendButton(ApiUrls.Invoices.SendReminder(invoice.Id.Value))], invoice.Id, store.Id)).ToList();
+                        if (notifications.Count > 0)
+                            await scope.ServiceProvider.GetRequiredService<IServerNotificationService>().CreateNotificationsAsync(notifications, stoppingToken);
+                        await transaction.CommitAsync(stoppingToken);
+                        await scope.ServiceProvider.GetRequiredService<INotificationPushProcessor>().ProcessAsync(stoppingToken);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { throw; }
+                    catch (Exception ex) { logger.LogError(ex, "Notification processing failed for store {StoreId}; retrying next cycle.", store.Id.Value); }
                 }
-
-                // TODO: add updateInterval to settings
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
+            catch (Exception ex) { logger.LogError(ex, "Notification cycle failed; retrying next cycle."); }
+            try { await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
         }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"{ClassName} got an exception");
-        }
-    }
-
-    public override Task StopAsync(CancellationToken cancellationToken)
-    {
-        logger.LogInformation("{Name} is stopping.", ClassName);
-        return base.StopAsync(cancellationToken);
     }
 }

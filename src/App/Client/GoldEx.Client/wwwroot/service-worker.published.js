@@ -2,6 +2,7 @@
 /// <reference lib="webworker" />
 
 self.importScripts('./service-worker-assets.js');
+self.importScripts('/notification-worker.js');
 
 /*
  * Cache naming

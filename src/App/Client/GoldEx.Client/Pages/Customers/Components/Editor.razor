@@ -1,7 +1,7 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_customerValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
             <MudGrid Spacing="4">
                 <MudItem xs="12" md="6" lg="6">
@@ -72,7 +72,7 @@
                             </MudHidden>
 
                             <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                                <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="@Size.Small"
+                                <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="@Size.Small" aria-label="افزودن حساب مالی"
                                                Variant="@Variant.Filled"></MudIconButton>
                             </MudHidden>
                         </MudStack>
@@ -111,6 +111,7 @@
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
+                       Disabled="_processing"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Filled">انصراف</MudButton>
@@ -136,5 +137,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>
