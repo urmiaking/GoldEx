@@ -2,6 +2,16 @@ name: docker-image
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Applications to deploy (auto compares each application's last successful deployment)
+        type: choice
+        default: auto
+        options:
+          - auto
+          - goldex
+          - calculator
+          - both
 
   push:
     branches:
@@ -23,6 +33,11 @@ concurrency:
 jobs:
   create-image:
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEPLOY_STATE_FILE: ${{ vars.GOLDEX_DEPLOY_STATE_FILE }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +46,39 @@ jobs:
             ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 0
 
-      - name: Generate UTC Docker build version
+      - name: Verify deployment tooling
         run: |
-          Version=$(python3 scripts/docker-version.py --image reg.goldexsoft.ir/goldex --image reg.goldexsoft.ir/goldex-karat)
+          python3 scripts/test_affected_apps.py
+          python3 scripts/test_deploy_affected.py
+          python3 scripts/test_docker_version.py
+
+      - name: Detect affected applications
+        id: affected
+        env:
+          DEPLOY_TARGET: ${{ inputs.target || 'auto' }}
+        run: |
+          state_file="${DEPLOY_STATE_FILE:-$HOME/.local/state/goldex/github-deployments.json}"
+          echo "DEPLOY_STATE_FILE=$state_file" >> "$GITHUB_ENV"
+          python3 scripts/affected-apps.py \
+            --state-file "$state_file" \
+            --event "$GITHUB_EVENT_NAME" \
+            --target "$DEPLOY_TARGET"
+
+      - name: Generate UTC Docker build version
+        if: steps.affected.outputs.any == 'true'
+        env:
+          GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
+          CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
+        run: |
+          images=()
+          if [[ "$GOLDEX_AFFECTED" == true ]]; then images+=(--image reg.goldexsoft.ir/goldex); fi
+          if [[ "$CALCULATOR_AFFECTED" == true ]]; then images+=(--image reg.goldexsoft.ir/goldex-karat); fi
+          Version=$(python3 scripts/docker-version.py "${images[@]}")
           echo "Version=$Version" >> "$GITHUB_ENV"
           echo "Docker build version: $Version"
 
       - name: Build and push Docker image for goldex
+        if: steps.affected.outputs.goldex == 'true'
         run: |
           docker build --push \
             -t reg.goldexsoft.ir/goldex:${Version} \
@@ -47,6 +88,7 @@ jobs:
             .
 
       - name: Build and push Docker image for goldex-karat
+        if: steps.affected.outputs.calculator == 'true'
         run: |
           docker build --push \
             -t reg.goldexsoft.ir/goldex-karat:${Version} \
@@ -56,20 +98,52 @@ jobs:
             .
 
       - name: Check version and promote latest aliases
+        if: steps.affected.outputs.any == 'true'
+        env:
+          GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
+          CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
         run: |
-          python3 scripts/docker-version.py --check "${Version}" --image reg.goldexsoft.ir/goldex --image reg.goldexsoft.ir/goldex-karat
-          docker buildx imagetools create --tag reg.goldexsoft.ir/goldex:latest reg.goldexsoft.ir/goldex:${Version}
-          docker buildx imagetools create --tag reg.goldexsoft.ir/goldex-karat:latest reg.goldexsoft.ir/goldex-karat:${Version}
+          images=()
+          repositories=()
+          if [[ "$GOLDEX_AFFECTED" == true ]]; then repositories+=(reg.goldexsoft.ir/goldex); fi
+          if [[ "$CALCULATOR_AFFECTED" == true ]]; then repositories+=(reg.goldexsoft.ir/goldex-karat); fi
+          for repository in "${repositories[@]}"; do images+=(--image "$repository"); done
+          python3 scripts/docker-version.py --check "${Version}" "${images[@]}"
+          for repository in "${repositories[@]}"; do
+            docker buildx imagetools create --tag "$repository:latest" "$repository:${Version}"
+          done
 
       - name: Deploy
+        if: steps.affected.outputs.any == 'true'
+        env:
+          GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
+          CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
+          COMPOSE_FILE_PATH: ${{ vars.GOLDEX_COMPOSE_FILE || '/home/user/docker/goldex/docker-compose.yaml' }}
+          APP_BASE_PATH: ${{ vars.GOLDEX_APP_BASE || '/var/volumes/apps/goldex' }}
         run: |
-          chmod +x /home/user/docker/goldex/refresh-apps.sh
-          /home/user/docker/goldex/refresh-apps.sh "${Version}"
+          applications=()
+          if [[ "$GOLDEX_AFFECTED" == true ]]; then applications+=(--app goldex); fi
+          if [[ "$CALCULATOR_AFFECTED" == true ]]; then applications+=(--app calculator); fi
+          python3 scripts/deploy-affected.py \
+            --compose-file "$COMPOSE_FILE_PATH" --app-base "$APP_BASE_PATH" \
+            --version "$Version" "${applications[@]}"
 
       - name: Validate and reload Nginx
+        if: steps.affected.outputs.any == 'true'
         shell: bash
         env:
           NGINX_CONTAINER: ${{ vars.NGINX_CONTAINER || 'nginx' }}
         run: |
           docker exec "$NGINX_CONTAINER" nginx -t
           docker exec "$NGINX_CONTAINER" nginx -s reload
+
+      - name: Record successful application deployments
+        if: steps.affected.outputs.any == 'true'
+        env:
+          GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
+          CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
+        run: |
+          applications=()
+          if [[ "$GOLDEX_AFFECTED" == true ]]; then applications+=(--app goldex); fi
+          if [[ "$CALCULATOR_AFFECTED" == true ]]; then applications+=(--app calculator); fi
+          python3 scripts/affected-apps.py --state-file "$DEPLOY_STATE_FILE" --record "${applications[@]}"
