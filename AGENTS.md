@@ -724,3 +724,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - The existing development branch is named `Dev` and tracks `origin/Dev`; preserve its capitalization instead of creating a second lowercase `dev` branch.
 - Final feature verification passed all 49 browser-module tests and all 39 .NET tests selected by `NotificationPush`, `ResponsiveDialogTester` and `CustomerOverviewTester`. The .NET verification reused the previously compiled output with `--no-build --no-restore`.
 - NotificationList no longer has isolated CSS after the drawer redesign; its obsolete empty stylesheet was removed. Notification styling remains in the existing shared appearance stylesheet.
+
+
+### Mobile Settings Access (GoldEx Enterprise)
+- The redesigned enterprise shell renders its mobile settings entry in `src/App/Client/GoldEx.Client.Components/Layouts/Components/AppBar.razor` for authenticated users only; the profile avatar is not part of the top bar. Account management stays in `NavMenu.razor`.
+- `Layouts/Components/Settings.razor` owns the accessible native mobile bottom-sheet dialog; `SettingsSheetLink.razor` renders links, and `wwwroot/js/settings-sheet.js` handles modal focus, backdrop/Escape dismissal and viewport changes. CSS lives in `src/App/Server/GoldEx.Server/wwwroot/css/appearance.css`.
+- Keep settings destinations and role-based visibility synchronized with `src/App/Client/GoldEx.Client/Pages/Settings/Shared/SettingsNavMenu.razor`. The breakpoint is below 960px, matching the hidden desktop settings sidebar.

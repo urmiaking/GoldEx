@@ -461,3 +461,126 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
     .gex-calculator-tab { transition: none; }
     .gex-calculator-tab.is-active::after, .gex-calculator-panels > [role=tabpanel] { animation: none; }
 }
+
+
+/* Mobile settings launcher and native bottom sheet (issue #240). */
+.gex-mobile-settings-trigger { display: none; }
+.gex-settings-sheet {
+    position: fixed;
+    inset: auto 0 0;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    max-height: min(84vh, 760px);
+    max-height: min(84dvh, 760px);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-bottom: 0;
+    border-radius: 26px 26px 0 0;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    box-shadow: 0 -16px 50px rgba(10, 30, 40, .18);
+    font-family: inherit;
+}
+.gex-settings-sheet[open] {
+    display: flex;
+    flex-direction: column;
+    animation: gex-settings-enter 300ms cubic-bezier(.22, 1, .36, 1) both;
+}
+.gex-settings-sheet::backdrop { background: rgba(8, 17, 28, .52); }
+html.gex-settings-open, html.gex-settings-open body { overflow: hidden; }
+.gex-settings-handle {
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--mud-palette-lines-default);
+}
+.gex-settings-sheet-header {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 27px 20px 16px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.gex-settings-sheet-symbol, .gex-settings-link-icon {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    background: rgba(var(--mud-palette-primary-rgb), .09);
+    color: var(--mud-palette-primary);
+}
+.gex-settings-sheet-symbol { width: 46px; height: 46px; border-radius: 15px; }
+.gex-settings-sheet-symbol .gex-shell-icon { width: 24px; height: 24px; }
+.gex-settings-sheet-heading { flex: 1 1 auto; min-width: 0; }
+.gex-settings-sheet-heading h2 { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.6; }
+.gex-settings-sheet-heading p { margin: 3px 0 0; color: var(--mud-palette-text-secondary); font-size: 11px; line-height: 1.8; }
+.gex-settings-sheet-close { width: 38px; height: 38px; min-height: 38px; border-radius: 11px; }
+.gex-settings-sheet-close .gex-shell-icon { width: 19px; height: 19px; }
+.gex-settings-sheet-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding: 14px 16px max(24px, env(safe-area-inset-bottom, 0px));
+}
+.gex-settings-section + .gex-settings-section { margin-top: 22px; }
+.gex-settings-section h3 {
+    margin: 0 5px 11px;
+    color: var(--mud-palette-text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 700;
+}
+.gex-settings-links { display: grid; gap: 7px; }
+.gex-settings-link {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 60px;
+    padding: 9px 12px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 15px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.gex-settings-link:hover {
+    color: var(--mud-palette-text-primary);
+    border-color: rgba(var(--mud-palette-primary-rgb), .30);
+    background: rgba(var(--mud-palette-primary-rgb), .045);
+}
+.gex-settings-link:active { transform: scale(.99); }
+.gex-settings-link.active {
+    border-color: rgba(var(--mud-palette-primary-rgb), .48);
+    background: rgba(var(--mud-palette-primary-rgb), .08);
+}
+.gex-settings-link-icon { width: 41px; height: 41px; border-radius: 12px; }
+.gex-settings-link-icon .gex-shell-icon { width: 20px; height: 20px; }
+.gex-settings-link-copy { display: grid; flex: 1; gap: 2px; min-width: 0; text-align: right; }
+.gex-settings-link-copy strong { font-size: 13px; line-height: 1.6; font-weight: 650; }
+.gex-settings-link-copy small { font-size: 11px; color: var(--mud-palette-text-secondary); }
+.gex-settings-link > .gex-shell-icon { width: 17px; height: 17px; color: var(--mud-palette-text-secondary); }
+@keyframes gex-settings-enter {
+    from { transform: translateY(32px); opacity: .65; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@media (max-width: 959.98px) {
+    .gex-mobile-settings-trigger { display: inline-flex; }
+}
+@media (max-width: 379.98px) {
+    .gex-settings-sheet-header { padding-inline: 13px; gap: 9px; }
+    .gex-settings-sheet-scroll { padding-inline: 11px; }
+    .gex-settings-link { gap: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-settings-sheet[open] { animation: none; }
+    .gex-settings-link { transition: none; }
+}
