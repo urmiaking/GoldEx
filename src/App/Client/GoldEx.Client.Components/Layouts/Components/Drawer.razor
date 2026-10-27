@@ -8,7 +8,6 @@
 <aside id="gex-navigation" @ref="_panel" class="gex-sidebar @(IsDrawerOpen ? "mobile-open" : null)" aria-label="ناوبری اصلی" tabindex="-1" @onkeydown="HandleKeyDown">
     <button type="button" class="gex-icon-button gex-menu-close" aria-label="بستن منو" @onclick="CloseAsync"><ShellIcon Name="close" /></button>
     <ShellBrand />
-    <StoreSwitcher OnOpen="CloseAsync" />
     <AuthorizeView>
         <a class="gex-sidebar-create" href="@ClientRoutes.Invoices.Create" @onclick="CloseAsync"><ShellIcon Name="plus" /><span>فاکتور جدید</span></a>
     </AuthorizeView>

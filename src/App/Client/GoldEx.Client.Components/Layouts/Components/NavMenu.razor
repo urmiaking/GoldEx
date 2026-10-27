@@ -1,6 +1,86 @@
 @using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
 
+<AuthorizeView>
+    @if (_stores.Count > 0)
+    {
+        <section class="gex-store-picker" aria-label="انتخاب فروشگاه فعال">
+            <button type="button" class="gex-store-picker-trigger"
+                    aria-controls="gex-store-picker-options"
+                    aria-expanded="@(_storeListOpen ? "true" : "false")"
+                    aria-label="@(_currentStore is null ? "انتخاب فروشگاه فعال" : $"فروشگاه فعال: {_currentStore.Name}؛ نمایش فهرست فروشگاه‌ها")"
+                    disabled="@(_switchingStore || (_stores.Count == 1 && _currentStore is not null))"
+                    @onclick="ToggleStoreList">
+                <span class="gex-store-picker-logo">
+                    @if (!string.IsNullOrWhiteSpace(_currentStore?.LogoUrl))
+                    {
+                        <img src="@_currentStore.LogoUrl" alt="" />
+                    }
+                    else
+                    {
+                        <ShellIcon Name="store" />
+                    }
+                </span>
+                <span class="gex-store-picker-copy">
+                    <small>فروشگاه فعال</small>
+                    <strong>@(_currentStore?.Name ?? "انتخاب فروشگاه")</strong>
+                </span>
+                @if (_stores.Count > 1 || _currentStore is null)
+                {
+                    <span class="gex-store-picker-chevron @(_storeListOpen ? "is-open" : "")">
+                        <ShellIcon Name="expand" />
+                    </span>
+                }
+            </button>
+            <div id="gex-store-picker-options" class="gex-store-picker-options @(_storeListOpen ? "is-open" : "")"
+                 aria-hidden="@(!_storeListOpen ? "true" : "false")"
+                 inert="@(!_storeListOpen)">
+                <div class="gex-store-picker-options-inner">
+                    <p class="gex-store-picker-caption">انتخاب فروشگاه</p>
+                    @foreach (var store in _stores)
+                    {
+                        <button type="button" @key="store.Id"
+                                class="gex-store-picker-option @(store.IsCurrent ? "is-current" : "")"
+                                aria-label="@(store.IsCurrent ? $"فروشگاه فعال: {store.Name}" : $"تغییر فروشگاه به {store.Name}")"
+                                disabled="@(_switchingStore || store.IsCurrent)"
+                                @onclick="() => SelectStoreAsync(store)">
+                            <span class="gex-store-picker-option-logo">
+                                @if (!string.IsNullOrWhiteSpace(store.LogoUrl))
+                                {
+                                    <img src="@store.LogoUrl" alt="" />
+                                }
+                                else
+                                {
+                                    <ShellIcon Name="store" />
+                                }
+                            </span>
+                            <span class="gex-store-picker-option-copy">
+                                <strong>@store.Name</strong>
+                                <small>@store.Slug</small>
+                            </span>
+                            @if (store.IsCurrent)
+                            {
+                                <span class="gex-store-picker-current" title="فروشگاه فعال"><ShellIcon Name="check" /></span>
+                            }
+                            else if (_switchingStore && _switchingStoreId == store.Id)
+                            {
+                                <span class="gex-store-picker-pending" aria-label="در حال تغییر فروشگاه"><ShellIcon Name="refresh" /></span>
+                            }
+                            else if (store.IsDefault)
+                            {
+                                <span class="gex-store-picker-default">پیش‌فرض</span>
+                            }
+                        </button>
+                    }
+                    @if (!string.IsNullOrEmpty(_switchError))
+                    {
+                        <p class="gex-store-picker-error" role="alert">@_switchError</p>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+</AuthorizeView>
 <nav class="gex-navigation-menu" aria-label="بخش‌های اصلی" @onclick="() => OnNavigate.InvokeAsync(false)">
     <NavLink href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"><ShellIcon Name="home" /><span>صفحه اصلی</span></NavLink>
     <AuthorizeView><NavLink href="@ClientRoutes.Dashboard.Index" Match="NavLinkMatch.All"><ShellIcon Name="grid" /><span>داشبورد</span></NavLink></AuthorizeView>
@@ -23,31 +103,71 @@
 </nav>
 
 @code {
+    private List<GoldEx.Shared.DTOs.Stores.UserStoreDto> _stores = [];
     private GoldEx.Shared.DTOs.Stores.UserStoreDto? _currentStore;
+    private bool _storeListOpen;
+    private bool _switchingStore;
+    private Guid? _switchingStoreId;
+    private string? _switchError;
 
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-
         await base.OnInitializedAsync();
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (state.User.Identity?.IsAuthenticated == true)
         {
-            await LoadCurrentStoreAsync();
+            await LoadStoresAsync();
         }
     }
 
-    private async Task LoadCurrentStoreAsync()
+    private async Task LoadStoresAsync()
     {
         var stores = await SendRequestAsync<GoldEx.Shared.Services.Abstractions.IStoreService, List<GoldEx.Shared.DTOs.Stores.UserStoreDto>>(
             (service, token) => service.GetUserStoresAsync(token));
+        if (stores is null) return;
 
-        if (stores != null)
-        {
-            _currentStore = stores.FirstOrDefault(s => s.IsCurrent);
-            StateHasChanged();
-        }
+        _stores = stores.OrderByDescending(s => s.IsCurrent).ThenByDescending(s => s.IsDefault).ThenBy(s => s.Name).ToList();
+        _currentStore = _stores.FirstOrDefault(s => s.IsCurrent);
     }
 
+    private void ToggleStoreList()
+    {
+        if (_switchingStore) return;
+        _storeListOpen = !_storeListOpen;
+        _switchError = null;
+    }
+
+    private async Task SelectStoreAsync(GoldEx.Shared.DTOs.Stores.UserStoreDto store)
+    {
+        if (_switchingStore || store.IsCurrent) return;
+
+        _switchingStore = true;
+        _switchingStoreId = store.Id;
+        _switchError = null;
+        try
+        {
+            await SendRequestAsync<GoldEx.Shared.Services.Abstractions.IStoreService>(
+                (service, token) => service.SwitchStoreAsync(store.Id, token),
+                afterSend: () =>
+                {
+                    _storeListOpen = false;
+                    AddSuccessToast($"فروشگاه فعال به {store.Name} تغییر یافت.");
+                    // Store selection is cookie-based: reload only when switching succeeds.
+                    Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+                    return Task.CompletedTask;
+                },
+                onFailure: () =>
+                {
+                    _switchError = "تغییر فروشگاه انجام نشد. دوباره تلاش کنید.";
+                    return Task.CompletedTask;
+                });
+        }
+        finally
+        {
+            _switchingStore = false;
+            _switchingStoreId = null;
+        }
+    }
 }
