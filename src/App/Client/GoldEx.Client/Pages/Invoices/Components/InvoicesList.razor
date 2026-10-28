@@ -131,7 +131,7 @@
                                     </div>
                                 </td>
                                 <td><div class="invoice-customer"><strong>@invoice.CustomerFullName</strong>
-                                    @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small dir="ltr">@invoice.CustomerPhoneNumber</small> }
+                                    @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small class="invoice-customer-phone" dir="ltr">@invoice.CustomerPhoneNumber</small> }
                                 </div></td>
                                 <td><div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div></td>
                                 <td class="invoice-money">@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</td>
@@ -179,7 +179,7 @@
                             <div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div>
                         </header>
                         <div class="invoice-card-customer"><ShellIcon Name="user" /><div><strong>@invoice.CustomerFullName</strong>
-                            @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small dir="ltr">@invoice.CustomerPhoneNumber</small> }
+                            @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small class="invoice-customer-phone" dir="ltr">@invoice.CustomerPhoneNumber</small> }
                         </div></div>
                         <div class="invoice-card-amounts">
                             <div><span>ارزش فاکتور</span><strong>@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</strong></div>

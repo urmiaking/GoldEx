@@ -177,20 +177,32 @@ html[data-gex-palette="Gold"] .goldex-shell :is(.mud-button-filled-primary, .seg
     background-image: linear-gradient(180deg, var(--gex-gold-highlight), transparent);
     box-shadow: inset 0 1px 0 var(--gex-gold-highlight), 0 3px 8px -3px rgba(var(--mud-palette-primary-rgb), .32) !important;
 }
-/* Light Gold has lively metallic surfaces while primary text stays accessible.
-   These surfaces use near-black lettering instead of low-contrast white-on-gold. */
+/* White-on-amber foreground for selected navigation and filled Gold actions.
+   The deeper, saturated gold stays warm and meets WCAG AA for normal text. */
 html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell :is(
     .mud-button-filled-primary,
+    .mud-button-filled-secondary,
     .segmented-tab-btn.active,
     .gex-navigation-menu a.active,
     .gex-settings-navigation-section a.active,
     .gex-create-circle
 ):not(:disabled):not(.mud-disabled) {
-    background-color: #D1A42D;
-    color: #251D0D;
+    background-color: #996500;
+    color: #FFFFFF;
+}
+html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell :is(
+    .mud-button-filled-primary,
+    .mud-button-filled-secondary,
+    .segmented-tab-btn.active,
+    .gex-navigation-menu a.active,
+    .gex-settings-navigation-section a.active,
+    .gex-create-circle
+):not(:disabled):not(.mud-disabled) :is(.mud-icon-root, .gex-shell-icon) {
+    color: #FFFFFF;
 }
 html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell .gex-navigation-menu a.active:hover {
-    background-color: #DCB33F;
+    background-color: #9D6800;
+    color: #FFFFFF;
 }
 @media (hover: hover) and (pointer: fine) {
     html[data-gex-palette="Gold"] .goldex-shell .quick-action-pill:hover {

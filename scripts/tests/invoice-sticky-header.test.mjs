@@ -66,8 +66,8 @@ test('invoice and customer heading/count labels align in one flex row and wrap o
     }
 });
 
-test('light Gold uses rich surfaces with dark contrast text independently of darker text accents', () => {
-    assert.match(shell,/html\[data-gex-palette="Gold"\]:not\(\[data-gex-mode="dark"\]\)[\s\S]*?background-color: #D1A42D;\s*color: #251D0D;/);
+test('light Gold uses white lettering on rich amber button surfaces independently of link color', () => {
+    assert.match(shell,/html\[data-gex-palette="Gold"\]:not\(\[data-gex-mode="dark"\]\)[\s\S]*?background-color: #996500;\s*color: #FFFFFF;/);
     assert.match(shell,/\.gex-navigation-menu a\.active/);
     assert.match(shell,/\.mud-button-filled-primary/);
 });

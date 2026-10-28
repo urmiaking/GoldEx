@@ -58,6 +58,10 @@
 .invoice-data-row:hover, .invoice-data-row.is-expanded { background: rgba(var(--mud-palette-primary-rgb), .045); }
 .invoice-number-cell { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
 .invoice-number-cell > div, .invoice-customer { display: grid; gap: 4px; min-width: 0; }
+/* In RTL tables, the number is LTR but its box must start at the same
+   right-hand edge as the customer name (not the opposite edge of the cell). */
+.invoice-customer { justify-items: start; text-align: right; }
+.invoice-customer-phone { display: inline-block; max-width: 100%; direction: ltr; unicode-bidi: isolate; text-align: right; white-space: nowrap; }
 .invoice-number-cell strong, .invoice-customer strong { font-weight: 600; font-size: .875rem; line-height: 1.6; }
 .invoice-number-cell small, .invoice-customer small { color: var(--mud-palette-text-secondary); font-size: .8125rem; }
 .invoice-number-cell small { color: var(--mud-palette-primary); }
@@ -117,7 +121,7 @@
     .invoice-card-head .invoice-tags { justify-content: flex-end; }
     .invoice-card-customer { display: flex; align-items: center; gap: 9px; padding: 12px 13px 7px; }
     .invoice-card-customer > .gex-shell-icon { width: 20px; height: 20px; color: var(--mud-palette-text-secondary); }
-    .invoice-card-customer > div { display: grid; gap: 3px; }
+    .invoice-card-customer > div { display: grid; gap: 3px; justify-items: start; text-align: right; }
     .invoice-card-customer strong { font-size: .84rem; }
     .invoice-card-customer small { color: var(--mud-palette-text-secondary); font-size: .8125rem; text-align: start; }
     .invoice-card-amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 13px 14px; }
