@@ -21,6 +21,7 @@
     [Parameter] public EventCallback<bool> IsDrawerOpenChanged { get; set; }
     private ElementReference _panel;
     private IJSObjectReference? _module, _menu;
+    private bool? _lastSyncedOpen;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -28,11 +29,21 @@
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/navigation.js");
             _menu = await _module.InvokeAsync<IJSObjectReference>("bind", _panel);
         }
-        if (_menu is not null) await _menu.InvokeVoidAsync("update", IsDrawerOpen);
+        // Notifications and other layout updates should not resync an unchanged drawer.
+        if (_menu is not null && _lastSyncedOpen != IsDrawerOpen)
+        {
+            await _menu.InvokeVoidAsync("update", IsDrawerOpen);
+            _lastSyncedOpen = IsDrawerOpen;
+        }
     }
     public async Task CloseAsync()
     {
-        if (_menu is not null) await _menu.InvokeVoidAsync("update", false);
+        if (!IsDrawerOpen) return;
+        if (_menu is not null)
+        {
+            await _menu.InvokeVoidAsync("update", false);
+            _lastSyncedOpen = false;
+        }
         await IsDrawerOpenChanged.InvokeAsync(false);
     }
     private Task HandleNavigate(bool _) => CloseAsync();

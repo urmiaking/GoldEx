@@ -112,14 +112,15 @@
 
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    // Render the native navigation links immediately; do not hold the menu behind
+    // a network request for the available stores. The switcher appears afterward.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnInitializedAsync();
-        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        if (state.User.Identity?.IsAuthenticated == true)
-        {
-            await LoadStoresAsync();
-        }
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender || User?.Identity?.IsAuthenticated != true) return;
+
+        await LoadStoresAsync();
+        if (!IsDisposed) StateHasChanged();
     }
 
     private async Task LoadStoresAsync()

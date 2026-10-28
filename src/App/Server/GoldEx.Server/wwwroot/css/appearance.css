@@ -210,7 +210,7 @@ html[data-gex-appearance-transition] *::after { transition: none !important; }
     .gex-topbar { inset-inline-start: 0; padding-inline: 12px; gap: 10px; }
     .gex-topbar-date { display: none; }
     .gex-mobile-brand, .gex-menu-toggle { display: flex; }
-    .gex-mobile-brand { min-width: 0; margin-inline-end: auto; }
+    .gex-mobile-brand { min-width: 0; margin-inline-start: 2px; margin-inline-end: auto; }
     .gex-shell-brand--compact { margin: 0; gap: 8px; }
     .gex-shell-brand--compact .gex-shell-brand-mark { width: 34px; height: 36px; }
     .gex-shell-brand--compact strong { font-size: 20px; }
@@ -667,4 +667,55 @@ html.gex-settings-open, html.gex-settings-open body { overflow: hidden; }
     .gex-store-picker-trigger, .gex-store-picker-chevron, .gex-store-picker-options,
     .gex-store-picker-option { transition: none; }
     .gex-store-picker-pending { animation: none; }
+}
+
+
+/* Native settings sidebar follows the same lightweight NavLink pattern as the main menu. */
+.gex-settings-navigation {
+    display: grid;
+    gap: 18px;
+    padding: 10px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 18px;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 4px 20px rgba(10, 30, 40, .045);
+}
+.gex-settings-navigation-section { display: grid; gap: 5px; min-width: 0; }
+.gex-settings-navigation-section h3 {
+    margin: 8px 11px 5px;
+    color: var(--mud-palette-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.7;
+}
+.gex-settings-navigation-section a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 43px;
+    padding: 9px 11px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    color: var(--mud-palette-text-primary);
+    font-size: 12px;
+    line-height: 1.65;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.gex-settings-navigation-section a .gex-shell-icon { width: 19px; height: 19px; }
+.gex-settings-navigation-section a span { min-width: 0; overflow-wrap: anywhere; }
+.gex-settings-navigation-section a:hover {
+    color: var(--mud-palette-text-primary);
+    background: rgba(var(--mud-palette-primary-rgb), .075);
+}
+.gex-settings-navigation-section a.active {
+    color: var(--mud-palette-primary-text);
+    background: var(--mud-palette-primary);
+    border-color: var(--mud-palette-primary);
+    font-weight: 700;
+}
+.gex-settings-navigation-section a.active:hover { color: var(--mud-palette-primary-text); }
+@media (prefers-reduced-motion: reduce) {
+    .gex-settings-navigation-section a { transition: none; }
 }
