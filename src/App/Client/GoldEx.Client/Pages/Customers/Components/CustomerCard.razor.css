@@ -16,7 +16,7 @@
 .customer-card-heading { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .directory-avatar {
     display: grid; place-items: center; flex: 0 0 40px; height: 40px;
-    border-radius: 13px; font-size: 17px; font-weight: 800; white-space: nowrap; line-height: 1;
+    border-radius: 13px; font-size: 1rem; font-weight: 600; white-space: nowrap; line-height: 1;
     color: var(--mud-palette-text-primary); background: color-mix(in srgb, var(--avatar-color) 12%, transparent);
 }
 .directory-avatar-0 { --avatar-color: var(--mud-palette-primary); }
@@ -26,28 +26,28 @@
 .directory-avatar-4 { --avatar-color: var(--mud-palette-tertiary); }
 .directory-avatar-5 { --avatar-color: var(--mud-palette-text-primary); }
 .customer-identity { flex: 1; min-width: 0; }
-.customer-identity h2 { font-size: .95rem; font-weight: 800; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
-.customer-type { display: block; margin-top: 2px; font-size: .7rem; color: var(--mud-palette-text-secondary); }
+.customer-identity h2 { font-size: 1rem; font-weight: 600; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
+.customer-type { display: block; margin-top: 2px; font-size: .8125rem; color: var(--mud-palette-text-secondary); }
 .customer-card-heading ::deep .customer-more { flex: 0 0 44px; align-self: flex-start; }
 .customer-card-heading ::deep .customer-more > button { width: 44px; height: 44px; color: var(--mud-palette-text-secondary); }
 .customer-details { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .85fr) minmax(0, 1fr); gap: 8px; margin: 10px 0; }
 .customer-details > div, .customer-contact { min-width: 0; min-height: 44px; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .customer-contact { text-decoration: none; }
-.customer-detail-label { font-size: .7rem; color: var(--mud-palette-text-secondary); }
-.customer-phone, .customer-code { font-size: .8rem; font-weight: 600; color: var(--mud-palette-text-primary); overflow-wrap: anywhere; }
-.customer-date { font-size: .75rem; font-weight: 500; white-space: nowrap; }
+.customer-detail-label { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.customer-phone, .customer-code { font-size: .875rem; font-weight: 500; color: var(--mud-palette-text-primary); overflow-wrap: anywhere; }
+.customer-date { font-size: .8125rem; font-weight: 400; white-space: nowrap; }
 .customer-contact:hover .customer-phone { text-decoration: underline; color: var(--mud-palette-primary); }
 .customer-detail-empty { color: var(--mud-palette-text-secondary); font-size: .85rem; }
 .customer-balance { display: flex; align-items: center; gap: 8px; border-radius: 10px; background: color-mix(in srgb, var(--mud-palette-text-primary) 4%, transparent); padding: 6px 10px; }
 .customer-balance > .customer-detail-label { flex-shrink: 0; }
 .customer-balance ::deep .customer-remaining-container { flex: 1; min-width: 0; }
 .customer-balance ::deep .remaining-item { justify-content: flex-end; }
-.customer-balance ::deep .mud-typography { font-size: .88rem; font-weight: 750; }
+.customer-balance ::deep .mud-typography { font-size: .875rem; font-weight: 500; }
 .customer-card-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; }
 .customer-card-actions ::deep .customer-action-ledger { --customer-action-accent: var(--mud-palette-primary); }
 .customer-card-actions ::deep .customer-action-invoices { --customer-action-accent: var(--mud-palette-info); }
 .customer-card-actions ::deep .mud-button {
-    min-height: 44px; min-width: 0; font-size: .8rem; font-weight: 700; padding: 6px 8px;
+    min-height: 44px; min-width: 0; font-size: .875rem; font-weight: 500; padding: 6px 8px;
     color: var(--mud-palette-text-primary);
     background: color-mix(in srgb, var(--customer-action-accent) 9%, var(--mud-palette-surface));
     border: 1px solid color-mix(in srgb, var(--customer-action-accent) 30%, var(--mud-palette-surface));
@@ -79,8 +79,8 @@
 @media (max-width: 374px) {
     .customer-card-heading { gap: 8px; }
     .customer-balance { gap: 6px; padding-inline: 8px; }
-    .customer-balance ::deep .mud-typography { font-size: .8rem; }
-    .customer-date { font-size: .7rem; }
+    .customer-balance ::deep .mud-typography { font-size: .8125rem; }
+    .customer-date { font-size: .75rem; }
 }
 @media (prefers-reduced-motion: reduce) {
     .customer-card, .customer-card-actions ::deep .mud-button { transition: none; animation: none; }

@@ -3,8 +3,8 @@
 <section class="invoice-directory @Class" aria-label="فهرست فاکتورها">
     <header class="directory-heading">
         <div class="directory-title">
-            <h1>@(CustomerId.HasValue ? "فاکتورهای مشتری" : "فاکتورها") <span class="directory-count">@(_loading ? "…" : $"{_totalItems:N0} فاکتور")</span></h1>
-            <p>مدیریت و بررسی فاکتورها</p>
+            <h1 class="mud-typography-h5">@(CustomerId.HasValue ? "فاکتورهای مشتری" : "فاکتورها") <span class="directory-count mud-typography-caption">@(_loading ? "…" : $"{_totalItems:N0} فاکتور")</span></h1>
+            <p class="mud-typography-body2">مدیریت و بررسی فاکتورها</p>
         </div>
         <MudMenu Label="فاکتور جدید"
                  EndIcon="@Icons.Material.Filled.Add"
@@ -105,7 +105,7 @@
         else
         {
             <div class="invoice-desktop-table">
-                <table class="invoice-table">
+                <table class="invoice-table mud-typography-body2">
                     <thead>
                         <tr>
                             <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceNumber")'>شماره / تاریخ <span>@SortIndicator("InvoiceNumber")</span></button></th>
@@ -113,7 +113,7 @@
                             <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceType")'>نوع معامله <span>@SortIndicator("InvoiceType")</span></button></th>
                             <th scope="col">ارزش کل</th>
                             <th scope="col">مانده فاکتور</th>
-                            <th scope="col">مانده مشتری</th>
+                            <th scope="col">مانده کل مشتری</th>
                             <th scope="col">عملیات</th>
                         </tr>
                     </thead>
@@ -139,7 +139,17 @@
                                     else { <strong>@FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit)</strong> }
                                     @if (invoice.PaymentStatus == InvoicePaymentStatus.Overdue) { <small>سررسید گذشته</small> }
                                 </div></td>
-                                <td><button type="button" class="invoice-text-action" @onclick="() => ToggleDetails(invoice)">@(invoice.ShowDetails ? "بستن جزئیات" : "مشاهده مانده")</button></td>
+                                <td class="invoice-customer-balance">
+                                    @if (invoice.CustomerId != Guid.Empty)
+                                    {
+                                        <CustomerRemaining @key="invoice.CustomerId" CustomerId="invoice.CustomerId"
+                                                           EnableManualSlide="true" TextTypo="Typo.body2" />
+                                    }
+                                    else
+                                    {
+                                        <span class="invoice-no-balance">—</span>
+                                    }
+                                </td>
                                 <td>
                                     <div class="invoice-actions">
                                         <button type="button" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>

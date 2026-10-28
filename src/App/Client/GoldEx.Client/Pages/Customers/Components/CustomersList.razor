@@ -3,8 +3,8 @@
 <section class="customers-directory @Class" aria-labelledby="customers-title">
     <header class="directory-heading">
         <div class="directory-title">
-            <h1 id="customers-title">مشتریان <span class="directory-count">@(_loading ? "…" : $"{_totalItems:N0} نفر")</span></h1>
-            <p>حساب و اطلاعات هر مشتری</p>
+            <h1 id="customers-title" class="mud-typography-h5">مشتریان <span class="directory-count mud-typography-caption">@(_loading ? "…" : $"{_totalItems:N0} نفر")</span></h1>
+            <p class="mud-typography-body2">حساب و اطلاعات هر مشتری</p>
         </div>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
                    OnClick="OnCreate" Class="directory-create">مشتری جدید</MudButton>

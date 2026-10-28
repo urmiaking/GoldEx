@@ -16,7 +16,7 @@ const customerList = read('src/App/Client/GoldEx.Client/Pages/Customers/Componen
 const customerStyles = read('src/App/Client/GoldEx.Client/Pages/Customers/Components/CustomersList.razor.css');
 
 test('desktop invoices use semantic native table, mobile uses standalone cards', () => {
-    assert.match(list, /<table class="invoice-table">/);
+    assert.match(list, /<table class="invoice-table mud-typography-body2">/);
     assert.match(list, /<thead>/);
     assert.match(list, /<th scope="col">/);
     assert.match(list, /<div class="invoice-mobile-list">/);
@@ -38,7 +38,7 @@ test('sorting, date, text, type and status filters remain wired to the API, not 
 
 test('invoice operation and detail actions are still accessible on both views', () => {
     for (const fn of ['OnViewInvoice(invoice)', 'OnEditInvoice(invoice)', 'OnRemoveInvoice(invoice)', 'ToggleDetails(invoice)'])
-        assert.equal(list.split(fn).length - 1, fn === 'ToggleDetails(invoice)' ? 3 : 2, fn);
+        assert.equal(list.split(fn).length - 1, 2, fn);
     assert.match(detail, /<table class="invoice-details-table">/);
     assert.equal(detail.split('<table class="invoice-details-table">').length - 1, 2);
     assert.doesNotMatch(detail, /MudTable|MudPagination/);
@@ -81,8 +81,8 @@ test('invoice heading and sticky filter toolbar use exactly the same building bl
     for (const selector of ['directory-heading', 'directory-title', 'directory-count',
         'directory-filters', 'directory-toolbar', 'directory-search', 'directory-filter',
         'directory-sort', 'directory-sort-toggle', 'directory-applied-filters']) {
-        assert.match(customerList, new RegExp('(?:class|Class)="' + selector + '"'));
-        assert.match(list, new RegExp('(?:class|Class)="' + selector + '"'));
+        assert.match(customerList, new RegExp('(?:class|Class)="' + selector + '(?: [^"]*)?"'));
+        assert.match(list, new RegExp('(?:class|Class)="' + selector + '(?: [^"]*)?"'));
     }
     for (const tag of ['MudTextField', 'MudButton', 'MudSelect', 'MudIconButton']) {
         assert.match(customerList, new RegExp('<' + tag + '\\b'));
