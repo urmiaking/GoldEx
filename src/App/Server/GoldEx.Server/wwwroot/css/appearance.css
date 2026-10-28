@@ -177,6 +177,21 @@ html[data-gex-palette="Gold"] .goldex-shell :is(.mud-button-filled-primary, .seg
     background-image: linear-gradient(180deg, var(--gex-gold-highlight), transparent);
     box-shadow: inset 0 1px 0 var(--gex-gold-highlight), 0 3px 8px -3px rgba(var(--mud-palette-primary-rgb), .32) !important;
 }
+/* Light Gold has lively metallic surfaces while primary text stays accessible.
+   These surfaces use near-black lettering instead of low-contrast white-on-gold. */
+html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell :is(
+    .mud-button-filled-primary,
+    .segmented-tab-btn.active,
+    .gex-navigation-menu a.active,
+    .gex-settings-navigation-section a.active,
+    .gex-create-circle
+):not(:disabled):not(.mud-disabled) {
+    background-color: #D1A42D;
+    color: #251D0D;
+}
+html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell .gex-navigation-menu a.active:hover {
+    background-color: #DCB33F;
+}
 @media (hover: hover) and (pointer: fine) {
     html[data-gex-palette="Gold"] .goldex-shell .quick-action-pill:hover {
         background: rgba(var(--mud-palette-primary-rgb), .07);

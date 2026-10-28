@@ -2,8 +2,8 @@
 .invoice-directory * { box-sizing: border-box; }
 /* Same markup, controls, dimensions and sticky behavior as CustomersList.razor. */
 .directory-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
-.directory-title h1 { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.65; }
-.directory-count { display: inline-block; vertical-align: middle; margin-inline-start: 8px; padding: 4px 10px; border-radius: 8px; font-size: .75rem; font-weight: 500; background: rgba(var(--mud-palette-primary-rgb), .1); color: var(--mud-palette-text-primary); }
+.directory-title h1 { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.65; }
+.directory-count { display: inline-flex; align-items: center; justify-content: center; flex: none; white-space: nowrap; margin: 0; padding: 4px 10px; border-radius: 8px; font-size: .75rem; font-weight: 500; line-height: 1.55; background: rgba(var(--mud-palette-primary-rgb), .1); color: var(--mud-palette-text-primary); }
 .directory-title p { margin: 3px 0 0; color: var(--mud-palette-text-secondary); font-size: .875rem; font-weight: 400; }
 .directory-heading ::deep .directory-create { flex-shrink: 0; min-height: 46px; padding: 8px 18px; }
 .directory-filters {
@@ -33,15 +33,23 @@
 }
 @media (max-width: 699px) {
     .directory-heading { margin-bottom: 18px; align-items: flex-start; }
-    .directory-title h1 { font-size: 1.375rem; }
+    .directory-title h1 { font-size: 1.375rem; gap: 4px 7px; }
     .directory-title p { font-size: .8125rem; max-width: 185px; }
     .directory-heading ::deep .directory-create { min-height: 44px; padding: 7px 12px; font-size: .8rem; margin-top: 2px; }
 }
 
-.invoice-results { position: relative; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 18px; background: var(--mud-palette-surface); box-shadow: 0 5px 22px rgba(10,30,40,.055); overflow: hidden; }
-.invoice-desktop-table { display: block; width: 100%; overflow-x: auto; }
+.invoice-results { position: relative; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 18px; background: var(--mud-palette-surface); box-shadow: 0 5px 22px rgba(10,30,40,.055); overflow: visible; }
+/* Avoid intermediate overflow:auto/hidden ancestors: they capture sticky table cells.
+   The document scrolls normally, with a header pinned under the sticky filters. */
+.invoice-desktop-table { display: block; width: 100%; overflow: visible; }
 .invoice-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: start; }
-.invoice-table th { position: sticky; top: 0; z-index: 1; background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary); font-size: .875rem; font-weight: 500; white-space: nowrap; text-align: start; padding: 13px 12px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+.invoice-table th {
+    position: sticky;
+    top: calc(var(--gex-appbar-height, 70px) + env(safe-area-inset-top, 0px) + 8px + var(--invoice-filters-block-size, 96px));
+    z-index: 5;
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary); font-size: .875rem; font-weight: 500; white-space: nowrap; text-align: start; padding: 13px 12px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+.invoice-table thead th:first-child { border-start-start-radius: 16px; }
+.invoice-table thead th:last-child { border-start-end-radius: 16px; }
 .invoice-table th button { display: inline-flex; align-items: center; gap: 7px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
 .invoice-table th button span { color: var(--mud-palette-primary); }
 .invoice-table td { padding: 13px 12px; vertical-align: middle; border-bottom: 1px solid var(--mud-palette-lines-default); }
@@ -154,3 +162,17 @@
 .invoice-customer-balance ::deep .remaining-item { justify-content: flex-start; }
 .invoice-customer-balance ::deep .mud-typography { font-size: .875rem; font-weight: 500; line-height: 1.7; }
 .invoice-no-balance { color: var(--mud-palette-text-secondary); }
+
+
+@media (min-width: 960px) and (max-width: 1240px) {
+    .invoice-table th, .invoice-table td { padding-inline: 8px; }
+    .invoice-customer-balance { min-width: 125px; }
+    .invoice-table .invoice-money { white-space: normal; }
+}
+
+/* A customer-specific invoice list can live inside an independently scrolling dialog.
+   Its sticky offsets are relative to that dialog, not the application's AppBar. */
+.invoice-directory.in-customer-dialog .directory-filters { top: 0; }
+.invoice-directory.in-customer-dialog .invoice-table th {
+    top: var(--invoice-filters-block-size, 96px);
+}

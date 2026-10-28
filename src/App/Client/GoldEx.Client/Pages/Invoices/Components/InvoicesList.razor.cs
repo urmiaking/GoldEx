@@ -7,6 +7,7 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
 
@@ -30,6 +31,36 @@ public partial class InvoicesList
     [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
 
+    private ElementReference _invoiceDirectory;
+    private ElementReference _invoiceFilters;
+    private IJSObjectReference? _stickyModule;
+    private IJSObjectReference? _stickyTracker;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender) return;
+
+        _stickyModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/invoice-sticky-header.js");
+        _stickyTracker = await _stickyModule.InvokeAsync<IJSObjectReference>(
+            "trackFilterHeight", _invoiceDirectory, _invoiceFilters);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_stickyTracker is not null)
+            {
+                await _stickyTracker.InvokeVoidAsync("dispose");
+                await _stickyTracker.DisposeAsync();
+            }
+            if (_stickyModule is not null)
+                await _stickyModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        finally { await base.DisposeAsync(); }
+    }
     private bool _initialized, _loading, _loadFailed;
     private int _pageIndex, _pageSize = 14, _totalItems;
     private string _sortLabel = "InvoiceNumber";

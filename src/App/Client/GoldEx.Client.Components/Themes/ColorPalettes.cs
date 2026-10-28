@@ -47,10 +47,11 @@ public static class ColorPalettes
             DrawerBackground = "#F7F5F0",
             GrayLight = "#D3D3D3",
             GrayLighter = "#F8F8F8",
-            // Gold accent must remain legible as text on light backgrounds (>=4.5:1).
-            Primary = "#8C650F",
+            // Rich amber text accents remain WCAG AA on white and warm surfaces;
+            // the Gold-only shell CSS gives filled controls a brighter metallic gold.
+            Primary = "#986400",
             PrimaryContrastText = "#FFFFFF",
-            Secondary = "#8F6510",
+            Secondary = "#8B640E",
             SecondaryContrastText = "#FFFFFF",
             // Match Ocean's white-card separation while keeping Gold's warm background.
             Background = "#F5F3EE",
@@ -62,9 +63,9 @@ public static class ColorPalettes
             ActionDisabled = "#9AA1A2",
             ActionDisabledBackground = "#F9F8F580",
             Info = "#235AAB",
-            Success = "#155F37",
+            Success = "#087D44",
             Warning = "#8F631A",
-            Error = "#AD334B",
+            Error = "#C12D4B",
             BackgroundGray = "#F4F1E9",
             LinesDefault = "#E5E0D5",
             LinesInputs = "#A19B8F",

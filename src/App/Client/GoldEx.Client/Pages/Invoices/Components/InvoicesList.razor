@@ -1,6 +1,7 @@
 @inherits GoldExComponentBase
+@inject IJSRuntime JS
 
-<section class="invoice-directory @Class" aria-label="فهرست فاکتورها">
+<section @ref="_invoiceDirectory" class="invoice-directory @Class @(CustomerId.HasValue ? "in-customer-dialog" : "")" aria-label="فهرست فاکتورها">
     <header class="directory-heading">
         <div class="directory-title">
             <h1 class="mud-typography-h5">@(CustomerId.HasValue ? "فاکتورهای مشتری" : "فاکتورها") <span class="directory-count mud-typography-caption">@(_loading ? "…" : $"{_totalItems:N0} فاکتور")</span></h1>
@@ -18,7 +19,7 @@
         </MudMenu>
     </header>
 
-    <div class="directory-filters">
+    <div @ref="_invoiceFilters" class="directory-filters">
         <div class="directory-toolbar">
             <div class="directory-search">
                 <MudTextField T="string"
