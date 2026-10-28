@@ -78,11 +78,44 @@
     </div>
 
     <div class="invoice-results" aria-busy="@_loading">
-        @if (_loading && _invoices.Count == 0)
+        @if (_loading)
         {
-            <div class="invoice-placeholder" role="status">
-                @for (var i = 0; i < 6; i++) { <div class="invoice-skeleton"></div> }
-                <span class="invoice-sr-only">در حال دریافت فاکتورها…</span>
+            <div class="invoice-placeholder" role="status" aria-live="polite" aria-label="در حال بارگذاری فاکتورها">
+                <div class="invoice-placeholder-desktop">
+                    <table class="invoice-skeleton-table" aria-hidden="true">
+                        <thead>
+                            <tr>
+                                <th>شماره / تاریخ</th><th>طرف حساب</th><th>نوع معامله</th>
+                                <th>ارزش کل</th><th>مانده فاکتور</th><th>مانده کل مشتری</th><th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Math.Min(_pageSize, 10); i++)
+                            {
+                                <tr>
+                                    <td><span class="invoice-skeleton is-short"></span></td>
+                                    <td><span class="invoice-skeleton is-medium"></span><span class="invoice-skeleton is-small"></span></td>
+                                    <td><span class="invoice-skeleton is-short"></span></td>
+                                    <td><span class="invoice-skeleton is-medium"></span></td>
+                                    <td><span class="invoice-skeleton is-medium"></span></td>
+                                    <td><span class="invoice-skeleton is-medium"></span></td>
+                                    <td><span class="invoice-skeleton is-short"></span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-placeholder-mobile" aria-hidden="true">
+                    @for (var i = 0; i < Math.Min(_pageSize, 5); i++)
+                    {
+                        <div class="invoice-skeleton-card">
+                            <div><span class="invoice-skeleton is-short"></span><span class="invoice-skeleton is-small"></span></div>
+                            <span class="invoice-skeleton is-medium"></span>
+                            <div><span class="invoice-skeleton is-medium"></span><span class="invoice-skeleton is-medium"></span></div>
+                        </div>
+                    }
+                </div>
+                <span class="invoice-sr-only">در حال دریافت صفحه فاکتورها…</span>
             </div>
         }
         else if (_loadFailed)
@@ -136,7 +169,7 @@
                                 <td><div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div></td>
                                 <td class="invoice-money">@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</td>
                                 <td><div class="invoice-balance @UnpaidClass(invoice)">
-                                    @if (invoice.PaymentStatus == InvoicePaymentStatus.Paid) { <span class="invoice-paid"><ShellIcon Name="check" /> تسویه حساب</span> }
+                                    @if (invoice.PaymentStatus == InvoicePaymentStatus.Paid) { <span class="invoice-paid" aria-label="تسویه حساب شده"><ShellIcon Name="check" /> تسویه حساب</span> }
                                     else { <strong>@FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit)</strong> }
                                     @if (invoice.PaymentStatus == InvoicePaymentStatus.Overdue) { <small>سررسید گذشته</small> }
                                 </div></td>
@@ -183,7 +216,14 @@
                         </div></div>
                         <div class="invoice-card-amounts">
                             <div><span>ارزش فاکتور</span><strong>@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</strong></div>
-                            <div><span>مانده فاکتور</span><strong class="invoice-balance @UnpaidClass(invoice)">@(invoice.PaymentStatus == InvoicePaymentStatus.Paid ? "تسویه حساب" : FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit))</strong></div>
+                            <div><span>مانده فاکتور</span>@if (invoice.PaymentStatus == InvoicePaymentStatus.Paid)
+                                {
+                                    <span class="invoice-paid" aria-label="تسویه حساب شده"><ShellIcon Name="check" /> تسویه حساب</span>
+                                }
+                                else
+                                {
+                                    <strong class="invoice-balance @UnpaidClass(invoice)">@FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit)</strong>
+                                }</div>
                         </div>
                         <footer class="invoice-card-footer">
                             <button type="button" class="invoice-card-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")" @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /> @(invoice.ShowDetails ? "بستن جزئیات" : "جزئیات و مانده مشتری")</button>
@@ -201,22 +241,20 @@
                 }
             </div>
         }
-        @if (_loading && _invoices.Count > 0)
-        {
-            <div class="invoice-refreshing" role="status">در حال به‌روزرسانی فهرست…</div>
-        }
     </div>
 
     <footer class="invoice-pagination" aria-label="صفحه‌بندی فاکتورها">
-        <div class="invoice-pagination-actions">
-            <button type="button" disabled="@(!CanPrevious)" @onclick="() => ChangePage(-1)" aria-label="صفحه قبل"><ShellIcon Name="previous" /> قبلی</button>
-            <span class="invoice-pagination-current" role="status" aria-live="polite">@(_pageIndex + 1) / @PageCount</span>
-            <button type="button" disabled="@(!CanNext)" @onclick="() => ChangePage(1)" aria-label="صفحه بعد">بعدی <ShellIcon Name="next" /></button>
-        </div>
         <label class="invoice-page-size">تعداد ردیف
-            <select value="@_pageSize" @onchange="ChangePageSize" aria-label="تعداد فاکتور در هر صفحه">
-                <option value="10">۱۰</option><option value="14">۱۴</option><option value="25">۲۵</option><option value="50">۵۰</option>
+            <select value="@_pageSize" @onchange="ChangePageSize" disabled="@_loading" aria-label="تعداد فاکتور در هر صفحه">
+                <option value="10">۱۰</option>
+                <option value="25">۲۵</option>
+                <option value="50">۵۰</option>
             </select>
         </label>
+        <nav class="invoice-pagination-actions" aria-label="جابجایی بین صفحه‌ها">
+            <button type="button" disabled="@(!CanPrevious)" @onclick="() => ChangePage(-1)" aria-label="صفحه قبل"><ShellIcon Name="previous" /> قبلی</button>
+            <span class="invoice-pagination-current" role="status" aria-live="polite">@(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(!CanNext)" @onclick="() => ChangePage(1)" aria-label="صفحه بعد">بعدی <ShellIcon Name="next" /></button>
+        </nav>
     </footer>
 </section>

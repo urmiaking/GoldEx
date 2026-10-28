@@ -33,7 +33,8 @@ test('white text and icons on selected Gold menu and filled gold controls mainta
 });
 
 test('desktop and mobile invoice customer phones follow names at the RTL right edge while keeping LTR digits', () => {
-    const desktop = invoice.slice(invoice.indexOf('<table class="invoice-table'), invoice.indexOf('</table>'));
+    const tableStart = invoice.indexOf('<table class="invoice-table');
+    const desktop = invoice.slice(tableStart, invoice.indexOf('</table>', tableStart));
     const mobile = invoice.slice(invoice.indexOf('<div class="invoice-mobile-list">'));
     for (const block of [desktop, mobile]) {
         assert.match(block, /@invoice\.CustomerFullName[\s\S]*?<small class="invoice-customer-phone" dir="ltr">@invoice\.CustomerPhoneNumber<\/small>/);

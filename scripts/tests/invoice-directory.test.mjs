@@ -39,8 +39,8 @@ test('sorting, date, text, type and status filters remain wired to the API, not 
 test('invoice operation and detail actions are still accessible on both views', () => {
     for (const fn of ['OnViewInvoice(invoice)', 'OnEditInvoice(invoice)', 'OnRemoveInvoice(invoice)', 'ToggleDetails(invoice)'])
         assert.equal(list.split(fn).length - 1, 2, fn);
-    assert.match(detail, /<table class="invoice-details-table">/);
-    assert.equal(detail.split('<table class="invoice-details-table">').length - 1, 2);
+    assert.match(detail, /<ol class="invoice-event-timeline"/);
+    assert.equal(detail.split('<ol class="invoice-event-timeline"').length - 1, 2);
     assert.doesNotMatch(detail, /MudTable|MudPagination/);
     assert.match(detail, /CustomerRemaining/);
 });

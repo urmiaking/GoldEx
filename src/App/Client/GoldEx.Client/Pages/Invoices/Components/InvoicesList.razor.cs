@@ -62,7 +62,7 @@ public partial class InvoicesList
         finally { await base.DisposeAsync(); }
     }
     private bool _initialized, _loading, _loadFailed;
-    private int _pageIndex, _pageSize = 14, _totalItems;
+    private int _pageIndex, _pageSize = 10, _totalItems;
     private string _sortLabel = "InvoiceNumber";
     private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
     private List<InvoiceListVm> _invoices = [];
@@ -118,7 +118,10 @@ public partial class InvoicesList
     {
         _loading = true;
         _loadFailed = false;
-        StateHasChanged();
+        // Let the skeleton render before awaiting the server request; otherwise
+        // quick navigation can keep the previous page looking frozen.
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
 
         try
         {
@@ -184,7 +187,7 @@ public partial class InvoicesList
 
     private async Task ChangePageSize(ChangeEventArgs e)
     {
-        if (!int.TryParse(e.Value?.ToString(), out var size) || size is not (10 or 14 or 25 or 50) || size == _pageSize) return;
+        if (!int.TryParse(e.Value?.ToString(), out var size) || size is not (10 or 25 or 50) || size == _pageSize) return;
         _pageSize = size;
         _pageIndex = 0;
         await LoadInvoicesAsync();
@@ -414,7 +417,7 @@ public partial class InvoicesList
                 newEnd = parsedEnd;
             }
 
-            var newSize = SizeQuery is 10 or 14 or 25 or 50 ? SizeQuery.Value : 14;
+            var newSize = SizeQuery is 10 or 25 or 50 ? SizeQuery.Value : 10;
             var changed = _searchString != newSearch || _invoicePaymentStatus != newStatus ||
                 _invoiceType != newType || _tradeScale != newScale ||
                 _filterDateRange.Start != newStart || _filterDateRange.End != newEnd ||
@@ -449,7 +452,7 @@ public partial class InvoicesList
         if (pageIndex > 0)
             parameters.Add("page", pageIndex + 1);
 
-        if (_pageSize != 14)
+        if (_pageSize != 10)
             parameters.Add("size", _pageSize);
 
         if (!string.IsNullOrWhiteSpace(_searchString))

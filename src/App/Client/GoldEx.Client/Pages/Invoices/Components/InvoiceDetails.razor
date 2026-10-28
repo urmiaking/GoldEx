@@ -3,6 +3,7 @@
 @using GoldEx.Shared.DTOs.InventoryStocks
 @using GoldEx.Shared.DTOs.Transactions
 @using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Enums
 @inherits GoldExComponentBase
 @implements IAsyncDisposable
 @inject IJSRuntime JS
@@ -11,11 +12,11 @@
     <div class="invoice-details-head">
         <div>
             <strong>جزئیات فاکتور #@InvoiceNumber</strong>
-            <small>تراکنش‌های مالی و اثر فاکتور بر موجودی انبار</small>
+            <small>تاریخچه حسابداری و گردش انبار مرتبط با این فاکتور</small>
         </div>
         <div class="invoice-details-tabs" role="tablist" aria-label="نوع جزئیات">
-            <button type="button" role="tab" aria-selected="@(_activeTab == 0 ? "true" : "false")" class="@(_activeTab == 0 ? "active" : null)" @onclick="() => SelectTabAsync(0)">تراکنش‌ها</button>
-            <button type="button" role="tab" aria-selected="@(_activeTab == 1 ? "true" : "false")" class="@(_activeTab == 1 ? "active" : null)" @onclick="() => SelectTabAsync(1)">گردش انبار</button>
+            <button type="button" role="tab" aria-controls="@($"{_panelId}-transactions")" aria-selected="@(_activeTab == 0 ? "true" : "false")" class="@(_activeTab == 0 ? "active" : null)" @onclick="() => SelectTabAsync(0)">تراکنش‌ها @if (_transactionTotal > 0) { <span class="invoice-details-tab-count">@_transactionTotal</span> }</button>
+            <button type="button" role="tab" aria-controls="@($"{_panelId}-inventory")" aria-selected="@(_activeTab == 1 ? "true" : "false")" class="@(_activeTab == 1 ? "active" : null)" @onclick="() => SelectTabAsync(1)">گردش انبار @if (_inventoryTotal > 0) { <span class="invoice-details-tab-count">@_inventoryTotal</span> }</button>
         </div>
     </div>
 
@@ -25,10 +26,21 @@
     }
     else if (_activeTab == 0)
     {
-        <div role="tabpanel">
+        <div role="tabpanel" id="@($"{_panelId}-transactions")">
             @if (_transactionsLoading)
             {
-                <p class="invoice-details-state" role="status">در حال دریافت تراکنش‌ها…</p>
+                <div class="invoice-event-loading" role="status" aria-label="در حال بارگذاری رویدادها">
+    @for (var skeleton = 0; skeleton < 3; skeleton++)
+    {
+        <div class="invoice-event-skeleton" aria-hidden="true">
+            <span class="invoice-event-skeleton-pill"></span>
+            <span class="invoice-event-skeleton-date"></span>
+            <span class="invoice-event-skeleton-amount"></span>
+            <span class="invoice-event-skeleton-description"></span>
+        </div>
+    }
+    <span class="invoice-details-sr-only">در حال بارگذاری رویدادها…</span>
+</div>
             }
             else if (_transactionsFailed)
             {
@@ -42,28 +54,47 @@
             }
             else
             {
-                <div class="invoice-details-table-wrap">
-                    <table class="invoice-details-table">
-                        <thead><tr><th scope="col">تاریخ</th><th scope="col">نوع تراکنش</th><th scope="col">مبلغ</th><th scope="col">شرح</th><th scope="col">حساب</th></tr></thead>
-                        <tbody>
-                            @foreach (var item in _transactions)
-                            {
-                                <tr @key="item">
-                                    <td data-label="تاریخ" dir="auto">@item.PostingDate.ToString("yyyy/MM/dd")</td>
-                                    <td data-label="نوع تراکنش"><span class="invoice-mini-tag">@item.TransactionType.GetDisplayName()</span></td>
-                                    <td data-label="مبلغ" class="invoice-money" dir="auto">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
-                                    <td data-label="شرح">@item.Description</td>
-                                    <td data-label="حساب">@item.LedgerAccount</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <ol class="invoice-event-timeline" aria-label="تراکنش‌های مالی فاکتور">
+                    @foreach (var item in _transactions)
+                    {
+                        <li @key="item" class="invoice-event @(item.TransactionType == TransactionType.Credit ? "is-credit" : "is-debit")">
+                            <span class="invoice-event-node" aria-hidden="true"></span>
+                            <article class="invoice-event-card">
+                                <div class="invoice-event-top">
+                                    <span class="invoice-event-type @(item.TransactionType == TransactionType.Credit ? "is-credit" : "is-debit")">
+                                        @item.TransactionType.GetDisplayName()
+                                    </span>
+                                    <time datetime="@item.PostingDate.ToString("yyyy-MM-ddTHH:mm:ss")" title="@item.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")">
+                                        @item.PostingDate.ToString("yyyy/MM/dd HH:mm")
+                                    </time>
+                                </div>
+                                <div class="invoice-event-content">
+                                    <div class="invoice-event-main">
+                                        <strong class="invoice-event-amount @(item.TransactionType == TransactionType.Credit ? "is-credit" : "is-debit")">
+                                            @item.Amount.ToCurrencyFormat(item.PriceUnit)
+                                        </strong>
+                                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                                        {
+                                            <p class="invoice-event-description">@item.Description</p>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(item.LedgerAccount))
+                                    {
+                                        <div class="invoice-event-account">
+                                            <span>حساب تحت تأثیر</span>
+                                            <strong>@item.LedgerAccount</strong>
+                                        </div>
+                                    }
+                                </div>
+                            </article>
+                        </li>
+                    }
+                </ol>
                 <div class="invoice-details-footer">
-                    <span>نمایش @(_transactionPage * DetailPageSize + 1) تا @Math.Min((_transactionPage + 1) * DetailPageSize, _transactionTotal) از @_transactionTotal</span>
+                    <span>@_transactionTotal تراکنش</span>
                     <div>
                         <button type="button" disabled="@(_transactionsLoading || _transactionPage == 0)" @onclick="() => ChangeTransactionPage(-1)">قبلی</button>
-                        <span>صفحه @(_transactionPage + 1)</span>
+                        <span>صفحه @(_transactionPage + 1) از @Math.Max(1, (_transactionTotal + DetailPageSize - 1) / DetailPageSize)</span>
                         <button type="button" disabled="@(_transactionsLoading || (_transactionPage + 1) * DetailPageSize >= _transactionTotal)" @onclick="() => ChangeTransactionPage(1)">بعدی</button>
                     </div>
                 </div>
@@ -72,10 +103,21 @@
     }
     else
     {
-        <div role="tabpanel">
+        <div role="tabpanel" id="@($"{_panelId}-inventory")">
             @if (_inventoryLoading)
             {
-                <p class="invoice-details-state" role="status">در حال دریافت گردش انبار…</p>
+                <div class="invoice-event-loading" role="status" aria-label="در حال بارگذاری رویدادها">
+    @for (var skeleton = 0; skeleton < 3; skeleton++)
+    {
+        <div class="invoice-event-skeleton" aria-hidden="true">
+            <span class="invoice-event-skeleton-pill"></span>
+            <span class="invoice-event-skeleton-date"></span>
+            <span class="invoice-event-skeleton-amount"></span>
+            <span class="invoice-event-skeleton-description"></span>
+        </div>
+    }
+    <span class="invoice-details-sr-only">در حال بارگذاری رویدادها…</span>
+</div>
             }
             else if (_inventoryFailed)
             {
@@ -89,27 +131,40 @@
             }
             else
             {
-                <div class="invoice-details-table-wrap">
-                    <table class="invoice-details-table">
-                        <thead><tr><th scope="col">تاریخ</th><th scope="col">عملیات انبار</th><th scope="col">مقدار</th><th scope="col">شرح</th></tr></thead>
-                        <tbody>
-                            @foreach (var item in _inventory)
-                            {
-                                <tr @key="item">
-                                    <td data-label="تاریخ" dir="auto">@item.DateTime.ToString("yyyy/MM/dd")</td>
-                                    <td data-label="عملیات انبار"><span class="invoice-mini-tag">@item.ActionType.GetDisplayName()</span></td>
-                                    <td data-label="مقدار" class="invoice-money" dir="auto">@(item.GoldUnitType.HasValue ? item.Amount.ToWeightFormat(item.GoldUnitType.Value) : item.Amount.ToCurrencyFormat(item.PriceUnit))</td>
-                                    <td data-label="شرح">@item.Description</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <ol class="invoice-event-timeline" aria-label="رویدادهای گردش انبار فاکتور">
+                    @foreach (var item in _inventory)
+                    {
+                        <li @key="item" class="invoice-event @(item.ActionType == WarehouseActionType.In ? "is-credit" : "is-debit")">
+                            <span class="invoice-event-node" aria-hidden="true"></span>
+                            <article class="invoice-event-card">
+                                <div class="invoice-event-top">
+                                    <span class="invoice-event-type @(item.ActionType == WarehouseActionType.In ? "is-credit" : "is-debit")">
+                                        @(item.ActionType == WarehouseActionType.In ? "ورود به انبار" : "خروج از انبار")
+                                    </span>
+                                    <time datetime="@item.DateTime.ToString("yyyy-MM-ddTHH:mm:ss")" title="@item.DateTime.ToString("yyyy/MM/dd HH:mm:ss")">
+                                        @item.DateTime.ToString("yyyy/MM/dd HH:mm")
+                                    </time>
+                                </div>
+                                <div class="invoice-event-content">
+                                    <div class="invoice-event-main">
+                                        <strong class="invoice-event-amount @(item.ActionType == WarehouseActionType.In ? "is-credit" : "is-debit")">
+                                            @(item.GoldUnitType.HasValue ? item.Amount.ToWeightFormat(item.GoldUnitType.Value) : item.Amount.ToCurrencyFormat(item.PriceUnit))
+                                        </strong>
+                                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                                        {
+                                            <p class="invoice-event-description">@item.Description</p>
+                                        }
+                                    </div>
+                                </div>
+                            </article>
+                        </li>
+                    }
+                </ol>
                 <div class="invoice-details-footer">
-                    <span>نمایش @(_inventoryPage * DetailPageSize + 1) تا @Math.Min((_inventoryPage + 1) * DetailPageSize, _inventoryTotal) از @_inventoryTotal</span>
+                    <span>@_inventoryTotal رویداد انبار</span>
                     <div>
                         <button type="button" disabled="@(_inventoryLoading || _inventoryPage == 0)" @onclick="() => ChangeInventoryPage(-1)">قبلی</button>
-                        <span>صفحه @(_inventoryPage + 1)</span>
+                        <span>صفحه @(_inventoryPage + 1) از @Math.Max(1, (_inventoryTotal + DetailPageSize - 1) / DetailPageSize)</span>
                         <button type="button" disabled="@(_inventoryLoading || (_inventoryPage + 1) * DetailPageSize >= _inventoryTotal)" @onclick="() => ChangeInventoryPage(1)">بعدی</button>
                     </div>
                 </div>
@@ -132,6 +187,7 @@
     [Parameter] public DateTime PostingDate { get; set; }
 
     private const int DetailPageSize = 8;
+    private readonly string _panelId = $"invoice-details-{Guid.NewGuid():N}";
     private int _activeTab, _transactionPage, _inventoryPage, _transactionTotal, _inventoryTotal;
     private bool _transactionsLoading, _inventoryLoading, _transactionsFailed, _inventoryFailed, _inventoryLoaded;
     private List<GetTransactionResponse> _transactions = [];
@@ -201,6 +257,8 @@
     {
         _transactionsLoading = true;
         _transactionsFailed = false;
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
         try
         {
             var filter = new RequestFilter(_transactionPage * DetailPageSize, DetailPageSize);
@@ -222,6 +280,8 @@
     {
         _inventoryLoading = true;
         _inventoryFailed = false;
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
         try
         {
             var filter = new RequestFilter(_inventoryPage * DetailPageSize, DetailPageSize);
