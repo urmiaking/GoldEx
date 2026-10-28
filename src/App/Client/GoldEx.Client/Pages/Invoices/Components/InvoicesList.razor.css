@@ -86,7 +86,12 @@
     color: var(--mud-palette-success-text, #FFFFFF); font-size: .8125rem; font-weight: 600; line-height: 1.4;
     white-space: nowrap;
 }
-.invoice-paid .gex-shell-icon { width: 16px; height: 16px; }
+/* Avoid inherited balance/label colors overriding the semantic success foreground.
+   Gold light = white on deep green; Gold dark = dark on bright green. */
+.invoice-card-amounts .invoice-paid, .invoice-balance .invoice-paid {
+    color: var(--mud-palette-success-text, #FFFFFF);
+}
+.invoice-paid .gex-shell-icon { width: 16px; height: 16px; color: inherit; stroke: currentColor; }
 .invoice-text-action { padding: 6px 0; border: 0; background: transparent; color: var(--mud-palette-primary); font: inherit; font-size: .75rem; cursor: pointer; white-space: nowrap; }
 .invoice-text-action:hover { text-decoration: underline; }
 .invoice-actions { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
@@ -183,7 +188,7 @@
     .invoice-card-customer small { color: var(--mud-palette-text-secondary); font-size: .8125rem; text-align: start; }
     .invoice-card-amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 13px 14px; }
     .invoice-card-amounts > div { display: grid; gap: 6px; min-width: 0; }
-    .invoice-card-amounts > div span { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+    .invoice-card-amounts > div > span:not(.invoice-paid) { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
     .invoice-card-amounts strong { font-size: .875rem; line-height: 1.8; overflow-wrap: anywhere; }
     .invoice-card-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 13px; border-top: 1px solid var(--mud-palette-lines-default); background: var(--mud-palette-background); }
     .invoice-card-expand { display: inline-flex; align-items: center; gap: 5px; padding: 5px 0; border: 0; background: none; font: inherit; font-size: .8125rem; font-weight: 500; color: var(--mud-palette-primary); cursor: pointer; }

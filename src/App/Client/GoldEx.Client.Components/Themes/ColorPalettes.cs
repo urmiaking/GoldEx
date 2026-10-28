@@ -64,6 +64,7 @@ public static class ColorPalettes
             ActionDisabledBackground = "#F9F8F580",
             Info = "#235AAB",
             Success = "#087D44",
+            SuccessContrastText = "#FFFFFF",
             Warning = "#8F631A",
             Error = "#C12D4B",
             BackgroundGray = "#F4F1E9",
