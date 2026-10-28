@@ -1,0 +1,240 @@
+@using GoldEx.Sdk.Common.Data
+@using GoldEx.Sdk.Common.Extensions
+@using GoldEx.Shared.DTOs.InventoryStocks
+@using GoldEx.Shared.DTOs.Transactions
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<section @ref="_root" class="invoice-details" aria-label="جزئیات فاکتور">
+    <div class="invoice-details-head">
+        <div>
+            <strong>جزئیات فاکتور #@InvoiceNumber</strong>
+            <small>تراکنش‌های مالی و اثر فاکتور بر موجودی انبار</small>
+        </div>
+        <div class="invoice-details-tabs" role="tablist" aria-label="نوع جزئیات">
+            <button type="button" role="tab" aria-selected="@(_activeTab == 0 ? "true" : "false")" class="@(_activeTab == 0 ? "active" : null)" @onclick="() => SelectTabAsync(0)">تراکنش‌ها</button>
+            <button type="button" role="tab" aria-selected="@(_activeTab == 1 ? "true" : "false")" class="@(_activeTab == 1 ? "active" : null)" @onclick="() => SelectTabAsync(1)">گردش انبار</button>
+        </div>
+    </div>
+
+    @if (!_activated)
+    {
+        <p class="invoice-details-state" role="status">در حال آماده‌سازی جزئیات…</p>
+    }
+    else if (_activeTab == 0)
+    {
+        <div role="tabpanel">
+            @if (_transactionsLoading)
+            {
+                <p class="invoice-details-state" role="status">در حال دریافت تراکنش‌ها…</p>
+            }
+            else if (_transactionsFailed)
+            {
+                <div class="invoice-details-state" role="alert">دریافت تراکنش‌ها انجام نشد.
+                    <button type="button" @onclick="LoadTransactionsAsync">تلاش دوباره</button>
+                </div>
+            }
+            else if (_transactions.Count == 0)
+            {
+                <p class="invoice-details-state">تراکنشی برای این فاکتور وجود ندارد.</p>
+            }
+            else
+            {
+                <div class="invoice-details-table-wrap">
+                    <table class="invoice-details-table">
+                        <thead><tr><th scope="col">تاریخ</th><th scope="col">نوع تراکنش</th><th scope="col">مبلغ</th><th scope="col">شرح</th><th scope="col">حساب</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in _transactions)
+                            {
+                                <tr @key="item">
+                                    <td data-label="تاریخ" dir="auto">@item.PostingDate.ToString("yyyy/MM/dd")</td>
+                                    <td data-label="نوع تراکنش"><span class="invoice-mini-tag">@item.TransactionType.GetDisplayName()</span></td>
+                                    <td data-label="مبلغ" class="invoice-money" dir="auto">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
+                                    <td data-label="شرح">@item.Description</td>
+                                    <td data-label="حساب">@item.LedgerAccount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-details-footer">
+                    <span>نمایش @(_transactionPage * DetailPageSize + 1) تا @Math.Min((_transactionPage + 1) * DetailPageSize, _transactionTotal) از @_transactionTotal</span>
+                    <div>
+                        <button type="button" disabled="@(_transactionsLoading || _transactionPage == 0)" @onclick="() => ChangeTransactionPage(-1)">قبلی</button>
+                        <span>صفحه @(_transactionPage + 1)</span>
+                        <button type="button" disabled="@(_transactionsLoading || (_transactionPage + 1) * DetailPageSize >= _transactionTotal)" @onclick="() => ChangeTransactionPage(1)">بعدی</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div role="tabpanel">
+            @if (_inventoryLoading)
+            {
+                <p class="invoice-details-state" role="status">در حال دریافت گردش انبار…</p>
+            }
+            else if (_inventoryFailed)
+            {
+                <div class="invoice-details-state" role="alert">دریافت گردش انبار انجام نشد.
+                    <button type="button" @onclick="LoadInventoryAsync">تلاش دوباره</button>
+                </div>
+            }
+            else if (_inventory.Count == 0)
+            {
+                <p class="invoice-details-state">تغییری در موجودی انبار برای این فاکتور ثبت نشده است.</p>
+            }
+            else
+            {
+                <div class="invoice-details-table-wrap">
+                    <table class="invoice-details-table">
+                        <thead><tr><th scope="col">تاریخ</th><th scope="col">عملیات انبار</th><th scope="col">مقدار</th><th scope="col">شرح</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in _inventory)
+                            {
+                                <tr @key="item">
+                                    <td data-label="تاریخ" dir="auto">@item.DateTime.ToString("yyyy/MM/dd")</td>
+                                    <td data-label="عملیات انبار"><span class="invoice-mini-tag">@item.ActionType.GetDisplayName()</span></td>
+                                    <td data-label="مقدار" class="invoice-money" dir="auto">@(item.GoldUnitType.HasValue ? item.Amount.ToWeightFormat(item.GoldUnitType.Value) : item.Amount.ToCurrencyFormat(item.PriceUnit))</td>
+                                    <td data-label="شرح">@item.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-details-footer">
+                    <span>نمایش @(_inventoryPage * DetailPageSize + 1) تا @Math.Min((_inventoryPage + 1) * DetailPageSize, _inventoryTotal) از @_inventoryTotal</span>
+                    <div>
+                        <button type="button" disabled="@(_inventoryLoading || _inventoryPage == 0)" @onclick="() => ChangeInventoryPage(-1)">قبلی</button>
+                        <span>صفحه @(_inventoryPage + 1)</span>
+                        <button type="button" disabled="@(_inventoryLoading || (_inventoryPage + 1) * DetailPageSize >= _inventoryTotal)" @onclick="() => ChangeInventoryPage(1)">بعدی</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (_activated && CustomerId != Guid.Empty)
+    {
+        <div class="invoice-details-balance">
+            <div><strong>مانده فعلی طرف حساب</strong><CustomerRemaining CustomerId="@CustomerId" EnableManualSlide="true" /></div>
+            <div><strong>مانده هنگام ثبت فاکتور</strong><CustomerRemaining CustomerId="@CustomerId" InvoiceId="@InvoiceId" UntilDate="@PostingDate" EnableManualSlide="true" /></div>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid InvoiceId { get; set; }
+    [Parameter] public long InvoiceNumber { get; set; }
+    [Parameter] public Guid CustomerId { get; set; }
+    [Parameter] public DateTime PostingDate { get; set; }
+
+    private const int DetailPageSize = 8;
+    private int _activeTab, _transactionPage, _inventoryPage, _transactionTotal, _inventoryTotal;
+    private bool _transactionsLoading, _inventoryLoading, _transactionsFailed, _inventoryFailed, _inventoryLoaded;
+    private List<GetTransactionResponse> _transactions = [];
+    private List<GetInventoryStockItemResponse> _inventory = [];
+
+    private ElementReference _root;
+    private IJSObjectReference? _module, _observer;
+    private DotNetObjectReference<InvoiceDetails>? _self;
+    private bool _activated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender) return;
+        _self = DotNetObjectReference.Create(this);
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/invoice-details.js");
+        _observer = await _module.InvokeAsync<IJSObjectReference>("observeVisible", _root, _self);
+    }
+
+    [JSInvokable]
+    public async Task ActivateAsync()
+    {
+        if (_activated || IsDisposed) return;
+        _activated = true;
+        await LoadTransactionsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_observer is not null)
+            {
+                await _observer.InvokeVoidAsync("dispose");
+                await _observer.DisposeAsync();
+            }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _self?.Dispose();
+            await base.DisposeAsync();
+        }
+    }
+
+    private async Task SelectTabAsync(int tab)
+    {
+        _activeTab = tab;
+        if (tab == 1 && !_inventoryLoaded) await LoadInventoryAsync();
+    }
+
+    private async Task ChangeTransactionPage(int delta)
+    {
+        _transactionPage += delta;
+        await LoadTransactionsAsync();
+    }
+
+    private async Task ChangeInventoryPage(int delta)
+    {
+        _inventoryPage += delta;
+        await LoadInventoryAsync();
+    }
+
+    private async Task LoadTransactionsAsync()
+    {
+        _transactionsLoading = true;
+        _transactionsFailed = false;
+        try
+        {
+            var filter = new RequestFilter(_transactionPage * DetailPageSize, DetailPageSize);
+            var txnFilter = new TransactionFilter(InvoiceId, null, null, null, null, null, true, false);
+            await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
+                (service, token) => service.GetListAsync(txnFilter, filter, token),
+                afterSend: response =>
+                {
+                    _transactions = response.Data.ToList();
+                    _transactionTotal = response.Total;
+                },
+                onFailure: () => { _transactionsFailed = true; },
+                createScope: true);
+        }
+        finally { _transactionsLoading = false; }
+    }
+
+    private async Task LoadInventoryAsync()
+    {
+        _inventoryLoading = true;
+        _inventoryFailed = false;
+        try
+        {
+            var filter = new RequestFilter(_inventoryPage * DetailPageSize, DetailPageSize);
+            await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockItemResponse>>(
+                (service, token) => service.GetInvoiceInventoryItemsAsync(InvoiceId, filter, token),
+                afterSend: response =>
+                {
+                    _inventory = response.Data.ToList();
+                    _inventoryTotal = response.Total;
+                    _inventoryLoaded = true;
+                },
+                onFailure: () => { _inventoryFailed = true; });
+        }
+        finally { _inventoryLoading = false; }
+    }
+}

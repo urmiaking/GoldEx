@@ -1,396 +1,220 @@
 @inherits GoldExComponentBase
 
-@if (ShowTitle)
-{
-    <div class="d-flex justify-content-center w-100">
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">فاکتورها</MudText>
-    </div>
-    <MudDivider />
-}
-
-<MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
-          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
-          Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.None" Elevation="@Elevation">
-    <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" Value="@_searchString" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Icon="@Icons.Material.Filled.Tune"
-                           Color="Color.Success"
-                           Variant="Variant.Filled"
-                           Class="mr-3"
-                           Size="Size.Small"
-                           OnClick="OpenMobileFilters" />
-            <MudMenu Icon="@Icons.Material.Filled.Add"
-                     Color="Color.Primary"
-                     Variant="Variant.Filled"
-                     Class="mr-3"
-                     Size="Size.Small">
-                @foreach (var scale in Enum.GetValues<TradeScale>())
-                {
-                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
-                        @scale.GetDisplayName()
-                    </MudMenuItem>
-                }
-            </MudMenu>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
-            <MudSpacer />
-            <MudDateRangePicker DateRange="@_filterDateRange"
-                                DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense"
-                                Variant="Variant.Outlined"
-                                Class="ml-3"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Rounded="true"
-                                ShowToolbar="false"
-                                Style="max-width: 320px;"
-                                PlaceholderStart="از"
-                                PlaceholderEnd="تا"
-                                Elevation="24"
-                                RelativeWidth="DropdownWidth.Adaptive"
-                                Label="تاریخ فاکتور"
-                                Clearable="true"/>
-
-            <MudButtonGroup Size="Size.Small" Color="@TradeScaleColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@TradeScaleIcon">
-                    @(_tradeScale == null ? "نوع معامله" : _tradeScale.GetDisplayName())
-                </MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetTradeScaleText(null)">همه</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Apps" OnClick="() => SetTradeScaleText(TradeScale.Wholesale)">@TradeScale.Wholesale.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Square" OnClick="() => SetTradeScaleText(TradeScale.Retail)">@TradeScale.Retail.GetDisplayName()</MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-
-            <MudButtonGroup Size="Size.Small" Color="@InvoiceTypeColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@InvoiceTypeIcon">
-                    @(_invoiceType == null ? "نوع فاکتور" : _invoiceType.GetDisplayName())
-                </MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetInvoiceTypeText(null)">همه</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.ArrowUpward" OnClick="() => SetInvoiceTypeText(InvoiceType.Purchase)">@InvoiceType.Purchase.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.ArrowDownward" OnClick="() => SetInvoiceTypeText(InvoiceType.Sell)">@InvoiceType.Sell.GetDisplayName()</MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-
-            <MudButtonGroup Size="Size.Small" Color="@InvoicePaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">
-                    @(_invoicePaymentStatus == null ? "وضعیت" : _invoicePaymentStatus.GetDisplayName())
-                </MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-
-            <MudMenu Class="ml-4"
-                     Label="فاکتور جدید"
-                     EndIcon="@Icons.Material.Filled.Add"
-                     Color="Color.Primary"
-                     Variant="Variant.Filled"
-                     Size="Size.Small">
-                @foreach (var scale in Enum.GetValues<TradeScale>())
-                {
-                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
-                        @scale.GetDisplayName()
-                    </MudMenuItem>
-                }
-            </MudMenu>
-        </MudHidden>
-    </ToolBarContent>
-
-    <HeaderContent>
-        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">فاکتور و معامله</MudTableSortLabel></MudTh>
-        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره / تاریخ</MudTableSortLabel></MudTh>
-        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
-        <MudTh Class="desktop-table-cell">ارزش کل</MudTh>
-        <MudTh Class="desktop-table-cell">مانده فاکتور</MudTh>
-        <MudTh Class="desktop-table-cell">مانده کل مشتری</MudTh>
-        <MudTh Class="desktop-table-cell">عملیات</MudTh>
-    </HeaderContent>
-
-    <RowTemplate>
-        @* --- Desktop Compact 2-Line Table Cells (>= 960px) --- *@
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="فاکتور و معامله">
-            <div class="d-flex align-start">
-                <MudChip T="string" Size="Size.Small" Color="@(context.InvoiceType == InvoiceType.Sell ? Color.Error : Color.Success)" Variant="Variant.Filled">
-                    @context.InvoiceType.GetDisplayName()
-                </MudChip>
-                <MudChip T="string" Size="Size.Small" Color="@(context.TradeScale == TradeScale.Wholesale ? Color.Primary : Color.Info)" Variant="Variant.Outlined">
-                    @context.TradeScale.GetDisplayName()
-                </MudChip>
-            </div>
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="شماره / تاریخ">
-            <div class="d-flex flex-column align-start">
-                <MudText Typo="Typo.body2">#@context.InvoiceNumber</MudText>
-                <MudTooltip Text="@GetInvoiceDateTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@GetInvoiceDate(context)</MudText>
-                </MudTooltip>
-            </div>
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="طرف حساب">
-            <div class="d-flex flex-column align-start">
-                <MudText Typo="Typo.body2">@context.CustomerFullName</MudText>
-                @if (!string.IsNullOrEmpty(context.CustomerPhoneNumber))
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerPhoneNumber</MudText>
-                }
-            </div>
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="ارزش کل">
-            <MudText Typo="Typo.body2">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudText>
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="مانده فاکتور">
-            @switch (context.PaymentStatus)
-            {
-                case InvoicePaymentStatus.Paid:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">
-                        @context.PaymentStatus.GetDisplayName()
-                    </MudChip>
-                    break;
-                case InvoicePaymentStatus.HasDebt:
-                    <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
-                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                    </MudText>
-                    break;
-                case InvoicePaymentStatus.Overdue:
-                    <div class="d-flex gap-1 align-center">
-                        <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
-                            @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                        </MudText>
-                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
-                    </div>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="مانده کل مشتری">
-            @if (context.CustomerId != Guid.Empty)
-            {
-                <MudTooltip Placement="Placement.Top">
-                    <ChildContent>
-                        <CustomerRemaining CustomerId="@context.CustomerId"
-                                           EnableManualSlide="true"
-                                           ItemClass="justify-content-end justify-content-lg-start" />
-                    </ChildContent>
-                    <TooltipContent>
-                        <div class="d-flex flex-column gap-1 pa-1 text-start" style="font-size: 0.75rem;">
-                            <span style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">
-                                مانده در لحظه صدور این فاکتور:
-                            </span>
-                            <div class="d-flex align-center gap-1 mt-1">
-                                <CustomerRemaining CustomerId="@context.CustomerId"
-                                                   UntilDate="@GetInvoicePostingDate(context)"
-                                                   InvoiceId="@context.Id"
-                                                   EnableManualSlide="true" />
-                            </div>
-                        </div>
-                    </TooltipContent>
-                </MudTooltip>
-            }
-        </MudTd>
-
-        <MudTd Class="desktop-table-cell align-middle" DataLabel="عملیات">
-            <div class="d-flex gap-2 align-center" @onclick:stopPropagation="true">
-                <MudTooltip Text="چاپ فاکتور">
-                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                   Color="@Color.Success" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="ویرایش فاکتور">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="حذف فاکتور">
-                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                </MudTooltip>
-            </div>
-        </MudTd>
-
-        @* --- Mobile Clean Card Cell (< 960px) --- *@
-        <MudTd Class="mobile-card-cell p-1 border-0" colspan="7">
-            <MudCard Elevation="2" Class="rounded-lg my-1 border border-solid mud-border-lines-default overflow-hidden">
-                <div class="pa-3 background-muted border-b mud-border-lines-default d-flex justify-space-between align-center">
-                    <div class="d-flex align-center gap-1 flex-wrap">
-                        <MudText Typo="Typo.subtitle2" Class="ml-1">فاکتور #@context.InvoiceNumber</MudText>
-                        <MudChip T="string" Size="Size.Small" Color="@(context.InvoiceType == InvoiceType.Sell ? Color.Error : Color.Success)" Variant="Variant.Filled">
-                            @context.InvoiceType.GetDisplayName()
-                        </MudChip>
-                        <MudChip T="string" Size="Size.Small" Color="@(context.TradeScale == TradeScale.Wholesale ? Color.Primary : Color.Info)" Variant="Variant.Outlined">
-                            @context.TradeScale.GetDisplayName()
-                        </MudChip>
-                    </div>
-                    <MudText Typo="Typo.caption">
-                        @GetInvoiceDate(context)
-                    </MudText>
-                </div>
-
-                <MudCardContent Class="py-3 px-3">
-                    <div class="d-flex justify-space-between align-center mb-2">
-                        <div>
-                            <MudText Typo="Typo.body2">@context.CustomerFullName</MudText>
-                            @if (!string.IsNullOrEmpty(context.CustomerPhoneNumber))
-                            {
-                                <MudText Typo="Typo.caption">
-                                    @context.CustomerPhoneNumber
-                                </MudText>
-                            }
-                        </div>
-                        <div class="text-end">
-                            <MudText Typo="Typo.caption">ارزش کل</MudText>
-                            <MudText Typo="Typo.body2">
-                                @context.TotalAmount.ToCurrencyFormat(context.PriceUnit)
-                            </MudText>
-                        </div>
-                    </div>
-
-                    <MudDivider Class="my-2" />
-
-                    <div class="d-flex justify-space-between align-center gap-2 py-1">
-                        <div class="d-flex flex-column align-start">
-                            <MudText Typo="Typo.caption" Class="mb-1">مانده فاکتور</MudText>
-                            @switch (context.PaymentStatus)
-                            {
-                                case InvoicePaymentStatus.Paid:
-                                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">
-                                        @context.PaymentStatus.GetDisplayName()
-                                    </MudChip>
-                                    break;
-                                case InvoicePaymentStatus.HasDebt:
-                                    <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
-                                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                                    </MudText>
-                                    break;
-                                case InvoicePaymentStatus.Overdue:
-                                    <div class="d-flex align-center gap-1">
-                                        <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
-                                            @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                                        </MudText>
-                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
-                                    </div>
-                                    break;
-                            }
-                        </div>
-
-                        <div class="d-flex flex-column align-end">
-                            <MudText Typo="Typo.caption" Class="mb-1">مانده کل مشتری</MudText>
-                            @if (context.CustomerId != Guid.Empty)
-                            {
-                                <MudTooltip Placement="Placement.Top">
-                                    <ChildContent>
-                                        <CustomerRemaining CustomerId="@context.CustomerId"
-                                                           EnableManualSlide="true"
-                                                           ItemClass="justify-content-end" />
-                                    </ChildContent>
-                                    <TooltipContent>
-                                        <div class="d-flex flex-column gap-1 pa-1 text-start" style="font-size: 0.75rem;">
-                                            <span style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">
-                                                مانده در لحظه صدور این فاکتور:
-                                            </span>
-                                            <div class="d-flex align-center gap-1 mt-1">
-                                                <CustomerRemaining CustomerId="@context.CustomerId"
-                                                                   UntilDate="@GetInvoicePostingDate(context)"
-                                                                   InvoiceId="@context.Id"
-                                                                   EnableManualSlide="true" />
-                                            </div>
-                                        </div>
-                                    </TooltipContent>
-                                </MudTooltip>
-                            }
-                        </div>
-                    </div>
-                </MudCardContent>
-
-                <div class="px-3 py-2 bg-light d-flex justify-space-between align-center border-t mud-border-lines-default">
-                    <div class="d-flex gap-1" @onclick:stopPropagation="true">
-                        <MudTooltip Text="چاپ فاکتور">
-                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                           Color="@Color.Success" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
-                        </MudTooltip>
-                        <MudTooltip Text="ویرایش فاکتور">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                           Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
-                        </MudTooltip>
-                        <MudTooltip Text="حذف فاکتور">
-                            <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                           Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                        </MudTooltip>
-                    </div>
-
-                    <div class="d-flex align-center gap-1">
-                        <MudText Typo="Typo.caption">
-                            @(context.ShowDetails ? "بستن جزئیات" : "ریز تراکنش‌ها")
-                        </MudText>
-                        <MudIcon Icon="@(context.ShowDetails ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Size="Size.Small" />
-                    </div>
-                </div>
-            </MudCard>
-        </MudTd>
-    </RowTemplate>
-
-    <ChildRowContent>
-        <MudTr Class="mud-table-row-child">
-            <td colspan="7">
-                <MudCollapse Expanded="@context.ShowDetails">
-                    @if (context.ShowDetails)
-                    {
-                        <MudCard Elevation="2" Class="m-2">
-                            <MudCardContent>
-                                <TransactionList InvoiceId="@context.Id" TableTitle="تراکنش‌های مرتبط با این فاکتور" ShowReversed="true" />
-                                <InventoryList InvoiceId="@context.Id" />
-                            </MudCardContent>
-                        </MudCard>
-                    }
-                </MudCollapse>
-            </td>
-        </MudTr>
-    </ChildRowContent>
-
-    <NoRecordsContent>
-        <MudText>هیچ فاکتوری یافت نشد</MudText>
-    </NoRecordsContent>
-
-    <LoadingContent>
-        <MudText>در حال بارگیری</MudText>
-    </LoadingContent>
-
-    <PagerContent>
-        @{
-            var totalItems = _table.GetFilteredItemsCount();
-            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
-        }
-
-        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-4" style="gap: 1rem;">
-            <div class="mud-table-pagination-caption">
-                @infoText
-            </div>
-            <MudPagination SelectedChanged="PageChanged"
-                           Selected="@(_table.CurrentPage + 1)"
-                           Color="Color.Primary"
-                           Count="@pageCount"
-                           Class="justify-center"
-                           BoundaryCount="1"
-                           MiddleCount="3" />
-
-            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                @infoText
-            </div>
+<section class="invoice-directory @Class" aria-label="فهرست فاکتورها">
+    <header class="invoice-directory-heading">
+        <div class="invoice-directory-title">
+            <h1>@(CustomerId.HasValue ? "فاکتورهای مشتری" : "لیست فاکتورها")</h1>
+            <p>جستجو، بررسی مانده‌ها و مدیریت فاکتورها در یک نگاه</p>
         </div>
-    </PagerContent>
-</MudTable>
+        <details class="invoice-create">
+            <summary><ShellIcon Name="plus" /> فاکتور جدید <ShellIcon Name="expand" /></summary>
+            <div class="invoice-create-options">
+                @foreach (var scale in Enum.GetValues<TradeScale>())
+                {
+                    <button type="button" @onclick="() => OnCreateInvoice(scale)">@scale.GetDisplayName()</button>
+                }
+            </div>
+        </details>
+    </header>
+
+    <div class="invoice-toolbar">
+        <div class="invoice-search">
+            <ShellIcon Name="search" />
+            <input type="search" value="@_searchDraft" @oninput="OnSearchInput"
+                   placeholder="شماره فاکتور، نام یا شماره مشتری…" aria-label="جستجوی فاکتورها" />
+            @if (!string.IsNullOrWhiteSpace(_searchDraft))
+            {
+                <button type="button" class="invoice-search-clear" aria-label="پاک کردن جستجو" @onclick="ClearSearch"><ShellIcon Name="close" /></button>
+            }
+        </div>
+
+        <div class="invoice-toolbar-desktop">
+            <label class="invoice-select">
+                <span>نوع معامله</span>
+                <select value="@(_tradeScale?.ToString() ?? "")" @onchange="ChangeScale" aria-label="نوع معامله">
+                    <option value="">همه معاملات</option>
+                    @foreach (var scale in Enum.GetValues<TradeScale>())
+                    {
+                        <option value="@scale.ToString()">@scale.GetDisplayName()</option>
+                    }
+                </select>
+            </label>
+            <label class="invoice-select">
+                <span>نوع فاکتور</span>
+                <select value="@(_invoiceType?.ToString() ?? "")" @onchange="ChangeType" aria-label="نوع فاکتور">
+                    <option value="">همه فاکتورها</option>
+                    <option value="@InvoiceType.Sell.ToString()">@InvoiceType.Sell.GetDisplayName()</option>
+                    <option value="@InvoiceType.Purchase.ToString()">@InvoiceType.Purchase.GetDisplayName()</option>
+                </select>
+            </label>
+            <label class="invoice-select">
+                <span>وضعیت پرداخت</span>
+                <select value="@(_invoicePaymentStatus?.ToString() ?? "")" @onchange="ChangeStatus" aria-label="وضعیت پرداخت">
+                    <option value="">همه وضعیت‌ها</option>
+                    <option value="@InvoicePaymentStatus.HasDebt.ToString()">@InvoicePaymentStatus.HasDebt.GetDisplayName()</option>
+                    <option value="@InvoicePaymentStatus.Overdue.ToString()">@InvoicePaymentStatus.Overdue.GetDisplayName()</option>
+                    <option value="@InvoicePaymentStatus.Paid.ToString()">@InvoicePaymentStatus.Paid.GetDisplayName()</option>
+                </select>
+            </label>
+            <div class="invoice-date">
+                <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+                                    Variant="Variant.Outlined" Margin="Margin.Dense"
+                                    Label="بازه تاریخ فاکتور" Clearable="true" ShowToolbar="false"
+                                    MaxMonthColumns="1" DisplayMonths="1" />
+            </div>
+            @if (ActiveFilterCount > 0)
+            {
+                <button type="button" class="invoice-clear-filters" @onclick="ClearFilters" title="حذف فیلترها">پاک کردن فیلترها</button>
+            }
+        </div>
+        <button type="button" class="invoice-mobile-filters" aria-label="باز کردن فیلترهای فاکتورها" @onclick="OpenMobileFilters">
+            <ShellIcon Name="filter" />
+            @if (ActiveFilterCount > 0) { <span>@ActiveFilterCount</span> }
+        </button>
+    </div>
+
+    @if (ActiveFilterCount > 0)
+    {
+        <div class="invoice-active-filters">
+            @if (_tradeScale.HasValue) { <span>@_tradeScale.Value.GetDisplayName()</span> }
+            @if (_invoiceType.HasValue) { <span>@_invoiceType.Value.GetDisplayName()</span> }
+            @if (_invoicePaymentStatus.HasValue) { <span>@_invoicePaymentStatus.Value.GetDisplayName()</span> }
+            @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue) { <span>بازه تاریخ انتخاب شده</span> }
+            <button type="button" @onclick="ClearFilters">حذف همه</button>
+        </div>
+    }
+
+    <div class="invoice-results" aria-busy="@_loading">
+        @if (_loading && _invoices.Count == 0)
+        {
+            <div class="invoice-placeholder" role="status">
+                @for (var i = 0; i < 6; i++) { <div class="invoice-skeleton"></div> }
+                <span class="invoice-sr-only">در حال دریافت فاکتورها…</span>
+            </div>
+        }
+        else if (_loadFailed)
+        {
+            <div class="invoice-empty" role="alert">
+                <ShellIcon Name="warning" />
+                <strong>دریافت فاکتورها انجام نشد</strong>
+                <span>اتصال را بررسی کنید و دوباره تلاش کنید.</span>
+                <button type="button" @onclick="ReloadAsync">تلاش دوباره</button>
+            </div>
+        }
+        else if (_invoices.Count == 0)
+        {
+            <div class="invoice-empty" role="status">
+                <ShellIcon Name="file" />
+                <strong>فاکتوری پیدا نشد</strong>
+                <span>جستجو یا فیلترها را تغییر دهید.</span>
+                <button type="button" @onclick="ClearAllSearchAndFilters">نمایش همه فاکتورها</button>
+            </div>
+        }
+        else
+        {
+            <div class="invoice-desktop-table">
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceNumber")'>شماره / تاریخ <span>@SortIndicator("InvoiceNumber")</span></button></th>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("Customer.FullName")'>طرف حساب <span>@SortIndicator("Customer.FullName")</span></button></th>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceType")'>نوع معامله <span>@SortIndicator("InvoiceType")</span></button></th>
+                            <th scope="col">ارزش کل</th>
+                            <th scope="col">مانده فاکتور</th>
+                            <th scope="col">مانده مشتری</th>
+                            <th scope="col">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var invoice in _invoices)
+                        {
+                            <tr @key="invoice.Id" class="invoice-data-row @(invoice.ShowDetails ? "is-expanded" : "")">
+                                <td>
+                                    <div class="invoice-number-cell">
+                                        <button type="button" class="invoice-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")"
+                                                aria-label="@(invoice.ShowDetails ? "بستن جزئیات" : "نمایش جزئیات") فاکتور @invoice.InvoiceNumber"
+                                                @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /></button>
+                                        <div><strong>#@invoice.InvoiceNumber</strong><small title="@GetInvoiceDateTooltipText(invoice)">@GetInvoiceDate(invoice)</small></div>
+                                    </div>
+                                </td>
+                                <td><div class="invoice-customer"><strong>@invoice.CustomerFullName</strong>
+                                    @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small dir="ltr">@invoice.CustomerPhoneNumber</small> }
+                                </div></td>
+                                <td><div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div></td>
+                                <td class="invoice-money">@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</td>
+                                <td><div class="invoice-balance @UnpaidClass(invoice)">
+                                    @if (invoice.PaymentStatus == InvoicePaymentStatus.Paid) { <span class="invoice-paid"><ShellIcon Name="check" /> تسویه حساب</span> }
+                                    else { <strong>@FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit)</strong> }
+                                    @if (invoice.PaymentStatus == InvoicePaymentStatus.Overdue) { <small>سررسید گذشته</small> }
+                                </div></td>
+                                <td><button type="button" class="invoice-text-action" @onclick="() => ToggleDetails(invoice)">@(invoice.ShowDetails ? "بستن جزئیات" : "مشاهده مانده")</button></td>
+                                <td>
+                                    <div class="invoice-actions">
+                                        <button type="button" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                        <button type="button" title="ویرایش فاکتور" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
+                                        <button type="button" class="is-danger" title="حذف فاکتور" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (invoice.ShowDetails)
+                            {
+                                <tr @key="@($"details-{invoice.Id}")" class="invoice-expanded-row">
+                                    <td colspan="7"><InvoiceDetails @key="invoice.Id" InvoiceId="invoice.Id" InvoiceNumber="invoice.InvoiceNumber" CustomerId="invoice.CustomerId" PostingDate="GetInvoicePostingDate(invoice)" /></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="invoice-mobile-list">
+                @foreach (var invoice in _invoices)
+                {
+                    <article @key="invoice.Id" class="invoice-card @(invoice.ShowDetails ? "is-expanded" : "")">
+                        <header class="invoice-card-head">
+                            <div class="invoice-card-number"><strong>فاکتور #@invoice.InvoiceNumber</strong><span>@GetInvoiceDate(invoice)</span></div>
+                            <div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div>
+                        </header>
+                        <div class="invoice-card-customer"><ShellIcon Name="user" /><div><strong>@invoice.CustomerFullName</strong>
+                            @if (!string.IsNullOrWhiteSpace(invoice.CustomerPhoneNumber)) { <small dir="ltr">@invoice.CustomerPhoneNumber</small> }
+                        </div></div>
+                        <div class="invoice-card-amounts">
+                            <div><span>ارزش فاکتور</span><strong>@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnit)</strong></div>
+                            <div><span>مانده فاکتور</span><strong class="invoice-balance @UnpaidClass(invoice)">@(invoice.PaymentStatus == InvoicePaymentStatus.Paid ? "تسویه حساب" : FormatCompleteUnpaidAmount(invoice.TotalUnpaidAmount, invoice.PriceUnit, invoice.TotalUnpaidAmountSecondary, invoice.SecondaryPriceUnit))</strong></div>
+                        </div>
+                        <footer class="invoice-card-footer">
+                            <button type="button" class="invoice-card-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")" @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /> @(invoice.ShowDetails ? "بستن جزئیات" : "جزئیات و مانده مشتری")</button>
+                            <div class="invoice-actions">
+                                <button type="button" title="چاپ" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                <button type="button" title="ویرایش" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
+                                <button type="button" class="is-danger" title="حذف" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
+                            </div>
+                        </footer>
+                        @if (invoice.ShowDetails)
+                        {
+                            <InvoiceDetails @key="invoice.Id" InvoiceId="invoice.Id" InvoiceNumber="invoice.InvoiceNumber" CustomerId="invoice.CustomerId" PostingDate="GetInvoicePostingDate(invoice)" />
+                        }
+                    </article>
+                }
+            </div>
+        }
+        @if (_loading && _invoices.Count > 0)
+        {
+            <div class="invoice-refreshing" role="status">در حال به‌روزرسانی فهرست…</div>
+        }
+    </div>
+
+    <footer class="invoice-pagination">
+        <div class="invoice-pagination-count" role="status" aria-live="polite">نمایش @StartItem تا @EndItem از @_totalItems فاکتور</div>
+        <div class="invoice-pagination-actions">
+            <button type="button" disabled="@(!CanPrevious)" @onclick="() => ChangePage(-1)" aria-label="صفحه قبل"><ShellIcon Name="previous" /> قبلی</button>
+            <span class="invoice-pagination-current">صفحه @(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(!CanNext)" @onclick="() => ChangePage(1)" aria-label="صفحه بعد">بعدی <ShellIcon Name="next" /></button>
+        </div>
+        <label class="invoice-page-size">تعداد ردیف
+            <select value="@_pageSize" @onchange="ChangePageSize" aria-label="تعداد فاکتور در هر صفحه">
+                <option value="10">۱۰</option><option value="14">۱۴</option><option value="25">۲۵</option><option value="50">۵۰</option>
+            </select>
+        </label>
+    </footer>
+</section>

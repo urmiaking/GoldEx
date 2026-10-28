@@ -1,0 +1,2 @@
+.invoice-list-page { width: min(100%, 1640px); margin-inline: auto; padding: 10px 12px 28px; min-width: 0; }
+@media (max-width: 959.98px) { .invoice-list-page { padding: 0; } }

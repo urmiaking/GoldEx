@@ -30,66 +30,39 @@ public partial class InvoicesList
     [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
 
-    private bool _isFirstLoad = true;
-    private int _initialPage = 0;
-
-    public string? InvoiceTypeIcon => _invoiceType switch
-    {
-        InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
-        InvoiceType.Purchase => Icons.Material.Filled.ArrowUpward,
-        null => Icons.Material.Filled.CompareArrows,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color InvoiceTypeColor => _invoiceType switch
-    {
-        InvoiceType.Purchase => Color.Success,
-        InvoiceType.Sell => Color.Error,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public string? TradeScaleIcon => _tradeScale switch
-    {
-        TradeScale.Wholesale => Icons.Material.Filled.Apps,
-        TradeScale.Retail => Icons.Material.Filled.Square,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color TradeScaleColor => _tradeScale switch
-    {
-        TradeScale.Wholesale => Color.Primary,
-        TradeScale.Retail => Color.Success,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public string? InvoicePaymentStatusIcon => _invoicePaymentStatus switch
-    {
-        InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
-        InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
-        InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color InvoicePaymentStatusColor => _invoicePaymentStatus switch
-    {
-        InvoicePaymentStatus.Paid => Color.Success,
-        InvoicePaymentStatus.HasDebt => Color.Primary,
-        InvoicePaymentStatus.Overdue => Color.Error,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+    private bool _initialized, _loading, _loadFailed;
+    private int _pageIndex, _pageSize = 14, _totalItems;
+    private string? _sortLabel;
+    private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.None;
+    private List<InvoiceListVm> _invoices = [];
+    private CancellationTokenSource? _searchDelay;
+    private string? _searchDraft;
 
     private InvoicePaymentStatus? _invoicePaymentStatus;
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private string? _searchString;
-    private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+    [Parameter, SupplyParameterFromQuery(Name = "size")] public int? SizeQuery { get; set; }
+
+    private int PageCount => Math.Max(1, (_totalItems + _pageSize - 1) / _pageSize);
+    private int StartItem => _totalItems == 0 ? 0 : _pageIndex * _pageSize + 1;
+    private int EndItem => Math.Min((_pageIndex + 1) * _pageSize, _totalItems);
+    private int ActiveFilterCount => (_invoicePaymentStatus.HasValue ? 1 : 0) +
+        (_invoiceType.HasValue ? 1 : 0) + (_tradeScale.HasValue ? 1 : 0) +
+        (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0);
+    private bool CanPrevious => !_loading && _pageIndex > 0;
+    private bool CanNext => !_loading && _pageIndex + 1 < PageCount;
+
+    private string UnpaidClass(InvoiceListVm invoice)
+    {
+        if (invoice.PaymentStatus == InvoicePaymentStatus.Paid) return "is-paid";
+        if (invoice.PaymentStatus == InvoicePaymentStatus.Overdue) return "is-overdue";
+        var color = GetUnpaidAmountColor(invoice.TotalUnpaidAmount, invoice.InvoiceType);
+        return color == Color.Success ? "is-credit" : color == Color.Error ? "is-debit" : "";
+    }
 
     private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? totalUnpaidSecondaryAmount, string? secondaryUnit)
     {
@@ -113,67 +86,160 @@ public partial class InvoicesList
         };
     }
 
-    private async Task<TableData<InvoiceListVm>> LoadInvoicesAsync(TableState state, CancellationToken cancellationToken = default)
+    private async Task LoadInvoicesAsync()
     {
-        var result = new TableData<InvoiceListVm>();
+        _searchDelay?.Cancel();
+        _loading = true;
+        _loadFailed = false;
+        StateHasChanged();
 
-        if (_isFirstLoad && PersistState)
+        try
         {
-            _isFirstLoad = false;
-            state.Page = _initialPage;
-        }
-
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-            state.SortDirection switch
-            {
-                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                _ => throw new ArgumentOutOfRangeException()
-            });
-
-        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale, _filterDateRange.Start, _filterDateRange.End);
-
-        await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
-            afterSend: response =>
-            {
-                var items = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
-                result = new TableData<InvoiceListVm>
+            var filter = new RequestFilter(_pageIndex * _pageSize, _pageSize, _searchString,
+                _sortLabel, _sortDirection);
+            var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale,
+                _filterDateRange.Start, _filterDateRange.End);
+            await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
+                action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
+                afterSend: response =>
                 {
-                    TotalItems = response.Total,
-                    Items = items
-                };
-            },
-            createScope: true,
-            cancelPrevious: true
-        );
-
-        if (PersistState)
-        {
-            UpdateUrl(state.Page);
+                    _invoices = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
+                    _totalItems = response.Total;
+                },
+                onFailure: () => { _loadFailed = true; },
+                createScope: true,
+                cancelPrevious: true);
+            if (!_loadFailed && _pageIndex >= PageCount)
+            {
+                _pageIndex = PageCount - 1;
+                await LoadInvoicesAsync();
+                return;
+            }
+            if (!_loadFailed && PersistState) UpdateUrl(_pageIndex);
         }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
 
-        return result;
+    public override async ValueTask DisposeAsync()
+    {
+        _searchDelay?.Cancel();
+        _searchDelay?.Dispose();
+        await base.DisposeAsync();
+    }
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _searchDraft = e.Value?.ToString();
+        _searchDelay?.Cancel();
+        _searchDelay?.Dispose();
+        var delay = new CancellationTokenSource();
+        _searchDelay = delay;
+        try
+        {
+            await Task.Delay(450, delay.Token);
+            if (!delay.IsCancellationRequested)
+                await InvokeAsync(() => OnSearch(_searchDraft ?? string.Empty));
+        }
+        catch (OperationCanceledException) { }
     }
 
     private async Task OnSearch(string text)
     {
+        if (_searchString == text) return;
         _searchString = text;
-
-        if (_table.CurrentPage != 0)
-            _table.NavigateTo(0);
-
-        else
-            await _table.ReloadServerData();
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
 
-    private void PageChanged(int i)
+    private string SortIndicator(string label)
     {
-        if (i <= 0)
-            return;
+        if (_sortLabel != label) return "↕";
+        return _sortDirection == Sdk.Common.Definitions.SortDirection.Ascending ? "↑" : "↓";
+    }
 
-        _table.NavigateTo(i - 1);
+    private async Task ClearAllSearchAndFilters()
+    {
+        _searchDelay?.Cancel();
+        _searchDraft = string.Empty;
+        _searchString = string.Empty;
+        _invoiceType = null;
+        _tradeScale = null;
+        _invoicePaymentStatus = null;
+        _filterDateRange = new DateRange();
+        await RefreshAsync();
+    }
+    private async Task ClearSearch()
+    {
+        _searchDraft = string.Empty;
+        await OnSearch(string.Empty);
+    }
+
+    private async Task ChangePage(int delta)
+    {
+        var nextPage = _pageIndex + delta;
+        if (_loading || nextPage < 0 || nextPage >= PageCount || nextPage == _pageIndex) return;
+        _pageIndex = nextPage;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ChangePageSize(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var size) || size is not (10 or 14 or 25 or 50) || size == _pageSize) return;
+        _pageSize = size;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ChangeSort(string label)
+    {
+        if (_sortLabel == label)
+        {
+            if (_sortDirection == Sdk.Common.Definitions.SortDirection.Ascending)
+                _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
+            else
+            {
+                _sortLabel = null;
+                _sortDirection = Sdk.Common.Definitions.SortDirection.None;
+            }
+        }
+        else
+        {
+            _sortLabel = label;
+            _sortDirection = Sdk.Common.Definitions.SortDirection.Ascending;
+        }
+
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ChangeType(ChangeEventArgs e)
+    {
+        _invoiceType = Enum.TryParse<InvoiceType>(e.Value?.ToString(), out var result) ? result : null;
+        await RefreshAsync();
+    }
+
+    private async Task ChangeScale(ChangeEventArgs e)
+    {
+        _tradeScale = Enum.TryParse<TradeScale>(e.Value?.ToString(), out var result) ? result : null;
+        await RefreshAsync();
+    }
+
+    private async Task ChangeStatus(ChangeEventArgs e)
+    {
+        _invoicePaymentStatus = Enum.TryParse<InvoicePaymentStatus>(e.Value?.ToString(), out var result) ? result : null;
+        await RefreshAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        _invoiceType = null;
+        _tradeScale = null;
+        _invoicePaymentStatus = null;
+        _filterDateRange = new DateRange();
+        await RefreshAsync();
     }
 
     public void OnCreateInvoice(TradeScale tradeScale)
@@ -196,7 +262,7 @@ public partial class InvoicesList
         if (result is { Canceled: false })
         {
             AddSuccessToast("فاکتور با موفقیت حذف شد.");
-            await RefreshAsync();
+            await ReloadAsync();
         }
     }
 
@@ -240,9 +306,11 @@ public partial class InvoicesList
 
     private async Task RefreshAsync()
     {
-        await _table.ReloadServerData();
-        StateHasChanged();
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
+
+    private Task ReloadAsync() => LoadInvoicesAsync();
 
     private static DateTime GetInvoicePostingDate(InvoiceListVm context)
     {
@@ -256,13 +324,9 @@ public partial class InvoicesList
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
     }
 
-    private void ShowDetails(TableRowClickEventArgs<InvoiceListVm> args)
+    private void ToggleDetails(InvoiceListVm invoice)
     {
-        var invoice = _table.FilteredItems.FirstOrDefault(b => b.Id == args.Item?.Id);
-        if (invoice is not null)
-        {
-            invoice.ShowDetails = !invoice.ShowDetails;
-        }
+        invoice.ShowDetails = !invoice.ShowDetails;
     }
 
     #region Mobile filters
@@ -363,73 +427,30 @@ public partial class InvoicesList
                 newEnd = parsedEnd;
             }
 
-            bool changed = false;
-
-            if (_searchString != newSearch)
+            var newSize = SizeQuery is 10 or 14 or 25 or 50 ? SizeQuery.Value : 14;
+            var changed = _searchString != newSearch || _invoicePaymentStatus != newStatus ||
+                _invoiceType != newType || _tradeScale != newScale ||
+                _filterDateRange.Start != newStart || _filterDateRange.End != newEnd ||
+                _pageSize != newSize || _pageIndex != newPage;
+            if (!_initialized || changed)
             {
                 _searchString = newSearch;
-                changed = true;
-            }
-
-            if (_invoicePaymentStatus != newStatus)
-            {
+                _searchDraft = newSearch;
                 _invoicePaymentStatus = newStatus;
-                changed = true;
-            }
-
-            if (_invoiceType != newType)
-            {
                 _invoiceType = newType;
-                changed = true;
-            }
-
-            if (_tradeScale != newScale)
-            {
                 _tradeScale = newScale;
-                changed = true;
-            }
-
-            if (_filterDateRange?.Start != newStart || _filterDateRange?.End != newEnd)
-            {
                 _filterDateRange = new DateRange(newStart, newEnd);
-                changed = true;
-            }
-
-            if (_isFirstLoad)
-            {
-                _initialPage = newPage;
-            }
-            else if (_table != null && _table.CurrentPage != newPage)
-            {
-                _table.NavigateTo(newPage);
-            }
-            else if (changed && _table != null)
-            {
-                if (_table.CurrentPage != 0)
-                {
-                    _table.NavigateTo(0);
-                }
-                else
-                {
-                    await _table.ReloadServerData();
-                }
+                _pageSize = newSize;
+                _pageIndex = newPage;
+                if (_initialized) await LoadInvoicesAsync();
             }
         }
-    }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && PersistState && _initialPage > 0)
+        if (!_initialized)
         {
-            if (_table != null)
-            {
-#pragma warning disable BL0005
-                _table.CurrentPage = _initialPage;
-#pragma warning restore BL0005
-                StateHasChanged();
-            }
+            _initialized = true;
+            await LoadInvoicesAsync();
         }
-        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void UpdateUrl(int pageIndex)
@@ -441,6 +462,9 @@ public partial class InvoicesList
 
         if (pageIndex > 0)
             parameters.Add("page", pageIndex + 1);
+
+        if (_pageSize != 14)
+            parameters.Add("size", _pageSize);
 
         if (!string.IsNullOrWhiteSpace(_searchString))
             parameters.Add("search", _searchString);
