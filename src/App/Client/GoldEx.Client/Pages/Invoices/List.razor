@@ -4,6 +4,14 @@
 
 <PageTitle>لیست فاکتورها</PageTitle>
 
-<div class="invoice-list-page">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <div class="d-none d-md-block">
+        <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+            <SeparatorTemplate>
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+            </SeparatorTemplate>
+        </MudBreadcrumbs>
+    </div>
+
     <InvoicesList PersistState="true" />
-</div>
+</MudContainer>

@@ -1,35 +1,43 @@
-.invoice-directory { padding: 4px 0 26px; min-width: 0; color: var(--mud-palette-text-primary); }
+.invoice-directory { padding: 4px 0 20px; min-width: 0; color: var(--mud-palette-text-primary); }
 .invoice-directory * { box-sizing: border-box; }
-.invoice-directory-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
-.invoice-directory-title h1 { margin: 0; font-size: clamp(1.3rem, 2vw, 1.7rem); font-weight: 850; line-height: 1.5; }
-.invoice-directory-title p { margin: 4px 0 0; color: var(--mud-palette-text-secondary); font-size: .82rem; }
-.invoice-create { position: relative; flex: none; }
-.invoice-create summary { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 45px; padding: 10px 16px; border: 0; border-radius: 12px; background: var(--mud-palette-primary); color: var(--mud-palette-primary-text); font-weight: 750; font-size: .84rem; cursor: pointer; list-style: none; }
-.invoice-create summary::-webkit-details-marker { display: none; }
-.invoice-create summary .gex-shell-icon { width: 18px; height: 18px; }
-.invoice-create[open] summary .gex-shell-icon:last-child { transform: rotate(180deg); }
-.invoice-create-options { position: absolute; z-index: 5; inset-block-start: calc(100% + 6px); inset-inline-end: 0; width: max(190px, 100%); padding: 6px; border: 1px solid var(--mud-palette-lines-default); border-radius: 13px; background: var(--mud-palette-surface); box-shadow: 0 10px 30px rgba(0,0,0,.15); }
-.invoice-create-options button { display: block; width: 100%; padding: 11px 12px; text-align: start; background: transparent; border: 0; border-radius: 8px; font: inherit; color: inherit; cursor: pointer; }
-.invoice-create-options button:hover { background: rgba(var(--mud-palette-primary-rgb),.08); }
-.invoice-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px; margin-bottom: 14px; background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: 16px; }
-.invoice-search { position: relative; display: flex; align-items: center; gap: 8px; flex: 1 1 245px; min-width: 170px; min-height: 45px; padding: 0 12px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; }
-.invoice-search > .gex-shell-icon { flex: none; width: 18px; height: 18px; color: var(--mud-palette-primary); }
-.invoice-search input { min-width: 0; width: 100%; height: 43px; padding: 0; background: transparent; border: 0; color: inherit; font: inherit; font-size: .85rem; outline: 0; }
-.invoice-search:focus-within { border-color: var(--mud-palette-primary); box-shadow: 0 0 0 2px rgba(var(--mud-palette-primary-rgb), .13); }
-.invoice-search-clear { display: grid; place-items: center; flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: rgba(var(--mud-palette-primary-rgb), .06); color: inherit; cursor: pointer; }
-.invoice-search-clear .gex-shell-icon { width: 15px; height: 15px; }
-.invoice-toolbar-desktop { display: flex; flex: 3 1 auto; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; min-width: 0; }
-.invoice-select { display: grid; gap: 3px; min-width: 128px; flex: 1 1 130px; max-width: 185px; font-size: .72rem; color: var(--mud-palette-text-secondary); }
-.invoice-select span { padding-inline-start: 3px; }
-.invoice-select select { height: 42px; width: 100%; padding-inline: 8px 16px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; background: var(--mud-palette-surface); color: var(--mud-palette-text-primary); font: inherit; font-size: .82rem; }
-.invoice-date { min-width: 200px; width: 250px; }
-.invoice-date ::deep .mud-input-control { margin: 0; }
-.invoice-date ::deep .mud-input-root { font-size: .8rem; }
-.invoice-clear-filters, .invoice-mobile-filters { min-height: 42px; padding: 7px 10px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; background: transparent; color: var(--mud-palette-text-primary); font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap; }
-.invoice-mobile-filters { display: none; }
-.invoice-active-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
-.invoice-active-filters span { padding: 5px 10px; border-radius: 7px; font-size: .73rem; background: rgba(var(--mud-palette-primary-rgb), .085); border: 1px solid rgba(var(--mud-palette-primary-rgb), .18); }
-.invoice-active-filters button { border: 0; background: transparent; color: var(--mud-palette-error); font: inherit; font-size: .75rem; cursor: pointer; }
+/* Same markup, controls, dimensions and sticky behavior as CustomersList.razor. */
+.directory-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.directory-title h1 { margin: 0; font-size: 1.65rem; font-weight: 900; line-height: 1.7; }
+.directory-count { display: inline-block; vertical-align: middle; margin-inline-start: 8px; padding: 3px 10px; border-radius: 8px; font-size: .75rem; font-weight: 600; background: rgba(var(--mud-palette-primary-rgb), .1); color: var(--mud-palette-text-primary); }
+.directory-title p { margin: 3px 0 0; color: var(--mud-palette-text-secondary); font-size: .85rem; }
+.directory-heading ::deep .directory-create { flex-shrink: 0; min-height: 46px; padding: 8px 18px; }
+.directory-filters {
+    position: sticky; top: calc(var(--gex-appbar-height, 70px) + env(safe-area-inset-top, 0px) + 8px);
+    z-index: calc(var(--mud-zindex-drawer, 1200) - 5); isolation: isolate;
+    background: var(--mud-palette-background); padding-bottom: 12px; margin-bottom: 8px;
+}
+.directory-filters::before { content: ""; position: absolute; inset: -8px 0 0; background: inherit; z-index: -1; pointer-events: none; }
+.directory-toolbar { display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(150px, 200px) 44px; align-items: center; gap: 12px; padding: 14px 16px; background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: 16px; box-shadow: 0 4px 12px -8px rgba(0,0,0,.18); }
+.directory-search, .directory-sort { min-width: 0; }
+.directory-toolbar ::deep .mud-input-control { margin: 0; }
+.directory-toolbar ::deep .directory-filter { min-height: 44px; border-color: var(--mud-palette-lines-inputs); padding: 8px 12px; white-space: nowrap; }
+.directory-filter-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-inline-start: 6px; padding-inline: 3px; border: 1px solid var(--mud-palette-primary); border-radius: 6px; font-size: .75rem; background: color-mix(in srgb, var(--mud-palette-primary) 15%, var(--mud-palette-surface)); color: var(--mud-palette-text-primary); }
+.directory-toolbar ::deep .directory-sort-direction { width: 44px; height: 44px; }
+.directory-applied-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 8px; }
+.directory-applied-filters > span { border: 1px solid rgba(var(--mud-palette-primary-rgb), .24); background: rgba(var(--mud-palette-primary-rgb), .06); padding: 5px 10px; border-radius: 8px; font-size: .75rem; }
+.directory-applied-filters ::deep button { min-height: 44px; }
+@media (max-width: 959px) {
+    .directory-toolbar { grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; padding: 8px; }
+    .directory-sort, .directory-sort-toggle, .directory-applied-filters { display: none; }
+    .directory-toolbar ::deep .directory-filter { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; }
+    .directory-toolbar ::deep .directory-filter .mud-button-icon-start { margin: 0; }
+    .directory-filter-text { display: none; }
+    .directory-filter-count { position: absolute; inset-block-start: 4px; inset-inline-end: 4px; min-width: 16px; height: 16px; margin: 0; padding-inline: 2px; border-radius: 50%; line-height: 1; }
+    .directory-toolbar ::deep .mud-input-label { font-size: .8rem; }
+    .directory-toolbar ::deep .mud-input-slot { font-size: .85rem; }
+}
+@media (max-width: 699px) {
+    .directory-heading { margin-bottom: 18px; align-items: flex-start; }
+    .directory-title h1 { font-size: 1.35rem; }
+    .directory-title p { font-size: .75rem; max-width: 180px; }
+    .directory-heading ::deep .directory-create { min-height: 44px; padding: 7px 12px; font-size: .8rem; margin-top: 2px; }
+}
+
 .invoice-results { position: relative; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 18px; background: var(--mud-palette-surface); box-shadow: 0 5px 22px rgba(10,30,40,.055); overflow: hidden; }
 .invoice-desktop-table { display: block; width: 100%; overflow-x: auto; }
 .invoice-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .84rem; text-align: start; }
@@ -70,15 +78,14 @@
 .invoice-actions .gex-shell-icon { width: 18px; height: 18px; }
 .invoice-expanded-row td { padding: 8px 13px 15px; background: var(--mud-palette-background); }
 .invoice-mobile-list { display: none; }
-.invoice-pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 6px; }
-.invoice-pagination-count { color: var(--mud-palette-text-secondary); font-size: .78rem; white-space: nowrap; }
+.invoice-pagination { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; padding: 14px 6px; position: relative; }
 .invoice-pagination-actions { display: flex; align-items: center; gap: 8px; }
 .invoice-pagination-actions button { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 7px 11px; border: 1px solid var(--mud-palette-lines-default); border-radius: 9px; color: var(--mud-palette-text-primary); background: var(--mud-palette-surface); font: inherit; font-size: .78rem; cursor: pointer; }
 .invoice-pagination-actions button:disabled { opacity: .35; cursor: default; }
 .invoice-pagination-actions button:not(:disabled):hover { border-color: var(--mud-palette-primary); }
 .invoice-pagination-actions .gex-shell-icon { width: 15px; height: 15px; }
 .invoice-pagination-current { font-size: .79rem; font-weight: 750; white-space: nowrap; }
-.invoice-page-size { display: flex; align-items: center; gap: 8px; font-size: .76rem; color: var(--mud-palette-text-secondary); }
+.invoice-page-size { display: flex; align-items: center; gap: 8px; font-size: .76rem; color: var(--mud-palette-text-secondary); position: absolute; inset-inline-end: 6px; }
 .invoice-page-size select { height: 36px; padding-inline: 8px 18px; border: 1px solid var(--mud-palette-lines-default); border-radius: 9px; color: var(--mud-palette-text-primary); background: var(--mud-palette-surface); font: inherit; }
 .invoice-empty { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 55px 20px; text-align: center; }
 .invoice-empty .gex-shell-icon { width: 32px; height: 32px; color: var(--mud-palette-text-secondary); }
@@ -91,18 +98,8 @@
 .invoice-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
 @keyframes invoice-shimmer { to { background-position-x: -200%; } }
 @media (max-width: 959.98px) {
-    .invoice-directory-heading { margin-bottom: 14px; }
-    .invoice-directory-title h1 { font-size: 1.25rem; }
-    .invoice-directory-title p { font-size: .73rem; }
-    .invoice-create summary { padding: 9px 11px; min-height: 42px; font-size: .76rem; }
-    .invoice-toolbar { gap: 8px; padding: 8px; }
-    .invoice-toolbar-desktop { display: none; }
-    .invoice-search { flex: 1 1 0; min-width: 0; }
-    .invoice-mobile-filters { display: inline-flex; align-items: center; justify-content: center; position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; }
-    .invoice-mobile-filters .gex-shell-icon { width: 20px; height: 20px; }
-    .invoice-mobile-filters span { display: grid; place-items: center; position: absolute; inset-inline-end: -3px; inset-block-start: -4px; min-width: 18px; height: 18px; border-radius: 50%; background: var(--mud-palette-primary); color: var(--mud-palette-primary-text); font-size: .62rem; }
     .invoice-desktop-table { display: none; }
-    .invoice-mobile-list { display: grid; gap: 12px; padding: 12px; }
+    .invoice-mobile-list { display: grid; gap: 12px; padding: 0; }
     .invoice-results { background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
     .invoice-card { overflow: hidden; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 15px; background: var(--mud-palette-surface); box-shadow: 0 4px 14px rgba(10,30,40,.055); }
     .invoice-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 12px 13px; border-bottom: 1px solid var(--mud-palette-lines-default); }
@@ -127,17 +124,10 @@
     .invoice-pagination { padding: 12px 3px; gap: 10px; }
 }
 @media (max-width: 599.98px) {
-    .invoice-directory { padding: 10px 10px 28px; }
-    .invoice-directory-title p { max-width: 215px; }
-    .invoice-mobile-list { padding: 0; }
-    .invoice-pagination-count { width: 100%; text-align: center; }
     .invoice-pagination-actions { order: 1; }
-    .invoice-page-size { order: 2; }
+    .invoice-page-size { position: static; order: 2; }
 }
 @media (max-width: 379.98px) {
-    .invoice-directory-heading { gap: 7px; }
-    .invoice-directory-title h1 { font-size: 1.15rem; }
-    .invoice-create summary { padding-inline: 9px; }
     .invoice-card-head { flex-wrap: wrap; }
     .invoice-card-head .invoice-tags { justify-content: flex-start; }
     .invoice-pagination-actions button { padding-inline: 7px; }
@@ -145,4 +135,14 @@
 @media (prefers-reduced-motion: reduce) {
     .invoice-data-row, .invoice-actions button, .invoice-expand .gex-shell-icon, .invoice-card-expand .gex-shell-icon { transition: none; }
     .invoice-skeleton { animation: none; }
+}
+.directory-heading ::deep .directory-create { flex-shrink: 0; min-height: 46px; }
+.directory-heading ::deep .directory-create .mud-button-root { min-height: 46px; border-radius: 12px; padding: 8px 18px; }
+@media (max-width: 699px) {
+    .directory-heading ::deep .directory-create .mud-button-root { min-height: 44px; padding: 7px 12px; font-size: .8rem; }
+}
+/* The pagination size choice is secondary, not a third primary action. */
+@media (max-width: 599.98px) {
+    .invoice-pagination { justify-content: space-between; gap: 8px; }
+    .invoice-page-size { position: static; }
 }

@@ -32,11 +32,9 @@ public partial class InvoicesList
 
     private bool _initialized, _loading, _loadFailed;
     private int _pageIndex, _pageSize = 14, _totalItems;
-    private string? _sortLabel;
-    private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.None;
+    private string _sortLabel = "InvoiceNumber";
+    private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
     private List<InvoiceListVm> _invoices = [];
-    private CancellationTokenSource? _searchDelay;
-    private string? _searchDraft;
 
     private InvoicePaymentStatus? _invoicePaymentStatus;
     private InvoiceType? _invoiceType;
@@ -48,13 +46,12 @@ public partial class InvoicesList
     [Parameter, SupplyParameterFromQuery(Name = "size")] public int? SizeQuery { get; set; }
 
     private int PageCount => Math.Max(1, (_totalItems + _pageSize - 1) / _pageSize);
-    private int StartItem => _totalItems == 0 ? 0 : _pageIndex * _pageSize + 1;
-    private int EndItem => Math.Min((_pageIndex + 1) * _pageSize, _totalItems);
     private int ActiveFilterCount => (_invoicePaymentStatus.HasValue ? 1 : 0) +
         (_invoiceType.HasValue ? 1 : 0) + (_tradeScale.HasValue ? 1 : 0) +
         (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0);
     private bool CanPrevious => !_loading && _pageIndex > 0;
     private bool CanNext => !_loading && _pageIndex + 1 < PageCount;
+    private string FilterButtonLabel => ActiveFilterCount == 0 ? "فیلتر فاکتورها" : $"فیلتر فاکتورها، {ActiveFilterCount} فیلتر فعال";
 
     private string UnpaidClass(InvoiceListVm invoice)
     {
@@ -88,7 +85,6 @@ public partial class InvoicesList
 
     private async Task LoadInvoicesAsync()
     {
-        _searchDelay?.Cancel();
         _loading = true;
         _loadFailed = false;
         StateHasChanged();
@@ -124,28 +120,6 @@ public partial class InvoicesList
         }
     }
 
-    public override async ValueTask DisposeAsync()
-    {
-        _searchDelay?.Cancel();
-        _searchDelay?.Dispose();
-        await base.DisposeAsync();
-    }
-    private async Task OnSearchInput(ChangeEventArgs e)
-    {
-        _searchDraft = e.Value?.ToString();
-        _searchDelay?.Cancel();
-        _searchDelay?.Dispose();
-        var delay = new CancellationTokenSource();
-        _searchDelay = delay;
-        try
-        {
-            await Task.Delay(450, delay.Token);
-            if (!delay.IsCancellationRequested)
-                await InvokeAsync(() => OnSearch(_searchDraft ?? string.Empty));
-        }
-        catch (OperationCanceledException) { }
-    }
-
     private async Task OnSearch(string text)
     {
         if (_searchString == text) return;
@@ -162,8 +136,6 @@ public partial class InvoicesList
 
     private async Task ClearAllSearchAndFilters()
     {
-        _searchDelay?.Cancel();
-        _searchDraft = string.Empty;
         _searchString = string.Empty;
         _invoiceType = null;
         _tradeScale = null;
@@ -171,12 +143,6 @@ public partial class InvoicesList
         _filterDateRange = new DateRange();
         await RefreshAsync();
     }
-    private async Task ClearSearch()
-    {
-        _searchDraft = string.Empty;
-        await OnSearch(string.Empty);
-    }
-
     private async Task ChangePage(int delta)
     {
         var nextPage = _pageIndex + delta;
@@ -196,41 +162,31 @@ public partial class InvoicesList
     private async Task ChangeSort(string label)
     {
         if (_sortLabel == label)
-        {
-            if (_sortDirection == Sdk.Common.Definitions.SortDirection.Ascending)
-                _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
-            else
-            {
-                _sortLabel = null;
-                _sortDirection = Sdk.Common.Definitions.SortDirection.None;
-            }
-        }
+            _sortDirection = _sortDirection == Sdk.Common.Definitions.SortDirection.Descending
+                ? Sdk.Common.Definitions.SortDirection.Ascending
+                : Sdk.Common.Definitions.SortDirection.Descending;
         else
-        {
             _sortLabel = label;
-            _sortDirection = Sdk.Common.Definitions.SortDirection.Ascending;
-        }
 
         _pageIndex = 0;
         await LoadInvoicesAsync();
     }
 
-    private async Task ChangeType(ChangeEventArgs e)
+    private async Task OnSortChanged(string label)
     {
-        _invoiceType = Enum.TryParse<InvoiceType>(e.Value?.ToString(), out var result) ? result : null;
-        await RefreshAsync();
+        if (string.IsNullOrEmpty(label) || _sortLabel == label) return;
+        _sortLabel = label;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
 
-    private async Task ChangeScale(ChangeEventArgs e)
+    private async Task ToggleSortDirection()
     {
-        _tradeScale = Enum.TryParse<TradeScale>(e.Value?.ToString(), out var result) ? result : null;
-        await RefreshAsync();
-    }
-
-    private async Task ChangeStatus(ChangeEventArgs e)
-    {
-        _invoicePaymentStatus = Enum.TryParse<InvoicePaymentStatus>(e.Value?.ToString(), out var result) ? result : null;
-        await RefreshAsync();
+        _sortDirection = _sortDirection == Sdk.Common.Definitions.SortDirection.Descending
+            ? Sdk.Common.Definitions.SortDirection.Ascending
+            : Sdk.Common.Definitions.SortDirection.Descending;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
 
     private async Task ClearFilters()
@@ -435,7 +391,6 @@ public partial class InvoicesList
             if (!_initialized || changed)
             {
                 _searchString = newSearch;
-                _searchDraft = newSearch;
                 _invoicePaymentStatus = newStatus;
                 _invoiceType = newType;
                 _tradeScale = newScale;

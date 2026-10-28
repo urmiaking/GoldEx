@@ -1,88 +1,80 @@
 @inherits GoldExComponentBase
 
 <section class="invoice-directory @Class" aria-label="فهرست فاکتورها">
-    <header class="invoice-directory-heading">
-        <div class="invoice-directory-title">
-            <h1>@(CustomerId.HasValue ? "فاکتورهای مشتری" : "لیست فاکتورها")</h1>
-            <p>جستجو، بررسی مانده‌ها و مدیریت فاکتورها در یک نگاه</p>
+    <header class="directory-heading">
+        <div class="directory-title">
+            <h1>@(CustomerId.HasValue ? "فاکتورهای مشتری" : "فاکتورها") <span class="directory-count">@(_loading ? "…" : $"{_totalItems:N0} فاکتور")</span></h1>
+            <p>مدیریت و بررسی فاکتورها</p>
         </div>
-        <details class="invoice-create">
-            <summary><ShellIcon Name="plus" /> فاکتور جدید <ShellIcon Name="expand" /></summary>
-            <div class="invoice-create-options">
-                @foreach (var scale in Enum.GetValues<TradeScale>())
-                {
-                    <button type="button" @onclick="() => OnCreateInvoice(scale)">@scale.GetDisplayName()</button>
-                }
-            </div>
-        </details>
+        <MudMenu Label="فاکتور جدید"
+                 EndIcon="@Icons.Material.Filled.Add"
+                 Color="Color.Primary"
+                 Variant="Variant.Filled"
+                 Class="directory-create">
+            @foreach (var scale in Enum.GetValues<TradeScale>())
+            {
+                <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">@scale.GetDisplayName()</MudMenuItem>
+            }
+        </MudMenu>
     </header>
 
-    <div class="invoice-toolbar">
-        <div class="invoice-search">
-            <ShellIcon Name="search" />
-            <input type="search" value="@_searchDraft" @oninput="OnSearchInput"
-                   placeholder="شماره فاکتور، نام یا شماره مشتری…" aria-label="جستجوی فاکتورها" />
-            @if (!string.IsNullOrWhiteSpace(_searchDraft))
-            {
-                <button type="button" class="invoice-search-clear" aria-label="پاک کردن جستجو" @onclick="ClearSearch"><ShellIcon Name="close" /></button>
-            }
-        </div>
-
-        <div class="invoice-toolbar-desktop">
-            <label class="invoice-select">
-                <span>نوع معامله</span>
-                <select value="@(_tradeScale?.ToString() ?? "")" @onchange="ChangeScale" aria-label="نوع معامله">
-                    <option value="">همه معاملات</option>
-                    @foreach (var scale in Enum.GetValues<TradeScale>())
-                    {
-                        <option value="@scale.ToString()">@scale.GetDisplayName()</option>
-                    }
-                </select>
-            </label>
-            <label class="invoice-select">
-                <span>نوع فاکتور</span>
-                <select value="@(_invoiceType?.ToString() ?? "")" @onchange="ChangeType" aria-label="نوع فاکتور">
-                    <option value="">همه فاکتورها</option>
-                    <option value="@InvoiceType.Sell.ToString()">@InvoiceType.Sell.GetDisplayName()</option>
-                    <option value="@InvoiceType.Purchase.ToString()">@InvoiceType.Purchase.GetDisplayName()</option>
-                </select>
-            </label>
-            <label class="invoice-select">
-                <span>وضعیت پرداخت</span>
-                <select value="@(_invoicePaymentStatus?.ToString() ?? "")" @onchange="ChangeStatus" aria-label="وضعیت پرداخت">
-                    <option value="">همه وضعیت‌ها</option>
-                    <option value="@InvoicePaymentStatus.HasDebt.ToString()">@InvoicePaymentStatus.HasDebt.GetDisplayName()</option>
-                    <option value="@InvoicePaymentStatus.Overdue.ToString()">@InvoicePaymentStatus.Overdue.GetDisplayName()</option>
-                    <option value="@InvoicePaymentStatus.Paid.ToString()">@InvoicePaymentStatus.Paid.GetDisplayName()</option>
-                </select>
-            </label>
-            <div class="invoice-date">
-                <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
-                                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                                    Label="بازه تاریخ فاکتور" Clearable="true" ShowToolbar="false"
-                                    MaxMonthColumns="1" DisplayMonths="1" />
+    <div class="directory-filters">
+        <div class="directory-toolbar">
+            <div class="directory-search">
+                <MudTextField T="string"
+                              Value="_searchString" ValueChanged="OnSearch"
+                              Immediate="true" DebounceInterval="500" Clearable="true"
+                              Label="جستجوی فاکتور"
+                              Placeholder="شماره فاکتور، نام یا شماره مشتری"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" />
             </div>
-            @if (ActiveFilterCount > 0)
-            {
-                <button type="button" class="invoice-clear-filters" @onclick="ClearFilters" title="حذف فیلترها">پاک کردن فیلترها</button>
-            }
+            <MudButton Variant="Variant.Outlined"
+                       Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)"
+                       StartIcon="@Icons.Material.Outlined.Tune"
+                       Class="directory-filter"
+                       aria-label="@FilterButtonLabel"
+                       OnClick="OpenMobileFilters">
+                <span class="directory-filter-text">فیلترها</span>
+                @if (ActiveFilterCount > 0)
+                {
+                    <span class="directory-filter-count" aria-hidden="true">@ActiveFilterCount</span>
+                }
+            </MudButton>
+            <div class="directory-sort">
+                <MudSelect T="string" Label="مرتب‌سازی بر اساس"
+                           Value="_sortLabel" ValueChanged="OnSortChanged"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem Value="@("InvoiceNumber")">شماره فاکتور</MudSelectItem>
+                    <MudSelectItem Value="@("Customer.FullName")">نام مشتری</MudSelectItem>
+                    <MudSelectItem Value="@("InvoiceType")">نوع فاکتور</MudSelectItem>
+                </MudSelect>
+            </div>
+            <div class="directory-sort-toggle">
+                <MudTooltip Text="@(_sortDirection == GoldEx.Sdk.Common.Definitions.SortDirection.Descending ? "مرتب‌سازی نزولی؛ تغییر به صعودی" : "مرتب‌سازی صعودی؛ تغییر به نزولی")">
+                    <MudIconButton Icon="@(_sortDirection == GoldEx.Sdk.Common.Definitions.SortDirection.Descending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                                   OnClick="ToggleSortDirection" Class="directory-sort-direction"
+                                   aria-label="@(_sortDirection == GoldEx.Sdk.Common.Definitions.SortDirection.Descending ? "تغییر به مرتب‌سازی صعودی" : "تغییر به مرتب‌سازی نزولی")" />
+                </MudTooltip>
+            </div>
         </div>
-        <button type="button" class="invoice-mobile-filters" aria-label="باز کردن فیلترهای فاکتورها" @onclick="OpenMobileFilters">
-            <ShellIcon Name="filter" />
-            @if (ActiveFilterCount > 0) { <span>@ActiveFilterCount</span> }
-        </button>
-    </div>
 
-    @if (ActiveFilterCount > 0)
-    {
-        <div class="invoice-active-filters">
-            @if (_tradeScale.HasValue) { <span>@_tradeScale.Value.GetDisplayName()</span> }
-            @if (_invoiceType.HasValue) { <span>@_invoiceType.Value.GetDisplayName()</span> }
-            @if (_invoicePaymentStatus.HasValue) { <span>@_invoicePaymentStatus.Value.GetDisplayName()</span> }
-            @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue) { <span>بازه تاریخ انتخاب شده</span> }
-            <button type="button" @onclick="ClearFilters">حذف همه</button>
-        </div>
-    }
+        @if (ActiveFilterCount > 0)
+        {
+            <div class="directory-applied-filters" aria-label="فیلترهای فعال">
+                @if (_tradeScale.HasValue) { <span>@_tradeScale.Value.GetDisplayName()</span> }
+                @if (_invoiceType.HasValue) { <span>@_invoiceType.Value.GetDisplayName()</span> }
+                @if (_invoicePaymentStatus.HasValue) { <span>@_invoicePaymentStatus.Value.GetDisplayName()</span> }
+                @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue)
+                {
+                    <span>تاریخ فاکتور: @(_filterDateRange.Start?.ToShortDateString() ?? "ابتدا") تا @(_filterDateRange.End?.ToShortDateString() ?? "امروز")</span>
+                }
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearFilters"
+                           StartIcon="@Icons.Material.Filled.Close">پاک کردن فیلترها</MudButton>
+            </div>
+        }
+    </div>
 
     <div class="invoice-results" aria-busy="@_loading">
         @if (_loading && _invoices.Count == 0)
@@ -204,11 +196,10 @@
         }
     </div>
 
-    <footer class="invoice-pagination">
-        <div class="invoice-pagination-count" role="status" aria-live="polite">نمایش @StartItem تا @EndItem از @_totalItems فاکتور</div>
+    <footer class="invoice-pagination" aria-label="صفحه‌بندی فاکتورها">
         <div class="invoice-pagination-actions">
             <button type="button" disabled="@(!CanPrevious)" @onclick="() => ChangePage(-1)" aria-label="صفحه قبل"><ShellIcon Name="previous" /> قبلی</button>
-            <span class="invoice-pagination-current">صفحه @(_pageIndex + 1) از @PageCount</span>
+            <span class="invoice-pagination-current" role="status" aria-live="polite">@(_pageIndex + 1) / @PageCount</span>
             <button type="button" disabled="@(!CanNext)" @onclick="() => ChangePage(1)" aria-label="صفحه بعد">بعدی <ShellIcon Name="next" /></button>
         </div>
         <label class="invoice-page-size">تعداد ردیف

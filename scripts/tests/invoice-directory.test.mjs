@@ -12,6 +12,8 @@ const code = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/Invoic
 const detail = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceDetails.razor');
 const styles = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoicesList.razor.css');
 const observerSource = read('src/App/Server/GoldEx.Server/wwwroot/js/invoice-details.js');
+const customerList = read('src/App/Client/GoldEx.Client/Pages/Customers/Components/CustomersList.razor');
+const customerStyles = read('src/App/Client/GoldEx.Client/Pages/Customers/Components/CustomersList.razor.css');
 
 test('desktop invoices use semantic native table, mobile uses standalone cards', () => {
     assert.match(list, /<table class="invoice-table">/);
@@ -27,7 +29,7 @@ test('desktop invoices use semantic native table, mobile uses standalone cards',
 test('sorting, date, text, type and status filters remain wired to the API, not applied only to visible rows', () => {
     assert.match(code, /service\.GetListAsync\(filter, invoiceFilter, CustomerId, token\)/);
     assert.match(code, /new RequestFilter\(_pageIndex \* _pageSize, _pageSize, _searchString,/);
-    for (const name of ['ChangeSort', 'ChangeType', 'ChangeScale', 'ChangeStatus', 'OnSearchInput', 'OnDateRangeChanged', 'OpenMobileFilters'])
+    for (const name of ['ChangeSort', 'OnSortChanged', 'ToggleSortDirection', 'OnSearch', 'OpenMobileFilters'])
         assert.match(list, new RegExp(name));
     for (const query of ['page', 'size', 'search', 'status', 'type', 'scale', 'start', 'end'])
         assert.match(code, new RegExp(`"${query}"`));
@@ -72,4 +74,39 @@ test('only visible desktop/mobile detail instance fetches, and observer disposes
     instances[1].callback([{ isIntersecting: true }]);
     assert.equal(calls, 1);
     shown.dispose();
+});
+
+
+test('invoice heading and sticky filter toolbar use exactly the same building blocks as Customers', () => {
+    for (const selector of ['directory-heading', 'directory-title', 'directory-count',
+        'directory-filters', 'directory-toolbar', 'directory-search', 'directory-filter',
+        'directory-sort', 'directory-sort-toggle', 'directory-applied-filters']) {
+        assert.match(customerList, new RegExp('(?:class|Class)="' + selector + '"'));
+        assert.match(list, new RegExp('(?:class|Class)="' + selector + '"'));
+    }
+    for (const tag of ['MudTextField', 'MudButton', 'MudSelect', 'MudIconButton']) {
+        assert.match(customerList, new RegExp('<' + tag + '\\b'));
+        assert.match(list, new RegExp('<' + tag + '\\b'));
+    }
+    assert.match(styles, /\.directory-filters\s*\{[^}]*position:\s*sticky;/);
+    assert.match(customerStyles, /\.directory-filters\s*\{[^}]*position:\s*sticky;/);
+    assert.match(styles, /\.directory-toolbar\s*\{[^}]*grid-template-columns:\s*minmax\(160px, 1fr\) auto minmax\(150px, 200px\) 44px/);
+    assert.match(styles, /@media \(max-width: 959px\)\s*\{[^}]*\.directory-toolbar\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) 44px/);
+});
+
+test('date, status, type, and scale filters are kept in one dialog and not misaligned toolbar dropdowns', () => {
+    assert.match(list, /OnClick="OpenMobileFilters"/);
+    assert.doesNotMatch(list, /<select[^>]*aria-label="(?:نوع معامله|نوع فاکتور|وضعیت پرداخت)"/);
+    const dialog = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceFiltersDialog.razor');
+    assert.match(dialog, /MudDateRangePicker/);
+    for (const type of ['InvoiceType', 'TradeScale', 'InvoicePaymentStatus'])
+        assert.match(dialog, new RegExp('MudSelect T="' + type + '\\?"'));
+});
+
+test('pagination is reduced to previous / current page / next and optional page size', () => {
+    assert.match(list, /class="invoice-pagination-actions"/);
+    assert.match(list, /@\(!CanPrevious\)/);
+    assert.match(list, /@\(!CanNext\)/);
+    assert.match(list, /class="invoice-page-size"/);
+    assert.doesNotMatch(list, /invoice-pagination-count|@StartItem|@EndItem|نمایش .* تا .* از/);
 });
