@@ -206,7 +206,7 @@
             <div class="invoice-mobile-list">
                 @foreach (var invoice in _invoices)
                 {
-                    <article @key="invoice.Id" class="invoice-card @(invoice.ShowDetails ? "is-expanded" : "")">
+                    <article @key="invoice.Id" class="invoice-card @UnpaidClass(invoice) @(invoice.ShowDetails ? "is-expanded" : "")">
                         <header class="invoice-card-head">
                             <div class="invoice-card-number"><strong>فاکتور #@invoice.InvoiceNumber</strong><span>@GetInvoiceDate(invoice)</span></div>
                             <div class="invoice-tags"><span class="invoice-badge @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span><span class="invoice-badge is-scale">@invoice.TradeScale.GetDisplayName()</span></div>

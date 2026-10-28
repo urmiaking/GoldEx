@@ -143,12 +143,39 @@
     .invoice-desktop-table { display: none; }
     .invoice-mobile-list { display: grid; gap: 12px; padding: 0; }
     .invoice-results { background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
-    .invoice-card { overflow: hidden; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 15px; background: var(--mud-palette-surface); box-shadow: 0 4px 14px rgba(10,30,40,.055); }
+    .invoice-card {
+    position: relative; overflow: hidden; min-width: 0;
+    border: 1px solid var(--mud-palette-lines-default); border-radius: 15px;
+    background: var(--mud-palette-surface); box-shadow: 0 4px 14px rgba(10,30,40,.055);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+/* Only unsettled invoice balances receive a restrained status glow.
+   A paid invoice stays neutral; its green badge already communicates settlement. */
+.invoice-card:is(.is-credit, .is-debit, .is-overdue) {
+    --invoice-state: var(--mud-palette-success);
+    background: radial-gradient(ellipse 100% 75% at right top,
+        color-mix(in srgb, var(--invoice-state) 5%, transparent), transparent 85%),
+        var(--mud-palette-surface);
+    border-inline-start: 3px solid color-mix(in srgb, var(--invoice-state) 48%, var(--mud-palette-lines-default));
+    box-shadow: 0 4px 14px rgba(10,30,40,.055), 0 0 13px -11px var(--invoice-state);
+}
+.invoice-card:is(.is-debit, .is-overdue) { --invoice-state: var(--mud-palette-error); }
     .invoice-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 12px 13px; border-bottom: 1px solid var(--mud-palette-lines-default); }
     .invoice-card-number { display: grid; gap: 5px; }
     .invoice-card-number strong { font-size: .875rem; }
     .invoice-card-number span { font-size: .8125rem; color: var(--mud-palette-primary); }
-    .invoice-card-head .invoice-tags { justify-content: flex-end; }
+    .invoice-card-head .invoice-tags { justify-content: flex-end; flex: 0 0 auto; gap: 6px; }
+    /* Consistent touch-friendly visual rhythm without oversized payment pills. */
+    .invoice-card-head .invoice-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: 26px; padding: 4px 9px; font-size: .8125rem;
+        line-height: 1.35; font-weight: 500; border-radius: 8px;
+    }
+    .invoice-card-amounts .invoice-paid {
+        min-height: 28px; padding: 4px 8px; font-size: .75rem;
+        font-weight: 500; gap: 4px; line-height: 1.4;
+    }
+    .invoice-card-amounts .invoice-paid .gex-shell-icon { width: 14px; height: 14px; }
     .invoice-card-customer { display: flex; align-items: center; gap: 9px; padding: 12px 13px 7px; }
     .invoice-card-customer > .gex-shell-icon { width: 20px; height: 20px; color: var(--mud-palette-text-secondary); }
     .invoice-card-customer > div { display: grid; gap: 3px; justify-items: start; text-align: right; }
@@ -212,4 +239,8 @@
 .invoice-directory.in-customer-dialog .directory-filters { top: 0; }
 .invoice-directory.in-customer-dialog .invoice-table th {
     top: var(--invoice-filters-block-size, 96px);
+}
+@media (min-width: 960px) {
+    /* Align the button's outer left edge with the filter card on wide screens. */
+    .directory-heading ::deep .directory-create { margin-inline-end: -16px; }
 }
