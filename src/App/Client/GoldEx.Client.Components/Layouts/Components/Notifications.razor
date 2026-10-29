@@ -1,30 +1,43 @@
 @inherits GoldExComponentBase
 
 <dialog @ref="_panel" class="gex-notifications" aria-labelledby="gex-notification-title" dir="rtl">
-    <header class="gex-notification-heading"><div><span class="gex-notification-symbol"><ShellIcon Name="bell" /></span><h2 id="gex-notification-title">اعلان‌ها</h2></div><button type="button" class="gex-icon-button" data-notification-close aria-label="بستن اعلان‌ها" autofocus><ShellIcon Name="close" /></button></header>
-    <div class="gex-notification-summary"><div><strong>پیام‌های فروشگاه شما</strong><p>@(_unreadCount > 0 ? $"{_unreadCount} اعلان خوانده‌نشده دارید" : "پیام‌های مهم و یادآوری سررسیدها را اینجا دنبال کنید.")</p></div><button type="button" class="gex-icon-button" aria-label="تازه‌سازی اعلان‌ها" disabled="@_working" @onclick="LoadNotificationsAsync"><ShellIcon Name="refresh" /></button></div>
-    <section class="gex-notification-push" aria-label="اعلان این دستگاه">
-        <span class="gex-notification-push-icon"><ShellIcon Name="@(_pushState.Subscribed ? "check-circle" : "bell")" /></span>
-        <div><strong>@(_pushState.Subscribed ? "اعلان این دستگاه فعال است" : "خبرها را به‌موقع دریافت کنید")</strong><p>@PushDescription</p></div>
-        @if (_pushState.Supported && _pushConfiguration.Enabled && _pushState.Permission != "denied")
-        {
-            <div class="gex-notification-push-actions">
-                @if (_pushState.Subscribed)
-                {
-                    <button type="button" class="gex-notification-action" disabled="@_working" @onclick="TestPushAsync">تست اعلان</button>
-                    <button type="button" class="gex-notification-action gex-notification-action--quiet" disabled="@_working" @onclick="DisablePushAsync">غیرفعال‌سازی</button>
-                }
-                else
-                {
-                    <button type="button" class="gex-notification-action" disabled="@_working" @onclick="EnablePushAsync">فعال‌سازی</button>
-                }
-            </div>
-        }
-    </section>
-    @if (!string.IsNullOrEmpty(_pushFeedback)) { <p class="gex-notification-feedback" role="status">@_pushFeedback</p> }
-    <div class="gex-notification-list-toolbar"><span>آخرین اعلان‌ها</span><button type="button" class="gex-notification-action gex-notification-action--quiet" disabled="@(_working || _unreadCount == 0)" @onclick="HandleMarkAllAsRead"><ShellIcon Name="check-circle" />خواندن همه</button></div>
+    <header class="gex-notification-heading">
+        <div class="gex-notification-heading-title">
+            <span class="gex-notification-symbol"><ShellIcon Name="bell" /></span>
+            <h2 id="gex-notification-title">اعلان‌ها</h2>
+            @if (_unreadCount > 0)
+            {
+                <span class="gex-notification-unread-count" aria-label="@($"{_unreadCount} اعلان خوانده‌نشده")">@_unreadCount</span>
+            }
+        </div>
+        <div class="gex-notification-heading-actions">
+            @if (_unreadCount > 0)
+            {
+                <button type="button" class="gex-notification-mark-all" disabled="@_working" @onclick="HandleMarkAllAsRead">
+                    خواندن همه
+                </button>
+            }
+            <button type="button" class="gex-icon-button" data-notification-close aria-label="بستن اعلان‌ها" autofocus>
+                <ShellIcon Name="close" />
+            </button>
+        </div>
+    </header>
+
+    @if (_pushState.Supported && _pushConfiguration.Enabled && !_pushState.Subscribed && _pushState.Permission != "denied")
+    {
+        <div class="gex-notification-enable">
+            <span>اعلان روی دستگاه</span>
+            <button type="button" class="gex-notification-enable-button" disabled="@_working" @onclick="EnablePushAsync">
+                فعال‌سازی
+            </button>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_pushFeedback) && !_pushState.Subscribed)
+    {
+        <p class="gex-notification-feedback" role="status">@_pushFeedback</p>
+    }
+
     <NotificationList Items="_items" Busy="_working" OnDelete="HandleDelete" OnMarkAsRead="HandleMarkAsRead" OnButtonAction="HandleButtonAction" />
-    <footer class="gex-notification-footer"><ShellIcon Name="check-circle" /><span>اعلان‌ها فقط برای حساب و فروشگاه شما نمایش داده می‌شوند.</span></footer>
 </dialog>
 @if (ShowTrigger)
 {

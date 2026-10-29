@@ -10,32 +10,30 @@ function declaration(selector) {
   return css.slice(start+needle.length,css.indexOf('}',start));
 }
 function weight(selector,expected) {
-  const styles=declaration(selector);
-  assert.match(styles,new RegExp('font-weight:\\s*'+expected+'\\s*;'),selector+' must use weight '+expected);
+  assert.match(declaration(selector),new RegExp('font-weight:\\s*'+expected+'\\s*;'),selector+' weight '+expected);
 }
-test('notification typography has a restrained semantic 400/500/600 hierarchy',()=>{
+test('minimal notification drawer uses restrained 400/500/600 typography',()=>{
   weight('.gex-notification-heading h2',600);
-  weight('.gex-notification-summary strong, .gex-notification-push strong',500);
-  weight('.gex-notification-summary p, .gex-notification-push p',400);
+  weight('.gex-notification-mark-all',500);
+  weight('.gex-notification-enable',400);
+  weight('.gex-notification-enable-button',500);
   weight('.gex-notification-action',500);
   weight('.gex-notification-action--quiet',400);
   weight('.gex-notification-card h3',500);
-  weight('.gex-notification-card.is-read h3',400);
   weight('.gex-notification-card p',400);
   weight('.gex-notification-card time',400);
-  weight('.gex-notification-empty h3',500);
   weight('.gex-notification-empty p',400);
-  weight('.gex-notification-new',500);
-  weight('.gex-notification-list-toolbar',400);
+  weight('.gex-notification-unread-count',500);
 });
-test('notifications still distinguish unread and preserve theme contrast',()=>{
+test('unread colors and activation actions use theme primary contrast, not heavy fonts',()=>{
   assert.match(declaration('.gex-notification-card.is-unread'),/border-color:\s*rgba\(var\(--mud-palette-primary-rgb\)/);
   assert.match(declaration('.gex-notification-card.is-unread'),/background:\s*rgba\(var\(--mud-palette-primary-rgb\)/);
   assert.match(declaration('.gex-notification-action'),/color:\s*var\(--mud-palette-primary-text\)/);
+  assert.match(declaration('.gex-notification-enable-button'),/color:\s*var\(--mud-palette-primary-text\)/);
   assert.match(declaration('.gex-notification-heading h2'),/font-size:\s*19px/);
   assert.match(declaration('.gex-notification-card p'),/line-height:\s*1\.85/);
 });
-test('calculator tabs and context use standard weights instead of heavy bold',()=>{
+test('calculator tabs and context keep standard 400/500 typography',()=>{
   weight('.gex-calculator-tab',400);
   weight('.gex-calculator-tab.is-active',500);
   weight('.gex-calculator-context h2',500);

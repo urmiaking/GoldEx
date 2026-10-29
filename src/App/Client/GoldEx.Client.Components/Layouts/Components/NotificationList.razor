@@ -1,16 +1,19 @@
 @using GoldEx.Shared.Enums
 
-<section class="gex-notification-list" aria-label="فهرست اعلان‌ها" aria-live="polite" aria-busy="@Busy.ToString().ToLowerInvariant()">
+<section class="gex-notification-list" aria-label="اعلان‌های خوانده‌نشده" aria-live="polite" aria-busy="@Busy.ToString().ToLowerInvariant()">
     @if (Items.Count == 0)
     {
-        <div class="gex-notification-empty"><span><ShellIcon Name="check-circle" /></span><h3>همه‌چیز رو به راه است</h3><p>وقتی خبری باشد یا فاکتوری از سررسید بگذرد، اینجا به شما اطلاع می‌دهیم.</p></div>
+        <div class="gex-notification-empty">
+            <span><ShellIcon Name="check-circle" /></span>
+            <p>اعلان خوانده‌نشده‌ای ندارید.</p>
+        </div>
     }
     @foreach (var notification in Items)
     {
-        <article @key="notification.Id" class="gex-notification-card @(notification.IsRead ? "is-read" : "is-unread")">
+        <article @key="notification.Id" class="gex-notification-card is-unread">
             <span class="gex-notification-card-icon"><ShellIcon Name="file" /></span>
             <div class="gex-notification-card-body">
-                <div class="gex-notification-card-heading"><h3>@notification.Title</h3>@if (!notification.IsRead) { <span class="gex-notification-new">جدید</span> }</div>
+                <div class="gex-notification-card-heading"><h3>@notification.Title</h3></div>
                 <time datetime="@notification.CreatedAt.ToString("O")">@notification.CreatedAt.ToString("yyyy/MM/dd · HH:mm")</time>
                 <p>@notification.Message</p>
                 <div class="gex-notification-card-actions">
@@ -18,10 +21,7 @@
                     {
                         <button type="button" class="gex-notification-action" disabled="@Busy" @onclick="() => OnButtonAction.InvokeAsync((button.Action, button.ActionType, notification.InvoiceId))"><ShellIcon Name="@(button.ActionType == ButtonActionType.SendReminderSms ? "mail" : "external")" />@button.Text</button>
                     }
-                    @if (!notification.IsRead)
-                    {
-                        <button type="button" class="gex-notification-action gex-notification-action--quiet" disabled="@Busy" @onclick="() => OnMarkAsRead.InvokeAsync(notification.Id)"><ShellIcon Name="check" />خواندم</button>
-                    }
+                    <button type="button" class="gex-notification-action gex-notification-action--quiet" disabled="@Busy" @onclick="() => OnMarkAsRead.InvokeAsync(notification.Id)"><ShellIcon Name="check" />خواندم</button>
                     <button type="button" class="gex-icon-button gex-notification-dismiss" disabled="@Busy" aria-label="حذف اعلان @notification.Title" @onclick="() => OnDelete.InvokeAsync(notification.Id)"><ShellIcon Name="trash" /></button>
                 </div>
             </div>

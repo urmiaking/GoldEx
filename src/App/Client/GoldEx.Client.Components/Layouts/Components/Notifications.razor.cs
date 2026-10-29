@@ -23,11 +23,6 @@ public partial class Notifications
     private PushConfigurationResponse _pushConfiguration = new(false, null);
     private PushState _pushState = new(false, "default", false, null);
     private string? _pushFeedback;
-    private string PushDescription => !_pushState.Supported ? "این مرورگر از اعلان دستگاه پشتیبانی نمی‌کند. در آیفون، برنامه را به صفحهٔ اصلی اضافه کنید و از آنجا باز کنید." :
-        !_pushConfiguration.Enabled ? "ارسال اعلان دستگاه هنوز آماده نیست؛ اعلان‌های داخل برنامه در دسترس‌اند." :
-        _pushState.Permission == "denied" ? "اجازهٔ اعلان بسته است. آن را از تنظیمات مرورگر برای این سایت فعال کنید." :
-        _pushState.Subscribed ? "یادآوری‌ها حتی وقتی صفحهٔ برنامه بسته باشد به این دستگاه می‌رسند." : "با اجازهٔ شما، سررسیدهای گذشته را روی همین دستگاه یادآوری می‌کنیم.";
-
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -75,7 +70,7 @@ public partial class Notifications
         {
         await SendRequestAsync<INotificationService, List<GetNotificationResponse>>((s, ct) => s.GetListAsync(null, ct), afterSend: result =>
         {
-            _items = result; _unreadCount = result.Count(x => !x.IsRead);
+            _items = result.Where(x => !x.IsRead).ToList(); _unreadCount = _items.Count;
         });
         await UnreadCountChanged.InvokeAsync(_unreadCount);
         }
@@ -111,32 +106,6 @@ public partial class Notifications
             }
         }
         catch (JSException) { _pushFeedback = "برقراری ارتباط با سرویس اعلان ممکن نشد. اتصال اینترنت و اجازهٔ اعلان مرورگر را بررسی کنید."; }
-        finally { _working = false; }
-    }
-    private async Task DisablePushAsync()
-    {
-        if (_module is null || _working || _loading) return;
-        _working = true;
-        try
-        {
-            if (_pushState.Endpoint is not null)
-                await SendRequestAsync<IPushNotificationService>((s, ct) => s.RevokeAsync(new(_pushState.Endpoint), ct));
-            await _module.InvokeVoidAsync("disable");
-            _pushState = await _module.InvokeAsync<PushState>("getState");
-            _pushFeedback = "اعلان این دستگاه غیرفعال شد.";
-        }
-        finally { _working = false; }
-    }
-    private async Task TestPushAsync()
-    {
-        if (_working || _loading || _pushState.Endpoint is null) return;
-        _working = true;
-        try
-        {
-            await SendRequestAsync<IPushNotificationService, PushTestResponse>((s, ct) => s.SendTestAsync(new(_pushState.Endpoint), ct), afterSend: result =>
-                _pushFeedback = result.Status == "Accepted" ? "سرویس اعلان، پیام آزمایشی را پذیرفت. دریافت آن را روی دستگاه بررسی کنید." :
-                    result.Status == "Pending" ? "پیام در صف ارسال است؛ پس از برقراری ارتباط دوباره تلاش می‌کنیم." : "ارسال اعلان انجام نشد؛ اعلان دستگاه را دوباره فعال کنید.");
-        }
         finally { _working = false; }
     }
     private async Task HandleButtonAction((string action, ButtonActionType actionType, Guid? invoiceId) item)
