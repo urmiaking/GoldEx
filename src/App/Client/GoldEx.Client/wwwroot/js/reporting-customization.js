@@ -14,8 +14,8 @@
         fullscreen: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
         zoomIn: '<circle cx="10.6" cy="10.6" r="7"/><path d="M10.6 7v7m-3.5-3.5h7M16 16l5 5"/>',
         zoomOut: '<circle cx="10.6" cy="10.6" r="7"/><path d="M7.1 10.6h7M16 16l5 5"/>',
-        previous: '<path d="m15 6-6 6 6 6"/>',
-        next: '<path d="m9 6 6 6-6 6"/>'
+        previous: '<path d="m9 6 6 6-6 6"/>',
+        next: '<path d="m15 6-6 6 6 6"/>'
     };
 
     function registerGlyphs() {
@@ -45,10 +45,66 @@
         }
     }
 
+    // DevExpress localization: keys are case-sensitive English UI strings.
+    const persianViewerMessages = {
+        "Whole Page": "تمام صفحه",
+        "Page Width": "عرض صفحه",
+        "Zoom": "بزرگ‌نمایی",
+        "Zoom In": "بزرگ‌نمایی",
+        "Zoom Out": "کوچک‌نمایی",
+        "First Page": "صفحه اول",
+        "Previous Page": "صفحه قبل",
+        "Next Page": "صفحه بعد",
+        "Last Page": "صفحه آخر",
+        "Page": "صفحه",
+        "Pages": "صفحه‌ها",
+        "of": "از",
+        "of ": "از ",
+        "Show All Pages": "نمایش تمام صفحه‌ها",
+        "Multiple Pages": "چندصفحه‌ای",
+        "Print": "چاپ",
+        "Print Page": "چاپ صفحه",
+        "Print Document": "چاپ سند",
+        "Print Preview": "پیش‌نمایش چاپ",
+        "Printing...": "در حال آماده‌سازی چاپ...",
+        "Export": "خروجی",
+        "Export To": "خروجی گرفتن",
+        "Export to": "خروجی گرفتن",
+        "Export Options": "تنظیمات خروجی",
+        "Export Document": "دریافت فایل",
+        "Download": "دریافت",
+        "Search": "جست‌وجو",
+        "Search result": "نتیجه جست‌وجو",
+        "Search Results": "نتایج جست‌وجو",
+        "Find": "یافتن",
+        "Find Next": "بعدی",
+        "Find Previous": "قبلی",
+        "Close": "بستن",
+        "Cancel": "انصراف",
+        "OK": "تأیید",
+        "Apply": "اعمال",
+        "Reset": "بازنشانی",
+        "Clear": "پاک کردن",
+        "Full Screen": "تمام‌صفحه",
+        "FullScreen": "تمام‌صفحه",
+        "Parameters": "پارامترها",
+        "Preview Parameters": "پارامترهای گزارش",
+        "Document Map": "فهرست سند",
+        "The document does not contain any pages.": "سند صفحه‌ای برای نمایش ندارد.",
+        "Waiting for parameter values...": "در انتظار انتخاب پارامترها...",
+        "Loading...": "در حال بارگذاری..."
+};
+
     window.reportingCustomization = {
         onBeforeRender: function (_sender, args) {
             if (!args || !args.reportPreview) return;
             args.reportPreview.zoom = window.innerWidth < 960 ? -1 : 0;
+        },
+        onCustomizeLocalization: function (sender, args) {
+            // Official DevExpress Reporting API; never mutate viewer DOM strings.
+            const localizer = sender && typeof sender.UpdateLocalization === "function"
+                ? sender : args && typeof args.UpdateLocalization === "function" ? args : null;
+            if (localizer) localizer.UpdateLocalization(persianViewerMessages);
         },
         onCustomizeMenuActions: function (_sender, args) {
             if (!args || typeof args.GetById !== "function") return;

@@ -80,3 +80,90 @@
   .gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
     :is(.dxrd-tab-item,.dxd-back-highlighted) { transition: none; }
 }
+
+
+/* #272 — keep all viewer toolbar commands on one line.
+   DevExpress uses a 64px toolbar, while its pager ships with its own
+   vertical padding. The previous 35px pager styling let it wrap below
+   the other commands. A single flex line and real horizontal overflow
+   prevents both desktop wrapping and mobile clipping. */
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper {
+    min-width: 0 !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    box-sizing: border-box;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gex-report-border) transparent;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 0;
+    min-width: max-content !important;
+    width: max-content !important;
+    height: 64px;
+    max-height: 64px;
+    box-sizing: border-box;
+    white-space: nowrap !important;
+    margin-inline: 0 !important;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar > .dxrd-toolbar-item {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar .dxrd-preview-pager.dxrd-toolbar-item {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    align-items: center !important;
+    justify-content: center;
+    vertical-align: middle;
+    min-height: 0;
+    height: 64px;
+    padding: 0 5px !important;
+    margin-inline: 2px;
+    white-space: nowrap;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar .dxrd-preview-pager .dxrd-preview-pager-selectbox {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    height: 34px !important;
+    min-height: 34px;
+    margin: 0;
+}
+@media (max-width: 959.98px) {
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+      .dxrd-toolbar-wrapper .dxrd-toolbar {
+        height: 64px;
+        padding-inline: 7px 18px;
+    }
+}
+
+/* DevExpress's own print-options dialog (not the OS print window)
+   opens with the subtle zoom/fade transition used elsewhere in GoldEx. */
+@keyframes gex-report-print-enter {
+    from { opacity: 0; transform: translateY(12px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dx-blazor-reporting .dxrd-print-dialog .dx-overlay-content,
+.dx-blazor-reporting .dxrd-print-dialog.dx-overlay-content,
+.dxrd-print-dialog.dx-overlay-wrapper .dx-overlay-content {
+    animation: gex-report-print-enter .25s cubic-bezier(.2,.8,.2,1) both;
+    transform-origin: center center;
+}
+@media (prefers-reduced-motion: reduce) {
+    .dx-blazor-reporting .dxrd-print-dialog .dx-overlay-content,
+    .dx-blazor-reporting .dxrd-print-dialog.dx-overlay-content,
+    .dxrd-print-dialog.dx-overlay-wrapper .dx-overlay-content {
+        animation: none;
+    }
+}
