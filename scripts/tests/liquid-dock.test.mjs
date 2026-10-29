@@ -129,10 +129,10 @@ test('one connected glass lobe smoothly follows hover across different native li
  const x=fixture();
  x.dock.fire('pointerover',{target:x.links[1]});
  assert.equal(x.dock.classList.contains('gex-dock-has-hover'),true);
- assert.equal(x.dock.style.getPropertyValue('--gex-lobe-top'),'112px');
- assert.equal(x.dock.style.getPropertyValue('--gex-lobe-width'),'220px');
+ const firstShape=x.glass.style.clipPath;
+ assert.notEqual(firstShape,'');
  x.dock.fire('pointerover',{target:x.links[2]});
- assert.equal(x.dock.style.getPropertyValue('--gex-lobe-top'),'164px');
+ assert.notEqual(x.glass.style.clipPath,firstShape);
  x.dock.fire('pointerout',{target:x.links[2]});
  assert.equal(x.dock.classList.contains('gex-dock-has-hover'),false);
  x.dock.fire('focusin',{target:x.links[3]});
@@ -196,7 +196,7 @@ test('desktop hover reshapes the actual one-piece dock glass and account covers 
  x.dock.fire('pointerover',{target:x.links[2]});
  const hover=x.glass.style.clipPath;
  assert.notEqual(hover,base);
- assert.match(hover,/L 36 [0-9]/);
+ assert.match(hover,/L [0-9]+ 213/);
  assert.match(css,/\.gex-dock-glass \{[\s\S]*?clip-path: inset/);
  assert.match(css,/transition: clip-path/);
  assert.match(css,/\.goldex-shell \.gex-liquid-dock \{[\s\S]*?background: transparent/);
@@ -204,12 +204,51 @@ test('desktop hover reshapes the actual one-piece dock glass and account covers 
  const avatar={getBoundingClientRect:()=>({top:715}),matches:()=>false,closest(selector){return selector==='.gex-sidebar-identity'?{className:'gex-sidebar-identity'}:this;}};
  x.dock.fire('pointerover',{target:avatar});
  assert.equal(x.dock.classList.contains('gex-dock-is-account'),true);
- assert.match(x.glass.style.clipPath,/H 49 Q 18 740 18 709 V 709 C 18 709 18 709 18 709 L 18 709/);
+ assert.match(x.glass.style.clipPath,/H 145 Q 114 740 114 709 V 709 C 114 709 114 709 114 709 L 114 709/);
  assert.notEqual(x.glass.style.clipPath,hover);
  assert.match(css,/\.gex-liquid-dock\.gex-dock-is-account \.gex-dock-glass/);
  assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?background: transparent !important/);
  x.dock.fire('pointerout',{target:avatar});
  assert.equal(x.dock.classList.contains('gex-dock-is-account'),false);
  assert.match(x.glass.style.clipPath,/H 239 Q 208 740 208 709/);
+ x.binding.dispose();
+});
+test('real label width determines the rounded glass protrusion, not a fixed 220px',()=>{
+ const x=fixture();
+ const assigned=(l,label)=>{
+  l.querySelector=()=>({textContent:label});
+  l.style={values:new Map(),setProperty(k,v){this.values.set(k,v);}};
+ };
+ assigned(x.links[0],'خانه');
+ assigned(x.links[1],'مدیریت کاربران و تنظیمات');
+ x.binding.recalculate();
+ const short=Number.parseInt(x.links[0].style.values.get('--gex-item-expanded-width'));
+ const long=Number.parseInt(x.links[1].style.values.get('--gex-item-expanded-width'));
+ assert.ok(short >=108 && long>short && long<=245);
+ assert.match(css,/width: var\(--gex-item-expanded-width, 165px\)/);
+ assert.match(css,/\.gex-liquid-dock \.gex-navigation-menu > a > span \{\s*min-width: 0/);
+ x.dock.fire('pointerover',{target:x.links[0]});
+ const shortContour=x.glass.style.clipPath;
+ x.dock.fire('pointerover',{target:x.links[1]});
+ assert.notEqual(x.glass.style.clipPath,shortContour);
+ x.binding.dispose();
+});
+test('primary gold invoice action never expands shared glass; profile does not reach More',()=>{
+ const x=fixture();
+ const base=x.glass.style.clipPath;
+ const create={getBoundingClientRect:()=>({top:72}),matches:s=>s==='.gex-sidebar-create',closest:()=>null,querySelector:()=>({textContent:'فاکتور جدید'})};
+ x.dock.fire('pointerover',{target:create});
+ assert.equal(x.glass.style.clipPath,base);
+ assert.match(css,/\.gex-liquid-dock \.gex-sidebar-create:is\(:hover,:focus-visible\) \{[\s\S]*?background: var\(--mud-palette-primary\)/);
+ const identity={getBoundingClientRect:()=>({top:739}),querySelector:()=>({querySelector:()=>({textContent:'خروج از حساب'})})};
+ const avatar={getBoundingClientRect:()=>({top:738}),matches:()=>false,closest:s=>s==='.gex-sidebar-identity'?identity:avatar};
+ x.dock.fire('pointerover',{target:avatar});
+ const shape=x.glass.style.clipPath;
+ assert.equal(x.dock.classList.contains('gex-dock-is-account'),true);
+ // Account cap starts at most 2*13px above the actual bottom avatar row,
+ // so it cannot span the 3-dot More control ~100px above.
+ assert.match(shape,/Q [0-9]+ 680 [0-9]+ 680/);
+ assert.doesNotMatch(shape,/L [0-9]+ 635/);
+ assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?width: var\(--gex-item-expanded-width, 159px\)/);
  x.binding.dispose();
 });

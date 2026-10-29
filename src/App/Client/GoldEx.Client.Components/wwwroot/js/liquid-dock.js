@@ -5,31 +5,27 @@ function dockSilhouette(height, top, extent, bottomRow = false) {
     const B = 208, W = 272, R = 31;
     const reach = Math.max(0, Math.min(196, extent));
     const k = reach / 196, left = B - reach;
-    const nearEnd = bottomRow && reach > 0;
-    const yTop = Math.max(35, Math.min(H - 106, Math.round(top)));
-    const yBottom = yTop + 54;
-    const joinEnd = nearEnd ? H - R : yBottom + 24 * k;
-    const lowLip = nearEnd ? H - R : yBottom + 6 * k;
-    const lowerShoulder = nearEnd ? left : B - 58 * k;
-    const baseAtBottom = nearEnd ? left : B;
-    const round = 18 * k;
-    const lowerRound = nearEnd ? 0 : round;
-    const bottomControl = nearEnd ? joinEnd : joinEnd - 12 * k;
-    const shoulderControl = nearEnd ? left : lowerShoulder + 16 * k;
+    const account = bottomRow && reach > 0;
+    // The account must not clamp 106px above the Dock bottom: it would cover More.
+    const row = Math.max(34, Math.min(H - (account ? 52 : 58), Math.round(top)));
+    const upper = row + 1, lower = row + 49;
+    const shoulder = 13 * k, radius = Math.min(23, reach);
+    const baseLeft = account ? left : B;
+    const bottomJoin = account ? H - R : lower + shoulder;
     const d = [
-        'M ' + (B + R) + ' 0',
-        'H ' + (W - R) + ' Q ' + W + ' 0 ' + W + ' ' + R,
-        'V ' + (H - R) + ' Q ' + W + ' ' + H + ' ' + (W - R) + ' ' + H,
-        'H ' + (baseAtBottom + R) + ' Q ' + baseAtBottom + ' ' + H + ' ' + baseAtBottom + ' ' + (H - R),
-        'V ' + joinEnd,
-        'C ' + baseAtBottom + ' ' + bottomControl + ' ' + shoulderControl + ' ' + lowLip + ' ' + lowerShoulder + ' ' + lowLip,
-        'L ' + (left + lowerRound) + ' ' + lowLip,
-        'Q ' + left + ' ' + lowLip + ' ' + left + ' ' + (lowLip - 17*k),
-        'L ' + left + ' ' + (yTop + 13*k),
-        'Q ' + left + ' ' + (yTop - 7*k) + ' ' + (left + round) + ' ' + (yTop - 7*k),
-        'L ' + (B - 58*k) + ' ' + (yTop - 7*k),
-        'C ' + (B - 18*k) + ' ' + (yTop - 7*k) + ' ' + B + ' ' + (yTop - 13*k) + ' ' + B + ' ' + (yTop - 32*k),
-        'V ' + R + ' Q ' + B + ' 0 ' + (B + R) + ' 0 Z'
+        'M ' + (B+R) + ' 0',
+        'H ' + (W-R) + ' Q ' + W + ' 0 ' + W + ' ' + R,
+        'V ' + (H-R) + ' Q ' + W + ' ' + H + ' ' + (W-R) + ' ' + H,
+        'H ' + (baseLeft+R) + ' Q ' + baseLeft + ' ' + H + ' ' + baseLeft + ' ' + (H-R),
+        'V ' + bottomJoin,
+        'C ' + baseLeft + ' ' + bottomJoin + ' ' + (account ? left : B-2*shoulder) + ' ' + (account ? bottomJoin : lower) + ' ' + (account ? left : B-2*shoulder) + ' ' + (account ? bottomJoin : lower),
+        'L ' + (account ? left : left+radius) + ' ' + (account ? H-R : lower),
+        'Q ' + left + ' ' + (account ? H-R : lower) + ' ' + left + ' ' + (account ? H-R : lower-radius),
+        'L ' + left + ' ' + (upper+radius),
+        'Q ' + left + ' ' + upper + ' ' + (left+radius) + ' ' + upper,
+        'L ' + (B-2*shoulder) + ' ' + upper,
+        'C ' + (B-shoulder) + ' ' + upper + ' ' + B + ' ' + (upper-shoulder) + ' ' + B + ' ' + (upper-2*shoulder),
+        'V ' + R + ' Q ' + B + ' 0 ' + (B+R) + ' 0 Z'
     ].join(' ');
     return 'path("' + d + '")';
 }
@@ -63,19 +59,58 @@ export function bind(dock) {
     const positionTop = element => Math.round(
         element.getBoundingClientRect().top - dock.getBoundingClientRect().top
     );
+    const measureLabel = element => {
+        const target = element?.querySelector?.('.gex-signout-label')
+            || element?.querySelector?.('.gex-store-picker-copy strong')
+            || element?.querySelector?.('span');
+        if (!target) return 65;
+        // Range measures actual glyphs, ignoring the old 123px minimum label box.
+        const range = document.createRange?.();
+        if (range) {
+            range.selectNodeContents(target);
+            const width = range.getBoundingClientRect().width;
+            range.detach?.();
+            if (Number.isFinite(width) && width > 0) return width;
+        }
+        return Math.max(30, (target.textContent?.trim().length || 8) * 7.5);
+    };
+    const expandedWidth = (element, kind) => {
+        const glyphs = measureLabel(element);
+        const external = Boolean(element?.getAttribute?.('target') === '_blank');
+        const extra = kind === 'account' ? 69 : kind === 'store' ? 81 : 75;
+        return Math.round(Math.max(kind === 'account' ? 142 : 108,
+            Math.min(kind === 'store' ? 252 : 245, glyphs + extra + (external ? 20 : 0))));
+    };
+    const sizeActions = () => {
+        for (const anchor of allLinks()) {
+            anchor.style?.setProperty?.('--gex-item-expanded-width', expandedWidth(anchor, 'nav') + 'px');
+        }
+        const create = dock.querySelector('.gex-sidebar-create');
+        if (create) create.style.setProperty('--gex-item-expanded-width', expandedWidth(create, 'create') + 'px');
+        const store = dock.querySelector('.gex-store-picker-trigger');
+        if (store) store.style.setProperty('--gex-item-expanded-width', expandedWidth(store, 'store') + 'px');
+        const signout = dock.querySelector('.gex-signout');
+        if (signout) signout.style.setProperty('--gex-item-expanded-width', expandedWidth(signout, 'account') + 'px');
+    };
     const renderHull = (element = null) => {
         const height = dock.getBoundingClientRect().height || dock.offsetHeight || 760;
-        const isAccount = Boolean(element?.closest?.('.gex-sidebar-identity'));
+        const identity = element?.closest?.('.gex-sidebar-identity');
+        const isAccount = Boolean(identity);
         const isStore = Boolean(element?.matches?.('.gex-store-picker-trigger'));
         const isCreate = Boolean(element?.matches?.('.gex-sidebar-create'));
-        const width = isStore ? 260 : isAccount ? 238 : isCreate ? 207 : 220;
-        const rowTop = element ? positionTop(element) : lastHullTop;
+        // The gold New Invoice button expands by itself, not as part of the glass.
+        const shapeTarget = isCreate ? null : element;
+        const width = shapeTarget ? expandedWidth(
+            isAccount ? (identity?.querySelector?.('.gex-signout') || element) : element,
+            isAccount ? 'account' : isStore ? 'store' : 'nav'
+        ) : 0;
+        const measuredRow = identity?.getBoundingClientRect
+            ? positionTop(identity) : element ? positionTop(element) : lastHullTop;
+        const rowTop = Math.round(measuredRow);
         if (element) lastHullTop = rowTop;
-        dock.style.setProperty('--gex-lobe-top', rowTop + 'px');
-        dock.style.setProperty('--gex-lobe-width', width + 'px');
-        const reach = element && media.matches ? Math.min(196, width - 48) : 0;
+        const reach = shapeTarget && media.matches ? Math.min(196, width - 48) : 0;
         glass.style.clipPath = dockSilhouette(height, rowTop, reach, isAccount);
-        dock.classList.toggle('gex-dock-is-account', Boolean(element && isAccount));
+        dock.classList.toggle('gex-dock-is-account', Boolean(shapeTarget && isAccount));
     };
     const setLobe = element => {
         if (!media.matches || !element) {
@@ -121,6 +156,7 @@ export function bind(dock) {
             return;
         }
         if (!dock.classList.contains('gex-dock-has-hover')) renderHull();
+        sizeActions();
         const links = allLinks();
         const storePicker = viewport.querySelector('.gex-store-picker');
         const storeHeight = storePicker ? Math.ceil(storePicker.getBoundingClientRect().height + 9) : 0;
@@ -234,6 +270,8 @@ export function bind(dock) {
     });
     setOpen(false);
     queue();
+    // Web fonts can finish after the first Blazor render; measure their real glyph widths.
+    document.fonts?.ready?.then(queue);
 
     return {
         recalculate: refresh,

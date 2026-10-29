@@ -1159,3 +1159,38 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 @media (prefers-reduced-motion: reduce) {
     .gex-liquid-dock .gex-dock-glass { transition: none !important; }
 }
+
+
+/* #254: round short content-fit droplet, primary action stays GOLD, and
+   the account only expands at its own bottom row (never over the More dots). */
+@media (min-width: 960px) {
+    .gex-liquid-dock .gex-navigation-menu > a > span {
+        min-width: 0;
+        width: auto;
+        max-width: 170px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    .gex-liquid-dock .gex-navigation-menu > a:is(:hover,:focus-visible) {
+        width: var(--gex-item-expanded-width, 165px);
+        border-radius: 999px;
+    }
+    .gex-liquid-dock .gex-sidebar-create span { min-width: 0; width: auto; }
+    .gex-liquid-dock .gex-sidebar-create:is(:hover,:focus-visible) {
+        width: var(--gex-item-expanded-width, 158px);
+        color: var(--mud-palette-primary-text);
+        background: var(--mud-palette-primary);
+        border-radius: 999px;
+        box-shadow: inset 0 1px 1px rgba(255,255,255,.26),
+                    0 5px 17px rgba(var(--mud-palette-primary-rgb),.23);
+        transform: none;
+    }
+    .gex-liquid-dock .gex-store-picker-trigger:is(:hover,:focus-visible,[aria-expanded="true"]) {
+        width: var(--gex-item-expanded-width, 210px);
+    }
+    .gex-liquid-dock .gex-signout,
+    .gex-liquid-dock .gex-signout:hover {
+        width: var(--gex-item-expanded-width, 159px);
+        max-width: 196px;
+    }
+}
