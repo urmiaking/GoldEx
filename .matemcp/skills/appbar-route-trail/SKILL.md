@@ -25,3 +25,6 @@ Use for desktop navigation/header work in GoldEx. Read root `AGENTS.md` before c
 - Manual Release Notes now belong to authenticated NavMenu via ReleaseNotesMenuItem, including desktop More overflow. The Home page retains the automatic new-version modal but no manual button.
 ## Correction after #258: SVG chevron, not text arrow (#259)
 - In custom RouteBreadcrumbs the separator is ShellIcon Name="chevron-left", using existing left-pointing SVG geometry. Do not use a plain Unicode arrow or mirrored bracket. CSS controls its size/direction without flipping SVG. Existing mobile MudBreadcrumbs remain unchanged.
+## Mobile navigation revision (#263, supersedes old mobile-breadcrumb policy)
+- Mobile <960px now displays a second RouteBreadcrumbs in .gex-mobile-route-bar underneath the fixed AppBar, aligned with page body; the existing page-local MudBreadcrumbs in mobile page markup are visually hidden. Include 46px in --gex-content-offset. Desktop AppBar still owns its original breadcrumb.
+- The mobile wordmark is globally centered with absolute left:50%/translate(-50%), while hamburger right, dark mode, notification and Settings left remain interactive. Keep a small shrink breakpoint <=399px and Help route in mobile NavMenu; never sacrifice actions for the logo.

@@ -1,0 +1,54 @@
+@using GoldEx.Client.Components.Services
+@using GoldEx.Shared.Enums
+@inherits ComponentBase
+@implements IDisposable
+@inject LicenseState LicenseState
+
+@if (LicenseState.Current is { } license)
+{
+    <a class="gex-license-ribbon @(IsExpired ? "is-expired" : "is-active")"
+       href="@LicenseLink" aria-label="@StatusTitle">
+        <span class="gex-license-ribbon-head">
+            <ShellIcon Name="@(IsExpired ? "warning" : "check-circle")" />
+            <span>@StatusTitle</span>
+        </span>
+        @if (!IsExpired && license.Plan != LicensePlan.Unregistered)
+        {
+            <span class="gex-license-progress-track" aria-hidden="true">
+                <span class="gex-license-progress-fill" style="@($"width: {Progress:0.#}%")"></span>
+            </span>
+        }
+        <span class="gex-license-ribbon-caption">
+            @(IsExpired ? "برای ادامه، وضعیت لایسنس را بررسی کنید" : "اعتبار لایسنس فعال")
+        </span>
+    </a>
+}
+
+@code {
+    private int DaysLeft => LicenseState.Current is { } license
+        ? Math.Max(0, (int)Math.Ceiling((license.ExpireDate.Date - DateTime.Now.Date).TotalDays))
+        : 0;
+
+    private bool IsExpired => LicenseState.Current is { } license &&
+        (license.Plan == LicensePlan.Unregistered || DaysLeft == 0);
+
+    private string StatusTitle => LicenseState.Current?.Plan switch
+    {
+        LicensePlan.Unregistered => "لایسنس فعال نشده",
+        LicensePlan.Trial when DaysLeft > 0 => $"{DaysLeft} روز تا پایان دوره آزمایشی",
+        LicensePlan.Regular when DaysLeft > 0 => $"{DaysLeft} روز تا پایان لایسنس",
+        _ => "اعتبار لایسنس به پایان رسیده"
+    };
+
+    private string LicenseLink => LicenseState.Current?.Plan == LicensePlan.Regular
+        ? ClientRoutes.RegisterProduct.Extend
+        : ClientRoutes.RegisterProduct.Upgrade;
+
+    private double Progress => LicenseState.Current?.Plan == LicensePlan.Trial
+        ? Math.Clamp(DaysLeft * 100d / 30d, 0d, 100d)
+        : Math.Clamp(DaysLeft * 100d / 365d, 0d, 100d);
+
+    protected override void OnInitialized() => LicenseState.OnChange += OnLicenseChanged;
+    private void OnLicenseChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => LicenseState.OnChange -= OnLicenseChanged;
+}

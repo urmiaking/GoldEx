@@ -2,7 +2,7 @@
     <button type="button" class="gex-icon-button gex-menu-toggle" aria-label="باز کردن منوی اصلی" aria-controls="gex-navigation"
             aria-expanded="@DrawerOpen.ToString().ToLowerInvariant()" @onclick="() => DrawerOpenChanged.InvokeAsync(!DrawerOpen)"><ShellIcon Name="menu" /></button>
     <div class="gex-desktop-brand"><ShellBrand Compact="true" /></div>
-    <div class="gex-mobile-brand"><ShellBrand Compact="true" /></div>
+    <div class="gex-mobile-brand"><ShellBrand /></div>
     <RouteBreadcrumbs />
     <div class="gex-topbar-actions">
         <AppearanceControls ModeOnly="true" />
@@ -17,6 +17,7 @@
     </div>
     <div class="gex-topbar-date"><Clock /></div>
 </header>
+<div class="gex-mobile-route-bar"><RouteBreadcrumbs /></div>
 
 @code {
     [Parameter] public bool DrawerOpen { get; set; }
