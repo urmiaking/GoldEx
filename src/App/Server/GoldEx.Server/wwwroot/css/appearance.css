@@ -1320,3 +1320,77 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 @media (min-width: 960px) { .gex-route-trail-list { animation: gex-route-arrive .26s cubic-bezier(.22,1,.36,1) both; } }
 @keyframes gex-route-arrive { from { opacity: .2; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .gex-route-trail-list { animation: none; } }
+
+
+/* #258: Symmetric AppBar/Dock spacing and a single native release-notes item. */
+@media (min-width: 960px) {
+    .goldex-shell { --gex-content-gap: 26px; }
+}
+.gex-navigation-menu > button.gex-nav-release {
+    position: relative; display: flex; align-items: center; gap: 11px;
+    width: 100%; min-height: 46px; padding: 11px 13px;
+    border: 0; border-radius: 12px;
+    background: transparent; color: var(--mud-palette-text-primary);
+    font: inherit; font-size: 13px; font-weight: 500; line-height: normal;
+    white-space: nowrap; cursor: pointer; text-align: start;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+.gex-navigation-menu > button.gex-nav-release:hover {
+    background: rgba(var(--mud-palette-primary-rgb),.08);
+}
+.gex-navigation-menu > button.gex-nav-release:disabled { opacity: .55; cursor: wait; }
+.gex-navigation-menu > button.gex-nav-release .gex-shell-icon {
+    flex: none; width: 21px; height: 21px;
+}
+@media (min-width: 960px) {
+    .gex-liquid-dock .gex-navigation-menu > button.gex-nav-release {
+        z-index: 3; flex: none; justify-content: flex-start;
+        width: 48px; height: 48px; min-height: 48px;
+        padding: 12px 13px; gap: 13px;
+        border-radius: 999px; border: 1px solid transparent;
+        overflow: hidden;
+        transition: width .47s cubic-bezier(.17,.88,.19,1.14), color .22s ease;
+    }
+    .gex-liquid-dock .gex-navigation-menu > button.gex-nav-release > span {
+        flex: none; min-width: 0; width: auto;
+        opacity: 0; transform: translateX(8px);
+        transition: opacity .16s ease, transform .3s cubic-bezier(.18,.8,.2,1);
+    }
+    .gex-liquid-dock .gex-navigation-menu > button.gex-nav-release:is(:hover,:focus-visible) {
+        width: var(--gex-item-expanded-width, 165px);
+        background: transparent; border-color: transparent;
+    }
+    .gex-liquid-dock .gex-navigation-menu > button.gex-nav-release:is(:hover,:focus-visible) > span {
+        opacity: 1; transform: none;
+    }
+    /* Keep logout icon and text within the account-only expanded glass contour.
+       The glass hull gets 44px extra room to cover this pill's curved cap. */
+    .goldex-shell .gex-liquid-dock .gex-signout,
+    .goldex-shell .gex-liquid-dock .gex-signout:hover {
+        inset-inline-start: calc(100% - 12px);
+        inset-block-end: 3px;
+        width: min(var(--gex-item-expanded-width, 159px), 174px);
+        height: 44px;
+        padding-inline: 11px;
+        gap: 8px;
+        overflow: hidden;
+        border-radius: 16px;
+        box-shadow: none;
+        background: transparent !important;
+    }
+    .gex-liquid-dock .gex-dock-overflow-links > button.gex-nav-release {
+        display: flex; align-items: center; gap: 10px; width: 100%;
+        padding: 10px 12px; background: transparent; border: 0;
+        border-radius: 10px; color: var(--mud-palette-text-primary);
+        text-align: start; font: inherit; cursor: pointer;
+    }
+    .gex-liquid-dock .gex-dock-overflow-links > button.gex-nav-release:hover {
+        background: rgba(var(--mud-palette-primary-rgb),.08);
+    }
+    .gex-liquid-dock .gex-dock-overflow-links > button.gex-nav-release .gex-shell-icon {
+        width: 20px; height: 20px;
+    }
+}
+.gex-route-trail-separator { direction: ltr; unicode-bidi: isolate; }
+
+@media (min-width: 960px) { .gex-home-breadcrumb { display: none !important; } }

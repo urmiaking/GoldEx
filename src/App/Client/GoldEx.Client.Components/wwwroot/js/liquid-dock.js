@@ -44,11 +44,11 @@ export function bind(dock) {
     const drop = dock.querySelector('.gex-dock-active-drop');
     const glass = dock.querySelector('.gex-dock-glass');
     let lastHullTop = 120;
-    const hoverSelector = '.gex-navigation-menu > a, .gex-sidebar-create, .gex-store-picker-trigger, .gex-identity-link, .gex-signout';
+    const hoverSelector = '.gex-navigation-menu > a, .gex-navigation-menu > button.gex-nav-release, .gex-sidebar-create, .gex-store-picker-trigger, .gex-identity-link, .gex-signout';
     let disposed = false, scheduled = 0, open = false;
     let selected = null, pendingSelection = null;
 
-    const allLinks = () => [...navigation.querySelectorAll(':scope > a[href]')];
+    const allLinks = () => [...navigation.querySelectorAll(':scope > a[href], :scope > button.gex-nav-release')];
     const setOpen = value => {
         open = Boolean(value && media.matches);
         more.classList.toggle('is-open', open);
@@ -112,7 +112,9 @@ export function bind(dock) {
             ? positionTop(identity) : element ? positionTop(element) : lastHullTop;
         const rowTop = Math.round(shapeTarget ? measuredRow : lastHullTop);
         if (shapeTarget) lastHullTop = rowTop;
-        const reach = shapeTarget && media.matches ? Math.min(196, width - 48) : 0;
+        // Add room for the account pill's curved left cap: its label and hit
+        // target must remain INSIDE the shared glass rather than hanging out.
+        const reach = shapeTarget && media.matches ? Math.min(196, width - 48 + (isAccount ? 44 : 0)) : 0;
         glass.style.clipPath = dockSilhouette(height, rowTop, reach, isAccount);
         dock.classList.toggle('gex-dock-is-account', Boolean(shapeTarget && isAccount));
     };

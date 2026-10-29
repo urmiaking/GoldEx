@@ -5,22 +5,23 @@ import { bind } from '../../src/App/Client/GoldEx.Client.Components/wwwroot/js/n
 function environment(mobile = true, paletteOpen = false) {
     const listeners = new Map(), attributes = new Map(), classes = new Set();
     const background = [{ inert: false }, { inert: true }];
-    let paletteClosed = false;
+    let paletteClosed = false, storeOpen = false, storeCloseCount = 0;
     const palette = { hidePopover() { paletteClosed = true; } };
     const media = { matches: mobile, addEventListener: (_, fn) => listeners.set('resize', fn), removeEventListener: () => listeners.delete('resize') };
     globalThis.matchMedia = () => media;
-    globalThis.document = { documentElement: { classList: { add: key => classes.add(key), remove: key => classes.delete(key) } } };
+    globalThis.document = { documentElement: { classList: { add: key => classes.add(key), remove: key => classes.delete(key) } }, addEventListener: (key, fn) => listeners.set('document:'+key, fn), removeEventListener: key => listeners.delete('document:'+key) };
     const control = () => ({ isConnected: true, getClientRects: () => [1], closest: () => null, focus() { document.activeElement = this; } });
     const trigger = control(), first = control(), last = control();
+    const storeTrigger = { disabled:false, click() { storeOpen=false; storeCloseCount++; } };
     document.activeElement = trigger;
     const panel = {
         closest: () => ({ querySelectorAll: selector => selector === '.gex-palette-sheet:popover-open' ? (paletteOpen ? [palette] : []) : background }),
-        querySelectorAll: () => [first, last], contains: element => [first, last].includes(element),
+        querySelectorAll: () => [first, last], querySelector: selector => selector === '.gex-store-picker-trigger[aria-expanded="true"]' && storeOpen ? storeTrigger : null, contains: element => [first, last].includes(element),
         setAttribute: (key, value) => attributes.set(key, value), removeAttribute: key => attributes.delete(key),
         addEventListener: (_, fn) => listeners.set('keydown', fn), removeEventListener: () => listeners.delete('keydown'),
         focus() { document.activeElement = this; }
     };
-    return { menu: bind(panel), media, listeners, background, classes, attributes, trigger, first, last, paletteClosed: () => paletteClosed };
+    return { menu: bind(panel), media, listeners, background, classes, attributes, trigger, first, last, paletteClosed: () => paletteClosed, setStoreOpen: value => { storeOpen = value; }, storeCloseCount: () => storeCloseCount };
 }
 
 test('mobile menu contains focus and restores each background element’s original inert state', () => {
@@ -83,4 +84,25 @@ test('opening navigation closes an already open top-layer palette before locking
     assert.equal(e.paletteClosed(), true);
     assert.equal(document.activeElement, e.first);
     e.menu.dispose();
+});
+
+
+test('store switcher dismisses on outside pointerdown but not inside, on desktop and mobile', () => {
+    for (const mobile of [true, false]) {
+        const e = environment(mobile);
+        e.setStoreOpen(true);
+        e.listeners.get('document:pointerdown')({type:'pointerdown',target:{closest: selector => selector === '.gex-store-picker' ? {} : null}});
+        assert.equal(e.storeCloseCount(),0);
+        e.listeners.get('document:pointerdown')({type:'pointerdown',target:{closest: () => null}});
+        assert.equal(e.storeCloseCount(),1);
+        e.setStoreOpen(true);
+        e.listeners.get('document:keydown')({type:'keydown',key:'Escape'});
+        assert.equal(e.storeCloseCount(),2);
+        e.setStoreOpen(true);
+        e.listeners.get('document:keydown')({type:'keydown',key:'Enter'});
+        assert.equal(e.storeCloseCount(),2);
+        e.menu.dispose();
+        assert.equal(e.listeners.has('document:pointerdown'),false);
+        assert.equal(e.listeners.has('document:keydown'),false);
+    }
 });

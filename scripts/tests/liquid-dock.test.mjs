@@ -204,7 +204,9 @@ test('desktop hover reshapes the actual one-piece dock glass and account covers 
  const avatar={getBoundingClientRect:()=>({top:715}),matches:()=>false,closest(selector){return selector==='.gex-sidebar-identity'?{className:'gex-sidebar-identity'}:this;}};
  x.dock.fire('pointerover',{target:avatar});
  assert.equal(x.dock.classList.contains('gex-dock-is-account'),true);
- assert.match(x.glass.style.clipPath,/H 145 Q 114 740 114 709 V 709 C 114 709 114 709 114 709 L 114 709/);
+ const bottomShape=x.glass.style.clipPath.match(/H \d+ Q (\d+) 740 \1 709 V 709 C \1 709 \1 709 \1 709 L \1 709/);
+ assert.ok(bottomShape, "single continuous bottom glass contour");
+ assert.ok(Number(bottomShape[1]) < 100, "account glass must extend past the signout pill left edge");
  assert.notEqual(x.glass.style.clipPath,hover);
  assert.match(css,/\.gex-liquid-dock\.gex-dock-is-account \.gex-dock-glass/);
  assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?background: transparent !important/);

@@ -1,0 +1,49 @@
+@using GoldEx.Client.Abstractions.Common
+@using GoldEx.Shared.DTOs.AppReleases
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Client.Components.Components
+@using GoldEx.Client.Components.Utilities
+@inherits GoldExComponentBase
+@inject IVersionReleaseStore ReleaseStore
+
+<button type="button" class="gex-nav-release" @onclick="OpenReleaseNotesAsync" disabled="@_loading" aria-label="تغییرات برنامه">
+    <ShellIcon Name="info" />
+    <span>تغییرات برنامه</span>
+</button>
+
+@code {
+    private bool _loading;
+
+    private async Task OpenReleaseNotesAsync()
+    {
+        if (_loading) return;
+        _loading = true;
+        try
+        {
+            var releases = await SendRequestAsync<IAppReleaseService, List<AppReleaseResponse>>(
+                (service, token) => service.GetListAsync(token), createScope: true);
+            if (releases is null || releases.Count == 0) return;
+
+            var ordered = releases.OrderByDescending(r =>
+                Version.TryParse(r.Version, out var version) ? version : new Version(0, 0)).ToList();
+            string? lastSeen;
+            try { lastSeen = await ReleaseStore.GetLastSeenVersionAsync(); }
+            catch { lastSeen = null; }
+
+            var parameters = new DialogParameters<ReleaseHistory>
+            {
+                { x => x.AllReleases, ordered },
+                { x => x.Current, ordered[0] },
+                { x => x.LastSeenVersion, lastSeen }
+            };
+            await DialogService.ShowAsync<ReleaseHistory>("تغییرات برنامه", parameters,
+                new DialogOptions
+                {
+                    FullWidth = true, MaxWidth = MaxWidth.Medium,
+                    FullScreen = false, CloseButton = true,
+                    BackgroundClass = "glassy-dialog-backdrop"
+                });
+        }
+        finally { _loading = false; }
+    }
+}

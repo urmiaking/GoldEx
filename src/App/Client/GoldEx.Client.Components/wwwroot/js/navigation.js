@@ -44,6 +44,18 @@ export function bind(panel) {
             event.preventDefault(); first.focus();
         }
     };
+    // Dismiss the live Blazor store picker on click-away and Escape, on
+    // desktop AND mobile. Clicking the original trigger preserves all
+    // existing Blazor state/animation and prevents a JS/Blazor state split.
+    const dismissStore = event => {
+        const trigger = panel.querySelector('.gex-store-picker-trigger[aria-expanded="true"]');
+        if (!trigger || trigger.disabled) return;
+        if (event.type === 'pointerdown' && event.target.closest?.('.gex-store-picker')) return;
+        if (event.type === 'keydown' && event.key !== 'Escape') return;
+        trigger.click();
+    };
+    document.addEventListener('pointerdown', dismissStore, true);
+    document.addEventListener('keydown', dismissStore);
     panel.addEventListener('keydown', keydown);
     mobile.addEventListener('change', sync);
     return {
@@ -51,6 +63,8 @@ export function bind(panel) {
         dispose() {
             modal = expanded = false;
             release();
+            document.removeEventListener('pointerdown', dismissStore, true);
+            document.removeEventListener('keydown', dismissStore);
             panel.removeEventListener('keydown', keydown);
             mobile.removeEventListener('change', sync);
         }

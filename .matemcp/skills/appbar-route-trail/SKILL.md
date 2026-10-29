@@ -19,3 +19,7 @@ Use for desktop navigation/header work in GoldEx. Read root `AGENTS.md` before c
 5. Preserve mobile drawer, mobile bottom bar, responsive brand, user permissions, notifications, active store and custom domain shell. Do not change page headers/titles, only relocate the desktop route navigation.
 6. Tests: `node --test scripts/tests/appbar-route-trail.test.mjs`, full `scripts/tests/*.test.mjs`, `git diff --check`; `GoldEx.Client.Components.csproj --no-restore` was compiled successfully. CSS changes after #256 required scoping the old `liquid-dock.test.mjs` #256 CSS assertion to the #256 block (not all subsequently appended CSS).
 7. GitHub issue #257, user-facing enterprise release 1.0.105. No push/deploy without authorization.
+
+## RTL and body gap correction (#258)
+- The custom desktop route separator uses U+2190 left arrow plus direction:ltr;unicode-bidi:isolate. Old left-angle bracket mirrored backward in RTL. The desktop content gap is 26px to match Dock-to-AppBar 26px; mobile remains 12px.
+- Manual Release Notes now belong to authenticated NavMenu via ReleaseNotesMenuItem, including desktop More overflow. The Home page retains the automatic new-version modal but no manual button.
