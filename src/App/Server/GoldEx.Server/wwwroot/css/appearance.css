@@ -1194,3 +1194,14 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
         max-width: 196px;
     }
 }
+
+/* #255: In non-Gold palettes the active icon remains white on the moving
+   primary droplet, but the expanded label sits over the translucent glass.
+   Give ONLY that label the proper theme-aware surface foreground. Gold keeps
+   its existing filled active-hover treatment. */
+@media (min-width: 960px) {
+    html:not([data-gex-palette="Gold"]) .goldex-shell
+    .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) > span {
+        color: var(--mud-palette-text-primary);
+    }
+}

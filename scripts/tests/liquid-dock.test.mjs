@@ -252,3 +252,15 @@ test('primary gold invoice action never expands shared glass; profile does not r
  assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?width: var\(--gex-item-expanded-width, 159px\)/);
  x.binding.dispose();
 });
+test('non-Gold selected hover and keyboard-focus labels stay readable over translucent glass',()=>{
+ const start=css.indexOf('/* #255: In non-Gold palettes');
+ assert.ok(start>0, 'theme-aware active-label rule must exist');
+ const rule=css.slice(start);
+ assert.match(rule,/@media \(min-width: 960px\)/);
+ assert.match(rule,/html:not\(\[data-gex-palette="Gold"\]\) \.goldex-shell\s+\.gex-liquid-dock \.gex-navigation-menu > a\.active:is\(:hover,:focus-visible\) > span\s*\{\s*color: var\(--mud-palette-text-primary\);/);
+ // Never recolor the active icon: it must stay on top of the moving primary dot.
+ assert.doesNotMatch(rule,/\.gex-shell-icon/);
+ assert.match(css,/\.gex-dock-active-drop \{[\s\S]*?background: var\(--mud-palette-primary\)/);
+ // Gold intentionally retains its opaque saturated selection and white label.
+ assert.match(css,/html\[data-gex-palette="Gold"\]:not\(\[data-gex-mode="dark"\]\) \.goldex-shell :is\([\s\S]*?\.gex-navigation-menu a\.active,[\s\S]*?background-color: #996500;\s*color: #FFFFFF;/);
+});
