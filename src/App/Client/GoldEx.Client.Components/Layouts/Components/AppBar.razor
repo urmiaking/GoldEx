@@ -1,6 +1,7 @@
 <header class="gex-topbar">
     <button type="button" class="gex-icon-button gex-menu-toggle" aria-label="باز کردن منوی اصلی" aria-controls="gex-navigation"
             aria-expanded="@DrawerOpen.ToString().ToLowerInvariant()" @onclick="() => DrawerOpenChanged.InvokeAsync(!DrawerOpen)"><ShellIcon Name="menu" /></button>
+    <div class="gex-desktop-brand"><ShellBrand Compact="true" /></div>
     <div class="gex-mobile-brand"><ShellBrand Compact="true" /></div>
     <div class="gex-topbar-date"><Clock /></div>
     <div class="gex-topbar-actions">

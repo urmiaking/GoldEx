@@ -5,14 +5,24 @@
 {
     <button type="button" class="gex-menu-scrim" tabindex="-1" aria-label="بستن منوی اصلی" @onclick="CloseAsync"></button>
 }
-<aside id="gex-navigation" @ref="_panel" class="gex-sidebar @(IsDrawerOpen ? "mobile-open" : null)" aria-label="ناوبری اصلی" tabindex="-1" @onkeydown="HandleKeyDown">
+<aside id="gex-navigation" @ref="_panel" class="gex-sidebar gex-liquid-dock @(IsDrawerOpen ? "mobile-open" : null)" aria-label="ناوبری اصلی" tabindex="-1" @onkeydown="HandleKeyDown">
     <button type="button" class="gex-icon-button gex-menu-close" aria-label="بستن منو" @onclick="CloseAsync"><ShellIcon Name="close" /></button>
     <ShellBrand />
     <AuthorizeView>
         <a class="gex-sidebar-create" href="@ClientRoutes.Invoices.Create" @onclick="CloseAsync"><ShellIcon Name="plus" /><span>فاکتور جدید</span></a>
     </AuthorizeView>
     <div class="gex-menu-scroll"><NavMenu OnNavigate="HandleNavigate" /></div>
-    <div class="gex-sidebar-license"><AuthorizeView><LicenseStatusBanner /></AuthorizeView></div>
+    <div class="gex-dock-more">
+        <button type="button" class="gex-dock-more-trigger" aria-label="نمایش سایر بخش‌ها و اطلاعات سامانه"
+                aria-controls="gex-dock-overflow" aria-haspopup="true" aria-expanded="false" title="بیشتر">
+            <ShellIcon Name="more" />
+        </button>
+        <div id="gex-dock-overflow" class="gex-dock-overflow-panel">
+            <p class="gex-dock-overflow-heading">سایر بخش‌ها</p>
+            <nav class="gex-dock-overflow-links" aria-label="بخش‌های بیشتر"></nav>
+            <div class="gex-sidebar-license"><AuthorizeView><LicenseStatusBanner /></AuthorizeView></div>
+        </div>
+    </div>
     <ShellIdentity />
 </aside>
 
@@ -20,7 +30,7 @@
     [Parameter] public bool IsDrawerOpen { get; set; }
     [Parameter] public EventCallback<bool> IsDrawerOpenChanged { get; set; }
     private ElementReference _panel;
-    private IJSObjectReference? _module, _menu;
+    private IJSObjectReference? _module, _menu, _dockModule, _dockBinding;
     private bool? _lastSyncedOpen;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -28,6 +38,8 @@
         {
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/navigation.js");
             _menu = await _module.InvokeAsync<IJSObjectReference>("bind", _panel);
+            _dockModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/liquid-dock.js");
+            _dockBinding = await _dockModule.InvokeAsync<IJSObjectReference>("bind", _panel);
         }
         // Notifications and other layout updates should not resync an unchanged drawer.
         if (_menu is not null && _lastSyncedOpen != IsDrawerOpen)
@@ -52,6 +64,8 @@
     {
         try
         {
+            if (_dockBinding is not null) { await _dockBinding.InvokeVoidAsync("dispose"); await _dockBinding.DisposeAsync(); }
+            if (_dockModule is not null) await _dockModule.DisposeAsync();
             if (_menu is not null) { await _menu.InvokeVoidAsync("dispose"); await _menu.DisposeAsync(); }
             if (_module is not null) await _module.DisposeAsync();
         }
