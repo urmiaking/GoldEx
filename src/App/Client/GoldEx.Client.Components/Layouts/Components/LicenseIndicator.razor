@@ -1,0 +1,13 @@
+@* Desktop AppBar license affordance. The existing live LicenseState ribbon
+   is shared with the compact mobile footer, so expiry details stay current. *@
+<div class="gex-license-indicator">
+    <button type="button" class="gex-icon-button gex-license-trigger"
+            aria-label="وضعیت لایسنس" aria-describedby="gex-license-details"
+            title="وضعیت لایسنس">
+        <ShellIcon Name="key" />
+        <span class="gex-license-indicator-dot" aria-hidden="true"></span>
+    </button>
+    <div id="gex-license-details" class="gex-license-details">
+        <DesktopLicenseRibbon />
+    </div>
+</div>

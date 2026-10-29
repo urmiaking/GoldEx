@@ -1494,139 +1494,99 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 }
 
 
-/* #264: Desktop-first premium workspace; restore pre-#263 mobile markup/styles. */
-.gex-desktop-route-bar, .gex-desktop-profile-license { display: none; }
 
-@media (min-width: 960px) {
-    /* Branding sits at the physical center, independently of the action and clock groups. */
-    .goldex-shell .gex-topbar { isolation: isolate; }
-    .goldex-shell .gex-desktop-brand {
-        position: absolute; z-index: 1;
-        left: 50%; top: calc(50% + env(safe-area-inset-top, 0px) / 2);
-        transform: translate(-50%, -50%);
-        margin: 0; max-width: min(190px, 21vw);
-    }
-    .goldex-shell .gex-desktop-brand .gex-shell-brand {
-        flex-direction: row; gap: 9px; justify-content: center;
-    }
-    .goldex-shell .gex-desktop-brand .gex-shell-brand-copy strong {
-        font-size: clamp(21px, 1.9vw, 25px); font-weight: 500;
-        color: var(--mud-palette-primary);
-    }
-    /* RTL: actions at physical right; clock remains at physical left. */
-    .goldex-shell .gex-topbar-actions {
-        margin-inline-start: 0; margin-inline-end: auto;
-        position: relative; z-index: 2;
-    }
-    .goldex-shell .gex-topbar-date { position: relative; z-index: 2; }
+/* #265: Desktop one-row AppBar: right icon, breadcrumb alongside the body,
+   centered wordmark only, original action/clock order. */
+.gex-desktop-mark,.gex-desktop-wordmark,.gex-desktop-route-trail,
+.gex-license-indicator,.gex-mobile-license { display:none; }
+@media (min-width:960px) {
+ .goldex-shell .gex-topbar { isolation:isolate; }
+ .goldex-shell { --gex-content-offset:calc(var(--gex-appbar-height) + env(safe-area-inset-top,0px) + var(--gex-content-gap)); --gex-table-layout-delta:calc(var(--gex-content-offset) - 56px); }
+ .goldex-shell .gex-desktop-mark {
+   display:grid; place-items:center; position:relative; z-index:2;
+   flex:0 0 42px; width:42px; height:46px; margin-inline-end:clamp(12px,2vw,25px);
+ }
+ .goldex-shell .gex-desktop-mark img { display:block; width:42px; height:44px; object-fit:contain; }
+ .goldex-shell .gex-desktop-wordmark {
+   display:block; position:absolute; z-index:1; left:50%;
+   top:calc(50% + env(safe-area-inset-top,0px)/2);
+   transform:translate(-50%,-50%); white-space:nowrap;
+   color:var(--mud-palette-primary); font-size:clamp(20px,2vw,26px);
+   font-weight:500; letter-spacing:.04em; line-height:1.25;
+ }
+ .goldex-shell .gex-desktop-route-trail {
+   display:flex; align-items:center; flex:0 1 auto;
+   width:min(480px,calc(50% - 145px)); min-width:0;
+   overflow:hidden; position:relative; z-index:1;
+ }
+ .goldex-shell .gex-desktop-route-trail .gex-route-trail {
+   display:flex; flex:1 1 auto; align-items:center; min-width:0; margin:0; overflow:hidden;
+ }
+ .goldex-shell .gex-desktop-route-trail .gex-route-trail-list {
+   display:flex; align-items:center; gap:5px; list-style:none;
+   min-width:0; padding:0; margin:0; white-space:nowrap; overflow:hidden;
+ }
+ .goldex-shell .gex-desktop-route-trail .gex-route-trail-item {
+   display:inline-flex; align-items:center; flex:0 1 auto; gap:5px; min-width:0;
+ }
+ .goldex-shell .gex-desktop-route-trail .gex-route-trail-item :is(a,.gex-route-trail-current) {
+   display:inline-flex; gap:5px; align-items:center; min-width:0; max-width:100%;
+   padding:6px 8px;
+ }
+ .goldex-shell .gex-desktop-route-trail .gex-route-trail-item :is(a,.gex-route-trail-current)>span {
+   min-width:0; overflow:hidden; text-overflow:ellipsis;
+ }
+ .goldex-shell .gex-topbar-actions {
+   margin-inline-start:auto; margin-inline-end:0; position:relative; z-index:2;
+ }
+ .goldex-shell .gex-topbar-date { position:relative; z-index:2; }
 
-    /* A separate breadcrumb line aligned with the main content, not crammed into AppBar. */
-    .goldex-shell {
-        --gex-desktop-crumb-height: 44px;
-        --gex-content-offset: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + var(--gex-content-gap) + var(--gex-desktop-crumb-height));
-        --gex-table-layout-delta: calc(var(--gex-content-offset) - 56px);
-    }
-    .gex-desktop-route-bar {
-        display: flex; align-items: center; overflow: hidden;
-        position: absolute;
-        top: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + 7px);
-        inset-inline-start: calc(var(--gex-dock-size) + 44px);
-        inset-inline-end: 22px;
-        height: 38px; min-width: 0; z-index: 1;
-    }
-    .gex-desktop-route-bar .gex-route-trail {
-        display: flex; align-items: center;
-        flex: 1 1 auto; min-width: 0; max-width: 100%;
-        overflow: hidden; margin: 0;
-    }
-    .gex-desktop-route-bar .gex-route-trail-list {
-        display: flex; align-items: center; gap: 5px;
-        list-style: none; padding: 0; margin: 0; min-width: 0;
-        overflow: hidden; white-space: nowrap;
-    }
-    .gex-desktop-route-bar .gex-route-trail-item {
-        display: inline-flex; flex: 0 1 auto; gap: 6px;
-        align-items: center; min-width: 0;
-        color: var(--mud-palette-text-secondary); font-size: 13px; font-weight: 400;
-    }
-    .gex-desktop-route-bar .gex-route-trail-item.is-current {
-        color: var(--mud-palette-text-primary);
-    }
-    .gex-desktop-route-bar .gex-route-trail-item a,
-    .gex-desktop-route-bar .gex-route-trail-current {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 6px 10px; max-width: 100%; min-width: 0;
-        border-radius: 10px; color: inherit;
-    }
-    .gex-desktop-route-bar .gex-route-trail-current {
-        background: color-mix(in srgb, var(--mud-palette-primary) 8%, var(--mud-palette-surface));
-        font-weight: 500;
-    }
-    .gex-desktop-route-bar .gex-route-trail-item a:hover {
-        background: color-mix(in srgb, var(--mud-palette-primary) 7%, transparent);
-        color: var(--mud-palette-primary);
-    }
-    .gex-desktop-route-bar .gex-route-trail-item .gex-shell-icon { width: 15px; height: 15px; }
-    .gex-desktop-route-bar .gex-route-trail-item :is(a,.gex-route-trail-current) > span {
-        overflow: hidden; text-overflow: ellipsis;
-    }
-    .gex-desktop-route-bar .gex-route-trail-separator {
-        direction: ltr; unicode-bidi: isolate; opacity: .6;
-    }
-
-    /* The active user's account is the natural home for license status. */
-    .gex-liquid-dock .gex-sidebar-identity { position: relative; z-index: 9; }
-    .gex-liquid-dock .gex-desktop-profile-license {
-        position: absolute;
-        display: block;
-        inset-inline-start: calc(100% + 10px);
-        inset-block-end: 54px;
-        width: 252px;
-        padding: 7px;
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 18px;
-        background: var(--mud-palette-surface);
-        color: var(--mud-palette-text-primary);
-        box-shadow: 0 14px 38px rgba(18,20,25,.16);
-        opacity: 0; visibility: hidden; pointer-events: none;
-        transform: translateX(6px) scale(.98);
-        transform-origin: 100% 100%;
-        transition: opacity .2s ease, transform .24s cubic-bezier(.22,1,.36,1), visibility .2s;
-    }
-    .gex-liquid-dock .gex-desktop-profile-license::before {
-        content: ''; position: absolute; inset-inline-start: -16px;
-        inset-block: 0; width: 17px;
-    }
-    .gex-liquid-dock .gex-sidebar-identity:is(:hover,:focus-within) .gex-desktop-profile-license {
-        opacity: 1; visibility: visible; pointer-events: auto; transform: none;
-    }
-    .gex-desktop-profile-license:empty { display: none; }
-    .gex-desktop-profile-license .gex-license-ribbon {
-        display: flex; flex-direction: column; gap: 10px;
-        padding: 12px; border: 1px solid color-mix(in srgb,var(--mud-palette-success) 14%,var(--mud-palette-lines-default));
-        border-radius: 13px;
-        background: color-mix(in srgb,var(--mud-palette-success) 6%,var(--mud-palette-surface));
-        color: var(--mud-palette-text-primary);
-    }
-    .gex-desktop-profile-license .gex-license-ribbon.is-expired {
-        background: color-mix(in srgb,var(--mud-palette-error) 7%,var(--mud-palette-surface));
-        border-color: color-mix(in srgb,var(--mud-palette-error) 18%,var(--mud-palette-lines-default));
-    }
-    .gex-desktop-profile-license .gex-license-ribbon-head { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; }
-    .gex-desktop-profile-license .gex-license-ribbon-head .gex-shell-icon { width: 17px; height: 17px; color: var(--mud-palette-success); }
-    .gex-desktop-profile-license .gex-license-ribbon.is-expired .gex-shell-icon { color: var(--mud-palette-error); }
-    .gex-desktop-profile-license .gex-license-ribbon-caption { font-size: 11px; font-weight: 400; color: var(--mud-palette-text-secondary); }
-    .gex-desktop-profile-license .gex-license-progress-track {
-        height: 5px; border-radius: 5px; background: color-mix(in srgb,var(--mud-palette-success) 19%,transparent);
-        overflow: hidden;
-    }
-    .gex-desktop-profile-license .gex-license-progress-fill {
-        display: block; height: 100%; border-radius: inherit; background: var(--mud-palette-success);
-    }
-    .gex-desktop-profile-license .gex-license-ribbon:focus-visible {
-        outline: 2px solid var(--mud-palette-primary); outline-offset: 2px;
-    }
-
+ /* AppBar icon: its small panel opens BELOW on pointer hover and keyboard focus. */
+ .gex-license-indicator { display:inline-flex; flex:none; position:relative; z-index:6; }
+ .gex-license-indicator .gex-license-trigger { width:42px; height:42px; min-height:42px; }
+ .gex-license-indicator .gex-license-trigger .gex-shell-icon { width:20px; height:20px; }
+ .gex-license-indicator-dot {
+   position:absolute; width:8px; height:8px; border-radius:50%;
+   inset-block-start:7px; inset-inline-start:7px;
+   border:1px solid var(--mud-palette-surface); background:var(--mud-palette-success);
+ }
+ .gex-license-indicator:has(.gex-license-ribbon.is-expired) .gex-license-indicator-dot {
+   background:var(--mud-palette-error);
+ }
+ .gex-license-indicator::after { content:''; position:absolute; top:100%; left:0; right:0; height:12px; }
+ .gex-license-details {
+   position:absolute; top:calc(100% + 9px); inset-inline-end:0;
+   width:245px; padding:8px; max-width:calc(100vw - 32px);
+   border:1px solid var(--mud-palette-lines-default); border-radius:17px;
+   background:var(--mud-palette-surface); box-shadow:0 14px 38px rgba(0,0,0,.15);
+   opacity:0; visibility:hidden; pointer-events:none;
+   transform:translateY(-7px) scale(.98);
+   transition:opacity .18s ease,transform .23s cubic-bezier(.22,1,.36,1),visibility .18s;
+ }
+ .gex-license-indicator:is(:hover,:focus-within) .gex-license-details {
+   opacity:1; visibility:visible; pointer-events:auto; transform:none;
+ }
+ .gex-license-details .gex-license-ribbon {
+   display:flex; flex-direction:column; gap:9px; padding:12px; border-radius:12px;
+   background:color-mix(in srgb,var(--mud-palette-success) 6%,var(--mud-palette-surface));
+   border:1px solid color-mix(in srgb,var(--mud-palette-success) 16%,var(--mud-palette-lines-default));
+   color:var(--mud-palette-text-primary);
+ }
+ .gex-license-details .gex-license-ribbon.is-expired {
+   background:color-mix(in srgb,var(--mud-palette-error) 5%,var(--mud-palette-surface));
+   border-color:color-mix(in srgb,var(--mud-palette-error) 20%,var(--mud-palette-lines-default));
+ }
+ .gex-license-details .gex-license-ribbon-head {
+   display:flex; align-items:center; gap:7px; font-size:12px; font-weight:500;
+ }
+ .gex-license-details .gex-license-ribbon-head .gex-shell-icon { width:17px; height:17px; color:var(--mud-palette-success); }
+ .gex-license-details .is-expired .gex-shell-icon { color:var(--mud-palette-error); }
+ .gex-license-details .gex-license-ribbon-caption { font-size:11px; font-weight:400; color:var(--mud-palette-text-secondary); }
+ .gex-license-details .gex-license-progress-track {
+   height:5px; overflow:hidden; border-radius:6px;
+   background:color-mix(in srgb,var(--mud-palette-success) 18%,var(--mud-palette-surface));
+ }
+ .gex-license-details .gex-license-progress-fill { display:block; height:100%; border-radius:inherit; background:var(--mud-palette-success); }
     /* Report-style visual polish for desktop filters ONLY; old mobile picker is untouched. */
     .gex-directory-filter-form .gex-desktop-filter-date {
         display: block;
@@ -1646,18 +1606,43 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
         color: var(--mud-palette-primary);
     }
     .gex-directory-filter-form :is(.mud-input-label,.mud-select-input) { font-weight: 400; }
+
 }
-@media (min-width: 960px) and (max-width: 1199.98px) {
-    .goldex-shell .gex-desktop-brand { max-width: 145px; }
-    .goldex-shell .gex-desktop-brand .gex-shell-brand-mark { width: 30px; height: 32px; }
-    .goldex-shell .gex-desktop-brand .gex-shell-brand-copy strong { font-size: 19px; }
+@media (min-width:960px) and (max-width:1199.98px) {
+ .goldex-shell .gex-desktop-mark { flex-basis:38px; width:38px; margin-inline-end:12px; }
+ .goldex-shell .gex-desktop-mark img { width:38px; height:40px; }
+ .goldex-shell .gex-desktop-route-trail { width:min(260px,calc(44% - 105px)); }
+ .goldex-shell .gex-desktop-wordmark { font-size:21px; }
 }
-@media (max-width: 959.98px) {
-    .gex-desktop-route-bar, .gex-desktop-profile-license { display: none !important; }
+@media (max-width:959.98px) {
+ .gex-desktop-mark,.gex-desktop-wordmark,.gex-desktop-route-trail,.gex-license-indicator { display:none !important; }
+ .gex-sidebar-identity { flex-wrap:wrap; }
+ .gex-mobile-license { display:block; flex:0 0 100%; width:100%; min-width:0; }
+ .gex-mobile-license:empty { display:none; }
+ .gex-mobile-license .gex-license-ribbon {
+   display:flex; align-items:center; width:100%; min-width:0;
+   padding:7px 10px; border-radius:10px;
+   color:var(--mud-palette-text-primary);
+   background:color-mix(in srgb,var(--mud-palette-success) 6%,var(--mud-palette-surface));
+   border:1px solid color-mix(in srgb,var(--mud-palette-success) 14%,var(--mud-palette-lines-default));
+ }
+ .gex-mobile-license .gex-license-ribbon.is-expired {
+   background:color-mix(in srgb,var(--mud-palette-error) 6%,var(--mud-palette-surface));
+   border-color:color-mix(in srgb,var(--mud-palette-error) 14%,var(--mud-palette-lines-default));
+ }
+ .gex-mobile-license .gex-license-ribbon-head { display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:400; }
+ .gex-mobile-license .gex-license-ribbon-head .gex-shell-icon { width:15px; height:15px; color:var(--mud-palette-success); }
+ .gex-mobile-license .is-expired .gex-shell-icon { color:var(--mud-palette-error); }
+ .gex-mobile-license :is(.gex-license-ribbon-caption,.gex-license-progress-track) { display:none; }
+ /* A full-width right-aligned mobile Release Notes row, matching NavLinks. */
+ .gex-sidebar .gex-navigation-menu > button.gex-nav-release {
+   display:flex; flex-direction:row; align-items:center; justify-content:flex-start;
+   width:100%; min-height:46px; gap:11px; padding:11px 13px;
+   direction:rtl; text-align:right; font-size:13px; font-weight:400;
+ }
+ .gex-sidebar .gex-navigation-menu > button.gex-nav-release > span { flex:1 1 auto; text-align:right; margin:0; }
 }
-@media (prefers-reduced-motion: reduce) {
-    .gex-liquid-dock .gex-desktop-profile-license { transition: none; transform: none; }
-}
+@media (prefers-reduced-motion:reduce) { .gex-license-details { transition:none; transform:none; } }
 
 /* #264 correction: keep the approved mobile breadcrumb; revert ONLY the mobile filter/nav changes. */
 .gex-mobile-route-bar { display: none; }

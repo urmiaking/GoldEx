@@ -1,7 +1,11 @@
 <header class="gex-topbar">
     <button type="button" class="gex-icon-button gex-menu-toggle" aria-label="باز کردن منوی اصلی" aria-controls="gex-navigation"
             aria-expanded="@DrawerOpen.ToString().ToLowerInvariant()" @onclick="() => DrawerOpenChanged.InvokeAsync(!DrawerOpen)"><ShellIcon Name="menu" /></button>
-    <div class="gex-desktop-brand"><ShellBrand Compact="true" /></div>
+    <a class="gex-desktop-mark" href="@ClientRoutes.Home.Index" aria-label="گلدکس، صفحه اصلی">
+        <img src="/apple-touch-icon-180x180.png" width="180" height="180" alt="" />
+    </a>
+    <div class="gex-desktop-route-trail"><RouteBreadcrumbs /></div>
+    <a class="gex-desktop-wordmark" href="@ClientRoutes.Home.Index" lang="en" dir="ltr" aria-label="GoldEx">GoldEx</a>
     <div class="gex-mobile-brand"><ShellBrand Compact="true" /></div>
     <div class="gex-topbar-actions">
         <AppearanceControls ModeOnly="true" />
@@ -13,10 +17,10 @@
             </button>
         </AuthorizeView>
         <AuthorizeView><Authorized><Settings /></Authorized></AuthorizeView>
+        <AuthorizeView><Authorized><LicenseIndicator /></Authorized></AuthorizeView>
     </div>
     <div class="gex-topbar-date"><Clock /></div>
 </header>
-<div class="gex-desktop-route-bar"><RouteBreadcrumbs /></div>
 <div class="gex-mobile-route-bar"><RouteBreadcrumbs /></div>
 
 @code {

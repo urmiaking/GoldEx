@@ -112,7 +112,7 @@ test('resizing reallocates items, mobile restores links, Escape and disposal rel
  assert.equal(x.win.listeners.size,0);
 });
 test('desktop-only liquid glass has mobile, accessibility and account-store fallbacks',()=>{
- assert.match(appbar,/gex-desktop-brand.*ShellBrand Compact="true"/);
+ assert.match(appbar,/gex-desktop-mark[\s\S]*?apple-touch-icon-180x180.png/);
  assert.match(appbar,/gex-mobile-brand.*ShellBrand Compact="true"/);
  assert.match(drawer,/class="gex-sidebar gex-liquid-dock/);
  assert.match(drawer,/<NavMenu OnNavigate="HandleNavigate"/);

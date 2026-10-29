@@ -50,3 +50,5 @@ Initial implementation: GitHub #251, enterprise release 1.0.99.
 ## User correction after #263: desktop profile license (#264)
 - Restore original mobile drawer nav, profile and filter sheet, keeping only NEW mobile breadcrumbs from #263.
 - Desktop Liquid Dock identity now hosts DesktopLicenseRibbon above signout on hover/focus. Uses LicenseState, replacing old license placement under More. No changes to mobile account or desktop route droplet.
+## License presentation correction (#265)
+- Desktop: license details belong BELOW a small authorized AppBar key icon (hover/focus), NEVER inside Dock/profile near logout. Mobile: one-line live status near bottom of ShellIdentity. The main Liquid Dock navigation stays untouched. Native ReleaseNotesMenuItem must align right like mobile NavLinks.
