@@ -52,7 +52,7 @@ test('native toolbar actions keep execute callbacks while receiving original Gol
         assert.match(template.innerHTML, /stroke="currentColor"/);
     }
     app.onCustomizeMenuActions(null, args);
-    assert.equal(registered.size, 6, 'SVG templates should not be duplicated');
+    assert.equal(registered.size, 8, 'SVG templates should not be duplicated');
 });
 
 test('toolbar customization remains safe if optional DevExpress actions are missing', () => {

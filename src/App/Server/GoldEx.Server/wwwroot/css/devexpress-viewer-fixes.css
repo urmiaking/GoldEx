@@ -1,0 +1,82 @@
+/* GoldEx #271: real DevExpress 24.2.7 pager / right-rail fixes.
+ * Keep styles scoped to viewer, leave printed document and export popups alone.
+ */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs {
+  background: var(--gex-report-surface);
+  border-inline-start: 1px solid var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs :is(.dxrd-tab-item,.dxd-back-highlighted) {
+  color: var(--gex-report-ink);
+  border-radius: 10px;
+  transition: background-color .18s ease, color .18s ease;
+}
+/* Vendor sets WHITE svg fill on highlighted:hover, even on a white tab! */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  .dxd-back-highlighted:not(.dxd-state-active):hover {
+  background: color-mix(in srgb,var(--gex-report-accent) 13%,var(--gex-report-surface));
+  color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  .dxd-back-highlighted:not(.dxd-state-active):hover :is(.dxd-icon-fill,.dx-icon-fill),
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  .dxd-back-highlighted:not(.dxd-state-active):hover svg:not([fill="none"]) {
+  fill: var(--gex-report-ink);
+  color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  :is(.dxd-state-active,.dxrd-tab-item-active,.dxd-back-contrast),
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  :is(.dxd-state-active,.dxrd-tab-item-active,.dxd-back-contrast):hover {
+  background: var(--gex-report-accent);
+  color: var(--gex-report-accent-ink);
+  border-radius: 10px;
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  :is(.dxd-state-active,.dxrd-tab-item-active,.dxd-back-contrast) :is(.dxd-icon-fill,.dx-icon-fill),
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  :is(.dxd-state-active,.dxrd-tab-item-active,.dxd-back-contrast):hover :is(.dxd-icon-fill,.dx-icon-fill) {
+  fill: var(--gex-report-accent-ink);
+  color: var(--gex-report-accent-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+  .dxrd-tab-item:not(.dxd-state-active):not(.dxd-back-contrast) :is(.dxd-icon-fill,.dx-icon-fill) {
+  fill: var(--gex-report-ink);
+}
+/* A compact native page selector with just previous/next controls. */
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-preview-pager.dxrd-toolbar-item {
+  padding: 13px 5px;
+  margin-inline: 4px;
+  vertical-align: middle;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-preview-pager .dxrd-preview-pager-selectbox {
+  width: 92px;
+  min-width: 92px;
+  height: 35px;
+  border-radius: 11px;
+  background: color-mix(in srgb,var(--gex-report-accent) 6%,var(--gex-report-surface));
+  border: 1px solid var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-preview-pager .dxrd-preview-pager-selectbox .dx-texteditor {
+  background: transparent;
+  border: 0;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar-item:not(.dxrd-preview-pager) .dxrd-toolbar-item-image {
+  border-radius: 10px;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+  .dxrd-toolbar-wrapper .dxrd-toolbar-item .gex-report-glyph { width: 19px; height: 19px; }
+@media(max-width:959.98px) {
+  .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+    .dxrd-toolbar-wrapper .dxrd-preview-pager.dxrd-toolbar-item {
+    margin-inline: 2px;
+    padding-block: 13px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-right-tabs
+    :is(.dxrd-tab-item,.dxd-back-highlighted) { transition: none; }
+}
