@@ -17,7 +17,7 @@ test('invoice viewer is scoped but preserves DevExpress preview, export and exis
  assert.match(viewer,/DxDocumentViewerExportSettings UseSameTab=true/);
  assert.match(viewer,/DxWasmDocumentViewerRequestOptions InvokeAction="DXXRDV"/);
  assert.match(viewer,/DxDocumentViewerCallbacks BeforeRender="reportingCustomization.onBeforeRender"/);
- assert.match(callback,/e\.reportPreview\.zoom = 0/);
+ assert.match(callback,/args\.reportPreview\.zoom = window\.innerWidth < 960 \? -1 : 0/);
 });
 test('documented DevExpress Reporting dxd palette is styled only within viewer wrapper',()=>{
  for(const name of ['dxd-back-primary','dxd-back-secondary','dxd-border-primary','dxd-border-accented','dxd-icon-fill','dxd-text-primary','dxd-side-panel-tabs-back-color'])

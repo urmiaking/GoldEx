@@ -11,6 +11,7 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
+    <div class="gex-report-mobile-hint" aria-hidden="true">برای دیدن ابزارهای بیشتر، نوار ابزار را بکشید <span>⇆</span></div>
     <div class="gex-report-viewer" role="region" aria-label="پیش‌نمایش و چاپ فاکتور">
         <DxWasmDocumentViewer ReportName="@_reportUrl" Height="1000px" Width="100%">
             <DxDocumentViewerExportSettings UseSameTab=true>
@@ -20,7 +21,7 @@
             <DxReportDesignerModelSettings AllowMDI=true>
                 <DxReportDesignerWizardSettings UseFullscreenWizard=true />
             </DxReportDesignerModelSettings>
-            <DxDocumentViewerCallbacks BeforeRender="reportingCustomization.onBeforeRender" />
+            <DxDocumentViewerCallbacks BeforeRender="reportingCustomization.onBeforeRender" CustomizeMenuActions="reportingCustomization.onCustomizeMenuActions" />
         </DxWasmDocumentViewer>
     </div>
 </MudContainer>
