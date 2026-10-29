@@ -7,7 +7,7 @@ Use when modifying the enterprise invoice list, child transaction timeline, inve
 - `src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoicesList.razor` and its `.razor.cs`/`.razor.css`
 - `src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceDetails.razor` and its `.razor.css`
 - `src/App/Server/GoldEx.Server/releases.json`
-- `scripts/tests/invoice-directory.test.mjs` and `scripts/tests/invoice-paging-timeline.test.mjs`
+- `scripts/tests/invoice-directory.test.mjs` and manual UI review in the actual browser
 
 Read `AGENTS.md` (especially the sections on invoice directory UI, color/typography and release notes) before editing; it is the source of truth.
 
@@ -27,14 +27,14 @@ Read `AGENTS.md` (especially the sections on invoice directory UI, color/typogra
 - Mobile invoice header chips have at least 26px visual height and consistent 500-weight font. The paid success chip in the amounts area is smaller (28px) so that it doesn't dominate the financial values.
 - `appearance.css` uses weight 500 for the sidebar 'فاکتور جدید', active desktop menu link, selected bottom mobile link and bottom create link. Active state is indicated by background and icon contrast.
 - Desktop invoice create menu aligns with the outer filter card by a desktop-only -16px inline-end margin, never on mobile.
-- Validate via `scripts/tests/invoice-mobile-tone.test.mjs` and complete Node UI tests.
+- Validate via manual UI review in the actual browser and complete Node UI tests.
 ## Paid status foreground must not inherit the amount-label color (#250)
 - The mobile amount-label CSS must target `.invoice-card-amounts > div > span:not(.invoice-paid)` rather than the broad descendant selector `.invoice-card-amounts > div span`: the latter overrides `.invoice-paid` foreground and causes gray/green text on green.
 - Keep `.invoice-card-amounts .invoice-paid, .invoice-balance .invoice-paid { color: var(--mud-palette-success-text, #FFFFFF); }` and `.invoice-paid .gex-shell-icon { color: inherit; stroke: currentColor; }`. Gold light success/background is `#087D44` with white `SuccessContrastText`; dark success `#3dcb6c` with dark `#151D23` text. Avoid hard-coded white foreground for dark success.
-- Run `node --test scripts/tests/invoice-paid-chip-contrast.test.mjs` plus complete Node tests. Verify both computed text and SVG colors against success background, not just the declared token. The source-CSS mock Chrome render passed for both modes; authenticated full page remains to be verified when run.
+- Perform manual UI review in the actual browser plus complete Node tests. Verify both computed text and SVG colors against success background, not just the declared token. The source-CSS mock Chrome render passed for both modes; authenticated full page remains to be verified when run.
 ## #266 responsive date-range regression
-- Remove gex-desktop-filter-date CSS outer border/padding/internal min-height added in #264. It double-outlines and enlarges MudDateRangePicker in filter dialogs. Both InvoiceFiltersDialog and CustomerFiltersDialog use the normal MudDateRangePicker at MudItem xs=12 sm=6 (mobile full; desktop half), Class=w-100, with Reporting-style rounded/anchor/adaptive properties. Preserve DateRangeChanged, reset and mobile-only sort. Guard with scripts/tests/brand-filter-regression.test.mjs.
+- Remove gex-desktop-filter-date CSS outer border/padding/internal min-height added in #264. It double-outlines and enlarges MudDateRangePicker in filter dialogs. Both InvoiceFiltersDialog and CustomerFiltersDialog use the normal MudDateRangePicker at MudItem xs=12 sm=6 (mobile full; desktop half), Class=w-100, with Reporting-style rounded/anchor/adaptive properties. Preserve DateRangeChanged, reset and mobile-only sort. Verify in the actual browser.
 ## #268 directory compact filters and actions
 - InvoicesList and CustomersList now display only numeric badges on the filter button, not a second applied-filter chip/clear row under the sticky search/filter toolbar. Keep filtering and clear behavior inside each filter dialog.
 - InvoicesList icon buttons use restrained semantic accents (print=info, edit=primary, delete=error) in desktop and mobile, matching inventory icon operation styling; CustomerCard ledger/invoices actions use a slightly stronger pastel accent and its edit menu icon is info. Theme variables only.
-- Check scripts/tests/directory-compact-polish.test.mjs; release 1.0.116, issue #268.
+- Check visually in the actual browser; release 1.0.116, issue #268.

@@ -7,7 +7,7 @@ Applicable to enterprise GoldEx notification drawer changes. Read AGENTS.md and 
 - src/App/Client/GoldEx.Client.Components/Layouts/Components/Notifications.razor and .razor.cs
 - src/App/Server/GoldEx.Server/wwwroot/css/appearance.css
 - src/App/Shared/GoldEx.Shared/DTOs/Notifications/GetNotificationResponse.cs
-- scripts/tests/minimal-notifications.test.mjs and notification-calculator-typography.test.mjs
+- manual UI review in the actual browser
 
 ## UX and behavior
 - As of issue #262, the unread inbox follows MeetFlow's notification-item pattern: each notification is one full-row native button, not a card with multiple actions.
