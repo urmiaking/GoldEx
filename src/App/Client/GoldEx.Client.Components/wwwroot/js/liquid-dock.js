@@ -98,16 +98,20 @@ export function bind(dock) {
         const isAccount = Boolean(identity);
         const isStore = Boolean(element?.matches?.('.gex-store-picker-trigger'));
         const isCreate = Boolean(element?.matches?.('.gex-sidebar-create'));
-        // The gold New Invoice button expands by itself, not as part of the glass.
-        const shapeTarget = isCreate ? null : element;
+        // A filled Primary action does not expand the translucent glass underneath.
+        const isActiveRoute = Boolean(element?.classList?.contains('active')
+            || element?.getAttribute?.('aria-current') === 'page');
+        // Like New Invoice, the selected route is a filled Primary capsule:
+        // the glass surface itself stays narrow instead of protruding behind it.
+        const shapeTarget = isCreate || isActiveRoute ? null : element;
         const width = shapeTarget ? expandedWidth(
             isAccount ? (identity?.querySelector?.('.gex-signout') || element) : element,
             isAccount ? 'account' : isStore ? 'store' : 'nav'
         ) : 0;
         const measuredRow = identity?.getBoundingClientRect
             ? positionTop(identity) : element ? positionTop(element) : lastHullTop;
-        const rowTop = Math.round(measuredRow);
-        if (element) lastHullTop = rowTop;
+        const rowTop = Math.round(shapeTarget ? measuredRow : lastHullTop);
+        if (shapeTarget) lastHullTop = rowTop;
         const reach = shapeTarget && media.matches ? Math.min(196, width - 48) : 0;
         glass.style.clipPath = dockSilhouette(height, rowTop, reach, isAccount);
         dock.classList.toggle('gex-dock-is-account', Boolean(shapeTarget && isAccount));

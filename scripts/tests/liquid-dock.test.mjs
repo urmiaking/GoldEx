@@ -252,15 +252,35 @@ test('primary gold invoice action never expands shared glass; profile does not r
  assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?width: var\(--gex-item-expanded-width, 159px\)/);
  x.binding.dispose();
 });
-test('non-Gold selected hover and keyboard-focus labels stay readable over translucent glass',()=>{
- const start=css.indexOf('/* #255: In non-Gold palettes');
- assert.ok(start>0, 'theme-aware active-label rule must exist');
+test('selected hover and keyboard focus expand an opaque Primary pill with contrast text in every palette',()=>{
+ const start=css.indexOf('/* #256: A selected Dock route');
+ assert.ok(start>0);
  const rule=css.slice(start);
- assert.match(rule,/@media \(min-width: 960px\)/);
- assert.match(rule,/html:not\(\[data-gex-palette="Gold"\]\) \.goldex-shell\s+\.gex-liquid-dock \.gex-navigation-menu > a\.active:is\(:hover,:focus-visible\) > span\s*\{\s*color: var\(--mud-palette-text-primary\);/);
- // Never recolor the active icon: it must stay on top of the moving primary dot.
- assert.doesNotMatch(rule,/\.gex-shell-icon/);
- assert.match(css,/\.gex-dock-active-drop \{[\s\S]*?background: var\(--mud-palette-primary\)/);
- // Gold intentionally retains its opaque saturated selection and white label.
- assert.match(css,/html\[data-gex-palette="Gold"\]:not\(\[data-gex-mode="dark"\]\) \.goldex-shell :is\([\s\S]*?\.gex-navigation-menu a\.active,[\s\S]*?background-color: #996500;\s*color: #FFFFFF;/);
+ assert.match(rule,/background: var\(--mud-palette-primary\);/);
+ assert.match(rule,/color: var\(--mud-palette-primary-text\);/);
+ assert.match(rule,/border-radius: 999px;/);
+ assert.match(rule,/width: var\(--gex-item-expanded-width, 165px\);/);
+ assert.match(rule,/a\.active:is\(:hover,:focus-visible\) > :is\(span, \.gex-shell-icon\)/);
+ assert.match(rule,/html\[data-gex-palette="Gold"\]:not\(\[data-gex-mode="dark"\]\)[\s\S]*?background: #9D6800;/);
+ assert.doesNotMatch(rule,/color: var\(--mud-palette-text-primary\)/);
+ assert.doesNotMatch(rule,/!important/);
+ assert.doesNotMatch(css,/#255: In non-Gold palettes/);
+});
+
+test('active route expands filled Primary pill without protruding glass; inactive stays liquid',()=>{
+ const x=fixture();
+ const collapsed=x.glass.style.clipPath;
+ x.dock.fire('pointerover',{target:x.links[0]});
+ assert.equal(x.glass.style.clipPath,collapsed);
+ assert.equal(x.dock.classList.contains('gex-dock-is-account'),false);
+ x.dock.fire('pointerover',{target:x.links[1]});
+ assert.notEqual(x.glass.style.clipPath,collapsed);
+ x.dock.fire('pointerout',{target:x.links[1]});
+ x.links[0].classList.remove('active');
+ x.links[1].classList.add('active');
+ x.binding.recalculate();
+ const nextCollapsed=x.glass.style.clipPath;
+ x.dock.fire('focusin',{target:x.links[1]});
+ assert.equal(x.glass.style.clipPath,nextCollapsed);
+ x.binding.dispose();
 });

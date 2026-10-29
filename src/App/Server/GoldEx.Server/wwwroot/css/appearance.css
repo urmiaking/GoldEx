@@ -1195,13 +1195,29 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
     }
 }
 
-/* #255: In non-Gold palettes the active icon remains white on the moving
-   primary droplet, but the expanded label sits over the translucent glass.
-   Give ONLY that label the proper theme-aware surface foreground. Gold keeps
-   its existing filled active-hover treatment. */
+/* #256: A selected Dock route grows into a FULL, opaque Primary capsule
+   (like New Invoice), not white text floating over transparent glass.
+   The gold-dark foreground must be dark on its bright gold Primary color. */
 @media (min-width: 960px) {
-    html:not([data-gex-palette="Gold"]) .goldex-shell
-    .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) > span {
-        color: var(--mud-palette-text-primary);
+    html .goldex-shell .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) {
+        width: var(--gex-item-expanded-width, 165px);
+        background: var(--mud-palette-primary);
+        color: var(--mud-palette-primary-text);
+        border-color: transparent;
+        border-radius: 999px;
+        box-shadow: inset 0 1px 1px rgba(255,255,255,.26),
+                    0 5px 17px rgba(var(--mud-palette-primary-rgb),.23);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    html .goldex-shell .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) > :is(span, .gex-shell-icon) {
+        color: var(--mud-palette-primary-text);
+    }
+    /* The light Gold theme intentionally uses a richer amber than its token.
+       Override its high-specificity collapsed-state transparent rule ONLY on hover. */
+    html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell
+    .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) {
+        background: #9D6800;
+        color: #FFFFFF;
     }
 }
