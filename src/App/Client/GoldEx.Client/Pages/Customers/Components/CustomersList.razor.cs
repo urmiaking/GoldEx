@@ -272,23 +272,17 @@ public partial class CustomersList
 
     private async Task OpenMobileFilters()
     {
-        var parameters = new DialogParameters<CustomerFiltersDialog>
+        // Use the same animated responsive editor dialog as customer create/edit.
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.DateRange, _filterDateRange },
-            { x => x.CustomerTypeParam, _customerType },
-            { x => x.TransactionTypeParam, _transactionType },
-            { x => x.SortLabel, _sortLabel },
-            { x => x.SortDescending, _sortDescending }
+            { nameof(CustomerFiltersDialog.DateRange), _filterDateRange },
+            { nameof(CustomerFiltersDialog.CustomerTypeParam), _customerType! },
+            { nameof(CustomerFiltersDialog.TransactionTypeParam), _transactionType! },
+            { nameof(CustomerFiltersDialog.SortLabel), _sortLabel },
+            { nameof(CustomerFiltersDialog.SortDescending), _sortDescending }
         };
 
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.Small
-        };
-
-        var dialog = await DialogService.ShowAsync<CustomerFiltersDialog>("فیلترها", parameters, options);
+        var dialog = ResponsiveDialogs.Show<CustomerFiltersDialog>("فیلتر مشتریان", parameters);
         var result = await dialog.Result;
 
         if (result is { Canceled: false } && result.Data is CustomerMobileFiltersResult filterResult)

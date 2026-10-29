@@ -164,16 +164,19 @@ export function bind(dock) {
         if (!dock.classList.contains('gex-dock-has-hover')) renderHull();
         sizeActions();
         const links = allLinks();
+        // Release Notes is a secondary action: always belongs to More, never
+        // consumes a Dock slot or appears twice as a visible icon and proxy.
+        const forceOverflow = link => Boolean(link.matches?.('button.gex-nav-release'));
+        const routeLinks = links.filter(link => !forceOverflow(link));
         const storePicker = viewport.querySelector('.gex-store-picker');
         const storeHeight = storePicker ? Math.ceil(storePicker.getBoundingClientRect().height + 9) : 0;
         const available = Math.max(0, viewport.clientHeight - storeHeight);
         const maxVisible = Math.max(0, Math.floor((available - 4) / 52));
-        const keep = Math.min(links.length, maxVisible);
-        const extras = links.slice(keep);
+        const keep = Math.min(routeLinks.length, maxVisible);
+        const extras = [...routeLinks.slice(keep), ...links.filter(forceOverflow)];
 
-        for (let index = 0; index < links.length; index++) {
-            const link = links[index];
-            link.setAttribute('data-dock-overflow', String(index >= keep));
+        for (const link of links) {
+            link.setAttribute('data-dock-overflow', String(extras.includes(link)));
             const label = link.querySelector('span')?.textContent?.trim() || link.textContent.trim();
             link.setAttribute('aria-label', label);
             link.title = label;
@@ -187,7 +190,9 @@ export function bind(dock) {
             proxy.addEventListener('click', event => {
                 event.preventDefault();
                 setOpen(false);
-                if (original.getAttribute('target') !== '_blank') {
+                // Only actual navigation links move the route selection drop.
+                // Command buttons (Release Notes) must not change the active page.
+                if (original.matches?.('a[href]') && original.getAttribute('target') !== '_blank') {
                     pendingSelection = original;
                     setDrop(trigger);
                 }

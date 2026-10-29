@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
@@ -7,13 +8,17 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class InvoiceFiltersDialog
 {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     [Parameter] public DateRange DateRange { get; set; } = new();
     [Parameter] public InvoiceType? InvoiceTypeParam { get; set; }
     [Parameter] public TradeScale? TradeScaleParam { get; set; }
     [Parameter] public InvoicePaymentStatus? PaymentStatus { get; set; }
+    [Parameter] public string SortLabel { get; set; } = "InvoiceNumber";
+    [Parameter] public bool SortDescending { get; set; } = true;
 
+    private string _sortLabel = "InvoiceNumber";
+    private bool _sortDescending = true;
     private DateRange? _dateRange;
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
@@ -25,6 +30,8 @@ public partial class InvoiceFiltersDialog
         _invoiceType = InvoiceTypeParam;
         _tradeScale = TradeScaleParam;
         _paymentStatus = PaymentStatus;
+        _sortLabel = SortLabel;
+        _sortDescending = SortDescending;
     }
 
     private string GetInvoiceTypeIcon(InvoiceType? type) => type switch
@@ -83,10 +90,12 @@ public partial class InvoiceFiltersDialog
             new DateRange(_dateRange?.Start, _dateRange?.End),
             _invoiceType,
             _tradeScale,
-            _paymentStatus
+            _paymentStatus,
+            _sortLabel,
+            _sortDescending
         );
 
-        MudDialog.Close(DialogResult.Ok(result));
+        Session?.Close(result);
     }
 
     private void Clear()
@@ -98,5 +107,5 @@ public partial class InvoiceFiltersDialog
         Apply();
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => Session?.Cancel();
 }

@@ -11,7 +11,7 @@
             <li class="gex-route-trail-item @(last ? "is-current" : "")" @key="item.Href ?? item.Label">
                 @if (i > 0)
                 {
-                    <span class="gex-route-trail-separator" aria-hidden="true">←</span>
+                    <span class="gex-route-trail-separator" aria-hidden="true"><ShellIcon Name="chevron-left" /></span>
                 }
                 @if (!last && item.Href is not null)
                 {

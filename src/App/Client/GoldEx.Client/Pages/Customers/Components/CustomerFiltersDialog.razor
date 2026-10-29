@@ -1,98 +1,79 @@
 @inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">فیلتر و مرتب‌سازی مشتریان</MudText>
-    </TitleContent>
+<EditorDialogFrame>
     <DialogContent>
-        <MudStack Spacing="3">
-            <!-- TransactionType -->
-            <MudSelect T="TransactionType?"
-                       Variant="Variant.Outlined"
-                       Label="وضعیت حساب"
-                       Value="@_transactionType"
-                       ValueChanged="@(v => _transactionType = v)"
-                       Dense="true"
-                       Margin="Margin.Dense"
-                       Adornment="Adornment.Start"
-                       AdornmentIcon="@GetTransactionTypeIcon(_transactionType)"
-                       AdornmentColor="@GetTransactionTypeIconColor(_transactionType)"
-                       Class="w-100">
-                <MudSelectItem T="TransactionType?" Value="@(null as TransactionType?)">همه</MudSelectItem>
-                @foreach (var type in Enum.GetValues<TransactionType>())
-                {
-                    <MudSelectItem T="TransactionType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
-                }
-            </MudSelect>
-
-            <!-- CustomerType -->
-            <MudSelect T="CustomerType?"
-                       Variant="Variant.Outlined"
-                       Label="نوع مشتری"
-                       Value="@_customerType"
-                       ValueChanged="@(v => _customerType = v)"
-                       Dense="true"
-                       Margin="Margin.Dense"
-                       Adornment="Adornment.Start"
-                       AdornmentIcon="@GetCustomerTypeIcon(_customerType)"
-                       AdornmentColor="@GetCustomerTypeIconColor(_customerType)"
-                       Class="w-100">
-                <MudSelectItem T="CustomerType?" Value="@(null as CustomerType?)">همه</MudSelectItem>
-                @foreach (var type in Enum.GetValues<CustomerType>())
-                {
-                    <MudSelectItem T="CustomerType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
-                }
-            </MudSelect>
-
-            <!-- Date range -->
-            <MudDateRangePicker DateRange="@_dateRange"
-                                DateRangeChanged="@(dr => _dateRange = dr)"
-                                Variant="Variant.Outlined"
-                                Label="تاریخ ثبت مشتری"
-                                Margin="Margin.Dense"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Adornment="Adornment.Start"
-                                ShowToolbar="false"
-                                Clearable="true"
-                                Class="w-100" />
-
-            <MudDivider />
-            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
-                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-sort">
-                <MudSelectItem Value="@nameof(CustomerVm.CreatedAt)">تاریخ ثبت</MudSelectItem>
-                <MudSelectItem Value="@nameof(CustomerVm.FullName)">نام مشتری</MudSelectItem>
-                <MudSelectItem Value="@nameof(CustomerVm.CustomerType)">نوع مشتری</MudSelectItem>
-                <MudSelectItem Value="@nameof(CustomerVm.NationalId)">کد مشتری</MudSelectItem>
-                <MudSelectItem Value="@nameof(CustomerVm.PhoneNumber)">شماره تماس</MudSelectItem>
-            </MudSelect>
-            <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_sortDescending"
-                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-direction">
-                <MudSelectItem T="bool" Value="false">صعودی (از کم به زیاد)</MudSelectItem>
-                <MudSelectItem T="bool" Value="true">نزولی (از زیاد به کم)</MudSelectItem>
-            </MudSelect>
-        </MudStack>
+        <div class="gex-directory-filter-form">
+            <p class="gex-filter-description mud-typography-body2">محدوده نمایش مشتریان را مشخص کنید. فیلترهای انتخاب‌شده فقط پس از اعمال به‌روز می‌شوند.</p>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="TransactionType?"
+                               Variant="Variant.Outlined" Label="وضعیت حساب"
+                               Value="@_transactionType" ValueChanged="@(v => _transactionType = v)"
+                               Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                               AdornmentIcon="@GetTransactionTypeIcon(_transactionType)"
+                               AdornmentColor="@GetTransactionTypeIconColor(_transactionType)" Class="w-100">
+                        <MudSelectItem T="TransactionType?" Value="@(null as TransactionType?)">همه</MudSelectItem>
+                        @foreach (var type in Enum.GetValues<TransactionType>())
+                        {
+                            <MudSelectItem T="TransactionType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="CustomerType?"
+                               Variant="Variant.Outlined" Label="نوع مشتری"
+                               Value="@_customerType" ValueChanged="@(v => _customerType = v)"
+                               Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                               AdornmentIcon="@GetCustomerTypeIcon(_customerType)"
+                               AdornmentColor="@GetCustomerTypeIconColor(_customerType)" Class="w-100">
+                        <MudSelectItem T="CustomerType?" Value="@(null as CustomerType?)">همه</MudSelectItem>
+                        @foreach (var type in Enum.GetValues<CustomerType>())
+                        {
+                            <MudSelectItem T="CustomerType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDateRangePicker DateRange="@_dateRange"
+                                        DateRangeChanged="@(dr => _dateRange = dr)"
+                                        Variant="Variant.Outlined" Label="تاریخ ثبت مشتری"
+                                        Margin="Margin.Dense" MaxMonthColumns="1"
+                                        DisplayMonths="1" Adornment="Adornment.Start"
+                                        ShowToolbar="false" Clearable="true" Class="w-100" />
+                </MudItem>
+                <MudItem xs="12" Class="gex-filter-mobile-sort">
+                    <div class="gex-filter-section-title"><ShellIcon Name="list" /><span>مرتب‌سازی نمایش</span></div>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-sort">
+                                <MudSelectItem Value="@nameof(CustomerVm.CreatedAt)">تاریخ ثبت</MudSelectItem>
+                                <MudSelectItem Value="@nameof(CustomerVm.FullName)">نام مشتری</MudSelectItem>
+                                <MudSelectItem Value="@nameof(CustomerVm.CustomerType)">نوع مشتری</MudSelectItem>
+                                <MudSelectItem Value="@nameof(CustomerVm.NationalId)">کد مشتری</MudSelectItem>
+                                <MudSelectItem Value="@nameof(CustomerVm.PhoneNumber)">شماره تماس</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_sortDescending"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="customer-filter-direction">
+                                <MudSelectItem T="bool" Value="false">صعودی (از کم به زیاد)</MudSelectItem>
+                                <MudSelectItem T="bool" Value="true">نزولی (از زیاد به کم)</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </div>
     </DialogContent>
     <DialogActions>
-        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
-            <MudButton Variant="Variant.Text"
-                       Color="Color.Error"
-                       OnClick="Clear"
-                       StartIcon="@Icons.Material.Filled.Delete">
-                بازنشانی همه
-            </MudButton>
-            <div class="d-flex gap-2">
-                <MudButton Color="Color.Default"
-                           OnClick="Cancel">
-                    انصراف
-                </MudButton>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Success"
-                           OnClick="Apply"
-                           StartIcon="@Icons.Material.Filled.Check">
-                    اعمال
-                </MudButton>
-            </div>
-        </div>
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Clear"
+                   StartIcon="@Icons.Material.Filled.Delete">بازنشانی</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Error"
+                   OnClick="Cancel" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="Apply" StartIcon="@Icons.Material.Filled.Check">اعمال فیلترها</MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

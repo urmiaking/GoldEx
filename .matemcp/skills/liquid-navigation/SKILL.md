@@ -42,3 +42,5 @@ Initial implementation: GitHub #251, enterprise release 1.0.99.
 - One-piece bottom profile glass gets 44px extra reach beyond content width. Logout is max-174px and inset 12px, clips stray content, and still stays away from the More control.
 - Store picker Blazor state remains authoritative: navigation.js document capture pointerdown/Escape outside the picker calls the original trigger.click() and disposes its global listeners. Inside interactions do not dismiss.
 - New authenticated ReleaseNotesMenuItem is a native button. liquid-dock.js includes it for dynamic sizing and overflow More proxies. It opens ReleaseHistory while Home retains automatic version update notification.
+## More-only command dedup (#259)
+- ReleaseNotesMenuItem is a button and exists ONCE in native NavMenu. On desktop JS marks it forceOverflow, excludes it from visible primary slots and clones only one proxy into More; CSS hides original >=960px. Only real route anchors can move active droplet; the proxy command invokes original.click() to open its dialog. More button proxies align flex-start/right like other links. Mobile keeps original command.

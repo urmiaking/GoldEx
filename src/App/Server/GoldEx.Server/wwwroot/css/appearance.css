@@ -1394,3 +1394,44 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 .gex-route-trail-separator { direction: ltr; unicode-bidi: isolate; }
 
 @media (min-width: 960px) { .gex-home-breadcrumb { display: none !important; } }
+
+
+/* #259: Restore the exact icon-style left chevron in the desktop RTL trail. */
+.gex-route-trail-separator .gex-shell-icon {
+    width: 15px; height: 15px; display: block; direction: ltr; transform: none;
+}
+
+/* Only the More proxy renders in desktop; no duplicate release icon.
+   Align the button like the rest of More's navigational links. */
+@media (min-width: 960px) {
+    .gex-liquid-dock .gex-navigation-menu > button.gex-nav-release { display: none; }
+    .gex-liquid-dock .gex-dock-overflow-links > button.gex-nav-release {
+        display: flex; flex-direction: row; width: 100%; min-height: 40px;
+        padding: 9px 11px; justify-content: flex-start; align-items: center;
+        gap: 11px; direction: rtl; text-align: right; border-radius: 12px;
+        color: var(--mud-palette-text-primary); background: transparent;
+        font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .gex-liquid-dock .gex-dock-overflow-links > button.gex-nav-release > span {
+        flex: 1 1 auto; text-align: right; margin: 0;
+    }
+}
+
+/* Customer and Invoice filters now use the customer editor's responsive
+   native modal and common two-column field grid. Only mobile needs sorting. */
+.gex-directory-filter-form { display: flex; flex-direction: column; gap: 16px; min-width: 0; width: 100%; }
+.gex-filter-description {
+    margin: 0 0 2px; color: var(--mud-palette-text-secondary);
+    font-size: 13px; font-weight: 400; line-height: 1.8;
+}
+.gex-filter-mobile-sort { display: block; }
+.gex-filter-section-title {
+    display: flex; align-items: center; gap: 9px;
+    margin: 4px 0 16px; padding-top: 15px;
+    border-top: 1px solid var(--mud-palette-lines-default);
+    color: var(--mud-palette-text-primary); font-size: 13px; font-weight: 500;
+}
+.gex-filter-section-title .gex-shell-icon { width: 18px; height: 18px; color: var(--mud-palette-primary); }
+@media (min-width: 960px) {
+    .gex-filter-mobile-sort { display: none !important; }
+}

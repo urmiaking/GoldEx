@@ -10,11 +10,12 @@ const homeCode=read('src/App/Client/GoldEx.Client/Pages/Home/Index.razor.cs');
 const css=read('src/App/Server/GoldEx.Server/wwwroot/css/appearance.css');
 const dock=read('src/App/Client/GoldEx.Client.Components/wwwroot/js/liquid-dock.js');
 const navigation=read('src/App/Client/GoldEx.Client.Components/wwwroot/js/navigation.js');
-test('RTL trail uses left arrow with isolated direction',()=>{
- assert.match(route,/gex-route-trail-separator[^>]*>←<\/span>/);
- assert.doesNotMatch(route,/gex-route-trail-separator[^>]*>[‹›]<\/span>/);
- assert.match(css,/\.gex-route-trail-separator \{ direction: ltr; unicode-bidi: isolate; \}/);
+test('RTL trail uses original left-facing chevron SVG instead of a textual arrow',()=>{
+ assert.match(route,/gex-route-trail-separator[^>]*><ShellIcon Name="chevron-left" \/><\/span>/);
+ assert.doesNotMatch(route,/>←<\/span>/);
+ assert.match(css,/\.gex-route-trail-separator \.gex-shell-icon/);
 });
+
 test('program updates moved from Home to NavMenu without losing automatic popup',()=>{
  assert.doesNotMatch(home,/OpenReleaseNotesManuallyAsync|release-notes-btn|تغییرات برنامه/);
  assert.doesNotMatch(homeCode,/private async Task OpenReleaseNotesManuallyAsync/);

@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Client.Pages.Customers.ViewModels;
@@ -8,7 +9,7 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class CustomerFiltersDialog
 {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     [Parameter] public DateRange DateRange { get; set; } = new();
     [Parameter] public CustomerType? CustomerTypeParam { get; set; }
@@ -79,7 +80,7 @@ public partial class CustomerFiltersDialog
             _sortDescending
         );
 
-        MudDialog.Close(DialogResult.Ok(result));
+        Session?.Close(result);
     }
 
     private void Clear()
@@ -87,8 +88,7 @@ public partial class CustomerFiltersDialog
         _dateRange = new DateRange();
         _customerType = null;
         _transactionType = null;
-        _sortLabel = nameof(CustomerVm.CreatedAt);
-        _sortDescending = true;
+        // Reset only filters; keep sorting set by the desktop toolbar.
         Apply();
     }
 
@@ -98,5 +98,5 @@ public partial class CustomerFiltersDialog
         _sortDescending = label == nameof(CustomerVm.CreatedAt);
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => Session?.Cancel();
 }

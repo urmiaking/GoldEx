@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
@@ -21,6 +22,7 @@ public partial class InvoicesList
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     [Parameter] public bool PersistState { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "page")] public int? PageQuery { get; set; }
@@ -325,27 +327,27 @@ public partial class InvoicesList
             DateRange DateRange,
             InvoiceType? InvoiceType,
             TradeScale? TradeScale,
-            InvoicePaymentStatus? PaymentStatus
+            InvoicePaymentStatus? PaymentStatus,
+            string SortLabel,
+            bool SortDescending
     );
 
     private async Task OpenMobileFilters()
     {
-        var parameters = new DialogParameters<InvoiceFiltersDialog>
+        // Match the customer editor's responsive native dialog, preserving
+        // mobile sorting and the independent desktop toolbar state.
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.DateRange, _filterDateRange },
-            { x => x.InvoiceTypeParam, _invoiceType },
-            { x => x.TradeScaleParam, _tradeScale },
-            { x => x.PaymentStatus, _invoicePaymentStatus }
+            { nameof(InvoiceFiltersDialog.DateRange), _filterDateRange },
+            { nameof(InvoiceFiltersDialog.InvoiceTypeParam), _invoiceType! },
+            { nameof(InvoiceFiltersDialog.TradeScaleParam), _tradeScale! },
+            { nameof(InvoiceFiltersDialog.PaymentStatus), _invoicePaymentStatus! },
+            { nameof(InvoiceFiltersDialog.SortLabel), _sortLabel },
+            { nameof(InvoiceFiltersDialog.SortDescending),
+              _sortDirection == Sdk.Common.Definitions.SortDirection.Descending }
         };
 
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.Small
-        };
-
-        var dialog = await DialogService.ShowAsync<InvoiceFiltersDialog>("فیلترها", parameters, options);
+        var dialog = ResponsiveDialogs.Show<InvoiceFiltersDialog>("فیلتر فاکتورها", parameters);
         var result = await dialog.Result;
 
         if (result is { Canceled: false } && result.Data is InvoicesMobileFiltersResult filterResult)
@@ -360,6 +362,10 @@ public partial class InvoicesList
         _invoiceType = result.InvoiceType;
         _tradeScale = result.TradeScale;
         _invoicePaymentStatus = result.PaymentStatus;
+        _sortLabel = result.SortLabel;
+        _sortDirection = result.SortDescending
+            ? Sdk.Common.Definitions.SortDirection.Descending
+            : Sdk.Common.Definitions.SortDirection.Ascending;
 
         await RefreshAsync();
     }

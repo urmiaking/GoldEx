@@ -23,3 +23,5 @@ Use for desktop navigation/header work in GoldEx. Read root `AGENTS.md` before c
 ## RTL and body gap correction (#258)
 - The custom desktop route separator uses U+2190 left arrow plus direction:ltr;unicode-bidi:isolate. Old left-angle bracket mirrored backward in RTL. The desktop content gap is 26px to match Dock-to-AppBar 26px; mobile remains 12px.
 - Manual Release Notes now belong to authenticated NavMenu via ReleaseNotesMenuItem, including desktop More overflow. The Home page retains the automatic new-version modal but no manual button.
+## Correction after #258: SVG chevron, not text arrow (#259)
+- In custom RouteBreadcrumbs the separator is ShellIcon Name="chevron-left", using existing left-pointing SVG geometry. Do not use a plain Unicode arrow or mirrored bracket. CSS controls its size/direction without flipping SVG. Existing mobile MudBreadcrumbs remain unchanged.
