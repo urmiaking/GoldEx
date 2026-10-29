@@ -37,7 +37,7 @@
         <p class="gex-notification-feedback" role="status">@_pushFeedback</p>
     }
 
-    <NotificationList Items="_items" Busy="_working" OnDelete="HandleDelete" OnMarkAsRead="HandleMarkAsRead" OnButtonAction="HandleButtonAction" />
+    <NotificationList Items="_items" Busy="_working" OnOpen="HandleOpenNotificationAsync" />
 </dialog>
 @if (ShowTrigger)
 {

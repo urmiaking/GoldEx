@@ -408,23 +408,71 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
     font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
 }
 .gex-notification-enable-button:hover { filter: brightness(.94); }
-.gex-notification-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 11px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--mud-palette-primary-text); background: var(--mud-palette-primary); transition: filter 150ms; }
-.gex-notification-action .gex-shell-icon { width: 17px; height: 17px; }
-.gex-notification-action:hover { filter: brightness(.94); }
-.gex-notification-action--quiet { color: var(--mud-palette-text-secondary); background: transparent; font-weight: 400; }
-.gex-notification-action:disabled, .gex-notifications button:disabled { opacity: .5; cursor: default; }
 .gex-notification-feedback { flex: none; margin: 12px 16px 0; padding: 12px; border-radius: 12px; background: var(--mud-palette-background); font-size: 12px; line-height: 1.9; }
-.gex-notification-list { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; min-height: 100px; flex: 1 1 auto; padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-.gex-notification-card { display: flex; gap: 12px; padding: 14px; border: 1px solid var(--mud-palette-lines-default); border-radius: 14px; flex: none; }
-.gex-notification-card.is-unread { border-color: rgba(var(--mud-palette-primary-rgb),.26); background: rgba(var(--mud-palette-primary-rgb),.035); }
-.gex-notification-card-icon { color: var(--mud-palette-primary); padding-top: 2px; }
-.gex-notification-card-body { flex: 1; min-width: 0; }
-.gex-notification-card-heading { display: flex; align-items: center; gap: 10px; }
-.gex-notification-card h3 { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.7; }
-.gex-notification-card time { display: block; font-size: 12px; font-weight: 400; margin: 5px 0 9px; color: var(--mud-palette-text-secondary); }
-.gex-notification-card p { font-size: 13px; font-weight: 400; line-height: 1.85; margin: 0; overflow-wrap: anywhere; color: var(--mud-palette-text-secondary); }
-.gex-notification-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
-.gex-notification-dismiss { margin-inline-start: auto; }
+/* Compact, MeetFlow-style inbox: one click target per notification, not a card of buttons. */
+.gex-notification-list {
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+    min-height: 100px; flex: 1 1 auto;
+    padding: 6px 10px 18px;
+    display: flex; flex-direction: column; gap: 0;
+}
+.gex-notification-item {
+    display: flex; align-items: flex-start; gap: 11px;
+    width: 100%; flex: none; min-width: 0;
+    padding: 13px 10px; border: 0; border-bottom: 1px solid var(--mud-palette-lines-default);
+    border-radius: 9px; background: transparent;
+    color: var(--mud-palette-text-primary);
+    font: inherit; font-size: 13px; font-weight: 400; text-align: start; direction: rtl;
+    cursor: pointer;
+    transition: background-color 170ms ease, transform 170ms ease;
+}
+.gex-notification-item:last-child { border-bottom-color: transparent; }
+.gex-notification-item:hover { background: rgba(var(--mud-palette-primary-rgb),.065); }
+.gex-notification-item:active { background: rgba(var(--mud-palette-primary-rgb),.10); }
+.gex-notification-item:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: -2px; }
+.gex-notification-item:disabled { cursor: wait; opacity: .6; }
+.gex-notification-item-icon {
+    display: grid; place-items: center; flex: none;
+    width: 34px; height: 34px; border-radius: 11px;
+    color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.075);
+}
+.gex-notification-item-icon .gex-shell-icon { width: 18px; height: 18px; }
+.gex-notification-item-content {
+    display: flex; flex-direction: column; align-items: stretch;
+    flex: 1 1 auto; min-width: 0; gap: 4px;
+}
+.gex-notification-item-title {
+    display: flex; align-items: center; gap: 7px;
+    min-width: 0; color: var(--mud-palette-text-primary);
+    font-size: 13.5px; font-weight: 500; line-height: 1.65;
+}
+.gex-notification-item-title > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gex-notification-unread-dot {
+    display: inline-block; flex: none; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--mud-palette-primary);
+}
+.gex-notification-item-preview {
+    overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    line-clamp: 2; overflow-wrap: anywhere;
+    color: var(--mud-palette-text-secondary);
+    font-size: 12.5px; font-weight: 400; line-height: 1.85;
+}
+.gex-notification-item-time {
+    color: var(--mud-palette-text-secondary);
+    opacity: .82; font-size: 11px; font-weight: 400; line-height: 1.6;
+}
+.gex-notification-item-chevron {
+    display: grid; place-items: center; flex: none; align-self: center;
+    color: var(--mud-palette-text-secondary); opacity: .5;
+    transition: transform 170ms ease, color 170ms ease, opacity 170ms ease;
+}
+.gex-notification-item-chevron .gex-shell-icon { width: 16px; height: 16px; direction: ltr; transform: none; }
+.gex-notification-item:hover .gex-notification-item-chevron {
+    opacity: 1; color: var(--mud-palette-primary); transform: translateX(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-notification-item, .gex-notification-item-chevron { transition: none; }
+}
 .gex-notification-empty { padding: 30px 14px; text-align: center; margin: auto; }
 .gex-notification-empty > span { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 17px; color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.075); }
 .gex-notification-empty > span .gex-shell-icon { width: 25px; height: 25px; }
@@ -434,8 +482,8 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
     .gex-notifications { width: 100vw; border-right: 0; }
 }
 @media (max-width: 599.98px) {
-    .gex-notification-list { padding-inline: 16px; }
-    .gex-notification-card { padding: 12px; gap: 8px; }
+    .gex-notification-list { padding-inline: 8px; }
+    .gex-notification-item { padding: 12px 8px; gap: 9px; }
     .gex-notification-feedback { margin-inline: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .gex-notifications[open] { animation: none; } }

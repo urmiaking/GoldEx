@@ -1,5 +1,3 @@
-@using GoldEx.Shared.Enums
-
 <section class="gex-notification-list" aria-label="اعلان‌های خوانده‌نشده" aria-live="polite" aria-busy="@Busy.ToString().ToLowerInvariant()">
     @if (Items.Count == 0)
     {
@@ -10,21 +8,24 @@
     }
     @foreach (var notification in Items)
     {
-        <article @key="notification.Id" class="gex-notification-card is-unread">
-            <span class="gex-notification-card-icon"><ShellIcon Name="file" /></span>
-            <div class="gex-notification-card-body">
-                <div class="gex-notification-card-heading"><h3>@notification.Title</h3></div>
-                <time datetime="@notification.CreatedAt.ToString("O")">@notification.CreatedAt.ToString("yyyy/MM/dd · HH:mm")</time>
-                <p>@notification.Message</p>
-                <div class="gex-notification-card-actions">
-                    @foreach (var button in notification.Buttons)
-                    {
-                        <button type="button" class="gex-notification-action" disabled="@Busy" @onclick="() => OnButtonAction.InvokeAsync((button.Action, button.ActionType, notification.InvoiceId))"><ShellIcon Name="@(button.ActionType == ButtonActionType.SendReminderSms ? "mail" : "external")" />@button.Text</button>
-                    }
-                    <button type="button" class="gex-notification-action gex-notification-action--quiet" disabled="@Busy" @onclick="() => OnMarkAsRead.InvokeAsync(notification.Id)"><ShellIcon Name="check" />خواندم</button>
-                    <button type="button" class="gex-icon-button gex-notification-dismiss" disabled="@Busy" aria-label="حذف اعلان @notification.Title" @onclick="() => OnDelete.InvokeAsync(notification.Id)"><ShellIcon Name="trash" /></button>
-                </div>
-            </div>
-        </article>
+        <button type="button"
+                @key="notification.Id"
+                class="gex-notification-item"
+                disabled="@Busy"
+                aria-label="@($"مشاهده اعلان: {notification.Title}")"
+                @onclick="() => OnOpen.InvokeAsync(notification)">
+            <span class="gex-notification-item-icon" aria-hidden="true">
+                <ShellIcon Name="@(notification.InvoiceId.HasValue ? "file" : "bell")" />
+            </span>
+            <span class="gex-notification-item-content">
+                <span class="gex-notification-item-title">
+                    <span>@notification.Title</span>
+                    <span class="gex-notification-unread-dot" aria-hidden="true"></span>
+                </span>
+                <span class="gex-notification-item-preview">@notification.Message</span>
+                <time class="gex-notification-item-time" datetime="@notification.CreatedAt.ToString("O")">@notification.CreatedAt.ToString("yyyy/MM/dd · HH:mm")</time>
+            </span>
+            <span class="gex-notification-item-chevron" aria-hidden="true"><ShellIcon Name="chevron-left" /></span>
+        </button>
     }
 </section>

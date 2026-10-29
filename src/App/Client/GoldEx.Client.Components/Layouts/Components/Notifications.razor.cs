@@ -1,5 +1,6 @@
 using GoldEx.Shared.DTOs.Notifications;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -76,8 +77,6 @@ public partial class Notifications
         }
         finally { _loading = false; }
     }
-    private Task HandleDelete(Guid id) => ChangeAsync((s, ct) => s.DeleteAsync(id, ct));
-    private Task HandleMarkAsRead(Guid id) => ChangeAsync((s, ct) => s.MarkAsReadAsync(id, ct));
     private Task HandleMarkAllAsRead() => ChangeAsync((s, ct) => s.MarkAllAsReadAsync(ct));
     private async Task ChangeAsync(Func<INotificationService, CancellationToken, Task> action)
     {
@@ -108,19 +107,50 @@ public partial class Notifications
         catch (JSException) { _pushFeedback = "برقراری ارتباط با سرویس اعلان ممکن نشد. اتصال اینترنت و اجازهٔ اعلان مرورگر را بررسی کنید."; }
         finally { _working = false; }
     }
-    private async Task HandleButtonAction((string action, ButtonActionType actionType, Guid? invoiceId) item)
+    // MeetFlow-style inbox: opening an item is the only per-notification
+    // action. Never execute reminder-SMS (or delete) commands implicitly.
+    private async Task HandleOpenNotificationAsync(GetNotificationResponse notification)
     {
-        if (item.actionType == ButtonActionType.NavigateToUrl)
+        if (_working || _loading) return;
+        var target = GetNotificationDestination(notification);
+        _working = true;
+        try
         {
-            await CloseAsync(); Navigation.NavigateTo(item.action);
+            await SendRequestAsync<INotificationService>(
+                (service, cancellationToken) => service.MarkAsReadAsync(notification.Id, cancellationToken));
+            _items.RemoveAll(x => x.Id == notification.Id);
+            _unreadCount = _items.Count;
+            await UnreadCountChanged.InvokeAsync(_unreadCount);
         }
-        else if (item.actionType == ButtonActionType.SendReminderSms && item.invoiceId.HasValue)
+        finally
         {
-            await SendRequestAsync<IInvoiceService>((s, ct) => s.SendReminderAsync(item.invoiceId.Value, ct), afterSend: () =>
-            {
-                AddSuccessToast("پیامک با موفقیت ارسال شد"); return Task.CompletedTask;
-            });
+            _working = false;
         }
+
+        if (target is not null)
+        {
+            await CloseAsync();
+            Navigation.NavigateTo(target);
+        }
+    }
+
+    private static string? GetNotificationDestination(GetNotificationResponse notification)
+    {
+        // Only follow internal application routes from the server-provided
+        // View action; never treat the SendReminderSms action as navigation.
+        var url = notification.Buttons?
+            .FirstOrDefault(button => button.ActionType == ButtonActionType.NavigateToUrl)?.Action;
+        if (!string.IsNullOrWhiteSpace(url)
+            && url.StartsWith("/", StringComparison.Ordinal)
+            && !url.StartsWith("//", StringComparison.Ordinal)
+            && !url.Contains('\\')
+            && !url.Any(char.IsControl)
+            && Uri.TryCreate(url, UriKind.Relative, out _))
+            return url;
+
+        return notification.InvoiceId is Guid invoiceId
+            ? ClientRoutes.Invoices.SetInvoice.Replace("{id?}", invoiceId.ToString("D"), StringComparison.Ordinal)
+            : null;
     }
     public override async ValueTask DisposeAsync()
     {
