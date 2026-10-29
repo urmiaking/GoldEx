@@ -382,39 +382,40 @@ html.gex-quick-create-open, html.gex-quick-create-open body { overflow: hidden; 
 html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden; }
 .gex-notification-heading { display: flex; justify-content: space-between; align-items: center; flex: none; padding: max(16px, env(safe-area-inset-top, 0px)) 16px 16px; border-bottom: 1px solid var(--mud-palette-lines-default); }
 .gex-notification-heading > div { display: flex; align-items: center; gap: 12px; }
-.gex-notification-heading h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.gex-notification-heading h2 { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.55; }
 .gex-notification-symbol { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 15px; color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.1); }
 .gex-notification-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; flex: none; }
-.gex-notification-summary strong, .gex-notification-push strong { font-size: 14px; font-weight: 700; }
-.gex-notification-summary p, .gex-notification-push p { font-size: 12px; line-height: 1.9; margin: 4px 0 0; color: var(--mud-palette-text-secondary); }
+.gex-notification-summary strong, .gex-notification-push strong { font-size: 14px; font-weight: 500; line-height: 1.65; }
+.gex-notification-summary p, .gex-notification-push p { font-size: 13px; font-weight: 400; line-height: 1.8; margin: 4px 0 0; color: var(--mud-palette-text-secondary); }
 .gex-notification-push { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 16px; padding: 14px; border-radius: 14px; border: 1px solid rgba(var(--mud-palette-primary-rgb),.16); background: rgba(var(--mud-palette-primary-rgb),.045); flex: none; }
 .gex-notification-push > div:not(.gex-notification-push-actions) { flex: 1 1 200px; min-width: 0; }
 .gex-notification-push-icon { color: var(--mud-palette-primary); }
 .gex-notification-push-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.gex-notification-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 11px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--mud-palette-primary-text); background: var(--mud-palette-primary); transition: filter 150ms; }
+.gex-notification-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 11px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--mud-palette-primary-text); background: var(--mud-palette-primary); transition: filter 150ms; }
 .gex-notification-action .gex-shell-icon { width: 17px; height: 17px; }
 .gex-notification-action:hover { filter: brightness(.94); }
-.gex-notification-action--quiet { color: var(--mud-palette-text-secondary); background: transparent; }
+.gex-notification-action--quiet { color: var(--mud-palette-text-secondary); background: transparent; font-weight: 400; }
 .gex-notification-action:disabled, .gex-notifications button:disabled { opacity: .5; cursor: default; }
 .gex-notification-feedback { flex: none; margin: 12px 16px 0; padding: 12px; border-radius: 12px; background: var(--mud-palette-background); font-size: 12px; line-height: 1.9; }
-.gex-notification-list-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; padding: 12px 16px 8px; color: var(--mud-palette-text-secondary); font-size: 12px; }
+.gex-notification-list-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; padding: 12px 16px 8px; color: var(--mud-palette-text-secondary); font-size: 13px; font-weight: 400; }
 .gex-notification-list { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; min-height: 100px; flex: 1 1 auto; padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .gex-notification-card { display: flex; gap: 12px; padding: 14px; border: 1px solid var(--mud-palette-lines-default); border-radius: 14px; flex: none; }
 .gex-notification-card.is-unread { border-color: rgba(var(--mud-palette-primary-rgb),.26); background: rgba(var(--mud-palette-primary-rgb),.035); }
 .gex-notification-card-icon { color: var(--mud-palette-primary); padding-top: 2px; }
 .gex-notification-card-body { flex: 1; min-width: 0; }
 .gex-notification-card-heading { display: flex; align-items: center; gap: 10px; }
-.gex-notification-card h3 { margin: 0; font-size: 14px; font-weight: 750; }
-.gex-notification-new { border-radius: 6px; padding: 2px 6px; background: rgba(var(--mud-palette-primary-rgb),.1); color: var(--mud-palette-primary); font-size: 10px; }
-.gex-notification-card time { display: block; font-size: 11px; margin: 5px 0 9px; color: var(--mud-palette-text-secondary); }
-.gex-notification-card p { font-size: 13px; line-height: 2; margin: 0; overflow-wrap: anywhere; color: var(--mud-palette-text-secondary); }
+.gex-notification-card h3 { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.7; }
+.gex-notification-card.is-read h3 { font-weight: 400; }
+.gex-notification-new { border-radius: 6px; padding: 2px 6px; background: rgba(var(--mud-palette-primary-rgb),.1); color: var(--mud-palette-primary); font-size: 11px; font-weight: 500; }
+.gex-notification-card time { display: block; font-size: 12px; font-weight: 400; margin: 5px 0 9px; color: var(--mud-palette-text-secondary); }
+.gex-notification-card p { font-size: 13px; font-weight: 400; line-height: 1.85; margin: 0; overflow-wrap: anywhere; color: var(--mud-palette-text-secondary); }
 .gex-notification-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
 .gex-notification-dismiss { margin-inline-start: auto; }
 .gex-notification-empty { padding: 28px 16px 36px; text-align: center; margin: auto; }
 .gex-notification-empty > span { display: inline-grid; place-items: center; width: 76px; height: 76px; border-radius: 26px; color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.075); }
 .gex-notification-empty > span .gex-shell-icon { width: 34px; height: 34px; }
-.gex-notification-empty h3 { font-size: 17px; margin: 16px 0 8px; }
-.gex-notification-empty p { max-width: 300px; margin: auto; font-size: 13px; line-height: 2; color: var(--mud-palette-text-secondary); }
+.gex-notification-empty h3 { font-size: 16px; font-weight: 500; line-height: 1.65; margin: 16px 0 8px; }
+.gex-notification-empty p { max-width: 300px; margin: auto; font-size: 13px; font-weight: 400; line-height: 1.85; color: var(--mud-palette-text-secondary); }
 .gex-notification-footer { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 14px 16px max(14px, env(safe-area-inset-bottom, 0px)); flex: none; border-top: 1px solid var(--mud-palette-lines-default); color: var(--mud-palette-text-secondary); font-size: 11px; }
 .gex-notification-footer .gex-shell-icon { width: 16px; height: 16px; flex: none; }
 @keyframes gex-notification-enter { from { opacity: .75; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
@@ -442,9 +443,9 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
 .gex-calculator-tab-viewport { min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
 .gex-calculator-tab-viewport::-webkit-scrollbar { display: none; }
 .gex-calculator-tab-track { display: flex; align-items: stretch; gap: 5px; width: max-content; min-width: 100%; }
-.gex-calculator-tab { appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: none; min-width: 0; min-height: 58px; padding: 0 15px; border: 0; border-radius: 0; background: transparent; color: var(--mud-palette-text-primary); font: inherit; font-size: 13px; font-weight: 650; white-space: nowrap; cursor: pointer; transition: color 180ms ease, background-color 180ms ease; }
+.gex-calculator-tab { appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: none; min-width: 0; min-height: 58px; padding: 0 15px; border: 0; border-radius: 0; background: transparent; color: var(--mud-palette-text-primary); font: inherit; font-size: 14px; font-weight: 400; white-space: nowrap; cursor: pointer; transition: color 180ms ease, background-color 180ms ease; }
 .gex-calculator-tab:hover { color: var(--mud-palette-text-primary); background: var(--mud-palette-background); }
-.gex-calculator-tab.is-active { color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.055); font-weight: 800; }
+.gex-calculator-tab.is-active { color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb),.055); font-weight: 500; }
 .gex-calculator-tab.is-active::after { content: ''; position: absolute; inset-inline: 10px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--mud-palette-primary); animation: gex-calculator-indicator 200ms ease-out; }
 .goldex-shell .gex-calculator-tab:focus-visible, .goldex-shell .gex-calculator-scroll:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: -4px; }
 .gex-calculator-tab .gex-shell-icon { width: 18px; height: 18px; }
@@ -456,8 +457,8 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
 .gex-calculator-context { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 18px 20px; border-bottom: 1px solid var(--mud-palette-lines-default); }
 .gex-calculator-context-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: rgba(var(--mud-palette-primary-rgb),.085); color: var(--mud-palette-primary); }
 .gex-calculator-context-icon .gex-shell-icon { width: 22px; height: 22px; }
-.gex-calculator-context h2 { font-size: 15px; font-weight: 800; line-height: 1.6; margin: 0; color: var(--mud-palette-text-primary); }
-.gex-calculator-context p { font-size: 12px; line-height: 1.9; margin: 2px 0 0; color: var(--mud-palette-text-secondary); }
+.gex-calculator-context h2 { font-size: 15px; font-weight: 500; line-height: 1.6; margin: 0; color: var(--mud-palette-text-primary); }
+.gex-calculator-context p { font-size: 13px; font-weight: 400; line-height: 1.8; margin: 2px 0 0; color: var(--mud-palette-text-secondary); }
 .gex-calculator-panels { min-width: 0; border-radius: 0 0 20px 20px; }
 .gex-calculator-panels > [role=tabpanel] { min-width: 0; animation: gex-calculator-content 230ms cubic-bezier(.22,1,.36,1); }
 .gex-calculator-panels > [role=tabpanel][hidden] { display: none !important; }
@@ -472,7 +473,7 @@ html.gex-notifications-open, html.gex-notifications-open body { overflow: hidden
     .gex-calculator-workspace { border-radius: 16px; }
     .gex-calculator-tabbar { border-radius: 16px 16px 0 0; }
     .gex-calculator-tab-track { gap: 2px; }
-    .gex-calculator-tab { min-height: 54px; padding-inline: 12px; font-size: 12px; gap: 7px; }
+    .gex-calculator-tab { min-height: 54px; padding-inline: 12px; font-size: 13px; gap: 7px; }
     .gex-calculator-context { padding: 14px 16px; gap: 10px; }
     .gex-calculator-context h2 { font-size: 14px; }
     .gex-calculator-panels, .gex-calculator-panels > [role=tabpanel] > .mud-card { border-radius: 0 0 16px 16px; }
