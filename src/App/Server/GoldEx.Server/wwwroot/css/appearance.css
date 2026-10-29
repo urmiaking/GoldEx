@@ -1492,47 +1492,181 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 @media (min-width: 960px) {
     .gex-filter-mobile-sort { display: none !important; }
 }
-/* #263: Approved premium mobile shell, profile license and report-style date filters.
-   The mobile wordmark is centered independently from actions, not by removing them. */
-.gex-mobile-route-bar { display: none; }
-.gex-mobile-more-heading, .gex-mobile-license, .gex-identity-arrow { display: none; }
 
+
+/* #264: Desktop-first premium workspace; restore pre-#263 mobile markup/styles. */
+.gex-desktop-route-bar, .gex-desktop-profile-license { display: none; }
+
+@media (min-width: 960px) {
+    /* Branding sits at the physical center, independently of the action and clock groups. */
+    .goldex-shell .gex-topbar { isolation: isolate; }
+    .goldex-shell .gex-desktop-brand {
+        position: absolute; z-index: 1;
+        left: 50%; top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+        transform: translate(-50%, -50%);
+        margin: 0; max-width: min(190px, 21vw);
+    }
+    .goldex-shell .gex-desktop-brand .gex-shell-brand {
+        flex-direction: row; gap: 9px; justify-content: center;
+    }
+    .goldex-shell .gex-desktop-brand .gex-shell-brand-copy strong {
+        font-size: clamp(21px, 1.9vw, 25px); font-weight: 500;
+        color: var(--mud-palette-primary);
+    }
+    /* RTL: actions at physical right; clock remains at physical left. */
+    .goldex-shell .gex-topbar-actions {
+        margin-inline-start: 0; margin-inline-end: auto;
+        position: relative; z-index: 2;
+    }
+    .goldex-shell .gex-topbar-date { position: relative; z-index: 2; }
+
+    /* A separate breadcrumb line aligned with the main content, not crammed into AppBar. */
+    .goldex-shell {
+        --gex-desktop-crumb-height: 44px;
+        --gex-content-offset: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + var(--gex-content-gap) + var(--gex-desktop-crumb-height));
+        --gex-table-layout-delta: calc(var(--gex-content-offset) - 56px);
+    }
+    .gex-desktop-route-bar {
+        display: flex; align-items: center; overflow: hidden;
+        position: absolute;
+        top: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + 7px);
+        inset-inline-start: calc(var(--gex-dock-size) + 44px);
+        inset-inline-end: 22px;
+        height: 38px; min-width: 0; z-index: 1;
+    }
+    .gex-desktop-route-bar .gex-route-trail {
+        display: flex; align-items: center;
+        flex: 1 1 auto; min-width: 0; max-width: 100%;
+        overflow: hidden; margin: 0;
+    }
+    .gex-desktop-route-bar .gex-route-trail-list {
+        display: flex; align-items: center; gap: 5px;
+        list-style: none; padding: 0; margin: 0; min-width: 0;
+        overflow: hidden; white-space: nowrap;
+    }
+    .gex-desktop-route-bar .gex-route-trail-item {
+        display: inline-flex; flex: 0 1 auto; gap: 6px;
+        align-items: center; min-width: 0;
+        color: var(--mud-palette-text-secondary); font-size: 13px; font-weight: 400;
+    }
+    .gex-desktop-route-bar .gex-route-trail-item.is-current {
+        color: var(--mud-palette-text-primary);
+    }
+    .gex-desktop-route-bar .gex-route-trail-item a,
+    .gex-desktop-route-bar .gex-route-trail-current {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; max-width: 100%; min-width: 0;
+        border-radius: 10px; color: inherit;
+    }
+    .gex-desktop-route-bar .gex-route-trail-current {
+        background: color-mix(in srgb, var(--mud-palette-primary) 8%, var(--mud-palette-surface));
+        font-weight: 500;
+    }
+    .gex-desktop-route-bar .gex-route-trail-item a:hover {
+        background: color-mix(in srgb, var(--mud-palette-primary) 7%, transparent);
+        color: var(--mud-palette-primary);
+    }
+    .gex-desktop-route-bar .gex-route-trail-item .gex-shell-icon { width: 15px; height: 15px; }
+    .gex-desktop-route-bar .gex-route-trail-item :is(a,.gex-route-trail-current) > span {
+        overflow: hidden; text-overflow: ellipsis;
+    }
+    .gex-desktop-route-bar .gex-route-trail-separator {
+        direction: ltr; unicode-bidi: isolate; opacity: .6;
+    }
+
+    /* The active user's account is the natural home for license status. */
+    .gex-liquid-dock .gex-sidebar-identity { position: relative; z-index: 9; }
+    .gex-liquid-dock .gex-desktop-profile-license {
+        position: absolute;
+        display: block;
+        inset-inline-start: calc(100% + 10px);
+        inset-block-end: 54px;
+        width: 252px;
+        padding: 7px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 18px;
+        background: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+        box-shadow: 0 14px 38px rgba(18,20,25,.16);
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transform: translateX(6px) scale(.98);
+        transform-origin: 100% 100%;
+        transition: opacity .2s ease, transform .24s cubic-bezier(.22,1,.36,1), visibility .2s;
+    }
+    .gex-liquid-dock .gex-desktop-profile-license::before {
+        content: ''; position: absolute; inset-inline-start: -16px;
+        inset-block: 0; width: 17px;
+    }
+    .gex-liquid-dock .gex-sidebar-identity:is(:hover,:focus-within) .gex-desktop-profile-license {
+        opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+    }
+    .gex-desktop-profile-license:empty { display: none; }
+    .gex-desktop-profile-license .gex-license-ribbon {
+        display: flex; flex-direction: column; gap: 10px;
+        padding: 12px; border: 1px solid color-mix(in srgb,var(--mud-palette-success) 14%,var(--mud-palette-lines-default));
+        border-radius: 13px;
+        background: color-mix(in srgb,var(--mud-palette-success) 6%,var(--mud-palette-surface));
+        color: var(--mud-palette-text-primary);
+    }
+    .gex-desktop-profile-license .gex-license-ribbon.is-expired {
+        background: color-mix(in srgb,var(--mud-palette-error) 7%,var(--mud-palette-surface));
+        border-color: color-mix(in srgb,var(--mud-palette-error) 18%,var(--mud-palette-lines-default));
+    }
+    .gex-desktop-profile-license .gex-license-ribbon-head { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; }
+    .gex-desktop-profile-license .gex-license-ribbon-head .gex-shell-icon { width: 17px; height: 17px; color: var(--mud-palette-success); }
+    .gex-desktop-profile-license .gex-license-ribbon.is-expired .gex-shell-icon { color: var(--mud-palette-error); }
+    .gex-desktop-profile-license .gex-license-ribbon-caption { font-size: 11px; font-weight: 400; color: var(--mud-palette-text-secondary); }
+    .gex-desktop-profile-license .gex-license-progress-track {
+        height: 5px; border-radius: 5px; background: color-mix(in srgb,var(--mud-palette-success) 19%,transparent);
+        overflow: hidden;
+    }
+    .gex-desktop-profile-license .gex-license-progress-fill {
+        display: block; height: 100%; border-radius: inherit; background: var(--mud-palette-success);
+    }
+    .gex-desktop-profile-license .gex-license-ribbon:focus-visible {
+        outline: 2px solid var(--mud-palette-primary); outline-offset: 2px;
+    }
+
+    /* Report-style visual polish for desktop filters ONLY; old mobile picker is untouched. */
+    .gex-directory-filter-form .gex-desktop-filter-date {
+        display: block;
+        border-radius: 14px;
+        padding: 5px;
+        background: color-mix(in srgb,var(--mud-palette-primary) 5%,var(--mud-palette-surface));
+        border: 1px solid color-mix(in srgb,var(--mud-palette-primary) 12%,var(--mud-palette-lines-default));
+    }
+    .gex-directory-filter-form .gex-desktop-filter-date .mud-input-outlined {
+        background: var(--mud-palette-surface);
+        border-radius: 12px;
+    }
+    .gex-directory-filter-form .gex-desktop-filter-date :is(.mud-input-root,.mud-input-slot) {
+        min-height: 48px; font-size: 13px; font-weight: 400;
+    }
+    .gex-directory-filter-form .gex-desktop-filter-date .mud-input-adornment .mud-icon-root {
+        color: var(--mud-palette-primary);
+    }
+    .gex-directory-filter-form :is(.mud-input-label,.mud-select-input) { font-weight: 400; }
+}
+@media (min-width: 960px) and (max-width: 1199.98px) {
+    .goldex-shell .gex-desktop-brand { max-width: 145px; }
+    .goldex-shell .gex-desktop-brand .gex-shell-brand-mark { width: 30px; height: 32px; }
+    .goldex-shell .gex-desktop-brand .gex-shell-brand-copy strong { font-size: 19px; }
+}
+@media (max-width: 959.98px) {
+    .gex-desktop-route-bar, .gex-desktop-profile-license { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-liquid-dock .gex-desktop-profile-license { transition: none; transform: none; }
+}
+
+/* #264 correction: keep the approved mobile breadcrumb; revert ONLY the mobile filter/nav changes. */
+.gex-mobile-route-bar { display: none; }
 @media (max-width: 959.98px) {
     .goldex-shell {
         --gex-mobile-crumb-height: 46px;
         --gex-content-offset: calc(var(--gex-appbar-height) + var(--gex-mobile-crumb-height) + env(safe-area-inset-top, 0px) + var(--gex-content-gap));
         --gex-table-layout-delta: calc(var(--gex-content-offset) - 56px);
     }
-    .gex-topbar { isolation: isolate; }
-    .gex-topbar .gex-menu-toggle { position: relative; z-index: 1; }
-    .gex-mobile-brand {
-        position: absolute;
-        inset-inline-start: auto;
-        left: 50%; top: calc(50% + env(safe-area-inset-top, 0px) / 2);
-        transform: translate(-50%, -50%);
-        margin: 0; min-width: 0; max-width: 104px; z-index: 1;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .gex-mobile-brand .gex-shell-brand {
-        margin: 0; gap: 4px; flex-direction: row; justify-content: center;
-    }
-    .gex-mobile-brand .gex-shell-brand-mark { width: 26px; height: 28px; }
-    .gex-mobile-brand .gex-shell-brand-copy { gap: 0; text-align: center; }
-    .gex-mobile-brand .gex-shell-brand-copy strong {
-        font-size: 16px; font-weight: 500; line-height: 1.3; color: var(--mud-palette-primary);
-    }
-    .gex-mobile-brand .gex-shell-brand-copy small {
-        font-size: 7px; line-height: 1.4; font-weight: 400;
-    }
-    .gex-topbar .gex-topbar-actions {
-        position: relative; z-index: 1; margin-inline-start: auto; gap: 4px;
-    }
-    .gex-topbar .gex-topbar-actions :is(.gex-icon-button,.gex-appearance-button),
-    .gex-topbar > .gex-menu-toggle {
-        width: 40px; height: 40px; min-height: 40px; padding: 8px; border-radius: 11px;
-    }
-    .gex-topbar .gex-topbar-actions .gex-shell-icon { width: 21px; height: 21px; }
-    .gex-topbar-help { display: none !important; } /* Help is kept in mobile NavMenu. */
     .gex-mobile-route-bar {
         position: fixed; display: flex; align-items: center;
         top: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px));
@@ -1541,21 +1675,24 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
         border-bottom: 1px solid var(--mud-palette-lines-default);
         z-index: calc(var(--mud-zindex-drawer) - 4);
     }
-    .gex-mobile-route-bar .gex-route-trail { display: flex; flex: 1; min-width: 0; overflow: hidden; align-items: center; }
+    .gex-mobile-route-bar .gex-route-trail {
+        display: flex; flex: 1 1 auto; min-width: 0;
+        overflow: hidden; align-items: center; margin: 0;
+    }
     .gex-mobile-route-bar .gex-route-trail-list {
         list-style: none; padding: 0; margin: 0;
         display: flex; align-items: center; gap: 4px;
         white-space: nowrap; overflow: hidden; min-width: 0;
     }
     .gex-mobile-route-bar .gex-route-trail-item {
-        display: inline-flex; align-items: center; min-width: 0; flex: 0 1 auto; gap: 4px;
-        font-size: 12px; font-weight: 400;
+        display: inline-flex; align-items: center; min-width: 0;
+        flex: 0 1 auto; gap: 4px; font-size: 12px; font-weight: 400;
     }
-    .gex-mobile-route-bar .gex-route-trail-item.is-current { min-width: 0; flex: 0 1 auto; }
     .gex-mobile-route-bar .gex-route-trail-item a,
     .gex-mobile-route-bar .gex-route-trail-current {
-        min-width: 0; max-width: 100%; display: inline-flex; align-items: center;
-        gap: 5px; padding: 6px 8px; border-radius: 10px;
+        min-width: 0; max-width: 100%;
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 8px; border-radius: 10px;
         overflow: hidden; text-overflow: ellipsis;
         color: var(--mud-palette-text-secondary); font-weight: 400;
     }
@@ -1568,153 +1705,15 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
     }
     .gex-mobile-route-bar .gex-route-trail-item .gex-shell-icon { width: 15px; height: 15px; }
     .gex-mobile-route-bar .gex-route-trail-separator { opacity: .45; }
-    /* Every mobile page now uses the same global route trail. */
+    /* Prevent doubled trails from legacy pages while keeping their markup intact. */
     .goldex-page-container .mud-breadcrumbs,
     .goldex-shell .goldex-main-content .mud-breadcrumbs { display: none !important; }
     .goldex-page-container .d-block.d-md-none:has(> .mud-breadcrumbs),
     .goldex-page-container .d-none.d-md-block:has(> .mud-breadcrumbs) { display: none !important; }
-
-    /* Mobile drawer sections and account/license stack. Desktop dock is untouched. */
-    .gex-sidebar { padding-top: max(18px, env(safe-area-inset-top, 0px)); padding-bottom: max(12px, env(safe-area-inset-bottom,0px)); }
-    .gex-sidebar > .gex-shell-brand { margin-bottom: 16px; }
-    .gex-menu-scroll { padding-bottom: 5px; }
-    .gex-navigation-menu { gap: 2px; }
-    .gex-navigation-menu a, .gex-navigation-menu > button.gex-nav-release {
-        min-height: 42px; padding: 9px 12px;
-        font-size: 13px; font-weight: 400; border-radius: 12px;
-    }
-    .gex-navigation-menu a.active { font-weight: 500; }
-    .gex-mobile-more-heading {
-        display: flex; align-items: center; gap: 7px; padding: 13px 11px 6px;
-        margin-top: 10px; border-top: 1px solid var(--mud-palette-lines-default);
-        color: var(--mud-palette-text-secondary); font-size: 12px; font-weight: 500;
-    }
-    .gex-mobile-more-heading .gex-shell-icon { width: 15px; height: 15px; color: var(--mud-palette-primary); transform: rotate(180deg); }
-    .gex-navigation-menu > button.gex-nav-release { width: 100%; justify-content: flex-start; text-align: right; }
-    .gex-navigation-menu > button.gex-nav-release > span { flex: 1; text-align: right; }
-    .gex-mobile-license { display: block; width: 100%; min-width: 0; }
-    .gex-sidebar-identity {
-        flex-direction: column; gap: 9px; align-items: stretch;
-        padding: 12px; margin-top: 7px; flex: none;
-        border: 1px solid var(--mud-palette-lines-default); border-radius: 17px;
-        background: var(--mud-palette-surface);
-        box-shadow: 0 5px 22px rgba(0,0,0,.045);
-    }
-    .gex-identity-link { width: 100%; padding: 2px; gap: 10px; }
-    .gex-identity-copy strong { font-size: 13px; font-weight: 500; }
-    .gex-avatar { width: 40px; height: 40px; font-size: 12px; font-weight: 500; }
-    .gex-identity-arrow { display: grid; place-items: center; margin-inline-start: auto; color: var(--mud-palette-text-secondary); }
-    .gex-identity-arrow .gex-shell-icon { width: 17px; height: 17px; }
-    .gex-mobile-license:empty { display: none; }
-    .gex-license-ribbon {
-        display: flex; flex-direction: column; gap: 7px;
-        width: 100%; padding: 10px 12px; border-radius: 12px;
-        background: color-mix(in srgb, var(--mud-palette-success) 9%, var(--mud-palette-surface));
-        color: var(--mud-palette-text-primary);
-        border: 1px solid color-mix(in srgb,var(--mud-palette-success) 15%, transparent);
-    }
-    .gex-license-ribbon.is-expired {
-        background: color-mix(in srgb, var(--mud-palette-error) 8%, var(--mud-palette-surface));
-        border-color: color-mix(in srgb,var(--mud-palette-error) 16%, transparent);
-    }
-    .gex-license-ribbon-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; }
-    .gex-license-ribbon-head .gex-shell-icon { width: 18px; height: 18px; color: var(--mud-palette-success); }
-    .gex-license-ribbon.is-expired .gex-license-ribbon-head .gex-shell-icon { color: var(--mud-palette-error); }
-    .gex-license-ribbon-caption { font-size: 11px; font-weight: 400; color: var(--mud-palette-text-secondary); }
-    .gex-license-progress-track { height: 5px; overflow: hidden; border-radius: 5px; background: color-mix(in srgb,var(--mud-palette-success) 19%,var(--mud-palette-surface)); }
-    .gex-license-progress-fill { display: block; height: 100%; border-radius: inherit; background: var(--mud-palette-success); }
-    .gex-sidebar-identity > .gex-signout {
-        display: flex; width: 100%; height: 40px; min-height: 40px; gap: 9px;
-        border: 1px solid color-mix(in srgb,var(--mud-palette-error) 13%,var(--mud-palette-lines-default));
-        border-radius: 12px; padding: 8px 11px; justify-content: center; align-items: center;
-        background: color-mix(in srgb,var(--mud-palette-error) 4%,var(--mud-palette-surface));
-        color: var(--mud-palette-error); font-size: 12px; font-weight: 500;
-    }
-    .gex-sidebar-identity .gex-signout-label { display: inline; }
-}
-@media (max-width: 599.98px) {
-    .gex-topbar { padding-inline: 8px; }
-    .gex-topbar .gex-topbar-actions { gap: 3px; }
 }
 @media (max-width: 359.98px) {
-    .gex-topbar .gex-topbar-actions :is(.gex-icon-button,.gex-appearance-button),
-    .gex-topbar > .gex-menu-toggle { width: 35px; height: 36px; min-height: 36px; padding: 6px; }
-    .gex-mobile-brand { max-width: 89px; }
-    .gex-mobile-brand .gex-shell-brand-mark { width: 22px; height: 24px; }
-    .gex-mobile-brand .gex-shell-brand-copy strong { font-size: 14px; }
-    .gex-mobile-brand .gex-shell-brand-copy small { font-size: 6px; }
     .gex-mobile-route-bar { padding-inline: 9px; }
 }
 @media (min-width: 960px) {
     .gex-mobile-route-bar { display: none !important; }
-    .gex-mobile-more-heading, .gex-mobile-license, .gex-identity-arrow { display: none !important; }
-}
-
-/* Report-quality date-range control reused in customer and invoice filter sheets. */
-.gex-filter-date-card {
-    display: flex; flex-direction: column; gap: 11px; min-width: 0;
-    border-radius: 16px; padding: 14px;
-    background: color-mix(in srgb,var(--mud-palette-primary) 5%,var(--mud-palette-surface));
-    border: 1px solid color-mix(in srgb,var(--mud-palette-primary) 10%,var(--mud-palette-lines-default));
-}
-.gex-filter-field-heading {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 500; color: var(--mud-palette-text-primary);
-}
-.gex-filter-field-heading .gex-shell-icon { width: 19px; height: 19px; color: var(--mud-palette-primary); }
-.gex-filter-date-input { width: 100%; min-width: 0; }
-.gex-filter-date-card .mud-input-control { margin-top: 0 !important; }
-.gex-filter-date-card .mud-input-root {
-    min-height: 48px; font-size: 13px; font-weight: 400;
-}
-.gex-filter-date-card .mud-input-outlined {
-    background: var(--mud-palette-surface);
-    border-radius: 12px !important;
-}
-.gex-filter-date-card .mud-input-adornment .mud-icon-root { color: var(--mud-palette-primary); }
-.gex-directory-filter-form > .mud-grid > .mud-grid-item { min-width: 0; }
-.gex-directory-filter-form > .mud-grid { row-gap: 6px; }
-@media (max-width: 599.98px) {
-    .gex-filter-date-card { padding: 12px 10px; border-radius: 14px; }
-    .gex-filter-date-card .mud-input-root { font-size: 12px; }
-    .gex-directory-filter-form > .mud-grid { row-gap: 10px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .gex-mobile-brand, .gex-license-ribbon { transition: none !important; }
-}
-
-
-/* The filter sheet uses the same calm layered surfaces as customer editing. */
-.gex-directory-filter-form > .mud-grid > .mud-grid-item:not(.gex-filter-mobile-sort):not(:has(.gex-filter-date-card)) {
-    position: relative; padding-block: 10px; border-radius: 13px;
-}
-.gex-directory-filter-form > .mud-grid > .mud-grid-item:not(.gex-filter-mobile-sort) > .mud-input-control {
-    background: color-mix(in srgb,var(--mud-palette-primary) 3%,var(--mud-palette-surface));
-    border-radius: 12px;
-}
-.gex-directory-filter-actions {
-    display: flex; width: 100%; align-items: center; flex-wrap: wrap;
-    gap: 10px; direction: rtl;
-}
-.gex-directory-filter-actions .mud-button-root {
-    font-weight: 500; font-size: 13px; min-height: 40px; border-radius: 12px;
-    box-shadow: none;
-}
-.gex-directory-filter-actions .gex-filter-reset { font-weight: 400; }
-@media (max-width: 419.98px) {
-    .gex-directory-filter-actions { gap: 5px; }
-    .gex-directory-filter-actions .mud-button-root {
-        min-height: 38px; font-size: 11.5px; padding-inline: 8px;
-    }
-}
-/* Narrow phones keep three independent action buttons alongside a truly centered logo. */
-@media (max-width: 399.98px) {
-    .gex-topbar .gex-topbar-actions :is(.gex-icon-button,.gex-appearance-button),
-    .gex-topbar > .gex-menu-toggle {
-        width: 34px; height: 36px; min-height: 36px; padding: 6px;
-    }
-    .gex-topbar .gex-topbar-actions { gap: 3px; }
-    .gex-mobile-brand .gex-shell-brand-mark { width: 22px; height: 24px; }
-    .gex-mobile-brand .gex-shell-brand-copy strong { font-size: 14px; }
-    .gex-mobile-brand .gex-shell-brand-copy small { font-size: 6px; }
 }

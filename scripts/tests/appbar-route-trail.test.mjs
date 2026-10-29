@@ -15,11 +15,11 @@ function walk(path) {
             entry.name.endsWith('.razor') ? [path + '/' + entry.name] : []);
 }
 
-test('desktop AppBar owns the route trail and the date is the leftmost item', () => {
+test('desktop AppBar centers the brand while the route trail sits below it and date remains leftmost', () => {
     const crumb = bar.indexOf('<RouteBreadcrumbs />');
     const actions = bar.indexOf('class="gex-topbar-actions"');
     const date = bar.indexOf('class="gex-topbar-date"');
-    assert.ok(crumb > bar.indexOf('gex-desktop-brand') && crumb < actions);
+    assert.ok(crumb > bar.indexOf('</header>') && bar.includes('class="gex-desktop-route-bar"'));
     assert.ok(actions < date && date < bar.indexOf('</header>'));
     assert.doesNotMatch(bar, /MudBreadcrumbs/);
     assert.match(css, /\.gex-route-trail\s*\{\s*display: none;/);

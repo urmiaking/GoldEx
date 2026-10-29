@@ -8,9 +8,8 @@
             <a href="@ClientRoutes.UserAccounts.Index" class="gex-identity-link" aria-label="حساب کاربری">
                 <span class="gex-avatar">@Initials(auth.User.GetDisplayName())</span>
                 <span class="gex-identity-copy"><strong>@auth.User.GetDisplayName()</strong><small>@auth.User.Identity?.Name</small></span>
-                <span class="gex-identity-arrow" aria-hidden="true"><ShellIcon Name="chevron-left" /></span>
             </a>
-            <div class="gex-mobile-license"><MobileLicenseRibbon /></div>
+            <div class="gex-desktop-profile-license"><DesktopLicenseRibbon /></div>
             <a href="@ApiUrls.Account.Logout(Navigation.ToBaseRelativePath(Navigation.Uri))" class="gex-icon-button gex-signout" aria-label="خروج از حساب" title="خروج"><ShellIcon Name="log-out" /><span class="gex-signout-label">خروج از حساب</span></a>
         </Authorized>
         <NotAuthorized>

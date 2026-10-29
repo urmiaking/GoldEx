@@ -28,3 +28,6 @@ Use for desktop navigation/header work in GoldEx. Read root `AGENTS.md` before c
 ## Mobile navigation revision (#263, supersedes old mobile-breadcrumb policy)
 - Mobile <960px now displays a second RouteBreadcrumbs in .gex-mobile-route-bar underneath the fixed AppBar, aligned with page body; the existing page-local MudBreadcrumbs in mobile page markup are visually hidden. Include 46px in --gex-content-offset. Desktop AppBar still owns its original breadcrumb.
 - The mobile wordmark is globally centered with absolute left:50%/translate(-50%), while hamburger right, dark mode, notification and Settings left remain interactive. Keep a small shrink breakpoint <=399px and Help route in mobile NavMenu; never sacrifice actions for the logo.
+## Scope correction #264 (overrides #263 mobile redesign)
+- Desktop: GoldEx brand centered in AppBar; breadcrumb in body-aligned .gex-desktop-route-bar below it; include 44px for route row in desktop --gex-content-offset. Keep clock and all actions.
+- Mobile: KEEP the new #263 .gex-mobile-route-bar and its 46px content offset. Revert only unwanted mobile logo centering, nav layout, profile/license card and date filters. Do not remove new mobile breadcrumb again! Legacy page-local MudBreadcrumbs hidden visually.

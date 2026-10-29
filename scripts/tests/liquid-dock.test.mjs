@@ -113,11 +113,11 @@ test('resizing reallocates items, mobile restores links, Escape and disposal rel
 });
 test('desktop-only liquid glass has mobile, accessibility and account-store fallbacks',()=>{
  assert.match(appbar,/gex-desktop-brand.*ShellBrand Compact="true"/);
- assert.match(appbar,/gex-mobile-brand.*ShellBrand \/>/);
+ assert.match(appbar,/gex-mobile-brand.*ShellBrand Compact="true"/);
  assert.match(drawer,/class="gex-sidebar gex-liquid-dock/);
  assert.match(drawer,/<NavMenu OnNavigate="HandleNavigate"/);
  assert.match(drawer,/<ShellIdentity/);
- assert.match(drawer,/<LicenseStatusBanner/);
+ assert.match(read('src/App/Client/GoldEx.Client.Components/Layouts/Components/ShellIdentity.razor'), /<DesktopLicenseRibbon/);
  assert.match(drawer,/liquid-dock\.js/);
  assert.match(css,/backdrop-filter: blur\(27px\) saturate\(185%\)/);
  assert.match(css,/data-dock-overflow="true"/);

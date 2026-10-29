@@ -96,12 +96,11 @@
         <NavLink href="@ClientRoutes.Reporting.Index"><ShellIcon Name="chart-bar" /><span>گزارش‌ها</span></NavLink>
         <NavLink href="@ClientRoutes.Finances.Index"><ShellIcon Name="wallet" /><span>اسناد مالی</span></NavLink>
         <NavLink href="@ClientRoutes.UserAccounts.Index"><ShellIcon Name="user" /><span>مدیریت حساب</span></NavLink>
-        <div class="gex-mobile-more-heading" aria-hidden="true"><span>بیشتر</span><ShellIcon Name="expand" /></div>
         <NavLink href="@ClientRoutes.Settings.Index"><ShellIcon Name="settings" /><span>تنظیمات</span></NavLink>
         <NavLink href="@ClientRoutes.Blogs.Index"><ShellIcon Name="help" /><span>راهنما</span></NavLink>
+        <ReleaseNotesMenuItem />
     </AuthorizeView>
     <NavLink href="@ClientRoutes.About.Index"><ShellIcon Name="info" /><span>دربارهٔ گلدکس</span></NavLink>
-    <AuthorizeView><ReleaseNotesMenuItem /></AuthorizeView>
 </nav>
 
 @code {

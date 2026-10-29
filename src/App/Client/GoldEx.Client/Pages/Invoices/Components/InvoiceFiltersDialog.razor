@@ -4,27 +4,15 @@
 <EditorDialogFrame>
     <DialogContent>
         <div class="gex-directory-filter-form">
+            <p class="gex-filter-description mud-typography-body2">فاکتورها را بر اساس تاریخ، نوع معامله و وضعیت پرداخت محدود کنید.</p>
             <MudGrid Spacing="3">
                 <MudItem xs="12">
-                    <div class="gex-filter-field-card gex-filter-date-card">
-                        <div class="gex-filter-field-heading"><ShellIcon Name="calendar" /><span>بازه تاریخ فاکتور</span></div>
-                        <MudDateRangePicker DateRange="@_dateRange"
-                                            DateRangeChanged="@(dr => _dateRange = dr)"
-                                            Margin="Margin.Dense"
-                                            Variant="Variant.Outlined"
-                                            MaxMonthColumns="1"
-                                            DisplayMonths="1"
-                                            Rounded="true"
-                                            ShowToolbar="false"
-                                            AnchorOrigin="Origin.BottomCenter"
-                                            TransformOrigin="Origin.TopCenter"
-                                            PlaceholderStart="از تاریخ"
-                                            PlaceholderEnd="تا تاریخ"
-                                            Elevation="24"
-                                            RelativeWidth="DropdownWidth.Adaptive"
-                                            Clearable="true"
-                                            Class="gex-filter-date-input w-100" />
-                    </div>
+                    <MudDateRangePicker DateRange="@_dateRange"
+                                        DateRangeChanged="@(dr => _dateRange = dr)"
+                                        Variant="Variant.Outlined" Label="تاریخ فاکتور"
+                                        Margin="Margin.Dense" MaxMonthColumns="1"
+                                        DisplayMonths="1" ShowToolbar="false"
+                                        Adornment="Adornment.Start" Clearable Class="w-100 gex-desktop-filter-date" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="InvoiceType?" Variant="Variant.Outlined" Label="نوع فاکتور"
@@ -84,13 +72,12 @@
         </div>
     </DialogContent>
     <DialogActions>
-        <div class="gex-directory-filter-actions">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Apply"
-                       StartIcon="@Icons.Material.Filled.Check" Class="gex-filter-apply">اعمال فیلترها</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="Cancel"
-                       Class="gex-filter-cancel">انصراف</MudButton>
-            <MudSpacer />
-            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Clear"
-                       StartIcon="@Icons.Material.Filled.Delete" Class="gex-filter-reset">بازنشانی</MudButton>
-        </div>    </DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Clear"
+                   StartIcon="@Icons.Material.Filled.Delete">بازنشانی</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Error"
+                   OnClick="Cancel" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="Apply" StartIcon="@Icons.Material.Filled.Check">اعمال فیلترها</MudButton>
+    </DialogActions>
 </EditorDialogFrame>

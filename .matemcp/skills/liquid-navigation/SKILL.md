@@ -47,3 +47,6 @@ Initial implementation: GitHub #251, enterprise release 1.0.99.
 ## Premium mobile menu/license card (#263)
 - The responsive drawer (<=959.98px) separates primary NavMenu links from Settings/Help/About/Release Notes with a mobile-only More section; desktop Liquid Dock direct link/overflow behavior stays unchanged.
 - ShellIdentity adds .gex-mobile-license with MobileLicenseRibbon: it observes LicenseState.OnChange and shows live remaining days, progress and renewal route for regular/trial or expired/unregistered cases. The old LicenseStatusBanner in desktop More has MudHidden SmAndDown and does not show on mobile. The mobile profile and signout are styled as one stacked bottom card. CSS uses gex-sidebar-identity/mobile media scopes only; do not change desktop glass/profile.
+## User correction after #263: desktop profile license (#264)
+- Restore original mobile drawer nav, profile and filter sheet, keeping only NEW mobile breadcrumbs from #263.
+- Desktop Liquid Dock identity now hosts DesktopLicenseRibbon above signout on hover/focus. Uses LicenseState, replacing old license placement under More. No changes to mobile account or desktop route droplet.
