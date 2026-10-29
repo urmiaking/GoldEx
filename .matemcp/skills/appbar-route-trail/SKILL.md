@@ -33,3 +33,5 @@ Use for desktop navigation/header work in GoldEx. Read root `AGENTS.md` before c
 - Mobile: KEEP the new #263 .gex-mobile-route-bar and its 46px content offset. Revert only unwanted mobile logo centering, nav layout, profile/license card and date filters. Do not remove new mobile breadcrumb again! Legacy page-local MudBreadcrumbs hidden visually.
 ## Final desktop AppBar placement clarification (#265 overrides #264)
 - Desktop keeps the original one-row Breadcrumb INSIDE AppBar, immediately left of the right-aligned brand ICON; only WORDMARK is independently centered. Action/clock positions and original body vertical offset remain. Mobile maintains the approved second row underneath its original header. See AGENTS #265.
+## #266 GoldEx wordmark font regression
+- Keep brand-text on the centered desktop GoldEx anchor after #265, matching app.css Cinzel Decorative font and gold gradient. appearance.css scopes gex-desktop-wordmark.brand-text for 800 weight, .08em tracking and zero top margin. The separate brand icon remains right; desktop breadcrumbs, actions, mobile branding remain unchanged. Do not use the generic AppBar font for this wordmark.

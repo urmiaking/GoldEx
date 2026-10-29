@@ -12,13 +12,13 @@ const customers=read('src/App/Client/GoldEx.Client/Pages/Customers/Components/Cu
 
 test('desktop: icon on right, GOLDEx text centered, breadcrumb in original AppBar before actions/date',()=>{
  assert.match(bar,/class="gex-desktop-mark"[\s\S]*?apple-touch-icon-180x180.png/);
- assert.match(bar,/<a class="gex-desktop-wordmark"[^>]*>GoldEx<\/a>/);
+ assert.match(bar,/<a class="gex-desktop-wordmark brand-text"[^>]*>GoldEx<\/a>/);
  assert.match(bar,/<div class="gex-desktop-route-trail"><RouteBreadcrumbs \/><\/div>/);
  assert.ok(bar.indexOf('gex-desktop-mark')<bar.indexOf('gex-desktop-route-trail'));
  assert.ok(bar.indexOf('gex-desktop-route-trail')<bar.indexOf('gex-topbar-actions'));
  assert.ok(bar.indexOf('gex-topbar-actions')<bar.indexOf('gex-topbar-date'));
  assert.doesNotMatch(bar,/gex-desktop-route-bar/);
- assert.match(css,/\.goldex-shell \.gex-desktop-wordmark \{[\s\S]*?left:50%;[\s\S]*?transform:translate\(-50%,-50%\)/);
+ assert.match(css,/\.goldex-shell \.gex-desktop-wordmark\.brand-text \{[\s\S]*?left:50%;[\s\S]*?transform:translate\(-50%,-50%\)/);
  assert.match(css,/\.goldex-shell \.gex-desktop-route-trail \{[\s\S]*?width:min\(480px,calc\(50% - 145px\)\)/);
  assert.match(css,/\.goldex-shell \.gex-topbar-actions \{[\s\S]*?margin-inline-start:auto; margin-inline-end:0/);
  assert.match(bar,/<AppearanceControls ModeOnly="true" \/>/);
@@ -31,7 +31,7 @@ test('mobile breadcrumb unchanged; filters and logo retain previous mobile UI',(
  assert.match(css,/--gex-mobile-crumb-height: 46px/);
  assert.match(css,/\.goldex-page-container \.mud-breadcrumbs,\s*\.goldex-shell \.goldex-main-content \.mud-breadcrumbs \{ display: none !important;/);
  for(const source of [invoices,customers]){
-   assert.match(source,/Class="w-100 gex-desktop-filter-date"/);
+   assert.match(source,/Class="w-100"/);
    assert.match(source,/Adornment="Adornment.Start"/);
    assert.doesNotMatch(source,/gex-filter-date-card|PlaceholderStart="از تاریخ"/);
  }

@@ -1507,12 +1507,13 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
    flex:0 0 42px; width:42px; height:46px; margin-inline-end:clamp(12px,2vw,25px);
  }
  .goldex-shell .gex-desktop-mark img { display:block; width:42px; height:44px; object-fit:contain; }
- .goldex-shell .gex-desktop-wordmark {
+ .goldex-shell .gex-desktop-wordmark.brand-text {
    display:block; position:absolute; z-index:1; left:50%;
    top:calc(50% + env(safe-area-inset-top,0px)/2);
    transform:translate(-50%,-50%); white-space:nowrap;
-   color:var(--mud-palette-primary); font-size:clamp(20px,2vw,26px);
-   font-weight:500; letter-spacing:.04em; line-height:1.25;
+   font-family:"Cinzel Decorative","Outfit","Inter",serif;
+   font-size:clamp(20px,2vw,26px); font-weight:800; margin-top:0;
+   letter-spacing:.08em; line-height:1.25;
  }
  .goldex-shell .gex-desktop-route-trail {
    display:flex; align-items:center; flex:0 1 auto;
@@ -1587,32 +1588,13 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
    background:color-mix(in srgb,var(--mud-palette-success) 18%,var(--mud-palette-surface));
  }
  .gex-license-details .gex-license-progress-fill { display:block; height:100%; border-radius:inherit; background:var(--mud-palette-success); }
-    /* Report-style visual polish for desktop filters ONLY; old mobile picker is untouched. */
-    .gex-directory-filter-form .gex-desktop-filter-date {
-        display: block;
-        border-radius: 14px;
-        padding: 5px;
-        background: color-mix(in srgb,var(--mud-palette-primary) 5%,var(--mud-palette-surface));
-        border: 1px solid color-mix(in srgb,var(--mud-palette-primary) 12%,var(--mud-palette-lines-default));
-    }
-    .gex-directory-filter-form .gex-desktop-filter-date .mud-input-outlined {
-        background: var(--mud-palette-surface);
-        border-radius: 12px;
-    }
-    .gex-directory-filter-form .gex-desktop-filter-date :is(.mud-input-root,.mud-input-slot) {
-        min-height: 48px; font-size: 13px; font-weight: 400;
-    }
-    .gex-directory-filter-form .gex-desktop-filter-date .mud-input-adornment .mud-icon-root {
-        color: var(--mud-palette-primary);
-    }
-    .gex-directory-filter-form :is(.mud-input-label,.mud-select-input) { font-weight: 400; }
 
 }
 @media (min-width:960px) and (max-width:1199.98px) {
  .goldex-shell .gex-desktop-mark { flex-basis:38px; width:38px; margin-inline-end:12px; }
  .goldex-shell .gex-desktop-mark img { width:38px; height:40px; }
  .goldex-shell .gex-desktop-route-trail { width:min(260px,calc(44% - 105px)); }
- .goldex-shell .gex-desktop-wordmark { font-size:21px; }
+ .goldex-shell .gex-desktop-wordmark.brand-text { font-size:21px; }
 }
 @media (max-width:959.98px) {
  .gex-desktop-mark,.gex-desktop-wordmark,.gex-desktop-route-trail,.gex-license-indicator { display:none !important; }

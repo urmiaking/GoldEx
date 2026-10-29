@@ -34,13 +34,13 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12">
+                <MudItem xs="12" sm="6">
                     <MudDateRangePicker DateRange="@_dateRange"
                                         DateRangeChanged="@(dr => _dateRange = dr)"
                                         Variant="Variant.Outlined" Label="تاریخ ثبت مشتری"
                                         Margin="Margin.Dense" MaxMonthColumns="1"
-                                        DisplayMonths="1" Adornment="Adornment.Start"
-                                        ShowToolbar="false" Clearable="true" Class="w-100 gex-desktop-filter-date" />
+                                        DisplayMonths="1" Rounded="true" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" RelativeWidth="DropdownWidth.Adaptive" Adornment="Adornment.Start"
+                                        ShowToolbar="false" Clearable="true" Class="w-100" />
                 </MudItem>
                 <MudItem xs="12" Class="gex-filter-mobile-sort">
                     <div class="gex-filter-section-title"><ShellIcon Name="list" /><span>مرتب‌سازی نمایش</span></div>
