@@ -1017,3 +1017,116 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
         transition-duration: .01ms !important; animation-duration: .01ms !important;
     }
 }
+
+
+/* #252: one connected surface, never an independent bubble on each link. */
+.gex-signout-label { display: none; }
+@media (min-width: 960px) {
+    .gex-liquid-dock .gex-dock-liquid-lobe {
+        position: absolute; z-index: 1; pointer-events: none;
+        inset-inline-start: 3px; top: var(--gex-lobe-top, 90px);
+        height: 48px; width: 48px;
+        border: 1px solid rgba(255,255,255,.42); border-inline-start: 0;
+        border-radius: 26px 12px 12px 26px;
+        background: linear-gradient(112deg,rgba(255,255,255,.65),rgba(249,246,240,.51) 62%,rgba(255,255,255,.25));
+        box-shadow: -10px 11px 28px -16px rgba(30,30,30,.20),inset 0 1px 0 rgba(255,255,255,.57);
+        -webkit-backdrop-filter: blur(27px) saturate(185%); backdrop-filter: blur(27px) saturate(185%);
+        opacity: 0;
+        transition: top .46s cubic-bezier(.20,.82,.22,1),width .48s cubic-bezier(.17,.88,.18,1.12),opacity .24s ease;
+    }
+    .gex-liquid-dock.gex-dock-has-hover .gex-dock-liquid-lobe { width: var(--gex-lobe-width, 220px); opacity: 1; }
+    .gex-liquid-dock .gex-dock-active-drop {
+        position: absolute; z-index: 2; pointer-events: none;
+        top: var(--gex-drop-top, 0px); inset-inline-start: 9px;
+        width: 44px; height: 44px; border-radius: 999px;
+        background: var(--mud-palette-primary);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.26),0 4px 14px rgba(var(--mud-palette-primary-rgb),.20);
+        opacity: 0; transform: scale(.79);
+        transition: top .64s cubic-bezier(.18,.82,.17,1.08),opacity .18s ease,transform .43s cubic-bezier(.2,.84,.2,1.1);
+    }
+    .gex-liquid-dock.gex-dock-has-selection .gex-dock-active-drop { opacity: 1; transform: scale(1); }
+    .gex-liquid-dock.gex-dock-drop-traveling .gex-dock-active-drop { transform: scaleY(1.26) scaleX(.88); border-radius: 45%; }
+    .gex-liquid-dock .gex-navigation-menu > a, .gex-liquid-dock .gex-sidebar-create { position: relative; z-index: 3; }
+    .gex-liquid-dock .gex-navigation-menu > a {
+        border-color: transparent; box-shadow: none;
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+        transition: width .48s cubic-bezier(.17,.88,.18,1.12),color .22s ease;
+    }
+    .gex-liquid-dock .gex-navigation-menu > a:is(:hover,:focus-visible) {
+        width: 216px; transform: none; background: transparent; border-color: transparent;
+        box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+    .gex-liquid-dock .gex-navigation-menu > a.active:not(:hover):not(:focus-visible),
+    .gex-liquid-dock .gex-navigation-menu > a.active:is(:hover,:focus-visible) {
+        background: transparent; border-color: transparent; box-shadow: none;
+        color: var(--mud-palette-primary-text);
+    }
+    .gex-liquid-dock .gex-navigation-menu > a.active::before { display: none; }
+    .gex-liquid-dock .gex-sidebar-create:is(:hover,:focus-visible) {
+        width: 203px; transform: none; box-shadow: none; background: transparent;
+        color: var(--mud-palette-text-primary);
+    }
+    .gex-liquid-dock .gex-dock-more { z-index: 5; }
+    .gex-liquid-dock .gex-store-picker { z-index: 7; }
+    .gex-liquid-dock .gex-store-picker-trigger {
+        gap: 10px; justify-content: flex-start; padding: 4px 5px;
+        background: transparent; border: 1px solid transparent;
+        box-shadow: none; transform: none;
+    }
+    .gex-liquid-dock .gex-store-picker-logo {
+        width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%;
+        overflow: hidden; border: 1px solid rgba(var(--mud-palette-primary-rgb),.24);
+        background: var(--mud-palette-surface);
+    }
+    .gex-liquid-dock .gex-store-picker-logo img {
+        display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+        object-fit: contain; border-radius: 50%;
+    }
+    .gex-liquid-dock .gex-store-picker-copy { flex: 1 1 auto; min-width: 0; opacity: 0; transition: opacity .23s ease; }
+    .gex-liquid-dock .gex-store-picker-copy strong { font-weight: 500; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .gex-liquid-dock .gex-store-picker-chevron {
+        flex: 0 0 22px; width: 22px; height: 22px; margin-inline-start: auto;
+        margin-inline-end: 11px; opacity: 0;
+    }
+    .gex-liquid-dock .gex-store-picker-trigger:is(:hover,:focus-visible,[aria-expanded="true"]) {
+        width: 256px; background: transparent; border-color: transparent; transform: none;
+    }
+    .gex-liquid-dock .gex-store-picker-options { inset-inline-start: calc(100% + 10px); }
+    .gex-liquid-dock .gex-sidebar-identity { position: relative; z-index: 6; }
+    .gex-liquid-dock .gex-signout {
+        display: inline-flex; align-items: center; justify-content: flex-start;
+        width: 170px; height: 44px; gap: 9px; padding: 9px 13px;
+        border: 0; border-radius: 20px; background: transparent;
+        color: var(--mud-palette-error); font: inherit; font-size: 12px; font-weight: 500;
+        white-space: nowrap; text-align: start; box-shadow: none;
+        inset-inline-start: 100%; inset-block-end: 2px;
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transform: translateX(6px);
+        transition: opacity .17s ease, visibility .17s, transform .32s ease;
+    }
+    .gex-liquid-dock .gex-signout .gex-shell-icon { width: 20px; height: 20px; flex: none; }
+    .gex-liquid-dock .gex-signout-label { display: inline; white-space: nowrap; font-size: 12px; font-weight: 500; }
+    .gex-liquid-dock .gex-sidebar-identity:is(:hover,:focus-within) .gex-signout,
+    .gex-liquid-dock .gex-signout:is(:hover,:focus-visible) {
+        opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+    }
+    .gex-liquid-dock .gex-signout:hover { background: rgba(var(--mud-palette-error-rgb),.08); }
+    html[data-gex-palette="Gold"]:not([data-gex-mode="dark"]) .goldex-shell
+    .gex-liquid-dock .gex-navigation-menu > a.active {
+        background: transparent; color: #FFFFFF;
+    }
+    html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-liquid-lobe {
+        border-color: rgba(255,255,255,.17); border-inline-start: 0;
+        background: linear-gradient(115deg,rgba(60,61,66,.84),rgba(25,29,34,.65));
+        box-shadow: -10px 12px 30px -17px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.13);
+    }
+}
+@media (max-width: 959.98px) { .gex-dock-liquid-lobe,.gex-dock-active-drop { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .gex-liquid-dock .gex-dock-liquid-lobe,.gex-liquid-dock .gex-dock-active-drop {
+        transition: none !important; transform: none !important;
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .gex-liquid-dock .gex-dock-liquid-lobe { background: var(--mud-palette-surface) !important; }
+}

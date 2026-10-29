@@ -9,7 +9,7 @@
                     aria-controls="gex-store-picker-options"
                     aria-expanded="@(_storeListOpen ? "true" : "false")"
                     aria-label="@(_currentStore is null ? "انتخاب فروشگاه فعال" : $"فروشگاه فعال: {_currentStore.Name}؛ نمایش فهرست فروشگاه‌ها")"
-                    disabled="@(_switchingStore || (_stores.Count == 1 && _currentStore is not null))"
+                    disabled="@_switchingStore"
                     @onclick="ToggleStoreList">
                 <span class="gex-store-picker-logo">
                     @if (!string.IsNullOrWhiteSpace(_currentStore?.LogoUrl))
@@ -135,7 +135,7 @@
 
     private void ToggleStoreList()
     {
-        if (_switchingStore) return;
+        if (_switchingStore || _stores.Count <= 1) return;
         _storeListOpen = !_storeListOpen;
         _switchError = null;
     }

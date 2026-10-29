@@ -8,6 +8,9 @@
 <aside id="gex-navigation" @ref="_panel" class="gex-sidebar gex-liquid-dock @(IsDrawerOpen ? "mobile-open" : null)" aria-label="ناوبری اصلی" tabindex="-1" @onkeydown="HandleKeyDown">
     <button type="button" class="gex-icon-button gex-menu-close" aria-label="بستن منو" @onclick="CloseAsync"><ShellIcon Name="close" /></button>
     <ShellBrand />
+    @* One shared glass surface morphs beside the hovered item; the active droplet travels between routes. *@
+    <div class="gex-dock-liquid-lobe" aria-hidden="true"></div>
+    <div class="gex-dock-active-drop" aria-hidden="true"></div>
     <AuthorizeView>
         <a class="gex-sidebar-create" href="@ClientRoutes.Invoices.Create" @onclick="CloseAsync"><ShellIcon Name="plus" /><span>فاکتور جدید</span></a>
     </AuthorizeView>
