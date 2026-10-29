@@ -51,12 +51,13 @@ function fixture(count=12){
   '.gex-dock-more-trigger':trigger,'.gex-dock-overflow-panel':flyout,'.gex-dock-overflow-links':outlet
  })[s],contains:node=>node===trigger||node===flyout};
  const drop=events({});
+ const glass={style:{clipPath:""}};
  const props=new Map();
  const dock=events({classList:classes(),style:{setProperty:(k,v)=>props.set(k,v),getPropertyValue:k=>props.get(k)},
-  getBoundingClientRect:()=>({top:60}),contains:()=>true,
+  getBoundingClientRect:()=>({top:60,height:740}),contains:()=>true,
   querySelector:s=>({
     '.gex-navigation-menu':nav,'.gex-menu-scroll':viewport,'.gex-dock-more':more,
-    '.gex-dock-active-drop':drop
+    '.gex-dock-active-drop':drop,'.gex-dock-glass':glass
   })[s]});
  const media=events({matches:true});
  const doc=events({createDocumentFragment:()=>({children:[],appendChild(n){this.children.push(n);}})});
@@ -74,7 +75,7 @@ function fixture(count=12){
  const binding=context.bind(dock);
  const flush=()=>{while(pending.length)pending.shift()();};
  flush();
- return {links,nav,viewport,trigger,flyout,outlet,more,dock,drop,media,doc,win,binding,flush};
+ return {links,nav,viewport,trigger,flyout,outlet,more,dock,drop,glass,media,doc,win,binding,flush};
 }
 test('viewport-aware native links use three-dot overflow and preserve original navigation',()=>{
  const x=fixture();
@@ -168,9 +169,9 @@ test('account logout text and current store logo are accessible; glass lobe is a
  assert.match(stores,/if \(_switchingStore \|\| _stores.Count <= 1\) return;/);
  assert.match(css,/\.gex-liquid-dock \.gex-store-picker-logo img \{[\s\S]*?object-fit: contain;/);
  assert.match(css,/\.gex-liquid-dock \.gex-store-picker-chevron \{[\s\S]*?margin-inline-end: 11px;/);
- assert.match(drawer,/class="gex-dock-liquid-lobe" aria-hidden="true"/);
+ assert.match(drawer,/class="gex-dock-glass-frame" aria-hidden="true"/);
  assert.match(drawer,/class="gex-dock-active-drop" aria-hidden="true"/);
- assert.match(css,/\.gex-liquid-dock\.gex-dock-has-hover \.gex-dock-liquid-lobe/);
+ assert.match(css,/\.gex-liquid-dock \.gex-dock-glass \{/);
  assert.match(css,/\.gex-liquid-dock\.gex-dock-drop-traveling \.gex-dock-active-drop/);
  assert.match(css,/\.gex-liquid-dock \.gex-navigation-menu > a:is\(:hover,:focus-visible\) \{[\s\S]*?box-shadow: none;/);
 });
@@ -185,5 +186,30 @@ test('overflow active route uses More droplet while new-tab external links prese
  x.links[10].classList.add('active');
  x.binding.recalculate();
  assert.equal(x.dock.style.getPropertyValue('--gex-drop-top'),'542px');
+ x.binding.dispose();
+});
+test('desktop hover reshapes the actual one-piece dock glass and account covers bottom edge',()=>{
+ const x=fixture();
+ const base=x.glass.style.clipPath;
+ assert.match(base,/^path\("M 239 0 /);
+ assert.match(base,/H 239 Q 208 740 208 709/);
+ x.dock.fire('pointerover',{target:x.links[2]});
+ const hover=x.glass.style.clipPath;
+ assert.notEqual(hover,base);
+ assert.match(hover,/L 36 [0-9]/);
+ assert.match(css,/\.gex-dock-glass \{[\s\S]*?clip-path: inset/);
+ assert.match(css,/transition: clip-path/);
+ assert.match(css,/\.goldex-shell \.gex-liquid-dock \{[\s\S]*?background: transparent/);
+ assert.doesNotMatch(drawer,/gex-dock-liquid-lobe/);
+ const avatar={getBoundingClientRect:()=>({top:715}),matches:()=>false,closest(selector){return selector==='.gex-sidebar-identity'?{className:'gex-sidebar-identity'}:this;}};
+ x.dock.fire('pointerover',{target:avatar});
+ assert.equal(x.dock.classList.contains('gex-dock-is-account'),true);
+ assert.match(x.glass.style.clipPath,/H 49 Q 18 740 18 709 V 709 C 18 709 18 709 18 709 L 18 709/);
+ assert.notEqual(x.glass.style.clipPath,hover);
+ assert.match(css,/\.gex-liquid-dock\.gex-dock-is-account \.gex-dock-glass/);
+ assert.match(css,/\.gex-liquid-dock \.gex-signout,\s*\.gex-liquid-dock \.gex-signout:hover \{[\s\S]*?background: transparent !important/);
+ x.dock.fire('pointerout',{target:avatar});
+ assert.equal(x.dock.classList.contains('gex-dock-is-account'),false);
+ assert.match(x.glass.style.clipPath,/H 239 Q 208 740 208 709/);
  x.binding.dispose();
 });

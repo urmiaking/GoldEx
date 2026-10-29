@@ -1022,19 +1022,6 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 /* #252: one connected surface, never an independent bubble on each link. */
 .gex-signout-label { display: none; }
 @media (min-width: 960px) {
-    .gex-liquid-dock .gex-dock-liquid-lobe {
-        position: absolute; z-index: 1; pointer-events: none;
-        inset-inline-start: 3px; top: var(--gex-lobe-top, 90px);
-        height: 48px; width: 48px;
-        border: 1px solid rgba(255,255,255,.42); border-inline-start: 0;
-        border-radius: 26px 12px 12px 26px;
-        background: linear-gradient(112deg,rgba(255,255,255,.65),rgba(249,246,240,.51) 62%,rgba(255,255,255,.25));
-        box-shadow: -10px 11px 28px -16px rgba(30,30,30,.20),inset 0 1px 0 rgba(255,255,255,.57);
-        -webkit-backdrop-filter: blur(27px) saturate(185%); backdrop-filter: blur(27px) saturate(185%);
-        opacity: 0;
-        transition: top .46s cubic-bezier(.20,.82,.22,1),width .48s cubic-bezier(.17,.88,.18,1.12),opacity .24s ease;
-    }
-    .gex-liquid-dock.gex-dock-has-hover .gex-dock-liquid-lobe { width: var(--gex-lobe-width, 220px); opacity: 1; }
     .gex-liquid-dock .gex-dock-active-drop {
         position: absolute; z-index: 2; pointer-events: none;
         top: var(--gex-drop-top, 0px); inset-inline-start: 9px;
@@ -1115,18 +1102,60 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
     .gex-liquid-dock .gex-navigation-menu > a.active {
         background: transparent; color: #FFFFFF;
     }
-    html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-liquid-lobe {
-        border-color: rgba(255,255,255,.17); border-inline-start: 0;
-        background: linear-gradient(115deg,rgba(60,61,66,.84),rgba(25,29,34,.65));
-        box-shadow: -10px 12px 30px -17px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.13);
-    }
 }
-@media (max-width: 959.98px) { .gex-dock-liquid-lobe,.gex-dock-active-drop { display: none; } }
+@media (max-width: 959.98px) { .gex-dock-glass-frame,.gex-dock-active-drop { display: none; } }
 @media (prefers-reduced-motion: reduce) {
-    .gex-liquid-dock .gex-dock-liquid-lobe,.gex-liquid-dock .gex-dock-active-drop {
+    .gex-liquid-dock .gex-dock-glass,.gex-liquid-dock .gex-dock-active-drop {
         transition: none !important; transform: none !important;
     }
 }
 @media (prefers-reduced-transparency: reduce) {
-    .gex-liquid-dock .gex-dock-liquid-lobe { background: var(--mud-palette-surface) !important; }
+    .gex-liquid-dock .gex-dock-glass { background: var(--mud-palette-surface) !important; }
+}
+
+
+/* #253: ONE connected blur-backed silhouette, not two overlapping cards. */
+@media (min-width: 960px) {
+    .goldex-shell .gex-liquid-dock {
+        background: transparent; border-color: transparent;
+        box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+    .goldex-shell .gex-liquid-dock::before { display: none; }
+    .gex-liquid-dock .gex-dock-glass-frame {
+        position: absolute; inset-block: 0; inset-inline-start: 0;
+        width: 272px; height: 100%; z-index: 0; pointer-events: none;
+        filter: drop-shadow(-4px 10px 16px rgba(35,29,18,.16));
+    }
+    .gex-liquid-dock .gex-dock-glass {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        clip-path: inset(0 0 0 calc(100% - 64px) round 33px);
+        background: linear-gradient(120deg,rgba(255,255,255,.73),rgba(252,250,246,.65) 42%,rgba(246,243,236,.60));
+        -webkit-backdrop-filter: blur(27px) saturate(185%);
+        backdrop-filter: blur(27px) saturate(185%);
+        transition: clip-path .48s cubic-bezier(.19,.85,.20,1.04), background .25s ease;
+        will-change: clip-path;
+    }
+    html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-glass {
+        background: linear-gradient(115deg,rgba(56,58,62,.91),rgba(25,28,33,.82));
+    }
+    .gex-liquid-dock.gex-dock-is-account .gex-dock-glass {
+        background: linear-gradient(115deg,rgba(253,217,221,.92),rgba(255,239,239,.83) 53%,rgba(252,248,244,.73));
+    }
+    html[data-gex-mode="dark"] .gex-liquid-dock.gex-dock-is-account .gex-dock-glass {
+        background: linear-gradient(115deg,rgba(90,38,47,.96),rgba(64,43,48,.90) 56%,rgba(34,32,35,.80));
+    }
+    .gex-liquid-dock .gex-signout,
+    .gex-liquid-dock .gex-signout:hover {
+        width: 206px; height: 48px;
+        inset-inline-start: calc(100% - 5px); inset-block-end: -1px;
+        padding-inline: 18px; border-radius: 0;
+        border: 0; background: transparent !important;
+        box-shadow: none !important; transform: none;
+    }
+    .gex-liquid-dock .gex-signout:focus-visible {
+        outline: 2px solid var(--mud-palette-error); outline-offset: -5px; border-radius: 12px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-liquid-dock .gex-dock-glass { transition: none !important; }
 }
