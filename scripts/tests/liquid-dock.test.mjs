@@ -255,7 +255,7 @@ test('primary gold invoice action never expands shared glass; profile does not r
 test('selected hover and keyboard focus expand an opaque Primary pill with contrast text in every palette',()=>{
  const start=css.indexOf('/* #256: A selected Dock route');
  assert.ok(start>0);
- const rule=css.slice(start);
+ const rule=css.slice(start, css.indexOf('/* #257:', start));
  assert.match(rule,/background: var\(--mud-palette-primary\);/);
  assert.match(rule,/color: var\(--mud-palette-primary-text\);/);
  assert.match(rule,/border-radius: 999px;/);

@@ -1,0 +1,181 @@
+@using GoldEx.Shared.Routings
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<nav class="gex-route-trail" aria-label="مسیر صفحه" @key="_location">
+    <ol class="gex-route-trail-list">
+        @for (var i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            var last = i == _items.Count - 1;
+            <li class="gex-route-trail-item @(last ? "is-current" : "")" @key="item.Href ?? item.Label">
+                @if (i > 0)
+                {
+                    <span class="gex-route-trail-separator" aria-hidden="true">‹</span>
+                }
+                @if (!last && item.Href is not null)
+                {
+                    <a href="@item.Href" title="@item.Label">
+                        @if (i == 0) { <ShellIcon Name="home" /> }
+                        <span>@item.Label</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="gex-route-trail-current" aria-current="page">
+                        @if (i == 0) { <ShellIcon Name="home" /> }
+                        <span>@item.Label</span>
+                    </span>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+@code {
+    private sealed record Crumb(string Label, string? Href);
+    private string _location = "";
+    private List<Crumb> _items = [];
+
+    private static readonly Dictionary<string, string> Labels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["/dashboard"] = "داشبورد",
+        ["/calculator"] = "محاسبه‌گر",
+        ["/invoices"] = "فاکتورها",
+        ["/invoices/list"] = "لیست فاکتورها",
+        ["/invoices/create"] = "فاکتور جدید",
+        ["/invoices/set"] = "ویرایش فاکتور",
+        ["/invoices/viewer"] = "مشاهده فاکتور",
+        ["/customers"] = "مشتریان",
+        ["/inventory-stocks"] = "مدیریت انبار",
+        ["/inventory-stocks/list"] = "موجودی انبار",
+        ["/inventory-stocks/inventory-entry"] = "ورود جنس",
+        ["/inventory-stocks/inventory-entry/list"] = "لیست ورود جنس",
+        ["/inventory-stocks/inventory-exits"] = "خروج جنس",
+        ["/inventory-stocks/inventory-exits/list"] = "لیست خروج جنس",
+        ["/inventory-stocks/melting-batches"] = "دسته‌های ذوب",
+        ["/inventory-stocks/melting-batches/create"] = "دسته ذوب جدید",
+        ["/inventory-stocks/melting-batches/set"] = "ویرایش دسته ذوب",
+        ["/reporting"] = "گزارش‌ها",
+        ["/reporting/designer"] = "طراحی گزارش",
+        ["/reporting/profit-analysis"] = "تحلیل سود فروش",
+        ["/reporting/ledger-account-details"] = "گردش حساب",
+        ["/reporting/ledger-account-trial-balances"] = "تراز حساب‌ها",
+        ["/reporting/customer-balances"] = "مانده مشتریان",
+        ["/reporting/customer-transactions"] = "گردش مشتریان",
+        ["/reporting/sell-invoices"] = "گزارش فاکتورهای فروش",
+        ["/reporting/purchase-invoices"] = "گزارش فاکتورهای خرید",
+        ["/reporting/payments"] = "گزارش پرداخت‌ها",
+        ["/reporting/invoice-payments"] = "پرداخت‌های فاکتورها",
+        ["/reporting/payment-vouchers"] = "اسناد پرداخت",
+        ["/reporting/inventory-kardex"] = "کاردکس انبار",
+        ["/reporting/inventory-inventory"] = "موجودی محصولات",
+        ["/reporting/coin-inventory"] = "موجودی سکه",
+        ["/reporting/currency-inventory"] = "موجودی ارز",
+        ["/reporting/used-gold-hidden-profit"] = "سود طلای مستعمل",
+        ["/finances"] = "اسناد مالی",
+        ["/finances/checks"] = "چک‌ها",
+        ["/finances/payment-vouchers"] = "اسناد پرداخت",
+        ["/finances/customer-transfers"] = "انتقال بین مشتریان",
+        ["/transactions"] = "تراکنش‌ها",
+        ["/transactions/create"] = "تراکنش جدید",
+        ["/base-info"] = "تنظیمات",
+        ["/base-info/price-settings"] = "تنظیمات قیمت",
+        ["/base-info/price-units"] = "واحدهای قیمت",
+        ["/base-info/reports-list"] = "گزارش‌های سفارشی",
+        ["/base-info/financial-accounts"] = "حساب‌های مالی",
+        ["/base-info/ledger-accounts"] = "سرفصل‌های حسابداری",
+        ["/base-info/coins"] = "سکه‌ها",
+        ["/base-info/barcode-builder"] = "ساخت بارکد",
+        ["/base-info/sms-templates"] = "قالب پیامک",
+        ["/base-info/sms-logs"] = "گزارش پیامک‌ها",
+        ["/base-info/backup-restore"] = "پشتیبان‌گیری",
+        ["/base-info/license-requests"] = "درخواست‌های مجوز",
+        ["/base-info/stores"] = "فروشگاه‌ها",
+        ["/base-info/stone-types"] = "انواع سنگ",
+        ["/base-info/product-attributes"] = "ویژگی‌های محصول",
+        ["/base-info/api-tokens"] = "کلیدهای دسترسی",
+        ["/product-categories"] = "دسته‌بندی محصولات",
+        ["/products"] = "محصولات",
+        ["/smart-tray"] = "سینی هوشمند",
+        ["/price-board"] = "تابلوی قیمت",
+        ["/register-product"] = "ثبت محصول",
+        ["/register-product/form"] = "فرم ثبت محصول",
+        ["/register-product/success"] = "ثبت موفق",
+        ["/register-product/upgrade-license"] = "ارتقای مجوز",
+        ["/register-product/extend-license"] = "تمدید مجوز",
+        ["/user-accounts"] = "مدیریت حساب",
+        ["/user-accounts/list"] = "حساب‌های کاربران",
+        ["/user-accounts/change-password"] = "تغییر رمز عبور",
+        ["/user-accounts/email"] = "ایمیل",
+        ["/user-accounts/external-logins"] = "ورودهای متصل",
+        ["/user-accounts/passkeys"] = "کلیدهای ورود",
+        ["/user-accounts/enable-authenticator"] = "فعال‌سازی تأیید هویت",
+        ["/user-accounts/two-factor-authentication"] = "تأیید دومرحله‌ای",
+        ["/user-accounts/disable-2fa"] = "غیرفعال‌سازی تأیید دومرحله‌ای",
+        ["/user-accounts/generate-recovery-codes"] = "کدهای بازیابی",
+        ["/user-accounts/reset-authenticator"] = "بازنشانی تأیید هویت",
+        ["/user-accounts/set-password"] = "تنظیم رمز عبور",
+        ["/blogs"] = "راهنما",
+        ["/about-goldex"] = "درباره گلدکس",
+        ["/under-development"] = "در دست توسعه",
+        ["/not-found"] = "صفحه پیدا نشد",
+        ["/NoStore"] = "انتخاب فروشگاه"
+    };
+
+    // Only known, actual destinations are links; dynamic IDs and unknown path
+    // segments are never printed or linked into the navigation trail.
+    private static readonly HashSet<string> Navigable = new(Labels.Keys, StringComparer.OrdinalIgnoreCase);
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        Update();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) =>
+        _ = InvokeAsync(() => { Update(); StateHasChanged(); });
+
+    private void Update()
+    {
+        _location = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
+        var segments = _location.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        _items = [new Crumb("صفحه اصلی", segments.Length == 0 ? null : ClientRoutes.Home.Index)];
+        if (segments.Length == 0) return;
+
+        var path = "";
+        foreach (var segment in segments)
+        {
+            path += "/" + Uri.UnescapeDataString(segment);
+            if (Labels.TryGetValue(path, out var label))
+            {
+                _items.Add(new Crumb(label, Navigable.Contains(path) ? path : null));
+                continue;
+            }
+
+            // Dynamic identifiers (invoice number, GUID, report name etc.)
+            // belong to the last named destination, not to a raw URL crumb.
+            if (_items.Count > 1)
+                break;
+
+            _items.Add(new Crumb("صفحه", null));
+            break;
+        }
+
+        // Distinguish a newly created invoice from an existing one.
+        if (path.Equals("/invoices/set", StringComparison.OrdinalIgnoreCase) && segments.Length == 2)
+            _items[^1] = new Crumb("فاکتور جدید", null);
+
+        if (_items.Count > 1)
+        {
+            _items[^1] = _items[^1] with { Href = null };
+        }
+
+        // Keep the current title and the nearest useful ancestors on limited
+        // desktop widths. The home link remains visible for easy navigation.
+        if (_items.Count > 4)
+            _items = [_items[0], .. _items.TakeLast(3)];
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

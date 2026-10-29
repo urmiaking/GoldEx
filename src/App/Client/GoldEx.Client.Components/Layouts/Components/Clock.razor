@@ -1,32 +1,44 @@
 @using System.Globalization
 @implements IDisposable
 
-<span class="gex-clock"><ShellIcon Name="calendar" /><span>@_currentDate</span><span class="gex-clock-time" dir="ltr">@_currentTime</span></span>
+<span class="gex-clock" role="group" aria-label="تاریخ و ساعت">
+    <span class="gex-clock-date">@_currentDate</span>
+    <span class="gex-clock-time" dir="rtl">ساعت <bdi dir="ltr">@_currentTime</bdi></span>
+</span>
 
 @code {
-    private string? _currentDate;
-    private string? _currentTime;
+    private static readonly PersianCalendar Calendar = new();
+    private static readonly string[] MonthNames =
+    [
+        "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+        "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+    ];
+    private static readonly string[] WeekdayNames =
+    [
+        "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"
+    ];
 
+    private string _currentDate = "";
+    private string _currentTime = "";
     private Timer? _timer;
 
     protected override void OnInitialized()
     {
         SetCurrentTime();
-        _timer = new Timer(_ => InvokeAsync(SetCurrentTime), null, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1));
+        _timer = new Timer(_ => _ = InvokeAsync(SetCurrentTime), null,
+            TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1));
     }
 
     private void SetCurrentTime()
     {
         var now = DateTime.Now;
-
-        _currentDate = now.ToString("yyyy/MM/dd", CultureInfo.CurrentUICulture);
-        _currentTime = now.ToString("HH:mm");
-
+        _currentDate = $"{WeekdayNames[(int)now.DayOfWeek]} {ToPersianDigits(Calendar.GetDayOfMonth(now).ToString(CultureInfo.InvariantCulture))} {MonthNames[Calendar.GetMonth(now) - 1]} {ToPersianDigits(Calendar.GetYear(now).ToString(CultureInfo.InvariantCulture))}";
+        _currentTime = ToPersianDigits(now.ToString("HH:mm", CultureInfo.InvariantCulture));
         StateHasChanged();
     }
 
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
+    private static string ToPersianDigits(string value) =>
+        string.Concat(value.Select(c => c is >= '0' and <= '9' ? (char)('۰' + c - '0') : c));
+
+    public void Dispose() => _timer?.Dispose();
 }
