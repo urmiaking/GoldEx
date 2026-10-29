@@ -28,20 +28,23 @@
                 <li class="stock-history-entry @(row.ActionType == WarehouseActionType.In ? "is-in" : "is-out")">
                     <span class="stock-history-marker"><ShellIcon Name="@(row.ActionType == WarehouseActionType.In ? "download" : "upload")" /></span>
                     <div class="stock-history-entry-main">
-                        <div class="stock-history-entry-head">
+                        <div class="stock-history-line">
                             <span class="stock-history-action">@row.ActionType.GetDisplayName()</span>
+                            <strong>@(row.GoldUnitType.HasValue
+                                ? row.Amount.ToWeightFormat(row.GoldUnitType.Value)
+                                : row.Amount.ToCurrencyFormat(row.PriceUnit))</strong>
                             <time title="@row.DateTime.ToString("yyyy/MM/dd HH:mm:ss")">@row.DateTime.ToString("yyyy/MM/dd")</time>
+                            @if (!string.IsNullOrWhiteSpace(row.SourceUrl))
+                            {
+                                <button type="button" class="stock-history-source"
+                                        title="@GetSourceText(row.SourceUrl)"
+                                        aria-label="@GetSourceText(row.SourceUrl)"
+                                        @onclick="() => OpenSource(row.SourceUrl)">
+                                    <ShellIcon Name="external-link" /> <span>@GetSourceText(row.SourceUrl)</span>
+                                </button>
+                            }
                         </div>
-                        <strong>@(row.GoldUnitType.HasValue
-                            ? row.Amount.ToWeightFormat(row.GoldUnitType.Value)
-                            : row.Amount.ToCurrencyFormat(row.PriceUnit))</strong>
                         @if (!string.IsNullOrWhiteSpace(row.Description)) { <p>@row.Description</p> }
-                        @if (!string.IsNullOrWhiteSpace(row.SourceUrl))
-                        {
-                            <button type="button" class="stock-history-source" @onclick="() => OpenSource(row.SourceUrl)">
-                                @GetSourceText(row.SourceUrl) <ShellIcon Name="external-link" />
-                            </button>
-                        }
                     </div>
                 </li>
             }

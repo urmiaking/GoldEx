@@ -45,18 +45,6 @@
         </div>
     </div>
 
-    @if (ActiveFilterCount > 0)
-    {
-        <div class="directory-applied-filters" aria-label="فیلترهای فعال">
-            @if (_customerType.HasValue) { <span>@_customerType.Value.GetDisplayName()</span> }
-            @if (_transactionType.HasValue) { <span>@_transactionType.Value.GetDisplayName()</span> }
-            @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue)
-            {
-                <span>تاریخ ثبت: @(_filterDateRange.Start?.ToShortDateString() ?? "ابتدا") تا @(_filterDateRange.End?.ToShortDateString() ?? "امروز")</span>
-            }
-            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearFilters" StartIcon="@Icons.Material.Filled.Close">پاک کردن فیلترها</MudButton>
-        </div>
-    }
 
     </div>
 

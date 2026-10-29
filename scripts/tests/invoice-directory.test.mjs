@@ -80,7 +80,7 @@ test('only visible desktop/mobile detail instance fetches, and observer disposes
 test('invoice heading and sticky filter toolbar use exactly the same building blocks as Customers', () => {
     for (const selector of ['directory-heading', 'directory-title', 'directory-count',
         'directory-filters', 'directory-toolbar', 'directory-search', 'directory-filter',
-        'directory-sort', 'directory-sort-toggle', 'directory-applied-filters']) {
+        'directory-sort', 'directory-sort-toggle']) {
         assert.match(customerList, new RegExp('(?:class|Class)="' + selector + '(?: [^"]*)?"'));
         assert.match(list, new RegExp('(?:class|Class)="' + selector + '(?: [^"]*)?"'));
     }

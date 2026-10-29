@@ -61,20 +61,7 @@
             </div>
         </div>
 
-        @if (ActiveFilterCount > 0)
-        {
-            <div class="directory-applied-filters" aria-label="فیلترهای فعال">
-                @if (_tradeScale.HasValue) { <span>@_tradeScale.Value.GetDisplayName()</span> }
-                @if (_invoiceType.HasValue) { <span>@_invoiceType.Value.GetDisplayName()</span> }
-                @if (_invoicePaymentStatus.HasValue) { <span>@_invoicePaymentStatus.Value.GetDisplayName()</span> }
-                @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue)
-                {
-                    <span>تاریخ فاکتور: @(_filterDateRange.Start?.ToShortDateString() ?? "ابتدا") تا @(_filterDateRange.End?.ToShortDateString() ?? "امروز")</span>
-                }
-                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearFilters"
-                           StartIcon="@Icons.Material.Filled.Close">پاک کردن فیلترها</MudButton>
-            </div>
-        }
+
     </div>
 
     <div class="invoice-results" aria-busy="@_loading">
@@ -186,8 +173,8 @@
                                 </td>
                                 <td>
                                     <div class="invoice-actions">
-                                        <button type="button" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
-                                        <button type="button" title="ویرایش فاکتور" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
+                                        <button type="button" class="is-print" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                        <button type="button" class="is-edit" title="ویرایش فاکتور" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
                                         <button type="button" class="is-danger" title="حذف فاکتور" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
                                     </div>
                                 </td>
@@ -228,8 +215,8 @@
                         <footer class="invoice-card-footer">
                             <button type="button" class="invoice-card-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")" @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /> @(invoice.ShowDetails ? "بستن جزئیات" : "جزئیات و مانده مشتری")</button>
                             <div class="invoice-actions">
-                                <button type="button" title="چاپ" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
-                                <button type="button" title="ویرایش" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
+                                <button type="button" class="is-print" title="چاپ" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                <button type="button" class="is-edit" title="ویرایش" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
                                 <button type="button" class="is-danger" title="حذف" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
                             </div>
                         </footer>

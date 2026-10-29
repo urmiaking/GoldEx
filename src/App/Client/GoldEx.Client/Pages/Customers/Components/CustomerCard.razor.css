@@ -86,3 +86,9 @@
     .customer-card, .customer-card-actions ::deep .mud-button { transition: none; animation: none; }
     .customer-card-actions ::deep .mud-button:hover, .customer-card-actions ::deep .mud-button:active { transform: none; }
 }
+
+/* Colored, readable card actions and customer menu. */
+.customer-card-actions ::deep .mud-button { background:color-mix(in srgb,var(--customer-action-accent) 13%,var(--mud-palette-surface)); border-color:color-mix(in srgb,var(--customer-action-accent) 36%,var(--mud-palette-lines-default)); }
+.customer-card-actions ::deep .mud-button:hover { background:color-mix(in srgb,var(--customer-action-accent) 20%,var(--mud-palette-surface)); border-color:color-mix(in srgb,var(--customer-action-accent) 50%,var(--mud-palette-lines-default)); }
+.customer-card-heading ::deep .customer-more > button { color:var(--mud-palette-info); border-radius:10px; background:color-mix(in srgb,var(--mud-palette-info) 8%,var(--mud-palette-surface)); }
+.customer-card-heading ::deep .customer-more > button:hover { background:color-mix(in srgb,var(--mud-palette-info) 15%,var(--mud-palette-surface)); }

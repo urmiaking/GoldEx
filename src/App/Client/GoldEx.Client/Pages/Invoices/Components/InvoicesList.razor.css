@@ -23,7 +23,7 @@
 .directory-applied-filters ::deep button { min-height: 44px; }
 @media (max-width: 959px) {
     .directory-toolbar { grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; padding: 8px; }
-    .directory-sort, .directory-sort-toggle, .directory-applied-filters { display: none; }
+    .directory-sort, .directory-sort-toggle { display: none; }
     .directory-toolbar ::deep .directory-filter { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; }
     .directory-toolbar ::deep .directory-filter .mud-button-icon-start { margin: 0; }
     .directory-filter-text { display: none; }
@@ -254,3 +254,10 @@
 .directory-heading ::deep .directory-create.mud-button-root {
     border-radius: 999px;
 }
+
+.invoice-actions button { --invoice-accent:var(--mud-palette-text-primary); color:var(--invoice-accent); background:color-mix(in srgb,var(--invoice-accent) 9%,var(--mud-palette-surface)); border-color:color-mix(in srgb,var(--invoice-accent) 24%,var(--mud-palette-lines-default)); }
+.invoice-actions button.is-print { --invoice-accent:var(--mud-palette-info); }
+.invoice-actions button.is-edit { --invoice-accent:var(--mud-palette-primary); }
+.invoice-actions button.is-danger { --invoice-accent:var(--mud-palette-error); }
+.invoice-actions button:not(:disabled):hover { background:color-mix(in srgb,var(--invoice-accent) 18%,var(--mud-palette-surface)); border-color:color-mix(in srgb,var(--invoice-accent) 45%,var(--mud-palette-lines-default)); }
+.invoice-actions button:focus-visible { outline:2px solid var(--invoice-accent); outline-offset:2px; }

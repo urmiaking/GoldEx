@@ -19,3 +19,8 @@ Use for the enterprise `/inventory-stocks/list` route and responsive design.
 - Static regression: `scripts/tests/inventory-directory-ux.test.mjs`, full Node test suite. Full GoldEx.Client build is appropriate for a route/component refactor. Issue #267, version 1.0.115; local Dev commit only unless asked to push.
 
 - Preserve GUID barcode/QR deep links: when a query resolves to an item despite the initial type filter, infer Product/Coin/Currency from the response item, set Available/Sold according to CurrentAmount, and keep WarehouseActionType consistent. This mirrors the legacy InventoryStockList special search behavior.
+## #268 compact Polish
+- Inventory stock timeline rows are visually compact: type + amount + date + small document-link pill share one flex-wrapping line; descriptions remain available below. Keep SourceUrl click behavior and In/Out semantic colors.
+- The InventoryDirectory header new-entry action must NOT have negative desktop inline-end margin; match CustomersList button's outer edge. No separate selected-filter chip strip under the toolbar: only the badge count on the filter action.
+- Mobile inventory card fineness/barcode/category use stock-card-identifiers inline under the item title. Display current/sold quantities in two separate compact colored/neutral value panes. Operations: semantic store success, link/print info, edit primary, delete error; all theme-derived.
+- Check scripts/tests/directory-compact-polish.test.mjs and full node suite. 1.0.116 / issue #268.

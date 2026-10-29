@@ -14,7 +14,7 @@
                                aria-label="@($"عملیات {Customer.FullName}")" />
             </ActivatorContent>
             <ChildContent>
-                <MudMenuItem Icon="@Icons.Material.Outlined.Edit" OnClick="() => OnEdit.InvokeAsync(Customer)">ویرایش اطلاعات</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Edit" IconColor="Color.Info" OnClick="() => OnEdit.InvokeAsync(Customer)">ویرایش اطلاعات</MudMenuItem>
                 <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="Color.Error" OnClick="() => OnRemove.InvokeAsync(Customer)">حذف مشتری</MudMenuItem>
             </ChildContent>
         </MudMenu>

@@ -36,7 +36,7 @@
 @media (min-width: 1400px) { .directory-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 959px) {
     .directory-toolbar { grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; padding: 8px; }
-    .directory-sort, .directory-sort-toggle, .directory-applied-filters { display: none; }
+    .directory-sort, .directory-sort-toggle { display: none; }
     .directory-toolbar ::deep .directory-filter { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; }
     .directory-toolbar ::deep .directory-filter .mud-button-icon-start { margin: 0; }
     .directory-filter-text { display: none; }

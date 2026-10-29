@@ -37,7 +37,7 @@ test('inventory toolbar mirrors invoices with filters, sort, server pagination a
  assert.match(directory,/DebounceInterval="500"/);
  assert.match(directory,/OnClick="OpenMobileFilters"/);
  assert.match(directory,/Class="directory-sort-direction"/);
- assert.match(directory,/class="stock-filter-chips"/);
+ assert.doesNotMatch(directory,/class="stock-filter-chips"/);
  assert.match(directory,/class="stock-skeleton-table"/);
  assert.match(directory,/class="stock-skeleton-card"/);
  assert.match(directory,/class="stock-pagination"/);
@@ -105,7 +105,7 @@ test('history details are not MudTable: paged semantic entry/exit timeline',()=>
  assert.match(trace, /ChangePage\(1\)/);
  assert.match(traceCode, /GetInventoryStockTracesAsync\(ItemId, ItemType/);
  assert.match(traceCode,/private const int _pageSize = 6/);
- assert.match(traceStyles,/\.stock-history-entry:not\(:last-child\)::before/);
+ assert.match(traceStyles,/\.stock-history-line \{/);
  assert.match(styles,/\.stock-card\.is-empty/);
  assert.match(styles,/\.stock-card\.is-partial/);
 });

@@ -34,3 +34,7 @@ Read `AGENTS.md` (especially the sections on invoice directory UI, color/typogra
 - Run `node --test scripts/tests/invoice-paid-chip-contrast.test.mjs` plus complete Node tests. Verify both computed text and SVG colors against success background, not just the declared token. The source-CSS mock Chrome render passed for both modes; authenticated full page remains to be verified when run.
 ## #266 responsive date-range regression
 - Remove gex-desktop-filter-date CSS outer border/padding/internal min-height added in #264. It double-outlines and enlarges MudDateRangePicker in filter dialogs. Both InvoiceFiltersDialog and CustomerFiltersDialog use the normal MudDateRangePicker at MudItem xs=12 sm=6 (mobile full; desktop half), Class=w-100, with Reporting-style rounded/anchor/adaptive properties. Preserve DateRangeChanged, reset and mobile-only sort. Guard with scripts/tests/brand-filter-regression.test.mjs.
+## #268 directory compact filters and actions
+- InvoicesList and CustomersList now display only numeric badges on the filter button, not a second applied-filter chip/clear row under the sticky search/filter toolbar. Keep filtering and clear behavior inside each filter dialog.
+- InvoicesList icon buttons use restrained semantic accents (print=info, edit=primary, delete=error) in desktop and mobile, matching inventory icon operation styling; CustomerCard ledger/invoices actions use a slightly stronger pastel accent and its edit menu icon is info. Theme variables only.
+- Check scripts/tests/directory-compact-polish.test.mjs; release 1.0.116, issue #268.

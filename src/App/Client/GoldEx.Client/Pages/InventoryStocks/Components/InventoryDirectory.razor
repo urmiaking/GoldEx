@@ -59,19 +59,7 @@
                 </MudTooltip>
             </div>
         </div>
-        <div class="stock-filter-chips">
-            <span class="stock-status-chip">@ItemType.GetDisplayName()</span>
-            <span class="stock-status-chip @(ItemStatus == ItemStatus.Available ? "is-available" : "is-empty")">@ItemStatus.GetDisplayName()</span>
-            @if (_categoryFilter is not null) { <span class="stock-status-chip">@_categoryFilter.Title</span> }
-            @if (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue)
-            {
-                <span class="stock-status-chip">@DateRangeFilterLabel: @(_filterDateRange.Start?.ToShortDateString() ?? "ابتدا") تا @(_filterDateRange.End?.ToShortDateString() ?? "امروز")</span>
-            }
-            @if (ActiveFilterCount > 0)
-            {
-                <button type="button" class="stock-clear-filters" @onclick="ResetAllFilters">پاک کردن فیلترها</button>
-            }
-        </div>
+
     </div>
 
     <div class="stock-results" aria-busy="@(_loading ? "true" : "false")">
@@ -187,14 +175,14 @@
                                         {
                                             @if (CanShowVitrine(item))
                                             {
-                                                <button type="button" title="مدیریت ویترین" aria-label="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
+                                                <button type="button" class="is-store" title="مدیریت ویترین" aria-label="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
                                                 @if (item.Product?.ShowInVitrine == true)
                                                 {
-                                                    <button type="button" title="کپی لینک ویترین" aria-label="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
+                                                    <button type="button" class="is-link" title="کپی لینک ویترین" aria-label="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
                                                 }
                                             }
-                                            <button type="button" title="چاپ بارکد" aria-label="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
-                                            <button type="button" title="ویرایش جنس" aria-label="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
+                                            <button type="button" class="is-print" title="چاپ بارکد" aria-label="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
+                                            <button type="button" class="is-edit" title="ویرایش جنس" aria-label="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
                                             @if (item.SoldAmount == 0)
                                             {
                                                 <button type="button" class="is-danger" title="حذف جنس" aria-label="حذف جنس" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
@@ -202,7 +190,7 @@
                                         }
                                         else if (ItemType == ItemType.Coin)
                                         {
-                                            <button type="button" title="چاپ بارکد سکه" aria-label="چاپ بارکد سکه" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
+                                            <button type="button" class="is-print" title="چاپ بارکد سکه" aria-label="چاپ بارکد سکه" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
                                         }
                                         else { <span class="stock-muted">—</span> }
                                     </div>
@@ -223,19 +211,28 @@
                 {
                     <article @key="GetItemId(item)" class="stock-card @QuantityStatus(item) @(item.ShowDetails ? "is-expanded" : "")">
                         <header class="stock-card-head">
-                            <div class="stock-card-name"><strong>@ItemTitle(item)</strong><small>@ItemBarcode(item)</small></div>
+                            <div class="stock-card-name">
+                                <strong>@ItemTitle(item)</strong>
+                                <div class="stock-card-identifiers">
+                                    @if (!string.IsNullOrWhiteSpace(ItemBarcode(item))) { <small>@ItemBarcode(item)</small> }
+                                    @if (item.Product is not null) { <span>عیار @item.Product.Fineness.ToString("G29")</span> }
+                                    @if (item.Coin is not null) { <span>عیار @item.Coin.Fineness.ToString("G29")</span> }
+                                    @if (!string.IsNullOrWhiteSpace(ItemSubTitle(item))) { <span>@ItemSubTitle(item)</span> }
+                                </div>
+                            </div>
                             <span class="stock-type-badge">@ItemType.GetDisplayName()</span>
                         </header>
-                        <div class="stock-card-meta">
-                            <span>@(ItemSubTitle(item))</span>
-                            @if (item.Product is not null) { <span>عیار @item.Product.Fineness.ToString("G29")</span> }
-                            @if (item.Coin is not null) { <span>سال ضرب @GetCoinMintYear(item.Coin)</span> }
-                            @if (ItemType == ItemType.MoltenGold)
-                            {
-                                <span>انگ: @(item.Product?.MoltenGold?.AssayNumber ?? "—")</span>
-                                <span>تاریخ ری‌گیری: @(item.Product?.MoltenGold?.AssayDate?.ToString("yyyy/MM/dd") ?? "—")</span>
-                            }
-                        </div>
+                        @if (ItemType == ItemType.MoltenGold && item.Product is not null)
+                        {
+                            <div class="stock-card-meta">
+                                <span>انگ: @(item.Product.MoltenGold?.AssayNumber ?? "—")</span>
+                                <span>تاریخ ری‌گیری: @(item.Product.MoltenGold?.AssayDate?.ToString("yyyy/MM/dd") ?? "—")</span>
+                            </div>
+                        }
+                        else if (item.Coin is not null)
+                        {
+                            <div class="stock-card-meta"><span>سال ضرب @GetCoinMintYear(item.Coin)</span></div>
+                        }
                         <div class="stock-card-amounts">
                             <div><span>موجودی فعلی</span><strong class="@QuantityStatus(item)">@FormattedAmount(item.CurrentAmount, item)</strong></div>
                             <div><span>فروخته‌شده</span><strong>@FormattedAmount(item.SoldAmount, item)</strong></div>
@@ -248,14 +245,14 @@
                                 {
                                     @if (CanShowVitrine(item))
                                     {
-                                        <button type="button" aria-label="ویترین" title="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
+                                        <button type="button" class="is-store" aria-label="ویترین" title="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
                                         @if (item.Product?.ShowInVitrine == true)
                                         {
-                                            <button type="button" aria-label="کپی لینک ویترین" title="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
+                                            <button type="button" class="is-link" aria-label="کپی لینک ویترین" title="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
                                         }
                                     }
-                                    <button type="button" aria-label="چاپ بارکد" title="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
-                                    <button type="button" aria-label="ویرایش جنس" title="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
+                                    <button type="button" class="is-print" aria-label="چاپ بارکد" title="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
+                                    <button type="button" class="is-edit" aria-label="ویرایش جنس" title="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
                                     @if (item.SoldAmount == 0)
                                     {
                                         <button type="button" class="is-danger" aria-label="حذف جنس" title="حذف جنس" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
@@ -263,7 +260,7 @@
                                 }
                                 else if (ItemType == ItemType.Coin)
                                 {
-                                    <button type="button" aria-label="چاپ سکه" title="چاپ بارکد" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
+                                    <button type="button" class="is-print" aria-label="چاپ سکه" title="چاپ بارکد" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
                                 }
                             </div>
                         </footer>
