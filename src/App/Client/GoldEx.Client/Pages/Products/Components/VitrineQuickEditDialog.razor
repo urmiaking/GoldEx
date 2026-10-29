@@ -1,47 +1,56 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @inherits GoldExComponentBase
 
-<MudDialog>
-    <TitleContent>
-        <div class="d-flex align-center gap-2">
-            <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Info" />
-            <MudText Typo="Typo.h6">@Model.Name</MudText>
-        </div>
-    </TitleContent>
+<EditorDialogFrame>
     <DialogContent>
-        <MudGrid Spacing="3">
-            <MudItem xs="12" sm="6">
-                <MudSwitch @bind-Value="Model.ShowInVitrine"
-                           Label="نمایش در ویترین"
-                           Color="Color.Success"
-                           T="bool" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudSwitch @bind-Value="Model.IsFeatured"
-                           Label="نمایش در پیشنهادات ویژه"
-                           Color="Color.Primary"
-                           Disabled="@(!Model.ShowInVitrine)"
-                           T="bool" />
-            </MudItem>
+        <div class="gex-vitrine-editor">
+            <header class="gex-vitrine-overview">
+                <div class="gex-vitrine-overview-icon"><MudIcon Icon="@Icons.Material.Outlined.Storefront" /></div>
+                <div class="gex-vitrine-overview-text">
+                    <MudText Typo="Typo.body1">@Model.Name</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">وضعیت نمایش، اطلاعات معرفی و تصاویر این جنس را مدیریت کنید.</MudText>
+                </div>
+                <span class="gex-vitrine-status @(Model.ShowInVitrine ? "is-live" : null)">
+                    @(Model.ShowInVitrine ? "در ویترین" : "نمایش غیرفعال")
+                </span>
+            </header>
 
-            <MudItem xs="12">
+            <section class="gex-vitrine-section" aria-label="انتشار در ویترین">
+                <div class="gex-vitrine-section-heading">
+                    <MudIcon Icon="@Icons.Material.Outlined.Visibility" Size="Size.Small" />
+                    <MudText Typo="Typo.body1">نحوه نمایش</MudText>
+                </div>
+                <div class="gex-vitrine-switch-grid">
+                    <div class="gex-vitrine-switch">
+                        <div class="gex-vitrine-switch-copy">
+                            <MudText Typo="Typo.body2">نمایش در ویترین آنلاین</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">مشتریان می‌توانند این جنس را در سایت ببینند.</MudText>
+                        </div>
+                        <MudSwitch @bind-Value="Model.ShowInVitrine" Color="Color.Success"
+                                   T="bool" aria-label="نمایش در ویترین آنلاین" />
+                    </div>
+                    <div class="gex-vitrine-switch @(!Model.ShowInVitrine ? "is-disabled" : null)">
+                        <div class="gex-vitrine-switch-copy">
+                            <MudText Typo="Typo.body2">پیشنهاد ویژه</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">جنس را در بخش پیشنهادهای ویژه نمایش بده.</MudText>
+                        </div>
+                        <MudSwitch @bind-Value="Model.IsFeatured" Color="Color.Primary"
+                                   Disabled="@(!Model.ShowInVitrine)" T="bool" aria-label="پیشنهاد ویژه" />
+                    </div>
+                </div>
                 <MudTextField @bind-Value="Model.VitrineDescription"
-                              Label="توضیحات معرفی قطعه (اختیاری)"
-                              Variant="Variant.Outlined"
-                              Lines="3"
-                              Margin="Margin.Dense"
-                              Disabled="@(!Model.ShowInVitrine)"
-                              Placeholder="توضیحات جذاب درباره ظرافت ساخت، تراش، درخشش یا برند قطعه..." />
-            </MudItem>
+                              Label="توضیحات معرفی جنس" Placeholder="درباره طراحی، ظرافت ساخت یا ویژگی‌های این جنس بنویسید..."
+                              Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense"
+                              Disabled="@(!Model.ShowInVitrine)" />
+            </section>
 
             @if (_categoryAttributes.Any())
             {
-                <MudItem xs="12">
-                    <MudText Typo="Typo.subtitle2" Class="mb-1 d-flex align-center gap-1">
-                        <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Color="Color.Primary" />
-                        مشخصات و ابعاد قطعه
-                    </MudText>
-                    <MudDivider Class="mb-3" />
-
+                <section class="gex-vitrine-section" aria-label="مشخصات جنس">
+                    <div class="gex-vitrine-section-heading">
+                        <MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Small" />
+                        <MudText Typo="Typo.body1">ویژگی‌ها و ابعاد</MudText>
+                    </div>
                     <MudGrid Spacing="2">
                         @foreach (var attr in _categoryAttributes)
                         {
@@ -51,23 +60,17 @@
                                     <MudTextField @bind-Value="attr.Value"
                                                   Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
                                                   Adornment="@(string.IsNullOrWhiteSpace(attr.Unit) ? Adornment.None : Adornment.End)"
-                                                  AdornmentText="@attr.Unit"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Placeholder="@($"مثال: 3.5")"
-                                                  Required="@attr.IsRequired"
-                                                  RequiredError="@($"{attr.Title} الزامی است.")" />
+                                                  AdornmentText="@attr.Unit" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Placeholder="مثال: ۳٫۵"
+                                                  Required="@attr.IsRequired" RequiredError="@($"{attr.Title} الزامی است.")" />
                                 }
                                 else if (attr.DataType == ProductAttributeDataType.Select && !string.IsNullOrWhiteSpace(attr.Options))
                                 {
                                     <MudSelect @bind-Value="attr.Value"
                                                Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
-                                               Variant="Variant.Outlined"
-                                               Margin="Margin.Dense"
-                                               Clearable="true"
-                                               Required="@attr.IsRequired"
-                                               RequiredError="@($"{attr.Title} الزامی است.")"
-                                               T="string">
+                                               Variant="Variant.Outlined" Margin="Margin.Dense"
+                                               Clearable="true" Required="@attr.IsRequired"
+                                               RequiredError="@($"{attr.Title} الزامی است.")" T="string">
                                         @foreach (var opt in attr.Options.Split(new[] { ',', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                                         {
                                             <MudSelectItem Value="@opt">@opt</MudSelectItem>
@@ -79,115 +82,99 @@
                                     <MudTextField @bind-Value="attr.Value"
                                                   Label="@(attr.Title + (attr.IsRequired ? " *" : ""))"
                                                   Adornment="@(string.IsNullOrWhiteSpace(attr.Unit) ? Adornment.None : Adornment.End)"
-                                                  AdornmentText="@attr.Unit"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Required="@attr.IsRequired"
-                                                  RequiredError="@($"{attr.Title} الزامی است.")" />
+                                                  AdornmentText="@attr.Unit" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Required="@attr.IsRequired" RequiredError="@($"{attr.Title} الزامی است.")" />
                                 }
                             </MudItem>
                         }
                     </MudGrid>
-                </MudItem>
+                </section>
             }
 
             @if (Model.ShowInVitrine && !string.IsNullOrWhiteSpace(PublicVitrineUrl))
             {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-3 d-flex align-center justify-space-between flex-wrap gap-2"
-                              Elevation="0"
-                              Style="background: rgba(var(--mud-palette-info-rgb), 0.08); border: 1px solid rgba(var(--mud-palette-info-rgb), 0.3); border-radius: 10px;">
-                        <div class="d-flex align-center gap-2" style="min-width: 0;">
-                            <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Info" Size="Size.Small" />
-                            <div style="min-width: 0;">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">لینک اختصاصی کالا در ویترین</MudText>
-                                <MudText Typo="Typo.body2" Style="direction: ltr; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mud-palette-info);">
-                                    @PublicVitrineUrl
-                                </MudText>
-                            </div>
+                <section class="gex-vitrine-section" aria-label="لینک عمومی جنس">
+                    <div class="gex-vitrine-section-heading">
+                        <MudIcon Icon="@Icons.Material.Outlined.Link" Size="Size.Small" />
+                        <MudText Typo="Typo.body1">لینک اختصاصی ویترین</MudText>
+                    </div>
+                    <div class="gex-vitrine-link">
+                        <div class="gex-vitrine-link-text" dir="ltr" title="@PublicVitrineUrl">@PublicVitrineUrl</div>
+                        <div class="gex-vitrine-link-actions">
+                            <MudButton OnClick="CopyVitrineUrlAsync" StartIcon="@Icons.Material.Outlined.ContentCopy"
+                                       Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">کپی لینک</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Outlined.OpenInNew" Variant="Variant.Outlined"
+                                       Color="Color.Primary" Size="Size.Small" Target="_blank" Href="@PublicVitrineUrl">مشاهده</MudButton>
                         </div>
-                        <div class="d-flex align-center gap-2">
-                            <MudButton StartIcon="@Icons.Material.Filled.ContentCopy"
-                                       Variant="Variant.Outlined"
-                                       Color="Color.Info"
-                                       Size="Size.Small"
-                                       OnClick="CopyVitrineUrlAsync">
-                                کپی لینک
-                            </MudButton>
-                            <MudButton StartIcon="@Icons.Material.Filled.OpenInNew"
-                                       Variant="Variant.Filled"
-                                       Color="Color.Info"
-                                       Size="Size.Small"
-                                       Target="_blank"
-                                       Href="@PublicVitrineUrl">
-                                مشاهده
-                            </MudButton>
-                        </div>
-                    </MudPaper>
-                </MudItem>
+                    </div>
+                </section>
             }
 
-            <!-- Image Gallery Upload Section -->
-            <MudItem xs="12">
-                <MudText Typo="Typo.subtitle2" Class="mb-2">تصاویر ویترین کالا</MudText>
-
-                <div class="d-flex flex-wrap gap-3 mb-3">
+            <section class="gex-vitrine-section" aria-label="تصاویر ویترین">
+                <div class="gex-vitrine-section-heading">
+                    <MudIcon Icon="@Icons.Material.Outlined.PhotoLibrary" Size="Size.Small" />
+                    <MudText Typo="Typo.body1">تصاویر ویترین</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@(Model.Images.Count) تصویر</MudText>
+                </div>
+                <div class="gex-vitrine-gallery">
                     @foreach (var img in Model.Images)
                     {
-                        <div style="position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; border: 2px solid @(img.IsMain ? "var(--mud-palette-primary)" : "var(--mud-palette-lines-default)"); background: #000;">
-                            <img src="@img.Url" style="width: 100%; height: 100%; object-fit: cover;" />
-                            
+                        <div class="gex-vitrine-photo @(img.IsMain ? "is-main" : null)" @key="img.Url">
+                            <img src="@img.Url" alt="@Model.Name" loading="lazy" />
                             @if (img.IsMain)
                             {
-                                <span style="position: absolute; bottom: 4px; right: 4px; background: var(--mud-palette-primary); color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-radius: 4px;">
-                                    شاخص
-                                </span>
+                                <span class="gex-vitrine-photo-badge">تصویر شاخص</span>
                             }
                             else
                             {
-                                <MudIconButton Icon="@Icons.Material.Filled.StarBorder"
-                                               Size="Size.Small"
-                                               Style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.6);"
-                                               Color="Color.Primary"
-                                               OnClick="() => SetMainImage(img)" />
+                                <button type="button" class="gex-vitrine-photo-action is-star" title="انتخاب به‌عنوان تصویر شاخص"
+                                        aria-label="انتخاب تصویر شاخص" @onclick="() => SetMainImage(img)">
+                                    <MudIcon Icon="@Icons.Material.Outlined.StarBorder" Size="Size.Small" />
+                                </button>
                             }
-
-                            <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                           Size="Size.Small"
-                                           Style="position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.6);"
-                                           Color="Color.Error"
-                                           OnClick="() => RemoveImage(img)" />
+                            <button type="button" class="gex-vitrine-photo-action is-remove" title="حذف تصویر"
+                                    aria-label="حذف تصویر" @onclick="() => RemoveImage(img)">
+                                <MudIcon Icon="@Icons.Material.Outlined.Close" Size="Size.Small" />
+                            </button>
                         </div>
                     }
-
                     <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.webp" FilesChanged="UploadImageAsync">
                         <CustomContent Context="ctx">
-                            <div @onclick="ctx.OpenFilePickerAsync"
-                                 style="width: 100px; height: 100px; border: 2px dashed var(--mud-palette-primary); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb), 0.05);">
+                            <button type="button" class="gex-vitrine-upload" disabled="@(_isUploading || _isSaving)"
+                                    aria-label="افزودن تصویر جدید" @onclick="ctx.OpenFilePickerAsync">
                                 @if (_isUploading)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@Icons.Material.Filled.AddPhotoAlternate" Size="Size.Medium" />
-                                    <span style="font-size: 0.75rem; margin-top: 4px;">افزودن عکس</span>
+                                    <MudIcon Icon="@Icons.Material.Outlined.AddPhotoAlternate" Size="Size.Medium" />
+                                    <span>افزودن تصویر</span>
                                 }
-                            </div>
+                            </button>
                         </CustomContent>
                     </MudFileUpload>
                 </div>
-            </MudItem>
-        </MudGrid>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    تصاویر را با فرمت JPG، PNG یا WebP انتخاب کنید. حجم هر تصویر حداکثر ۲۰ مگابایت است.
+                </MudText>
+            </section>
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">انصراف</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_isSaving">
+        <MudButton OnClick="Cancel" Color="Color.Error" StartIcon="@Icons.Material.Outlined.Close"
+                   Variant="Variant.Outlined" Disabled="@(_isSaving || _isUploading)">انصراف</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Save"
+                   Variant="Variant.Filled" Disabled="@(_isSaving || _isUploading)">
             @if (_isSaving)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-2" />
+                <span>در حال ذخیره...</span>
             }
-            ذخیره تنظیمات ویترین
+            else
+            {
+                <span>ذخیره تنظیمات</span>
+            }
         </MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -11,6 +12,7 @@ public partial class Editor
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductCategoryVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -33,9 +35,12 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (IsBusy)
+        if (IsBusy || Session?.IsBusy == true)
             return;
 
+        Session?.SetBusy(true);
+        try
+        {
         if (Id is null)
         {
             var request = ProductCategoryVm.ToCreateRequest(Model);
@@ -43,7 +48,7 @@ public partial class Editor
                 action: (s, ct) => s.CreateAsync(request, ct),
                 afterSend: () =>
                 {
-                    MudDialog.Close(DialogResult.Ok(true));
+                    Complete();
                     return Task.CompletedTask;
                 });
         }
@@ -54,11 +59,27 @@ public partial class Editor
                 action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
                 afterSend: () =>
                 {
-                    MudDialog.Close(DialogResult.Ok(true));
+                    Complete();
                     return Task.CompletedTask;
                 });
         }
+        }
+        finally
+        {
+            Session?.SetBusy(false);
+        }
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Complete()
+    {
+        if (Session is not null) Session.Close(true);
+        else MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Close()
+    {
+        if (IsBusy) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
 }

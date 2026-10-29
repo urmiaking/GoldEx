@@ -582,12 +582,13 @@ public partial class InventoryDirectory
         }
 
         var productModel = context.Product.Clone();
-        var parameters = new DialogParameters<VitrineQuickEditDialog>
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.Model, productModel }
+            [nameof(VitrineQuickEditDialog.Model)] = productModel
         };
 
-        var dialog = await DialogService.ShowAsync<VitrineQuickEditDialog>("مدیریت ویترین آنلاین", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<VitrineQuickEditDialog>(
+            "مدیریت ویترین آنلاین", parameters, wide: true);
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: ProductVm updatedModel })
@@ -634,13 +635,12 @@ public partial class InventoryDirectory
         var productModel = context.Product.Clone();
         productModel.Weight = context.CurrentAmount;
 
-        var parameters = new DialogParameters<Editor>
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.Model, productModel }
+            [nameof(Editor.Model)] = productModel
         };
 
-        var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);
-
+        var dialog = ResponsiveDialogs.Show<Editor>("ویرایش جنس", parameters, wide: true);
         var result = await dialog.Result;
 
         if (result is { Canceled: false })
