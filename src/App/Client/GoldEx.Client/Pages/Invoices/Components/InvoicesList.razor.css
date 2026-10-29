@@ -249,3 +249,8 @@
     /* Align the button's outer left edge with the filter card on wide screens. */
     .directory-heading ::deep .directory-create { margin-inline-end: -16px; }
 }
+/* New invoice follows the pill shape of New Customer without changing other CTA buttons. */
+.directory-heading ::deep .directory-create .mud-button-root,
+.directory-heading ::deep .directory-create.mud-button-root {
+    border-radius: 999px;
+}

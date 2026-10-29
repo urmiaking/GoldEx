@@ -1,0 +1,58 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.DTOs.InventoryStocks
+
+<section class="stock-history" aria-label="گردش ورود و خروج کالا">
+    <header class="stock-history-title"><ShellIcon Name="history" /> <span>تاریخچه ورود و خروج</span></header>
+    @if (_loading)
+    {
+        <div class="stock-history-loading" role="status">
+            @for (var i = 0; i < 3; i++) { <span class="stock-skeleton is-medium"></span> }
+        </div>
+    }
+    else if (_loadFailed)
+    {
+        <div class="stock-history-message">دریافت گردش انبار انجام نشد.
+            <button type="button" @onclick="LoadAsync">تلاش دوباره</button>
+        </div>
+    }
+    else if (_items.Count == 0)
+    {
+        <div class="stock-history-message">برای این جنس هنوز گردش انباری ثبت نشده است.</div>
+    }
+    else
+    {
+        <ol class="stock-history-list">
+            @foreach (var row in _items)
+            {
+                <li class="stock-history-entry @(row.ActionType == WarehouseActionType.In ? "is-in" : "is-out")">
+                    <span class="stock-history-marker"><ShellIcon Name="@(row.ActionType == WarehouseActionType.In ? "download" : "upload")" /></span>
+                    <div class="stock-history-entry-main">
+                        <div class="stock-history-entry-head">
+                            <span class="stock-history-action">@row.ActionType.GetDisplayName()</span>
+                            <time title="@row.DateTime.ToString("yyyy/MM/dd HH:mm:ss")">@row.DateTime.ToString("yyyy/MM/dd")</time>
+                        </div>
+                        <strong>@(row.GoldUnitType.HasValue
+                            ? row.Amount.ToWeightFormat(row.GoldUnitType.Value)
+                            : row.Amount.ToCurrencyFormat(row.PriceUnit))</strong>
+                        @if (!string.IsNullOrWhiteSpace(row.Description)) { <p>@row.Description</p> }
+                        @if (!string.IsNullOrWhiteSpace(row.SourceUrl))
+                        {
+                            <button type="button" class="stock-history-source" @onclick="() => OpenSource(row.SourceUrl)">
+                                @GetSourceText(row.SourceUrl) <ShellIcon Name="external-link" />
+                            </button>
+                        }
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+    @if (_total > _pageSize)
+    {
+        <nav class="stock-history-pagination" aria-label="صفحه‌بندی گردش انبار">
+            <button type="button" disabled="@(_loading || _page == 0)" @onclick="() => ChangePage(-1)">قبلی</button>
+            <span>@(_page + 1) از @Math.Max(1, (_total + _pageSize - 1) / _pageSize)</span>
+            <button type="button" disabled="@(_loading || (_page + 1) * _pageSize >= _total)" @onclick="() => ChangePage(1)">بعدی</button>
+        </nav>
+    }
+</section>

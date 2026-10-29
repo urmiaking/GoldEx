@@ -1,0 +1,32 @@
+.stock-history { padding:14px 18px; border:1px solid var(--mud-palette-lines-default); border-radius:15px; background:var(--mud-palette-surface); }
+.stock-history-title { display:flex; align-items:center; gap:9px; color:var(--mud-palette-text-primary); font-size:.9rem; font-weight:500; margin-bottom:14px; }
+.stock-history-title .gex-shell-icon { width:20px; height:20px; color:var(--mud-palette-primary); }
+.stock-history-list { display:grid; list-style:none; padding:0 9px 0 0; margin:0; gap:0; }
+.stock-history-entry { position:relative; display:flex; gap:13px; min-width:0; padding:0 0 18px; }
+.stock-history-entry:not(:last-child)::before { content:''; position:absolute; right:10px; top:28px; bottom:0; border-right:1px dashed var(--mud-palette-lines-default); }
+.stock-history-marker { display:grid; flex:none; place-items:center; width:22px; height:22px; border-radius:50%; background:color-mix(in srgb,var(--mud-palette-success) 13%,var(--mud-palette-surface)); color:var(--mud-palette-success); z-index:1; }
+.stock-history-entry.is-out .stock-history-marker { background:color-mix(in srgb,var(--mud-palette-error) 12%,var(--mud-palette-surface)); color:var(--mud-palette-error); }
+.stock-history-marker .gex-shell-icon { width:14px; height:14px; }
+.stock-history-entry-main { display:grid; gap:5px; min-width:0; flex:1; }
+.stock-history-entry-head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; font-size:.8125rem; }
+.stock-history-action { color:var(--mud-palette-success); font-weight:500; }
+.stock-history-entry.is-out .stock-history-action { color:var(--mud-palette-error); }
+.stock-history-entry-head time { color:var(--mud-palette-text-secondary); }
+.stock-history-entry-main strong { font-size:.875rem; font-weight:600; }
+.stock-history-entry-main p { margin:0; color:var(--mud-palette-text-secondary); line-height:1.8; font-size:.8125rem; }
+.stock-history-source { display:inline-flex; justify-self:start; align-items:center; gap:6px; border:0; background:transparent; padding:5px 0; color:var(--mud-palette-primary); font:inherit; font-size:.8125rem; cursor:pointer; }
+.stock-history-source .gex-shell-icon { width:15px; height:15px; }
+.stock-history-pagination { display:flex; justify-content:center; align-items:center; gap:12px; padding:7px; font-size:.8125rem; }
+.stock-history-pagination button,.stock-history-message button { border:1px solid var(--mud-palette-lines-default); border-radius:8px; padding:5px 10px; background:var(--mud-palette-surface); color:var(--mud-palette-primary); cursor:pointer; }
+.stock-history-pagination button:disabled { opacity:.4; cursor:default; }
+.stock-history-message { padding:14px; color:var(--mud-palette-text-secondary); font-size:.8125rem; }
+.stock-history-loading { display:grid; gap:9px; padding:12px; }
+
+.stock-history-loading .stock-skeleton {
+    display:block; height:12px; border-radius:8px; width:74%;
+    background:linear-gradient(95deg,var(--mud-palette-background) 20%,var(--mud-palette-lines-default) 45%,var(--mud-palette-background) 70%);
+    background-size:200% 100%; animation:stock-history-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes stock-history-shimmer { to { background-position-x:-200%; } }
+@media(max-width:959.98px) { .stock-history { margin:10px; padding:12px; } }
+@media(prefers-reduced-motion:reduce) { .stock-history-loading .stock-skeleton { animation:none; } }
