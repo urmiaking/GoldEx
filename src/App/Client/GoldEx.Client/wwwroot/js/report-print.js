@@ -12,9 +12,35 @@ window.openReportPopup = function (url) {
     );
 };
 
+// Localize only rendered report text. Financial values, identifiers, links and
+// API data remain unchanged, including their underlying machine-readable values.
+window.goldExReportToPersianDigits = function (value) {
+    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+    return String(value).replace(/[0-9\u0660-\u0669]/g, char => {
+        const index = char.charCodeAt(0) - (char <= '9' ? 48 : 0x0660);
+        return persianDigits[index];
+    });
+};
+
+window.localizeGoldExReportDigits = function (root) {
+    const report = root || document.querySelector('.gex-print-document');
+    if (!report) return;
+
+    const walker = document.createTreeWalker(report, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+        // Never rewrite scripts or styles accidentally embedded in the report.
+        if (node.parentElement?.closest('script,style,noscript,svg')) continue;
+        if (/[0-9\u0660-\u0669]/.test(node.nodeValue)) {
+            node.nodeValue = window.goldExReportToPersianDigits(node.nodeValue);
+        }
+    }
+};
+
 window.printAndClose = async function () {
     if (window.__goldexReportPrintStarted) return;
     window.__goldexReportPrintStarted = true;
+    window.localizeGoldExReportDigits();
 
     // Report data can arrive before its fonts, stylesheet, or store logo.
     const splash = document.querySelectorAll(

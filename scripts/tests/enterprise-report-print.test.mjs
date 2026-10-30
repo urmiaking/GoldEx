@@ -50,7 +50,7 @@ test('print shell uses tenant settings, not fictitious store or financial inform
 test('shared print stylesheet supports multipage A4, PDF, grayscale and repeated table headers', () => {
     const source = readServer('wwwroot/css/reports/report-enterprise.css');
     for (const fragment of ['@page {', '@page gex-landscape', 'size: A4 portrait', 'size: A4 landscape',
-        'counter(page)', 'counter(pages)', '.gex-print-letterhead', '.gex-print-kpi-grid',
+        'counter(page, gex-persian-page)', 'counter(pages, gex-persian-page)', '.gex-print-letterhead', '.gex-print-kpi-grid',
         '.gex-print-document .table thead', 'table-header-group',
         'page-break-inside:avoid', '.gex-print-summary-section',
         '.gex-print-document-footer', '@media print']) {

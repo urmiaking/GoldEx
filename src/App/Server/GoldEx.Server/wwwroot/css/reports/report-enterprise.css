@@ -1,17 +1,30 @@
 @import url('/fonts/vazir/Vazirmatn-font-face.css');
+/* Persian digits for CSS-generated page counters, which have no DOM text node. */
+@counter-style gex-persian-page {
+    system: numeric;
+    symbols: '۰' '۱' '۲' '۳' '۴' '۵' '۶' '۷' '۸' '۹';
+    suffix: '';
+}
+@font-face {
+    font-family: 'GoldExFaNum';
+    src: url('/fonts/IRANSANS/woff/IRANSansWeb(FaNum).woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 /* GoldEx Enterprise Print System — a single language of print for all report routes.
    No fixed sample financial metrics, no unsupported aggregations. */
 @page {
     size: A4 portrait;
     margin: 12mm 11mm 17mm;
-    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt Tahoma, sans-serif; color: #75674f; }
-    @bottom-left { content: "صفحه " counter(page) " از " counter(pages); font: 8pt Tahoma, sans-serif; color: #75674f; }
+    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt 'GoldExFaNum', Tahoma, sans-serif; color: #75674f; }
+    @bottom-left { content: "صفحه " counter(page, gex-persian-page) " از " counter(pages, gex-persian-page); font: 8pt 'GoldExFaNum', Tahoma, sans-serif; color: #75674f; }
 }
 @page gex-landscape {
     size: A4 landscape;
     margin: 11mm 11mm 17mm;
-    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt Tahoma, sans-serif; color: #75674f; }
-    @bottom-left { content: "صفحه " counter(page) " از " counter(pages); font: 8pt Tahoma, sans-serif; color: #75674f; }
+    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt 'GoldExFaNum', Tahoma, sans-serif; color: #75674f; }
+    @bottom-left { content: "صفحه " counter(page, gex-persian-page) " از " counter(pages, gex-persian-page); font: 8pt 'GoldExFaNum', Tahoma, sans-serif; color: #75674f; }
 }
 .gex-print-document{
     --gex-ink:#272520;--gex-muted:#716c61;--gex-gold:#a57518;--gex-soft-gold:#ddc493;
