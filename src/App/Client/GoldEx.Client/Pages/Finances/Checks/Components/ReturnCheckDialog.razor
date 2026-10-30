@@ -1,10 +1,8 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @inherits GoldExComponentBase
 @using GoldEx.Shared.Helpers
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6" Color="Color.Error">برگشت چک بانکی</MudText>
-    </TitleContent>
+<EditorDialogFrame>
     <DialogContent>
         <MudText Typo="Typo.body2" Class="mb-3">
             آیا از برگشت زدن چک شماره <strong>@Check.Number</strong> به مبلغ <strong>@Check.Amount.ToCurrencyFormat(Check.PriceUnit)</strong> اطمینان دارید؟
@@ -18,16 +16,15 @@
                       Lines="3" />
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Error"
+        <MudButton Color="Color.Default"
                    OnClick="Close"
                    StartIcon="@Icons.Material.Filled.Close"
-                   Variant="Variant.Filled">انصراف</MudButton>
+                   Variant="Variant.Outlined">انصراف</MudButton>
 
-        <MudButton Class="m-2"
-                   Color="Color.Primary"
+        <MudButton                    Color="Color.Error"
                    Disabled="@_processing"
                    StartIcon="@Icons.Material.Filled.Save"
-                   OnClick="@(async () => await Submit())"
+                   OnClick="Submit"
                    Variant="Variant.Filled">
             @if (_processing)
             {
@@ -44,4 +41,4 @@
             }
         </MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

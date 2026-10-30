@@ -108,25 +108,28 @@
                 @foreach (var item in _items)
                 {
                     <article class="transfer-card" @key="item.Id">
-                        <header><span class="transfer-number">حواله #@item.VoucherNumber</span><time>@item.TransferDate.ToShortDateString()</time></header>
-                        <div class="transfer-parties">
-                            <div class="transfer-party is-source"><MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" /><div><small>فرستنده</small><strong>@item.SourceCustomerName</strong></div></div>
-                            <div class="transfer-flow"><MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" /></div>
-                            <div class="transfer-party is-destination"><MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" /><div><small>گیرنده</small><strong>@item.DestinationCustomerName</strong></div></div>
+                        <header class="transfer-card-top">
+                            <div class="transfer-card-identity"><span class="transfer-number">#@item.VoucherNumber</span><time>@item.TransferDate.ToShortDateString()</time></div>
+                            <strong class="transfer-card-money">@item.Amount.ToCurrencyFormat(item.PriceUnitTitle)</strong>
+                        </header>
+                        <div class="transfer-card-route" aria-label="فرستنده و گیرنده حواله">
+                            <div class="transfer-card-party"><small>از</small><span>@item.SourceCustomerName</span></div>
+                            <span class="transfer-card-route-divider" aria-hidden="true">/</span>
+                            <div class="transfer-card-party"><small>به</small><span>@item.DestinationCustomerName</span></div>
                         </div>
-                        <div class="transfer-card-amount"><span>مبلغ / وزن حواله</span><strong>@item.Amount.ToCurrencyFormat(item.PriceUnitTitle)</strong></div>
                         @if (item.SourceInvoiceNumber.HasValue || item.DestinationInvoiceNumber.HasValue)
                         {
-                            <div class="transfer-invoices">
+                            <div class="transfer-card-related">
                                 @if (item.SourceInvoiceNumber.HasValue) { <span>فاکتور مبدأ #@item.SourceInvoiceNumber</span> }
                                 @if (item.DestinationInvoiceNumber.HasValue) { <span>فاکتور مقصد #@item.DestinationInvoiceNumber</span> }
                             </div>
                         }
-                        @if (!string.IsNullOrWhiteSpace(item.Description)) { <p class="transfer-card-description">@item.Description</p> }
-                        <footer><span>ثبت: @item.CreatedAt.ToShortDateString()</span>
+                        @if (!string.IsNullOrWhiteSpace(item.Description)) { <p class="transfer-card-note" title="@item.Description">@item.Description</p> }
+                        <footer class="transfer-card-bottom">
+                            <span>حواله بین مشتریان</span>
                             <div class="transfer-actions">
-                                <button type="button" class="is-edit" aria-label="ویرایش حواله" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
-                                <button type="button" class="is-delete" aria-label="حذف حواله" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
+                                <button type="button" class="is-edit" title="ویرایش حواله" aria-label="ویرایش حواله" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                <button type="button" class="is-delete" title="حذف حواله" aria-label="حذف حواله" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
                             </div>
                         </footer>
                     </article>

@@ -1,0 +1,14 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+ <DialogContent><div class="gex-delete-confirm">
+  <MudIcon Icon="@Icons.Material.Outlined.WarningAmber" Color="Color.Error" Size="Size.Large" />
+  <h3>حذف سند پرداخت #@VoucherNumber</h3>
+  <p>آیا از حذف سند به مبلغ <strong>@AmountText</strong> اطمینان دارید؟</p>
+  <p>این عملیات ممکن است مانده حساب طرفین را تغییر دهد.</p>
+ </div></DialogContent>
+ <DialogActions><MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+  <MudSpacer /><MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => Session?.Close(true)"
+    StartIcon="@Icons.Material.Filled.Delete">حذف سند</MudButton>
+ </DialogActions>
+</EditorDialogFrame>

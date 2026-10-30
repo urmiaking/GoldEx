@@ -1,63 +1,44 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
-
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">فیلترهای چک</MudText>
-    </TitleContent>
-    <DialogContent>
-        <MudStack Spacing="4" Class="w-100 py-2">
-            <!-- Due Date Range -->
-            <MudDateRangePicker DateRange="@_dateRange"
-                                DateRangeChanged="@(dr => _dateRange = dr)"
-                                Variant="Variant.Outlined"
-                                Label="تاریخ سررسید"
-                                Margin="Margin.Dense"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Adornment="Adornment.Start"
-                                ShowToolbar="false"
-                                Clearable="true"
-                                Class="w-100" />
-
-            <!-- Payment Status -->
-            <MudSelect T="CheckPaymentStatus?"
-                       Variant="Variant.Outlined"
-                       Label="وضعیت چک"
-                       Value="@_paymentStatus"
-                       ValueChanged="@(v => _paymentStatus = v)"
-                       Dense="true"
-                       Margin="Margin.Dense"
-                       Adornment="Adornment.Start"
-                       AdornmentIcon="@GetPaymentStatusIcon(_paymentStatus)"
-                       AdornmentColor="@GetPaymentStatusColor(_paymentStatus)"
-                       Class="w-100">
-                <MudSelectItem T="CheckPaymentStatus?" Value="@(null as CheckPaymentStatus?)">همه</MudSelectItem>
-                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Pending">@CheckPaymentStatus.Pending.GetDisplayName()</MudSelectItem>
-                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Accepted">@CheckPaymentStatus.Accepted.GetDisplayName()</MudSelectItem>
-                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Returned">@CheckPaymentStatus.Returned.GetDisplayName()</MudSelectItem>
-            </MudSelect>
-        </MudStack>
-    </DialogContent>
-    <DialogActions>
-        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
-            <MudButton Variant="Variant.Text"
-                       Color="Color.Error"
-                       OnClick="Clear"
-                       StartIcon="@Icons.Material.Filled.Delete">
-                حذف فیلترها
-            </MudButton>
-            <div class="d-flex gap-2">
-                <MudButton Color="Color.Default"
-                           OnClick="Cancel">
-                    انصراف
-                </MudButton>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Success"
-                           OnClick="Apply"
-                           StartIcon="@Icons.Material.Filled.Check">
-                    اعمال
-                </MudButton>
-            </div>
-        </div>
-    </DialogActions>
-</MudDialog>
+<EditorDialogFrame>
+ <DialogContent><div class="gex-directory-filter-form">
+  <MudGrid Spacing="3">
+   <MudItem xs="12" sm="6">
+    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="@(r => _dateRange = r)" Label="تاریخ سررسید"
+      Variant="Variant.Outlined" Margin="Margin.Dense" DisplayMonths="1" MaxMonthColumns="1" ShowToolbar="false"
+      Adornment="Adornment.Start" Clearable="true" Class="w-100 gex-filter-date-range" />
+   </MudItem>
+   <MudItem xs="12" sm="6">
+    <MudSelect T="CheckPaymentStatus?" Label="وضعیت چک" Value="_paymentStatus" ValueChanged="@(s => _paymentStatus = s)"
+       Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@GetPaymentStatusIcon(_paymentStatus)" Class="w-100">
+     <MudSelectItem T="CheckPaymentStatus?" Value="@(null as CheckPaymentStatus?)">همه چک‌ها</MudSelectItem>
+     <MudSelectItem T="CheckPaymentStatus?" Value="@((CheckPaymentStatus?)CheckPaymentStatus.Pending)">@CheckPaymentStatus.Pending.GetDisplayName()</MudSelectItem>
+     <MudSelectItem T="CheckPaymentStatus?" Value="@((CheckPaymentStatus?)CheckPaymentStatus.Accepted)">@CheckPaymentStatus.Accepted.GetDisplayName()</MudSelectItem>
+     <MudSelectItem T="CheckPaymentStatus?" Value="@((CheckPaymentStatus?)CheckPaymentStatus.Returned)">@CheckPaymentStatus.Returned.GetDisplayName()</MudSelectItem>
+    </MudSelect>
+   </MudItem>
+   <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort">
+    <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="@(s => _sortLabel = s)"
+       Variant="Variant.Outlined" Margin="Margin.Dense">
+     <MudSelectItem Value="@("DueDate")">تاریخ سررسید</MudSelectItem>
+     <MudSelectItem Value="@("Amount")">مبلغ چک</MudSelectItem>
+     <MudSelectItem Value="@("IssuerFullName")">صادرکننده</MudSelectItem>
+     <MudSelectItem Value="@("Number")">شماره چک</MudSelectItem>
+    </MudSelect>
+   </MudItem>
+   <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort">
+    <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_descending" Variant="Variant.Outlined" Margin="Margin.Dense">
+     <MudSelectItem T="bool" Value="true">نزولی</MudSelectItem>
+     <MudSelectItem T="bool" Value="false">صعودی</MudSelectItem>
+    </MudSelect>
+   </MudItem>
+  </MudGrid>
+ </div></DialogContent>
+ <DialogActions>
+  <MudButton Color="Color.Error" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Delete" OnClick="Clear">بازنشانی</MudButton>
+  <MudSpacer /><MudButton Variant="Variant.Outlined" OnClick="Cancel">انصراف</MudButton>
+  <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check" OnClick="Apply">اعمال فیلترها</MudButton>
+ </DialogActions>
+</EditorDialogFrame>

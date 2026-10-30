@@ -1,8 +1,7 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.CheckPayments;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -11,223 +10,130 @@ namespace GoldEx.Client.Pages.Finances.Checks.Components;
 
 public partial class CheckPaymentsList
 {
-    [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public string ContainerClass { get; set; } = default!;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public string ContainerClass { get; set; } = string.Empty;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public string? SearchQuery { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
-    protected override void OnParametersSet()
+    private List<GetCheckPaymentListResponse> _items = [];
+    private CheckPaymentStatus? _paymentStatus;
+    private string? _searchString, _lastSearch;
+    private DateRange _filterDateRange = new();
+    private int _pageIndex, _pageSize = 10, _total;
+    private string _sortLabel = "DueDate";
+    private bool _sortDescending = true, _loading = true, _loadFailed, _initialized;
+    private int PageCount => Math.Max(1, (_total + _pageSize - 1) / _pageSize);
+    private int ActiveFilterCount => (_paymentStatus.HasValue ? 1 : 0) +
+        (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0);
+
+    protected override async Task OnParametersSetAsync()
     {
-        if (!string.IsNullOrEmpty(SearchQuery))
+        await base.OnParametersSetAsync();
+        if (!_initialized || _lastSearch != SearchQuery)
         {
+            _initialized = true;
+            _lastSearch = SearchQuery;
             _searchString = SearchQuery;
+            _pageIndex = 0;
+            await LoadAsync();
         }
     }
 
-    public string? PaymentStatusIcon => _paymentStatus switch
+    private async Task LoadAsync()
     {
-        CheckPaymentStatus.Accepted => Icons.Material.Filled.Check,
-        CheckPaymentStatus.Pending => Icons.Material.Filled.Pending,
-        CheckPaymentStatus.Returned => Icons.Material.Filled.Error,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color PaymentStatusColor => _paymentStatus switch
-    {
-        CheckPaymentStatus.Accepted => Color.Success,
-        CheckPaymentStatus.Pending => Color.Primary,
-        CheckPaymentStatus.Returned => Color.Error,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    private CheckPaymentStatus? _paymentStatus;
-    private string? _searchString;
-    private MudTable<GetCheckPaymentListResponse> _table = new();
-    private DateRange _filterDateRange = new();
-
-    private async Task<TableData<GetCheckPaymentListResponse>> LoadChecksAsync(TableState state, CancellationToken cancellationToken = default)
-    {
-        var result = new TableData<GetCheckPaymentListResponse>();
-
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-            state.SortDirection switch
+        _loading = true;
+        _loadFailed = false;
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
+        try
+        {
+            var request = new RequestFilter(_pageIndex * _pageSize, _pageSize, _searchString, _sortLabel,
+                _sortDescending ? GoldEx.Sdk.Common.Definitions.SortDirection.Descending
+                                : GoldEx.Sdk.Common.Definitions.SortDirection.Ascending);
+            var filters = new CheckPaymentFilter(_paymentStatus, _filterDateRange.Start, _filterDateRange.End);
+            await SendRequestAsync<ICheckPaymentService, PagedList<GetCheckPaymentListResponse>>(
+                action: (service, ct) => service.GetListAsync(request, filters, ct),
+                afterSend: response => { _items = response.Data.ToList(); _total = response.Total; },
+                onFailure: () => _loadFailed = true,
+                createScope: true, cancelPrevious: true);
+            if (!_loadFailed && _pageIndex >= PageCount)
             {
-                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                _ => throw new ArgumentOutOfRangeException()
-            });
-
-        var checkFilter = new CheckPaymentFilter(_paymentStatus, _filterDateRange.Start, _filterDateRange.End);
-
-        await SendRequestAsync<ICheckPaymentService, PagedList<GetCheckPaymentListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, checkFilter, token),
-            afterSend: response =>
-            {
-                result = new TableData<GetCheckPaymentListResponse>
-                {
-                    TotalItems = response.Total,
-                    Items = response.Data
-                };
-            },
-            createScope: true,
-            cancelPrevious: true
-        );
-
-        return result;
+                _pageIndex = PageCount - 1;
+                await LoadAsync();
+            }
+        }
+        finally { _loading = false; await InvokeAsync(StateHasChanged); }
     }
-
-    private async Task OnSearch(string text)
-    {
-        _searchString = text;
-
-        if (_table.CurrentPage != 0)
-            _table.NavigateTo(0);
-        else
-            await _table.ReloadServerData();
-    }
-
-    private void PageChanged(int i)
-    {
-        if (i <= 0)
-            return;
-
-        _table.NavigateTo(i - 1);
-    }
-
-    private async Task SetStatusFilterText(CheckPaymentStatus? status)
-    {
-        _paymentStatus = status;
+    private async Task RefreshAsync() { _pageIndex = 0; await LoadAsync(); }
+    private async Task OnSearch(string? value) {
+        if (_searchString == value) return;
+        _searchString = value; _lastSearch = value;
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("q", string.IsNullOrWhiteSpace(value) ? null : value), replace: true);
         await RefreshAsync();
     }
-
-    private async Task OnDateRangeChanged(DateRange dateRange)
+    private async Task ChangePage(int delta)
     {
-        _filterDateRange = dateRange;
-        await RefreshAsync();
+        if (_loading || _pageIndex + delta < 0 || _pageIndex + delta >= PageCount) return;
+        _pageIndex += delta; await LoadAsync();
     }
-
-    private async Task RefreshAsync()
+    private async Task ChangePageSize(ChangeEventArgs args)
     {
-        await _table.ReloadServerData();
-        StateHasChanged();
+        if (!int.TryParse(args.Value?.ToString(), out var size) || size is not (10 or 25 or 50)) return;
+        _pageSize = size; await RefreshAsync();
     }
-
-    private Color GetStatusColor(CheckPaymentStatus status) => status switch
+    private async Task OnSortChanged(string value) { _sortLabel = value; await RefreshAsync(); }
+    private async Task ToggleSortDirection() { _sortDescending = !_sortDescending; await RefreshAsync(); }
+    private bool IsOverdue(GetCheckPaymentListResponse check) =>
+        check.CurrentStatus == CheckPaymentStatus.Pending && check.DueDate.Date < DateTime.Today;
+    private string StatusClass(CheckPaymentStatus status) => status switch
     {
-        CheckPaymentStatus.Accepted => Color.Success,
-        CheckPaymentStatus.Pending => Color.Primary,
-        CheckPaymentStatus.Returned => Color.Error,
-        _ => Color.Default
+        CheckPaymentStatus.Accepted => "is-accepted",
+        CheckPaymentStatus.Returned => "is-returned",
+        CheckPaymentStatus.Pending => "is-pending",
+        _ => ""
     };
-
-    #region Mobile filters
-
-    public record CheckPaymentsMobileFiltersResult(
-        DateRange DateRange,
-        CheckPaymentStatus? PaymentStatus
-    );
-
     private async Task OpenMobileFilters()
     {
-        var parameters = new DialogParameters<CheckPaymentFiltersDialog>
+        var args = new Dictionary<string, object>
         {
-            { x => x.DateRange, _filterDateRange },
-            { x => x.PaymentStatus, _paymentStatus }
+            [nameof(CheckPaymentFiltersDialog.DateRange)] = _filterDateRange,
+            [nameof(CheckPaymentFiltersDialog.PaymentStatus)] = _paymentStatus!,
+            [nameof(CheckPaymentFiltersDialog.SortLabel)] = _sortLabel,
+            [nameof(CheckPaymentFiltersDialog.SortDescending)] = _sortDescending
         };
-
-        var options = new DialogOptions
+        var dialog = ResponsiveDialogs.Show<CheckPaymentFiltersDialog>("فیلتر چک‌ها", args);
+        if (await dialog.Result is { Canceled: false, Data: CheckPaymentFiltersDialog.FilterResult result })
         {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.Small
-        };
-
-        var dialog = await DialogService.ShowAsync<CheckPaymentFiltersDialog>("فیلترها", parameters, options);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false } && result.Data is CheckPaymentsMobileFiltersResult filterResult)
-        {
-            await ApplyMobileFilters(filterResult);
+            _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+            _paymentStatus = result.PaymentStatus;
+            _sortLabel = result.SortLabel;
+            _sortDescending = result.SortDescending;
+            await RefreshAsync();
         }
     }
-
-    private async Task ApplyMobileFilters(CheckPaymentsMobileFiltersResult result)
+    private async Task ResetFilters()
     {
-        _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
-        _paymentStatus = result.PaymentStatus;
-
+        _searchString = null; _lastSearch = null; _filterDateRange = new(); _paymentStatus = null;
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("q", (string?)null), replace: true);
         await RefreshAsync();
     }
-
-    #endregion
-
-    #region Actions
-
-    private readonly DialogOptions _actionsDialogOptions = new()
-    {
-        CloseButton = true,
-        FullWidth = true,
-        MaxWidth = MaxWidth.Small
-    };
-
-    private string GetRowClass(GetCheckPaymentListResponse item, int rowNumber)
-    {
-        if (item.CurrentStatus == CheckPaymentStatus.Pending && item.DueDate.Date < DateTime.Today)
-        {
-            return "check-overdue-row";
-        }
-        return string.Empty;
-    }
-
     private async Task OnViewCheck(GetCheckPaymentListResponse item)
     {
-        var parameters = new DialogParameters<ViewCheckDialog>
-        {
-            { x => x.Check, item }
-        };
-
-        await DialogService.ShowAsync<ViewCheckDialog>("جزئیات چک بانکی", parameters, new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.Medium
-        });
+        var dialog = ResponsiveDialogs.Show<ViewCheckDialog>("جزئیات چک بانکی",
+            new Dictionary<string, object> { [nameof(ViewCheckDialog.Check)] = item }, wide: true);
+        await dialog.Result;
     }
-
     private async Task OnAcceptCheck(GetCheckPaymentListResponse item)
     {
-        var parameters = new DialogParameters<AcceptCheckDialog>
-        {
-            { x => x.Check, item }
-        };
-
-        var dialog = await DialogService.ShowAsync<AcceptCheckDialog>("وصول چک بانکی", parameters, _actionsDialogOptions);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false })
-        {
-            await RefreshAsync();
-        }
+        var dialog = ResponsiveDialogs.Show<AcceptCheckDialog>("وصول چک بانکی",
+            new Dictionary<string, object> { [nameof(AcceptCheckDialog.Check)] = item }, wide: true);
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
     }
-
     private async Task OnReturnCheck(GetCheckPaymentListResponse item)
     {
-        var parameters = new DialogParameters<ReturnCheckDialog>
-        {
-            { x => x.Check, item }
-        };
-
-        var dialog = await DialogService.ShowAsync<ReturnCheckDialog>("برگشت چک بانکی", parameters, _actionsDialogOptions);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false })
-        {
-            await RefreshAsync();
-        }
+        var dialog = ResponsiveDialogs.Show<ReturnCheckDialog>("برگشت چک بانکی",
+            new Dictionary<string, object> { [nameof(ReturnCheckDialog.Check)] = item });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
     }
-
-    #endregion
 }

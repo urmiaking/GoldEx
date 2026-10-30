@@ -247,7 +247,7 @@ public partial class InvoicesList
             { x => x.InvoiceNumber, model.InvoiceNumber }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف فاکتور", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Remove>("حذف فاکتور", new Dictionary<string, object> { [nameof(Remove.Id)] = model.Id, [nameof(Remove.InvoiceNumber)] = model.InvoiceNumber });
 
         var result = await dialog.Result;
 

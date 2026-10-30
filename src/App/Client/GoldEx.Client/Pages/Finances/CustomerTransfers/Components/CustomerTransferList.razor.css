@@ -100,3 +100,35 @@
  .transfer-pagination { padding:12px 4px; }
 }
 @media(prefers-reduced-motion:reduce) { .transfer-skeleton span { animation:none; } .transfer-table tbody tr { transition:none; } }
+/* Compact mobile voucher — details first, no decorative directional icons. */
+.transfer-card-top { display:flex; justify-content:space-between; align-items:center; gap:8px; padding-bottom:9px; }
+.transfer-card-identity { display:inline-flex; align-items:center; flex-wrap:wrap; gap:7px; min-width:0; }
+.transfer-card-money { font-size:.86rem; font-weight:600; line-height:1.5; text-align:end; overflow-wrap:anywhere; }
+.transfer-card-route { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:7px; padding:9px 0; }
+.transfer-card-party { min-width:0; display:flex; align-items:baseline; gap:5px; }
+.transfer-card-party small { flex:none; font-size:.72rem; font-weight:400; color:var(--mud-palette-text-secondary); }
+.transfer-card-party span { min-width:0; font-size:.82rem; font-weight:500; line-height:1.65; overflow-wrap:anywhere; }
+.transfer-card-route-divider { font-size:.8rem; color:var(--mud-palette-text-secondary); opacity:.6; }
+.transfer-card-related { display:flex; gap:5px; flex-wrap:wrap; padding-top:3px; }
+.transfer-card-related span { font-size:.71rem; font-weight:400; padding:3px 7px; border-radius:6px; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background); }
+.transfer-card-note { margin:6px 0 0; font-size:.75rem; color:var(--mud-palette-text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.transfer-card-bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; padding-top:8px; border-top:1px solid var(--mud-palette-lines-default); }
+.transfer-card-bottom>span { font-size:.73rem; color:var(--mud-palette-text-secondary); }
+.transfer-card-bottom .transfer-actions button { width:32px; height:32px; }
+@media(max-width:959.98px) {
+ .transfer-toolbar ::deep .transfer-sort-direction, .transfer-toolbar ::deep .transfer-sort { display:none !important; }
+ .transfer-card { padding:11px 12px; border-radius:13px; }
+ .transfer-card-top { border-bottom:1px solid var(--mud-palette-lines-default); }
+ .transfer-mobile { gap:8px; padding:8px 0; }
+ .transfer-card-bottom { margin-top:7px; padding-top:6px; }
+ .transfer-card .transfer-number { font-size:.75rem; padding:3px 6px; font-weight:500; }
+ .transfer-card time { font-size:.75rem; }
+ .transfer-heading h1 { font-weight:500; }
+ .transfer-card .transfer-actions { gap:5px; }
+}
+@media(max-width:959.98px) {
+ .transfer-card header.transfer-card-top { padding-bottom:7px; }
+ .transfer-card footer.transfer-card-bottom { margin-top:7px; padding-top:6px; }
+ .transfer-card .transfer-card-route { padding:6px 0; gap:5px; }
+ .transfer-card .transfer-card-related { padding-top:1px; }
+}

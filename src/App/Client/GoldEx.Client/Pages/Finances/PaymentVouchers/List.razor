@@ -6,15 +6,5 @@
 <PageTitle>اسناد پرداخت</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
-
-    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست اسناد پرداخت</MudText>
-    <MudDivider Class="mb-2 d-md-block d-none" />
-
-    <PaymentVouchersList @ref="_list" ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
-
+    <PaymentVouchersList @ref="_list" SearchQuery="@SearchQuery" />
 </MudContainer>

@@ -188,7 +188,7 @@ public partial class CustomersList
             { x => x.CustomerName, model.FullName }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف مشتری", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = ResponsiveDialogs.Show<Remove>("حذف مشتری", new Dictionary<string, object> { [nameof(Remove.Id)] = model.Id.Value, [nameof(Remove.CustomerName)] = model.FullName });
 
         var result = await dialog.Result;
 

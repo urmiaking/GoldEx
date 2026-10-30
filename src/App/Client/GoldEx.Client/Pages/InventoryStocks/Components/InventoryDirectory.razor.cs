@@ -673,7 +673,7 @@ public partial class InventoryDirectory
             { x => x.ProductName, context.Product.Name }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Remove>("حذف جنس", new Dictionary<string, object> { [nameof(Remove.Id)] = context.Product.Id!.Value, [nameof(Remove.ProductName)] = context.Product.Name ?? string.Empty });
 
         var result = await dialog.Result;
 

@@ -17,3 +17,8 @@ Scope: enterprise route `/finances/customer-transfers`. The route component `Pag
 ## Verification
 - Run targeted `node --test scripts/tests/customer-transfer-directory.test.mjs` and `dotnet build src/App/Client/GoldEx.Client/GoldEx.Client.csproj --no-restore -v:q /m:1` for this structural route migration. Do not run heavy screenshot tests unless requested.
 - Existing user-facing release 1.0.122 gathers these unshipped UX changes. Local Dev commits only unless push/deployment requested.
+
+## Mobile compact correction (2026-10-30)
+- Screenshot feedback supersedes old vertical mobile card with red/green arrows. A compact card must use a header for voucher number/date and amount, a single from/to row with plain text (no direction icons), optional invoice metadata, then small edit/delete buttons.
+- Style text at regular weight 400/500. Only the amount may use 600. On screens <960px, hide both child-component MudSelect sort and direction icon through CSS-isolated `::deep` selectors; otherwise the toolbar can show a stray arrow or empty second row.
+- Regression in `scripts/tests/finance-directories-refactor.test.mjs`. No heavy screenshot CI.

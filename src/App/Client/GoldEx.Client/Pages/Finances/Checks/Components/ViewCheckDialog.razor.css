@@ -1,10 +1,10 @@
 .virtual-check {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, var(--mud-palette-surface) 0%, var(--mud-palette-background-gray) 100%);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 16px;
     position: relative;
     padding: 24px;
-    color: #2d3748;
+    color: var(--mud-palette-text-primary);
     box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     overflow: hidden;
 }
@@ -29,17 +29,17 @@
 
 .check-title {
     font-size: 1.25rem;
-    font-weight: 800;
-    color: #1a365d;
+    font-weight: 600;
+    color: var(--mud-palette-text-primary);
 }
 
 .check-meta-item {
     font-size: 0.9rem;
-    color: #4a5568;
+    color: var(--mud-palette-text-secondary);
 }
 
 .check-meta-value {
-    font-weight: 700;
+    font-weight: 500;
     font-family: monospace;
     font-size: 1rem;
 }
@@ -53,13 +53,13 @@
 }
 
 .check-amount-badge {
-    background-color: #ffffff;
-    border: 2px solid #2b6cb0;
+    background-color: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-primary);
     border-radius: 8px;
     padding: 8px 18px;
     font-size: 1.25rem;
-    font-weight: 800;
-    color: #2b6cb0;
+    font-weight: 600;
+    color: var(--mud-palette-primary);
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
@@ -68,7 +68,7 @@
     font-family: cursive, sans-serif;
     opacity: 0.75;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 500;
 }
 
 .check-dialog-content {
@@ -77,3 +77,5 @@
     overflow-x: hidden;
     padding: 8px 4px;
 }
+.check-dialog-content .check-emphasis{font-weight:600!important}
+@media(max-width:599px){.virtual-check{padding:12px;border-radius:12px}.check-title{font-size:1rem}.check-amount-badge{padding:6px 10px;font-size:1rem}.check-header{margin-bottom:10px;padding-bottom:10px}.check-dialog-content{padding:0}}

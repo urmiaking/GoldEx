@@ -1,0 +1,21 @@
+.payment-editor-content{min-width:0;color:var(--mud-palette-text-primary)}
+.payment-editor-content ::deep .mud-input-control{min-width:0}
+.payment-editor-content ::deep .payment-editor-top{flex-wrap:wrap;gap:10px}
+.payment-editor-content ::deep .payment-editor-top>.mud-input-control{flex:1 1 210px;min-width:0}
+.payment-editor-content ::deep .payment-editor-customer{gap:8px;min-width:0}
+.payment-editor-content ::deep .payment-editor-customer>.mud-input-control{flex:1 1 auto;min-width:0}
+.payment-editor-content ::deep .payment-editor-customer>.mud-icon-button{flex:none}
+.payment-editor-content ::deep .mud-typography-h6{font-size:.98rem;font-weight:500}
+.payment-editor-content ::deep .mud-typography-body2{font-weight:400}
+.payment-editor-content ::deep .payment-editor-date .mud-input-root{direction:rtl}
+.payment-editor-content ::deep .payment-editor-date .mud-input-adornment{order:-1;margin-inline-start:0;margin-inline-end:7px}
+.payment-editor-content ::deep .mud-grid-item>.mud-stack-row{min-width:0;gap:8px}
+.payment-editor-content ::deep .mud-grid-item>.mud-stack-row>.mud-input-control{min-width:0;flex:1 1 auto}
+.payment-editor-content ::deep .mud-grid-item>.mud-stack-row>.mud-icon-button{flex:none}
+@media(max-width:599px){
+ .payment-editor-content ::deep .payment-editor-customer{flex-wrap:wrap;justify-content:flex-start}
+ .payment-editor-content ::deep .payment-editor-customer>.mud-input-control{flex-basis:calc(100% - 58px)}
+ .payment-editor-content ::deep .payment-editor-top{align-items:stretch}
+ .payment-editor-content ::deep .payment-editor-top>.mud-input-control{flex-basis:100%}
+ .payment-editor-content ::deep .mud-grid{row-gap:3px}
+}
