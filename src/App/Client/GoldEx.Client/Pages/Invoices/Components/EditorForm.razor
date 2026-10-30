@@ -410,13 +410,13 @@ else
                                     <MudButton Class="invoice-finance-secondary"
                                                Variant="Variant.Outlined" Color="Color.Default"
                                                StartIcon="@Icons.Material.Outlined.LocalOffer"
-                                               OnClick="OnDiscountMenuToggled">
+                                               OnClick="OpenDiscountsDialog">
                                         تخفیف
                                     </MudButton>
                                     <MudButton Class="invoice-finance-secondary"
                                                Variant="Variant.Outlined" Color="Color.Default"
                                                StartIcon="@Icons.Material.Outlined.ReceiptLong"
-                                               OnClick="OnExtraCostsMenuToggled">
+                                               OnClick="OpenExtraCostsDialog">
                                         مخارج جانبی
                                     </MudButton>
                                 </div>
@@ -572,50 +572,7 @@ else
         </MudForm>
     </MudCard>
 
-    <MudOverlay Visible="@_discountMenuOpen"
-                DarkBackground="true"
-                AutoClose="true"
-                OnClosed="@(() => _discountMenuOpen = false)">
-        <MudPopover Open="@_discountMenuOpen"
-                    Fixed="true"
-                    Class="px-4 pt-4 responsive-popover"
-                    AnchorOrigin="Origin.CenterCenter"
-                    TransformOrigin="Origin.CenterCenter"
-                    Elevation="24">
-            <div class="d-flex flex-column">
-                <DiscountList Items="@_model.InvoiceDiscounts"
-                              PriceUnit="_model.InvoicePriceUnit"
-                              PriceUnits="_priceUnits"
-                              TotalRemainingAmount="@_model.TotalUnpaidAmount" />
-                <div class="d-flex justify-end">
-                    <MudButton OnClick="@OnDiscountMenuToggled" Class="my-4" Variant="Variant.Filled"
-                               Color="Color.Success" StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
-                </div>
-            </div>
-        </MudPopover>
-    </MudOverlay>
 
-    <MudOverlay Visible="@_extraCostsMenuOpen"
-                DarkBackground="true"
-                AutoClose="true"
-                OnClosed="@(() => _extraCostsMenuOpen = false)">
-        <MudPopover Open="@_extraCostsMenuOpen"
-                    Fixed="true"
-                    Class="px-4 pt-4 responsive-popover"
-                    AnchorOrigin="Origin.CenterCenter"
-                    TransformOrigin="Origin.CenterCenter"
-                    Elevation="24">
-            <div class="d-flex flex-column">
-                <ExtraCostList Items="_model.InvoiceExtraCosts"
-                               PriceUnit="_model.InvoicePriceUnit"
-                               PriceUnits="_priceUnits" />
-                <div class="d-flex justify-end">
-                    <MudButton OnClick="@OnExtraCostsMenuToggled" Class="my-4" Variant="Variant.Filled"
-                               Color="Color.Success" StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
-                </div>
-            </div>
-        </MudPopover>
-    </MudOverlay>
 }
 
 <script src="@Assets["js/libs/jsbarcode.all.min.js"]"></script>

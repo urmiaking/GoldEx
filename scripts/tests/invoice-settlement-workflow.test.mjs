@@ -11,8 +11,8 @@ test('invoice settlement is one clear primary entry, while discounts and expense
  assert.doesNotMatch(view,/<MudMenu EndIcon=.*Label="ثبت پرداخت"/);
  assert.match(view,/OpenPaymentsDialog\(false\)/);
  assert.match(view,/OpenPaymentsDialog\(true\)/);
- assert.match(view,/OnDiscountMenuToggled/);
- assert.match(view,/OnExtraCostsMenuToggled/);
+ assert.match(view,/OpenDiscountsDialog/);
+ assert.match(view,/OpenExtraCostsDialog/);
  assert.match(logic,/ResponsiveDialogs.Show<PaymentDialog>\("تسویه فاکتور"/);
  assert.match(logic,/StartWithReview\)\] = reviewFirst/);
  assert.doesNotMatch(logic,/private async Task OnAddPayment\(/);

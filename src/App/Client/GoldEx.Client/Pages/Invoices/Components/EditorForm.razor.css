@@ -1,19 +1,19 @@
 /* Invoice finance header: current balance on the right, explicit actions on the left. */
-.invoice-finance-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 22px;width:100%;min-width:0;padding:4px 0}
+.invoice-finance-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 22px;width:100%;min-width:0;padding:4px 8px 4px 38px}
 .invoice-finance-summary{display:flex;align-items:center;gap:9px;min-width:0;flex:1 1 260px}
 .invoice-finance-remaining{min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:8px;row-gap:2px}
 .invoice-finance-caption{font-size:.78rem;font-weight:400;white-space:nowrap;color:var(--mud-palette-text-secondary)}
 .invoice-finance-amount{font-size:.94rem!important;font-weight:500!important;line-height:1.7;overflow-wrap:anywhere}
-.invoice-finance-summary ::deep .invoice-finance-unit-button{width:34px;height:34px;border:1px solid var(--mud-palette-lines-default);border-radius:10px;box-shadow:none}
+.invoice-finance-summary ::deep .invoice-finance-unit-button{width:34px;height:34px;border:1px solid var(--mud-palette-lines-default);border-radius:999px;box-shadow:none}
 .invoice-finance-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:7px;min-width:0}
-.invoice-finance-actions ::deep .mud-button-root{min-height:39px;border-radius:11px;padding:5px 11px;font-size:.79rem;font-weight:500;letter-spacing:0;box-shadow:none;white-space:nowrap}
+.invoice-finance-actions ::deep .mud-button-root{min-height:39px;border-radius:999px;padding:5px 11px;font-size:.79rem;font-weight:500;letter-spacing:0;box-shadow:none;white-space:nowrap}
 .invoice-finance-actions ::deep .mud-button-root:hover{box-shadow:none}
 .invoice-finance-actions ::deep .mud-button-icon-start{margin-inline-end:6px;margin-inline-start:0}
 .invoice-finance-actions ::deep .invoice-finance-primary{padding-inline:14px;box-shadow:0 2px 7px rgba(0,0,0,.09)}
 .invoice-finance-actions ::deep .invoice-finance-secondary{border-color:var(--mud-palette-lines-default);background:var(--mud-palette-surface);color:var(--mud-palette-text-primary)}
 .invoice-finance-actions ::deep .invoice-finance-secondary:hover{background:var(--mud-palette-background)}
 @media(max-width:959px){
-.invoice-finance-header{align-items:stretch;gap:12px}
+.invoice-finance-header{align-items:stretch;gap:12px;padding:4px 8px}
 .invoice-finance-summary{flex:1 1 100%;justify-content:flex-start}
 .invoice-finance-actions{flex:1 1 100%;justify-content:flex-start}
 }
@@ -30,7 +30,7 @@
 /* Primary save/print actions grouped together; destructive action separated. */
 .invoice-form-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--mud-palette-lines-default)}
 .invoice-form-actions-primary,.invoice-form-actions-danger{display:flex;align-items:center;gap:8px}
-.invoice-form-actions ::deep .mud-button-root{min-height:41px;border-radius:11px;padding:6px 15px;font-size:.81rem;font-weight:500;box-shadow:none;letter-spacing:0}
+.invoice-form-actions ::deep .mud-button-root{min-height:41px;border-radius:999px;padding:6px 15px;font-size:.81rem;font-weight:500;box-shadow:none;letter-spacing:0}
 .invoice-form-actions ::deep .mud-button-root .mud-button-label{display:flex;align-items:center;gap:6px}
 .invoice-form-actions ::deep .mud-button-icon-start{margin-inline-end:6px;margin-inline-start:0}
 .invoice-form-actions ::deep .invoice-form-action-save{box-shadow:0 2px 7px rgba(0,0,0,.08)}

@@ -1,0 +1,54 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Client.Components.Services
+@using GoldEx.Client.Pages.Invoices.ViewModels
+@using GoldEx.Shared.DTOs.PriceUnits
+@using Microsoft.AspNetCore.Components
+@inherits GoldExComponentBase
+
+<EditorDialogFrame>
+    <DialogContent>
+        <section class="invoice-adjustments-dialog">
+            <div class="invoice-adjustments-intro">
+                <div class="invoice-adjustments-intro-icon">
+                    <MudIcon Icon="@(IsDiscount ? Icons.Material.Outlined.LocalOffer : Icons.Material.Outlined.ReceiptLong)" />
+                </div>
+                <div>
+                    <h3>@(IsDiscount ? "تخفیف‌های فاکتور" : "مخارج جانبی فاکتور")</h3>
+                    <p>@(IsDiscount
+                        ? "مبلغ و شرح هر تخفیف را مشخص کنید. با تأیید، جمع تخفیف‌ها در فاکتور لحاظ می‌شود."
+                        : "هزینه‌های مرتبط با فاکتور را به همراه شرح و مبلغ ثبت کنید.")</p>
+                </div>
+            </div>
+            @if (IsDiscount)
+            {
+                <DiscountList Items="@Discounts" PriceUnit="@PriceUnit"
+                              PriceUnits="@PriceUnits" TotalRemainingAmount="@TotalRemainingAmount" />
+            }
+            else
+            {
+                <ExtraCostList Items="@ExtraCosts" PriceUnit="@PriceUnit" PriceUnits="@PriceUnits" />
+            }
+        </section>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" Style="border-radius:999px" OnClick="Cancel">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="border-radius:999px"
+                   StartIcon="@Icons.Material.Filled.Check" OnClick="Save">
+            @(IsDiscount ? "اعمال تخفیف‌ها" : "ثبت مخارج")
+        </MudButton>
+    </DialogActions>
+</EditorDialogFrame>
+
+@code {
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Parameter] public bool IsDiscount { get; set; }
+    [Parameter] public List<InvoiceDiscountVm> Discounts { get; set; } = [];
+    [Parameter] public List<InvoiceExtraCostVm> ExtraCosts { get; set; } = [];
+    [Parameter, EditorRequired] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
+    [Parameter] public decimal TotalRemainingAmount { get; set; }
+
+    private void Cancel() => Session?.Cancel();
+    private void Save() => Session?.Close(IsDiscount ? (object)Discounts : ExtraCosts);
+}

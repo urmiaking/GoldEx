@@ -48,8 +48,6 @@ public partial class EditorForm
     private List<GetCustomerResponse> _customers = [];
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
     private GetLicenseResponse? _license;
-    private bool _discountMenuOpen;
-    private bool _extraCostsMenuOpen;
     private bool _processing;
     private bool _deleting;
     private bool _totalUnpaidMenuOpen;
@@ -1480,14 +1478,60 @@ public partial class EditorForm
 
     #region MenuToggle
 
-    private void OnDiscountMenuToggled()
+    private async Task OpenDiscountsDialog()
     {
-        _discountMenuOpen = !_discountMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        // Always edit detached copies. Cancel must never mutate the invoice.
+        var drafts = _model.InvoiceDiscounts.Select(x => new InvoiceDiscountVm
+        {
+            Amount = x.Amount,
+            Description = x.Description,
+            PriceUnit = x.PriceUnit,
+            ExchangeRate = x.ExchangeRate,
+            ExchangeRateLabel = x.ExchangeRateLabel,
+            AmountAdornmentText = x.AmountAdornmentText
+        }).ToList();
+
+        var dialog = ResponsiveDialogs.Show<InvoiceAdjustmentsDialog>("تخفیف‌های فاکتور",
+            new Dictionary<string, object>
+            {
+                [nameof(InvoiceAdjustmentsDialog.IsDiscount)] = true,
+                [nameof(InvoiceAdjustmentsDialog.Discounts)] = drafts,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnit)] = _model.InvoicePriceUnit,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnits)] = _priceUnits,
+                [nameof(InvoiceAdjustmentsDialog.TotalRemainingAmount)] = _model.TotalUnpaidAmount
+            }, wide: true);
+
+        if (await dialog.Result is { Canceled: false, Data: List<InvoiceDiscountVm> updated })
+            _model.InvoiceDiscounts = updated;
     }
 
-    private void OnExtraCostsMenuToggled()
+    private async Task OpenExtraCostsDialog()
     {
-        _extraCostsMenuOpen = !_extraCostsMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        var drafts = _model.InvoiceExtraCosts.Select(x => new InvoiceExtraCostVm
+        {
+            Amount = x.Amount,
+            Description = x.Description,
+            PriceUnit = x.PriceUnit,
+            ExchangeRate = x.ExchangeRate,
+            ExchangeRateLabel = x.ExchangeRateLabel,
+            AmountAdornmentText = x.AmountAdornmentText
+        }).ToList();
+
+        var dialog = ResponsiveDialogs.Show<InvoiceAdjustmentsDialog>("مخارج جانبی فاکتور",
+            new Dictionary<string, object>
+            {
+                [nameof(InvoiceAdjustmentsDialog.IsDiscount)] = false,
+                [nameof(InvoiceAdjustmentsDialog.ExtraCosts)] = drafts,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnit)] = _model.InvoicePriceUnit,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnits)] = _priceUnits
+            }, wide: true);
+
+        if (await dialog.Result is { Canceled: false, Data: List<InvoiceExtraCostVm> updated })
+            _model.InvoiceExtraCosts = updated;
     }
 
     private void OnTotalUnpaidMenuToggled()
