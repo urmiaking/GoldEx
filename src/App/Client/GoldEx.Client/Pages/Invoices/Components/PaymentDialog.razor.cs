@@ -1,8 +1,6 @@
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Invoices.ViewModels;
-using GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 using GoldEx.Shared.DTOs.Licenses;
-using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -20,7 +18,6 @@ public partial class PaymentDialog
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Parameter] public decimal TotalRemaining { get; set; }
-    [Parameter] public Guid? CustomerId { get; set; }
     [Parameter] public bool StartWithReview { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
@@ -44,14 +41,37 @@ public partial class PaymentDialog
         ? "بهای خرید را به فروشنده می‌دهم؛ مانده پرداختنی ما کمتر می‌شود."
         : "مبلغی را به مشتری برمی‌گردانم یا جنس تحویل می‌دهم؛ مانده حساب متناسب تغییر می‌کند.";
 
-    private void SelectSide(PaymentSide side)
+    private bool _isLeaving;
+    private bool _changingStep;
+
+    private async Task ChangeStepAsync(SettlementStep next)
     {
-        _selectedSide = side;
-        _step = SettlementStep.Method;
+        if (_step == next || _changingStep) return;
+
+        _changingStep = true;
+        try
+        {
+            _isLeaving = true;
+            StateHasChanged();
+            await Task.Delay(140);
+            _step = next;
+            _isLeaving = false;
+        }
+        finally
+        {
+            _changingStep = false;
+        }
     }
 
-    private void GoBackToDirection() => _step = SettlementStep.Direction;
-    private void ShowReview() => _step = SettlementStep.Review;
+    private async Task SelectSide(PaymentSide side)
+    {
+        if (_changingStep) return;
+        _selectedSide = side;
+        await ChangeStepAsync(SettlementStep.Method);
+    }
+
+    private Task GoBackToDirection() => ChangeStepAsync(SettlementStep.Direction);
+    private Task ShowReview() => ChangeStepAsync(SettlementStep.Review);
 
     private static decimal GetBalanceEffect(InvoiceType invoiceType, InvoicePaymentVm payment)
     {
@@ -210,61 +230,7 @@ public partial class PaymentDialog
         if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
         {
             Items.Add(addedPayment);
-            ShowReview();
-        }
-    }
-
-    private async Task OnApplyPrepaymentVouchers()
-    {
-        if (!CustomerId.HasValue)
-            return;
-
-        var selectedVoucherIds = Items
-            .Where(p => p.VoucherId.HasValue)
-            .Select(p => p.VoucherId!.Value)
-            .ToList();
-
-        var dialog = ResponsiveDialogs.Show<PaymentVouchersSelectorList>("انتخاب اسناد پیش‌پرداخت",
-            new Dictionary<string, object>
-            {
-                [nameof(PaymentVouchersSelectorList.CustomerId)] = CustomerId.Value,
-                [nameof(PaymentVouchersSelectorList.SelectedPaymentVouchers)] = selectedVoucherIds
-            }, wide: true);
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: HashSet<GetPaymentVoucherResponse> selectedVouchers })
-        {
-            // 1. Remove any existing payment items that are linked to a voucher
-            var existingVoucherPayments = Items.Where(p => p.VoucherId.HasValue).ToList();
-            foreach (var payment in existingVoucherPayments)
-            {
-                Items.Remove(payment);
-            }
-
-            // 2. Add the newly selected vouchers as payments
-            foreach (var voucher in selectedVouchers)
-            {
-                var voucherPriceUnit = PriceUnits.FirstOrDefault(pu => pu.Id == voucher.PriceUnit.Id);
-                
-                var paymentVm = new InvoicePaymentVm
-                {
-                    Amount = voucher.Amount,
-                    PriceUnit = voucherPriceUnit,
-                    PaymentType = PaymentType.InternalCash, // Prepayment acts as cash settled in advance
-                    PaymentSide = PaymentSide.Pay,
-                    PaymentDate = voucher.PaymentDate,
-                    VoucherId = voucher.Id,
-                    Note = $"اعمال سند پیش‌پرداخت شماره {voucher.VoucherNumber} - {voucher.Description}",
-                    ExchangeRate = voucher.ExchangeRate,
-                    AmountAdornmentText = voucherPriceUnit?.Title ?? string.Empty,
-                    Disabled = true // Disable editing since it is linked to a voucher
-                };
-
-                Items.Add(paymentVm);
-            }
-            ShowReview();
-            StateHasChanged();
+            await ShowReview();
         }
     }
 }

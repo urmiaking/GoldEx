@@ -350,22 +350,25 @@ else
                 <MudExpansionPanels Elevation="2" Class="my-2">
                     <MudExpansionPanel Expanded="false" Icon="@Icons.Material.Filled.ExpandMore">
                         <TitleContent>
-                            <div class="d-flex flex-wrap gap-2 justify-center align-center">
-                                <div class="align-center d-flex gap-2">
-                                    <MudText Typo="Typo.h6" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)" Class="d-none d-md-block">
-                                        @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
-                                    </MudText>
-
-                                    <MudText Typo="Typo.body1" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)" Class="d-md-none">
-                                        @($"{FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
-                                    </MudText>
-                                    <div>
-                                        <MudTooltip Color="Color.Success" Arrow="true" Text="تغییر نوع بدهی">
+                            <div class="invoice-finance-header">
+                                <div class="invoice-finance-summary">
+                                    <div class="invoice-finance-remaining">
+                                        <span class="invoice-finance-caption">مانده نهایی فاکتور</span>
+                                        <MudText Typo="Typo.body1"
+                                                 Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)"
+                                                 Class="invoice-finance-amount">
+                                            @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
+                                        </MudText>
+                                    </div>
+                                    <div @onclick:stopPropagation="true">
+                                        <MudTooltip Text="تغییر واحد مانده فاکتور">
                                             <MudIconButton Size="Size.Small"
-                                                           Icon="@Icons.Material.Filled.SwapHoriz"
-                                                           Color="Color.Success"
-                                                           Variant="Variant.Filled"
-                                                           OnClick="OnTotalUnpaidMenuToggled" />
+                                                           Icon="@Icons.Material.Outlined.SwapHoriz"
+                                                           Color="Color.Default"
+                                                           Variant="Variant.Outlined"
+                                                           Class="invoice-finance-unit-button"
+                                                           OnClick="OnTotalUnpaidMenuToggled"
+                                                           aria-label="تغییر واحد مانده فاکتور" />
                                         </MudTooltip>
                                         <MudPopover Open="@_totalUnpaidMenuOpen"
                                                     Fixed="true" Class="px-4 pt-4"
@@ -380,43 +383,42 @@ else
                                                                      @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
                                                                      @bind-ExchangeRate="@_model.UnpaidExchangeRate" />
                                                 <div class="d-flex justify-center">
-                                                    <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="my-4" Variant="Variant.Filled"
-                                                               Color="Color.Success" StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
+                                                    <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="my-4"
+                                                               Variant="Variant.Filled" Color="Color.Success"
+                                                               StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
                                                 </div>
                                             </div>
                                         </MudPopover>
                                     </div>
                                 </div>
-                                <div class="d-md-block d-none flex-grow-1"></div>
-                                <div class="invoice-settlement-trigger" @onclick:stopPropagation="true">
-                                    <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                <div class="invoice-finance-actions" @onclick:stopPropagation="true">
+                                    <MudButton Class="invoice-finance-primary"
+                                               Color="Color.Primary" Variant="Variant.Filled"
                                                StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
                                                OnClick="() => OpenPaymentsDialog(false)">
                                         تسویه فاکتور
                                     </MudButton>
                                     @if (_model.InvoicePayments.Count > 0)
                                     {
-                                        <MudBadge Content="@_model.InvoicePayments.Count" Color="Color.Success" Overlap="true">
-                                            <MudTooltip Text="مشاهده تسویه‌های ثبت‌شده">
-                                                <MudIconButton Icon="@Icons.Material.Outlined.ReceiptLong"
-                                                               aria-label="مشاهده تسویه‌های ثبت‌شده"
-                                                               Variant="Variant.Outlined" Color="Color.Primary"
-                                                               OnClick="() => OpenPaymentsDialog(true)" />
-                                            </MudTooltip>
-                                        </MudBadge>
+                                        <MudButton Class="invoice-finance-secondary"
+                                                   Variant="Variant.Outlined" Color="Color.Default"
+                                                   StartIcon="@Icons.Material.Outlined.ReceiptLong"
+                                                   OnClick="() => OpenPaymentsDialog(true)">
+                                            تسویه‌ها (@_model.InvoicePayments.Count)
+                                        </MudButton>
                                     }
-                                    <MudTooltip Text="ثبت تخفیف">
-                                        <MudIconButton Icon="@Icons.Material.Outlined.Discount"
-                                                       aria-label="ثبت تخفیف"
-                                                       Variant="Variant.Outlined" Color="Color.Default"
-                                                       OnClick="OnDiscountMenuToggled" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="ثبت مخارج جانبی">
-                                        <MudIconButton Icon="@Icons.Material.Outlined.ReceiptLong"
-                                                       aria-label="ثبت مخارج جانبی"
-                                                       Variant="Variant.Outlined" Color="Color.Default"
-                                                       OnClick="OnExtraCostsMenuToggled" />
-                                    </MudTooltip>
+                                    <MudButton Class="invoice-finance-secondary"
+                                               Variant="Variant.Outlined" Color="Color.Default"
+                                               StartIcon="@Icons.Material.Outlined.LocalOffer"
+                                               OnClick="OnDiscountMenuToggled">
+                                        تخفیف
+                                    </MudButton>
+                                    <MudButton Class="invoice-finance-secondary"
+                                               Variant="Variant.Outlined" Color="Color.Default"
+                                               StartIcon="@Icons.Material.Outlined.ReceiptLong"
+                                               OnClick="OnExtraCostsMenuToggled">
+                                        مخارج جانبی
+                                    </MudButton>
                                 </div>
                             </div>
                         </TitleContent>
@@ -521,62 +523,51 @@ else
             }
 
             <MudDivider Class="my-2" />
-            <div class="d-flex gap-2 mt-2 flex-wrap justify-end">
-
-                @if (IsEditMode)
-                {
-                    <MudButton Color="Color.Error"
-                               StartIcon="@Icons.Material.Filled.DeleteForever"
-                               Disabled="@IsBusy"
-                               Variant="Variant.Filled"
-                               OnClick="OnDelete">
-                        @if (_deleting)
+            <div class="invoice-form-actions">
+                <div class="invoice-form-actions-danger">
+                    @if (IsEditMode)
+                    {
+                        <MudButton Class="invoice-form-action-delete"
+                                   Color="Color.Error" Variant="Variant.Outlined"
+                                   StartIcon="@(_deleting ? null : Icons.Material.Outlined.DeleteOutline)"
+                                   Disabled="@IsBusy" OnClick="OnDelete">
+                            @if (_deleting)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                <span>در حال حذف</span>
+                            }
+                            else
+                            {
+                                <span>حذف فاکتور</span>
+                            }
+                        </MudButton>
+                    }
+                </div>
+                <div class="invoice-form-actions-primary">
+                    @if (IsEditMode)
+                    {
+                        <MudButton Class="invoice-form-action-print"
+                                   Color="Color.Default" Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Outlined.Print"
+                                   Disabled="@IsBusy" OnClick="OnPrintAsync">
+                            چاپ
+                        </MudButton>
+                    }
+                    <MudButton Class="invoice-form-action-save"
+                               Color="Color.Primary" Variant="Variant.Filled"
+                               StartIcon="@(_processing ? null : Icons.Material.Outlined.Save)"
+                               Disabled="@_processing" OnClick="@(async () => await SubmitAsync())">
+                        @if (_processing)
                         {
-                            <MudProgressCircular Class="ms-n1"
-                                                 Size="Size.Small"
-                                                 Indeterminate="true" />
-                            <MudText Class="ms-2">
-                                درحال حذف
-                            </MudText>
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <span>در حال ذخیره</span>
                         }
                         else
                         {
-                            <MudText>حذف</MudText>
+                            <span>@(IsEditMode ? "اعمال تغییرات" : "ذخیره فاکتور")</span>
                         }
-
                     </MudButton>
-                }
-                <div class="flex-fill"></div>
-                @if (IsEditMode)
-                {
-                    <MudButton Color="Color.Success"
-                               StartIcon="@Icons.Material.Filled.Print"
-                               Disabled="@IsBusy"
-                               Variant="Variant.Filled"
-                               OnClick="OnPrintAsync">
-                        <MudText>چاپ</MudText>
-                    </MudButton>
-                }
-
-                <MudButton Color="Color.Primary"
-                           Disabled="@_processing"
-                           StartIcon="@(_processing ? null : Icons.Material.Filled.Save)"
-                           OnClick="@(async () => await SubmitAsync())"
-                           Variant="Variant.Filled">
-                    @if (_processing)
-                    {
-                        <MudProgressCircular Class="ms-n1"
-                                             Size="Size.Small"
-                                             Indeterminate="true" />
-                        <MudText Class="ms-2">
-                            درحال ذخیره
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText>@(IsEditMode ? "اعمال تغییرات" : "ذخیره")</MudText>
-                    }
-                </MudButton>
+                </div>
             </div>
         </MudForm>
     </MudCard>

@@ -13,7 +13,7 @@ test('invoice payment overview uses responsive cards/table and native modal', ()
  assert.match(view,/invoice-payment-table/);
  for(const p of ['InternalCash','CustomerTransfer','Check','UsedGoldInventory','MoltenGoldInventory','Coin'])
    assert.match(view,new RegExp('PaymentType\\.'+p+'\\)'));
- assert.match(view,/OnApplyPrepaymentVouchers/);
+ assert.doesNotMatch(view,/OnApplyPrepaymentVouchers|PaymentVouchersSelectorList/);
  assert.match(view,/PaymentType is not PaymentType.TransferedPayment/);
  assert.match(logic,/CurrentRemaining \+ GetBalanceEffect\(InvoiceType, payment\)/);
  assert.match(logic,/GetRemainingBefore\(payment\)/);

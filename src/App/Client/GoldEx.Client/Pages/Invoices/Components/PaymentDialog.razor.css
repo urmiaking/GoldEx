@@ -108,3 +108,34 @@
 .invoice-settlement-balance strong{font-size:.9rem;font-weight:600;color:var(--mud-palette-primary);text-align:end;overflow-wrap:anywhere}
 .invoice-settlement-review-balance{margin-top:9px}
 @media(max-width:699px){.invoice-settlement-balance{flex-wrap:wrap;gap:5px;padding:10px}.invoice-settlement-balance strong{font-size:.83rem}}
+/* Method icon and heading share one row; the description remains below. */
+.invoice-settlement-method-top{display:flex;align-items:center;gap:10px;min-width:0;width:100%}
+.invoice-settlement-method-top .invoice-settlement-method-icon{flex:0 0 38px;width:38px;height:38px}
+.invoice-settlement-method-top strong{font-size:.85rem;font-weight:500;line-height:1.55;min-width:0;overflow-wrap:anywhere}
+.invoice-settlement-method{min-height:115px;gap:9px;justify-content:flex-start}
+.invoice-settlement-method small{padding-inline-start:48px;font-size:.72rem;line-height:1.65}
+.invoice-settlement-direction-info strong{font-weight:500}
+.invoice-settlement-intro h3,.invoice-settlement-review-heading h3{font-weight:500}
+.invoice-settlement-progress>span.is-current{font-weight:500}
+.invoice-settlement-balance strong,.invoice-payment-table td strong,
+.invoice-payment-totals strong,.invoice-payment-card-primary strong{font-weight:500}
+.invoice-settlement-stage{min-width:0;animation:invoice-settlement-enter .24s cubic-bezier(.2,.78,.25,1) both}
+.invoice-settlement-stage.is-leaving{pointer-events:none;animation:invoice-settlement-leave .14s ease-in both}
+@keyframes invoice-settlement-enter{
+ from{opacity:0;transform:translate3d(12px,5px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes invoice-settlement-leave{
+ from{opacity:1;transform:translate3d(0,0,0)}
+ to{opacity:0;transform:translate3d(-9px,-2px,0)}
+}
+@media(max-width:699px){
+.invoice-settlement-method{min-height:106px;gap:7px}
+.invoice-settlement-method-top{gap:7px}
+.invoice-settlement-method-top .invoice-settlement-method-icon{flex-basis:33px;width:33px;height:33px}
+.invoice-settlement-method-top strong{font-size:.79rem;font-weight:500}
+.invoice-settlement-method small{padding-inline-start:40px;font-size:.7rem;line-height:1.55}
+}
+@media(prefers-reduced-motion:reduce){
+.invoice-settlement-stage,.invoice-settlement-stage.is-leaving{animation:none!important;transform:none!important;opacity:1!important}
+}

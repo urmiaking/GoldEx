@@ -1507,7 +1507,6 @@ public partial class EditorForm
                 [nameof(PaymentDialog.Items)] = _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList(),
                 [nameof(PaymentDialog.PriceUnit)] = _model.InvoicePriceUnit!,
                 [nameof(PaymentDialog.InvoiceType)] = _model.InvoiceType,
-                [nameof(PaymentDialog.CustomerId)] = _model.Customer?.Id!,
                 [nameof(PaymentDialog.PriceUnits)] = _priceUnits,
                 [nameof(PaymentDialog.TotalRemaining)] = _model.TotalUnpaidAmount,
                 [nameof(PaymentDialog.StartWithReview)] = reviewFirst

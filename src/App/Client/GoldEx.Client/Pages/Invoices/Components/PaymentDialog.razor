@@ -1,6 +1,4 @@
 @using GoldEx.Client.Components.Components.Dialogs
-@using GoldEx.Client.Pages.Finances.PaymentVouchers.Components
-@using GoldEx.Shared.DTOs.PaymentVouchers
 @inherits GoldExComponentBase
 
 <EditorDialogFrame>
@@ -14,6 +12,7 @@
                 <span class="@(_step == SettlementStep.Review ? "is-current" : "")">۳. مرور تسویه‌ها</span>
             </nav>
 
+            <div @key="_step" class="invoice-settlement-stage @(_isLeaving ? "is-leaving" : "")">
             @if (_step == SettlementStep.Direction)
             {
                 <div class="invoice-settlement-intro">
@@ -73,43 +72,47 @@
                 </div>
                 <div class="invoice-settlement-methods">
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.InternalCash)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Payments" /></span>
-                        <strong>نقدی و حساب بانکی</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Payments" /></span>
+                            <strong>نقدی و حساب بانکی</strong>
+                        </span>
                         <small>ثبت وجه نقد یا تراکنش حساب مالی فروشگاه</small>
                     </button>
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.CustomerTransfer)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" /></span>
-                        <strong>حواله</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" /></span>
+                            <strong>حواله</strong>
+                        </span>
                         <small>ثبت انتقال وجه بین طرف‌حساب‌ها</small>
                     </button>
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.Check)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" /></span>
-                        <strong>چک بانکی</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" /></span>
+                            <strong>چک بانکی</strong>
+                        </span>
                         <small>ثبت چک دریافتی یا پرداختی و مشخصات آن</small>
                     </button>
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Recycling" /></span>
-                        <strong>طلای شکسته</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Recycling" /></span>
+                            <strong>طلای شکسته</strong>
+                        </span>
                         <small>تسویه بر اساس وزن و عیار طلای مستعمل</small>
                     </button>
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Whatshot" /></span>
-                        <strong>طلای آب‌شده</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Whatshot" /></span>
+                            <strong>طلای آب‌شده</strong>
+                        </span>
                         <small>ثبت دریافت یا تحویل طلای آب‌شده</small>
                     </button>
                     <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.Coin)">
-                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Toll" /></span>
-                        <strong>سکه</strong>
+                        <span class="invoice-settlement-method-top">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Toll" /></span>
+                            <strong>سکه</strong>
+                        </span>
                         <small>تسویه با سکه، همراه تعداد و مشخصات سکه</small>
                     </button>
-                    @if (_selectedSide == PaymentSide.Pay && InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
-                    {
-                        <button type="button" class="invoice-settlement-method" @onclick="OnApplyPrepaymentVouchers">
-                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Assignment" /></span>
-                            <strong>اعمال پیش‌پرداخت‌ها</strong>
-                            <small>اختصاص اسناد پرداخت قبلی به این فاکتور خرید</small>
-                        </button>
-                    }
                 </div>
             }
             else
@@ -210,6 +213,7 @@
             </div>
                 </div>
             }
+            </div>
         </section>
     </DialogContent>
     <DialogActions>

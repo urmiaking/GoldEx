@@ -34,8 +34,17 @@ test('settlement wizard asks receive/pay first, then method, then review and con
  for(const type of ['InternalCash','CustomerTransfer','Check','UsedGoldInventory','MoltenGoldInventory','Coin']) {
   assert.match(view,new RegExp('OnAddPayment\\(PaymentType\\.'+type+'\\)'));
  }
- assert.match(view,/_selectedSide == PaymentSide.Pay && InvoiceType == InvoiceType.Purchase/);
- assert.match(view,/OnApplyPrepaymentVouchers/);
+ assert.doesNotMatch(view,/OnApplyPrepaymentVouchers|اعمال پیش.پرداخت|PaymentVouchersSelectorList/);
+ assert.doesNotMatch(logic,/OnApplyPrepaymentVouchers|PaymentVouchersSelectorList|CustomerId/);
+ assert.match(view,/@key="_step"/);
+ assert.match(view,/invoice-settlement-stage/);
+ assert.match(logic,/Task ChangeStepAsync\(SettlementStep next\)/);
+ assert.match(logic,/await Task.Delay\(140\)/);
+ assert.match(style,/@keyframes invoice-settlement-enter/);
+ assert.match(style,/@keyframes invoice-settlement-leave/);
+ assert.match(style,/prefers-reduced-motion/);
+ assert.equal((view.match(/invoice-settlement-method-top/g) || []).length, 6);
+ assert.match(style,/\.invoice-settlement-method-top\{display:flex;align-items:center/);
  assert.match(logic,/var defaultSide = _selectedSide.Value;/);
  assert.match(logic,/_step = StartWithReview && Items.Count > 0/);
  assert.match(logic,/ShowReview\(\)/);
@@ -64,6 +73,28 @@ test('existing payments retain totals edit delete and premium restriction in rev
   assert.ok(view.includes(term),term);
  assert.match(logic,/_license.IsExpired/);
  assert.match(logic,/Items.Remove\(model\)/);
- assert.match(logic,/PaymentVouchersSelectorList/);
  assert.match(logic,/Session.Close\(Items\)/);
+});
+test('finance header uses a single aligned action toolbar with readable labels and restrained typography',()=>{
+ const view=read('EditorForm.razor');
+ const style=read('EditorForm.razor.css');
+ assert.match(view,/class="invoice-finance-header"/);
+ assert.match(view,/class="invoice-finance-summary"/);
+ assert.match(view,/class="invoice-finance-actions"/);
+ for(const title of ['تسویه فاکتور','تسویه‌ها','تخفیف','مخارج جانبی']){
+   assert.ok(view.includes(title),title);
+ }
+ assert.doesNotMatch(view,/<MudIconButton Icon="@Icons.Material.Outlined.LocalOffer"/);
+ assert.match(style,/\.invoice-finance-header\{display:flex/);
+ assert.match(style,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(style,/font-weight:500/);
+ assert.match(view,/class="invoice-form-actions"/);
+ assert.match(view,/class="invoice-form-actions-primary"/);
+ assert.match(view,/class="invoice-form-actions-danger"/);
+ assert.match(view,/Class="invoice-form-action-delete"/);
+ assert.match(view,/چاپ/);
+ assert.ok(style.includes(".invoice-form-actions{display:flex"));
+ const dialogStyle=read('PaymentDialog.razor.css');
+ assert.match(dialogStyle,/\.invoice-settlement-direction-info strong\{font-weight:500\}/);
+ assert.match(dialogStyle,/\.invoice-payment-table td strong/);
 });
