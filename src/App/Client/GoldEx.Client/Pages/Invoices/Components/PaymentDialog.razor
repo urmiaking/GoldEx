@@ -31,6 +31,13 @@
             {
                 <div class="invoice-payment-desktop">
                     <table class="invoice-payment-table">
+                        <colgroup>
+                            <col class="invoice-payment-col-type" />
+                            <col class="invoice-payment-col-amount" />
+                            <col class="invoice-payment-col-date" />
+                            <col class="invoice-payment-col-description" />
+                            <col class="invoice-payment-col-actions" />
+                        </colgroup>
                         <thead><tr><th>نوع</th><th>مبلغ یا وزن</th><th>تاریخ</th><th>شرح</th><th>عملیات</th></tr></thead>
                         <tbody>
                             @foreach (var item in Items)

@@ -79,3 +79,13 @@ test('prepayment selection keeps prior selection, multi-select and save data sha
  assert.match(logic,/SelectedPaymentVouchers.Contains\(voucher.Id\)/);
  assert.match(logic,/Session.Close\(_selectedItems\)/);
 });
+test('payment descriptions get a wide column and wrap instead of being ellipsized', () => {
+ const view = read('Invoices/Components/PaymentDialog.razor');
+ const styles = read('Invoices/Components/PaymentDialog.razor.css');
+ assert.match(view, /<col class="invoice-payment-col-description"\s*\/>/);
+ assert.match(view, /title="@item.Description"/);
+ assert.match(styles, /\.invoice-payment-col-description\{width:38%\}/);
+ assert.match(styles, /\.invoice-payment-description\{[^}]*white-space:normal;[^}]*overflow-wrap:anywhere/);
+ assert.doesNotMatch(styles, /max-width:180px|text-overflow:ellipsis/);
+ assert.match(styles, /\.invoice-payment-mobile\{display:none\}/);
+});

@@ -3,12 +3,17 @@
 .invoice-payment-add-actions{display:flex;flex-wrap:wrap;gap:7px;padding-bottom:14px;border-bottom:1px solid var(--mud-palette-lines-default)}
 .invoice-payment-add-actions ::deep .mud-button-root{min-height:39px;border-radius:10px;padding:6px 11px;font-weight:500;font-size:.79rem}
 .invoice-payment-desktop{margin-top:12px;border:1px solid var(--mud-palette-lines-default);border-radius:12px;overflow:auto}
-.invoice-payment-table{width:100%;border-collapse:collapse;text-align:start;font-size:.81rem}
+.invoice-payment-table{width:100%;min-width:860px;table-layout:fixed;border-collapse:collapse;text-align:start;font-size:.81rem}
+.invoice-payment-col-type{width:15%}
+.invoice-payment-col-amount{width:21%}
+.invoice-payment-col-date{width:13%}
+.invoice-payment-col-description{width:38%}
+.invoice-payment-col-actions{width:13%}
 .invoice-payment-table th{text-align:start;padding:10px;color:var(--mud-palette-text-secondary);font-weight:500;background:var(--mud-palette-background);border-bottom:1px solid var(--mud-palette-lines-default)}
 .invoice-payment-table td{padding:10px;border-bottom:1px solid var(--mud-palette-lines-default)}
 .invoice-payment-table tr:last-child td{border:0}
 .invoice-payment-table td strong{font-weight:600;white-space:nowrap}
-.invoice-payment-description{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.invoice-payment-description{display:block;max-width:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.7;text-align:start}
 .invoice-payment-row-actions{display:flex;align-items:center;gap:6px}
 .invoice-payment-row-actions button{height:33px;width:33px;display:grid;place-items:center;border:1px solid var(--mud-palette-lines-default);border-radius:9px;background:var(--mud-palette-surface);color:var(--mud-palette-primary);cursor:pointer}
 .invoice-payment-row-actions button.is-danger{color:var(--mud-palette-error)}
