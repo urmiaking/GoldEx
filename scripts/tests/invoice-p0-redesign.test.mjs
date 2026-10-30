@@ -15,7 +15,7 @@ test('invoice payment overview uses responsive cards/table and native modal', ()
    assert.match(view,new RegExp('PaymentType\\.'+p+'\\)'));
  assert.match(view,/OnApplyPrepaymentVouchers/);
  assert.match(view,/PaymentType is not PaymentType.TransferedPayment/);
- assert.match(logic,/TotalRemaining \+ signed/);
+ assert.match(logic,/CurrentRemaining \+ GetBalanceEffect\(InvoiceType, payment\)/);
  assert.match(logic,/GetRemainingBefore\(payment\)/);
  assert.match(logic,/Session.Close\(Items\)/);
  assert.match(logic,/ResponsiveDialogs.Show<InvoicePaymentDeleteDialog>/);
@@ -62,7 +62,7 @@ test('all invoice item editors use native dialogs and preserve validation and mo
 });
 test('invoice main form wires new native dialogs and positive-only item removal', () => {
  const code=read('Invoices/Components/EditorForm.razor.cs');
- for(const name of ['PaymentDialog','PaymentEditor','InventoryItemSelector','ProductItemEditor','CoinItemEditor','CurrencyItemEditor','UsedProductEditor','InvoiceItemDeleteDialog'])
+ for(const name of ['PaymentDialog','InventoryItemSelector','ProductItemEditor','CoinItemEditor','CurrencyItemEditor','UsedProductEditor','InvoiceItemDeleteDialog'])
   assert.ok(code.includes('ResponsiveDialogs.Show<'+name+'>'),name);
  assert.match(code,/Data: true/);
  assert.match(read('Invoices/Components/InvoiceItemDeleteDialog.razor'),/<EditorDialogFrame>/);

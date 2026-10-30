@@ -5,26 +5,133 @@
 
 <EditorDialogFrame>
     <DialogContent>
-        <div class="invoice-payment-dialog">
-            <p class="invoice-payment-hint">نوع پرداخت یا دریافت را انتخاب کنید.</p>
-            <div class="invoice-payment-add-actions" role="group" aria-label="افزودن پرداخت">
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Payments" OnClick="() => OnAddPayment(PaymentType.InternalCash)">نقدی</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.SwapHoriz" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">حواله</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Receipt" OnClick="() => OnAddPayment(PaymentType.Check)">چک بانکی</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Recycling" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">طلای شکسته</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Whatshot" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">طلای آبشده</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Toll" OnClick="() => OnAddPayment(PaymentType.Coin)">سکه</MudButton>
-                @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
+        <section class="invoice-settlement" aria-label="تسویه فاکتور">
+            <nav class="invoice-settlement-progress" aria-label="مراحل تسویه">
+                <span class="@(_step == SettlementStep.Direction ? "is-current" : "is-complete")">۱. جهت تسویه</span>
+                <span class="invoice-settlement-progress-line"></span>
+                <span class="@(_step == SettlementStep.Method ? "is-current" : _step == SettlementStep.Review ? "is-complete" : "")">۲. روش تسویه</span>
+                <span class="invoice-settlement-progress-line"></span>
+                <span class="@(_step == SettlementStep.Review ? "is-current" : "")">۳. مرور تسویه‌ها</span>
+            </nav>
+
+            @if (_step == SettlementStep.Direction)
+            {
+                <div class="invoice-settlement-intro">
+                    <span class="invoice-settlement-eyebrow">مرحله اول</span>
+                    <h3>وجه یا جنس از کدام طرف جابه‌جا می‌شود؟</h3>
+                    <p>برای ثبت درست مانده حساب، ابتدا مشخص کنید از طرف‌حساب دریافت دارید یا به او پرداخت می‌کنید.</p>
+                    <div class="invoice-settlement-balance">
+                        <span>@CurrentRemainingLabel</span>
+                        <strong>@Math.Abs(CurrentRemaining).ToCurrencyFormat(PriceUnit.Title)</strong>
+                    </div>
+                </div>
+                <div class="invoice-settlement-directions">
+                    <button type="button" class="invoice-settlement-direction is-receive"
+                            @onclick="() => SelectSide(PaymentSide.Receive)">
+                        <span class="invoice-settlement-direction-icon"><MudIcon Icon="@Icons.Material.Outlined.CallReceived" /></span>
+                        <span class="invoice-settlement-direction-info">
+                            <strong>@ReceiveTitle</strong>
+                            <small>@ReceiveDescription</small>
+                            <span>انتخاب و ادامه <MudIcon Icon="@Icons.Material.Outlined.ArrowBack" Size="Size.Small" /></span>
+                        </span>
+                    </button>
+                    <button type="button" class="invoice-settlement-direction is-pay"
+                            @onclick="() => SelectSide(PaymentSide.Pay)">
+                        <span class="invoice-settlement-direction-icon"><MudIcon Icon="@Icons.Material.Outlined.CallMade" /></span>
+                        <span class="invoice-settlement-direction-info">
+                            <strong>@PayTitle</strong>
+                            <small>@PayDescription</small>
+                            <span>انتخاب و ادامه <MudIcon Icon="@Icons.Material.Outlined.ArrowBack" Size="Size.Small" /></span>
+                        </span>
+                    </button>
+                </div>
+                @if (Items.Count > 0)
                 {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Assignment" OnClick="OnApplyPrepaymentVouchers">اعمال پیش‌پرداخت‌ها</MudButton>
+                    <button type="button" class="invoice-settlement-review-link" @onclick="ShowReview">
+                        <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Small" />
+                        مشاهده @Items.Count تسویه ثبت‌شده
+                        <MudIcon Icon="@Icons.Material.Outlined.ArrowBack" Size="Size.Small" />
+                    </button>
                 }
-            </div>
+            }
+            else if (_step == SettlementStep.Method)
+            {
+                <div class="invoice-settlement-method-header">
+                    <button type="button" class="invoice-settlement-back" @onclick="GoBackToDirection"
+                            aria-label="بازگشت به انتخاب جهت">
+                        <MudIcon Icon="@Icons.Material.Outlined.ArrowForward" Size="Size.Small" /> بازگشت
+                    </button>
+                    <span class="invoice-settlement-selected-side @(_selectedSide == PaymentSide.Receive ? "is-receive" : "is-pay")">
+                        <MudIcon Icon="@(_selectedSide == PaymentSide.Receive ? Icons.Material.Outlined.SouthWest : Icons.Material.Outlined.NorthEast)" Size="Size.Small" />
+                        @(_selectedSide == PaymentSide.Receive ? ReceiveTitle : PayTitle)
+                    </span>
+                </div>
+                <div class="invoice-settlement-intro">
+                    <span class="invoice-settlement-eyebrow">مرحله دوم</span>
+                    <h3>روش تسویه را انتخاب کنید</h3>
+                    <p>مشخص کنید وجه، چک یا جنس چگونه جابه‌جا می‌شود. در مرحله بعد جزئیات و مبلغ را ثبت می‌کنید.</p>
+                </div>
+                <div class="invoice-settlement-methods">
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.InternalCash)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Payments" /></span>
+                        <strong>نقدی و حساب بانکی</strong>
+                        <small>ثبت وجه نقد یا تراکنش حساب مالی فروشگاه</small>
+                    </button>
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.CustomerTransfer)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" /></span>
+                        <strong>حواله</strong>
+                        <small>ثبت انتقال وجه بین طرف‌حساب‌ها</small>
+                    </button>
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.Check)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" /></span>
+                        <strong>چک بانکی</strong>
+                        <small>ثبت چک دریافتی یا پرداختی و مشخصات آن</small>
+                    </button>
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Recycling" /></span>
+                        <strong>طلای شکسته</strong>
+                        <small>تسویه بر اساس وزن و عیار طلای مستعمل</small>
+                    </button>
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Whatshot" /></span>
+                        <strong>طلای آب‌شده</strong>
+                        <small>ثبت دریافت یا تحویل طلای آب‌شده</small>
+                    </button>
+                    <button type="button" class="invoice-settlement-method" @onclick="() => OnAddPayment(PaymentType.Coin)">
+                        <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Toll" /></span>
+                        <strong>سکه</strong>
+                        <small>تسویه با سکه، همراه تعداد و مشخصات سکه</small>
+                    </button>
+                    @if (_selectedSide == PaymentSide.Pay && InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
+                    {
+                        <button type="button" class="invoice-settlement-method" @onclick="OnApplyPrepaymentVouchers">
+                            <span class="invoice-settlement-method-icon"><MudIcon Icon="@Icons.Material.Outlined.Assignment" /></span>
+                            <strong>اعمال پیش‌پرداخت‌ها</strong>
+                            <small>اختصاص اسناد پرداخت قبلی به این فاکتور خرید</small>
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="invoice-settlement-review-heading">
+                    <div>
+                        <span class="invoice-settlement-eyebrow">مرحله سوم</span>
+                        <h3>مرور تسویه‌های فاکتور</h3>
+                        <p>پرداخت‌ها و دریافت‌های ثبت‌شده را بررسی کنید و سپس تأیید کنید.</p>
+                    </div>
+                    <button type="button" class="invoice-settlement-add-more" @onclick="GoBackToDirection">
+                        <MudIcon Icon="@Icons.Material.Outlined.Add" Size="Size.Small" />
+                        تسویه دیگر
+                    </button>
+                </div>
+                <div class="invoice-payment-dialog">
             @if (Items.Count == 0)
             {
                 <div class="invoice-payment-empty">
                     <MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" Size="Size.Large" />
-                    <strong>هنوز پرداختی ثبت نشده است</strong>
-                    <span>برای شروع، یکی از روش‌های بالا را انتخاب کنید.</span>
+                    <strong>هنوز تسویه‌ای ثبت نشده است</strong>
+                    <span>برای ثبت نخستین تسویه، گزینه «تسویه دیگر» را انتخاب کنید.</span>
                 </div>
             }
             else
@@ -97,11 +204,23 @@
                     <div><span>جمع پرداختی‌ها</span><strong class="is-payment">@TotalPaymentsAmount.ToCurrencyFormat(PriceUnit.Title)</strong></div>
                 }
             </div>
-        </div>
+            <div class="invoice-settlement-balance invoice-settlement-review-balance">
+                <span>@CurrentRemainingLabel</span>
+                <strong>@Math.Abs(CurrentRemaining).ToCurrencyFormat(PriceUnit.Title)</strong>
+            </div>
+                </div>
+            }
+        </section>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Close">انصراف</MudButton>
         <MudSpacer />
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check" OnClick="Save">ثبت پرداخت‌ها</MudButton>
+        @if (_step == SettlementStep.Review)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Check" OnClick="Save">
+                تأیید تسویه‌ها
+            </MudButton>
+        }
     </DialogActions>
 </EditorDialogFrame>

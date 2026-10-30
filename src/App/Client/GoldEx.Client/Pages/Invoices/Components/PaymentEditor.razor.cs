@@ -30,6 +30,7 @@ public partial class PaymentEditor
     [Parameter, EditorRequired] public decimal TotalRemaining { get; set; }
     [Parameter, EditorRequired] public GetPriceUnitTitleResponse BasePriceUnit { get; set; }
     [Parameter, EditorRequired] public InvoiceType InvoiceType { get; set; }
+    [Parameter] public bool LockPaymentSide { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
@@ -71,6 +72,21 @@ public partial class PaymentEditor
         TotalRemaining - GetBalanceEffect(InvoiceType, Model);
 
     private const decimal Epsilon = 0.0001m;
+    private bool CanApplyTotalRemaining
+    {
+        get
+        {
+            if (Math.Abs(TotalRemaining) < Epsilon)
+                return false;
+
+            var reducesPositiveBalance = InvoiceType == InvoiceType.Purchase
+                ? Model.PaymentSide == PaymentSide.Pay
+                : Model.PaymentSide == PaymentSide.Receive;
+
+            return (TotalRemaining > 0) == reducesPositiveBalance;
+        }
+    }
+
 
     private bool IsZeroRemaining => Math.Abs(TotalRemainingCalculated) < Epsilon;
 

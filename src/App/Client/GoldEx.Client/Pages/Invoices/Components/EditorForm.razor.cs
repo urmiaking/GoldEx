@@ -55,7 +55,6 @@ public partial class EditorForm
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice = true;
-    private bool _paymentMenuOpen;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -1483,13 +1482,11 @@ public partial class EditorForm
 
     private void OnDiscountMenuToggled()
     {
-        _paymentMenuOpen = false;
         _discountMenuOpen = !_discountMenuOpen;
     }
 
     private void OnExtraCostsMenuToggled()
     {
-        _paymentMenuOpen = false;
         _extraCostsMenuOpen = !_extraCostsMenuOpen;
     }
 
@@ -1502,27 +1499,9 @@ public partial class EditorForm
 
     #region Payments
 
-    private async Task OpenPaymentsDialog()
+    private async Task OpenPaymentsDialog(bool reviewFirst = false)
     {
-        var parameters = new DialogParameters<PaymentDialog>
-        {
-            { x => x.Items, _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList() },
-            { x => x.PriceUnit, _model.InvoicePriceUnit },
-            { x => x.InvoiceType, _model.InvoiceType },
-            { x => x.CustomerId, _model.Customer?.Id },
-            { x => x.PriceUnits, _priceUnits },
-            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            CloseOnEscapeKey = true,
-            MaxWidth = MaxWidth.Large,
-            FullWidth = true
-        };
-
-        var dialog = ResponsiveDialogs.Show<PaymentDialog>("جزئیات پرداخت‌های فاکتور",
+        var dialog = ResponsiveDialogs.Show<PaymentDialog>("تسویه فاکتور",
             new Dictionary<string, object>
             {
                 [nameof(PaymentDialog.Items)] = _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList(),
@@ -1530,7 +1509,8 @@ public partial class EditorForm
                 [nameof(PaymentDialog.InvoiceType)] = _model.InvoiceType,
                 [nameof(PaymentDialog.CustomerId)] = _model.Customer?.Id!,
                 [nameof(PaymentDialog.PriceUnits)] = _priceUnits,
-                [nameof(PaymentDialog.TotalRemaining)] = _model.TotalUnpaidAmount
+                [nameof(PaymentDialog.TotalRemaining)] = _model.TotalUnpaidAmount,
+                [nameof(PaymentDialog.StartWithReview)] = reviewFirst
             }, wide: true);
 
         var result = await dialog.Result;
@@ -1538,81 +1518,6 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: List<InvoicePaymentVm> payments })
         {
             _model.InvoicePayments = payments;
-        }
-    }
-
-    private async Task OnAddPayment(PaymentType paymentType)
-    {
-        _paymentMenuOpen = false;
-
-        if (_license is null)
-            return;
-
-        if (paymentType is PaymentType.CustomerTransfer && _license.IsExpired)
-        {
-            AddErrorToast("قابلیت پرداخت حواله ای در نسخه Premium قابل استفاده است");
-            return;
-        }
-
-        var priceUnit = paymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory
-            ? _priceUnits.FirstOrDefault(pu => pu.IsGoldBased)
-            : _model.InvoicePriceUnit;
-
-        var adornmentText = priceUnit?.Title ?? string.Empty;
-
-        var fineness = paymentType switch
-        {
-            PaymentType.MoltenGoldInventory => 750m,
-            PaymentType.UsedGoldInventory => 750m - _setting?.UsedGoldFinenessDeductionRate,
-            _ => null
-        };
-
-        var parameters = new DialogParameters<PaymentEditor>
-        {
-            {
-                x => x.Model, new InvoicePaymentVm
-                {
-                    PaymentType = paymentType,
-                    PriceUnit = priceUnit,
-                    AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness,
-                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay,
-                    CoinInstance = paymentType is PaymentType.Coin ? new CoinInstanceVm() : null,
-                    CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
-                }
-            },
-            { x => x.BasePriceUnit, _model.InvoicePriceUnit },
-            { x => x.PriceUnits, _priceUnits },
-            { x => x.InvoiceType, _model.InvoiceType },
-            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
-        };
-
-        var paymentModel = new InvoicePaymentVm
-                {
-                    PaymentType = paymentType,
-                    PriceUnit = priceUnit,
-                    AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness,
-                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay,
-                    CoinInstance = paymentType is PaymentType.Coin ? new CoinInstanceVm() : null,
-                    CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
-                };
-
-        var dialog = ResponsiveDialogs.Show<PaymentEditor>(paymentType.GetDisplayTitle(),
-            new Dictionary<string, object>
-            {
-                [nameof(PaymentEditor.Model)] = paymentModel,
-                [nameof(PaymentEditor.BasePriceUnit)] = _model.InvoicePriceUnit!,
-                [nameof(PaymentEditor.PriceUnits)] = _priceUnits,
-                [nameof(PaymentEditor.InvoiceType)] = _model.InvoiceType,
-                [nameof(PaymentEditor.TotalRemaining)] = _model.TotalUnpaidAmount
-            }, wide: true);
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
-        {
-            _model.InvoicePayments.Add(addedPayment);
         }
     }
 

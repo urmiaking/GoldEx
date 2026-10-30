@@ -13,3 +13,9 @@
 .invoice-payment-editor ::deep .mud-stack-row>.mud-icon-button{flex:none}
 .invoice-payment-editor ::deep .mud-paper{box-shadow:none}
 @media(max-width:699px){.invoice-payment-editor ::deep .mud-grid-item{flex-basis:100%;max-width:100%}.invoice-payment-side-options{gap:5px;margin-bottom:7px}.invoice-payment-side-options ::deep .mud-chip{min-height:33px;font-size:.77rem}}
+.invoice-payment-direction-banner{display:flex;align-items:center;gap:11px;padding:12px 14px;margin-bottom:14px;background:var(--mud-palette-background);border-radius:12px;border:1px solid var(--mud-palette-lines-default);color:var(--mud-palette-primary)}
+.invoice-payment-direction-banner.is-receive{color:var(--mud-palette-success);border-inline-start:3px solid var(--mud-palette-success)}
+.invoice-payment-direction-banner.is-pay{border-inline-start:3px solid var(--mud-palette-primary)}
+.invoice-payment-direction-banner>div{display:grid;gap:4px}
+.invoice-payment-direction-banner strong{font-size:.88rem;font-weight:500}
+.invoice-payment-direction-banner small{font-size:.74rem;color:var(--mud-palette-text-secondary);font-weight:400}

@@ -1,0 +1,4 @@
+.invoice-settlement-trigger{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-inline-start:10px}
+.invoice-settlement-trigger ::deep .mud-button-root{border-radius:12px;font-size:.84rem;font-weight:500;min-height:40px;padding-inline:15px}
+.invoice-settlement-trigger ::deep .mud-icon-button{border-radius:10px;min-width:38px;min-height:38px}
+@media(max-width:699px){.invoice-settlement-trigger{justify-content:flex-start;gap:6px;margin-inline-start:0;width:100%}.invoice-settlement-trigger ::deep .mud-button-root{font-size:.78rem;min-height:39px}}

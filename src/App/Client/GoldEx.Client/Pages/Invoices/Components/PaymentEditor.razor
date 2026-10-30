@@ -10,6 +10,18 @@
         <DialogContent>
             <div class="invoice-payment-editor">
 
+            @if (LockPaymentSide)
+            {
+                <div class="invoice-payment-direction-banner @(Model.PaymentSide == PaymentSide.Receive ? "is-receive" : "is-pay")">
+                    <MudIcon Icon="@(Model.PaymentSide == PaymentSide.Receive ? Icons.Material.Outlined.SouthWest : Icons.Material.Outlined.NorthEast)" Size="Size.Medium" />
+                    <div>
+                        <strong>@(Model.PaymentSide == PaymentSide.Receive ? "دریافت از طرف‌حساب" : "پرداخت به طرف‌حساب")</strong>
+                        <small>جهت تسویه در مرحله اول انتخاب شده است.</small>
+                    </div>
+                </div>
+            }
+            else
+            {
             <div class="invoice-payment-side-options">
                 <MudChipSet T="PaymentSide"
                             Class="align-center d-flex"
@@ -28,6 +40,8 @@
                              Variant="@(Model.PaymentSide == PaymentSide.Pay ? Variant.Text : Variant.Outlined)">@PaymentSide.Pay.GetDisplayName()</MudChip>
                 </MudChipSet>
             </div>
+
+            }
 
             @if (Model.PaymentType is PaymentType.Coin && Model.CoinInstance is not null)
             {
@@ -590,7 +604,7 @@
         <DialogActions>
             <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
                 <div class="d-flex gap-2 mr-md-4">
-                    @if (Model.PriceUnit?.Id == BasePriceUnit.Id)
+                    @if (Model.PriceUnit?.Id == BasePriceUnit.Id && CanApplyTotalRemaining)
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Primary" OnClick="ApplyTotalRemaining" Variant="Variant.Outlined" />
                     }

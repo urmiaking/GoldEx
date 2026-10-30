@@ -21,19 +21,45 @@ public partial class PaymentDialog
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Parameter] public decimal TotalRemaining { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public bool StartWithReview { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     [Inject] public ISettingService SettingService { get; set; } = default!;
 
-    private readonly DialogOptions _dialogOptions = new()
+    internal enum SettlementStep { Direction, Method, Review }
+    private SettlementStep _step = SettlementStep.Direction;
+    private PaymentSide? _selectedSide;
+    private decimal _initialEffect;
+
+    private string ReceiveTitle => InvoiceType == InvoiceType.Purchase
+        ? "از فروشنده دریافت می‌کنم" : "از مشتری دریافت می‌کنم";
+    private string PayTitle => InvoiceType == InvoiceType.Purchase
+        ? "به فروشنده پرداخت می‌کنم" : "به مشتری پرداخت می‌کنم";
+    private string ReceiveDescription => InvoiceType == InvoiceType.Purchase
+        ? "وجه، چک یا جنس را از فروشنده می‌گیرم؛ مانده حساب متناسب با دریافت اصلاح می‌شود."
+        : "وجه، چک یا جنس را از مشتری می‌گیرم؛ بدهی مشتری کمتر می‌شود.";
+    private string PayDescription => InvoiceType == InvoiceType.Purchase
+        ? "بهای خرید را به فروشنده می‌دهم؛ مانده پرداختنی ما کمتر می‌شود."
+        : "مبلغی را به مشتری برمی‌گردانم یا جنس تحویل می‌دهم؛ مانده حساب متناسب تغییر می‌کند.";
+
+    private void SelectSide(PaymentSide side)
     {
-        CloseButton = true,
-        FullWidth = true,
-        FullScreen = false,
-        MaxWidth = MaxWidth.Medium
-    };
+        _selectedSide = side;
+        _step = SettlementStep.Method;
+    }
+
+    private void GoBackToDirection() => _step = SettlementStep.Direction;
+    private void ShowReview() => _step = SettlementStep.Review;
+
+    private static decimal GetBalanceEffect(InvoiceType invoiceType, InvoicePaymentVm payment)
+    {
+        var amount = payment.FinalAmount * (payment.ExchangeRate ?? 1);
+        return invoiceType == InvoiceType.Purchase
+            ? (payment.PaymentSide == PaymentSide.Pay ? amount : -amount)
+            : (payment.PaymentSide == PaymentSide.Receive ? amount : -amount);
+    }
 
     private GetSettingResponse? _settings;
     private GetLicenseResponse? _license;
@@ -46,33 +72,21 @@ public partial class PaymentDialog
         Items.Where(p => p.PaymentSide == PaymentSide.Pay)
             .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
 
-    /// <summary>
-    /// خالص پرداخت‌ها (Receive - Pay) بر اساس لیست فعلی Items.
-    /// فقط برای فاکتور فروش استفاده می‌شود.
-    /// </summary>
-    private decimal TotalNetPayments => Items.Sum(GetSignedAmount);
+    // Current invoice balance is derived from the original effect and the draft
+    // list, so successive entries in one wizard never use a stale amount.
+    private decimal CurrentRemaining => TotalRemaining + _initialEffect
+        - Items.Sum(p => GetBalanceEffect(InvoiceType, p));
 
-    /// <summary>
-    /// مجموع ساده پرداخت‌ها بر اساس لیست فعلی Items.
-    /// برای فاکتور خرید استفاده می‌شود.
-    /// </summary>
-    private decimal TotalAbsolutePayments =>
-        Items.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
-
-    /// <summary>
-    /// مانده فعلی فاکتور داخل همین دیالوگ، بر اساس مانده اولیه و تغییرات روی Items.
-    /// TotalRemaining = مانده‌ای که هنگام باز شدن دیالوگ از InvoiceVm آمده.
-    /// </summary>
-    private decimal CurrentRemaining => TotalRemaining;
-
-    private decimal GetSignedAmount(InvoicePaymentVm p)
-    {
-        var baseAmount = p.FinalAmount * (p.ExchangeRate ?? 1);
-        return p.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
-    }
+    private string CurrentRemainingLabel => Math.Abs(CurrentRemaining) < 0.0001m
+        ? "فاکتور تسویه شده"
+        : InvoiceType == InvoiceType.Purchase
+            ? CurrentRemaining > 0 ? "مانده بدهی ما به فروشنده" : "طلب ما از فروشنده"
+            : CurrentRemaining > 0 ? "مانده بدهی مشتری" : "بستانکاری مشتری";
 
     protected override async Task OnInitializedAsync()
     {
+        _initialEffect = Items.Sum(p => GetBalanceEffect(InvoiceType, p));
+        _step = StartWithReview && Items.Count > 0 ? SettlementStep.Review : SettlementStep.Direction;
         await LoadSettingsAsync();
         await LoadLicenseAsync();
         await base.OnInitializedAsync();
@@ -101,36 +115,11 @@ public partial class PaymentDialog
     /// CurrentRemaining = مانده بعد از اعمال همهٔ پرداخت‌های فعلی (از جمله همین payment).
     /// برای رسیدن به مانده قبل از این پرداخت، اثر خودش را برمی‌گردانیم.
     /// </summary>
-    private decimal GetRemainingBefore(InvoicePaymentVm payment)
-    {
-        var baseAmount = payment.FinalAmount * (payment.ExchangeRate ?? 1);
-
-        if (InvoiceType == InvoiceType.Sell)
-        {
-            var signed = GetSignedAmount(payment);
-            // در فروش: InvoiceVm از NetPayments استفاده می‌کند.
-            // TotalRemaining = مانده بعد از این پرداخت.
-            // برای قبل از این پرداخت، باید اثر امضادار خودش را حذف کنیم.
-            return TotalRemaining + signed;
-        }
-
-        // در خرید: InvoiceVm از مجموع ساده (TotalPaidAmount) استفاده می‌کند.
-        // TotalRemaining = Amount - SumPaymentsIncludingThis
-        // برای قبل از این پرداخت، باید مبلغ مثبتش را حذف کنیم.
-        return TotalRemaining + baseAmount;
-    }
+    private decimal GetRemainingBefore(InvoicePaymentVm payment) =>
+        CurrentRemaining + GetBalanceEffect(InvoiceType, payment);
 
     private async Task OnEdit(InvoicePaymentVm payment)
     {
-        var parameters = new DialogParameters<PaymentEditor>
-        {
-            { x => x.Model, payment },
-            { x => x.BasePriceUnit, PriceUnit },
-            { x => x.PriceUnits, PriceUnits },
-            { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, GetRemainingBefore(payment) }
-        };
-
         var dialog = ResponsiveDialogs.Show<PaymentEditor>("ویرایش پرداخت",
             new Dictionary<string, object>
             {
@@ -170,7 +159,7 @@ public partial class PaymentDialog
 
     private async Task OnAddPayment(PaymentType paymentType)
     {
-        if (_license is null)
+        if (_selectedSide is null || _license is null)
             return;
 
         if (paymentType is PaymentType.CustomerTransfer && _license.IsExpired)
@@ -192,9 +181,7 @@ public partial class PaymentDialog
             _ => null
         };
 
-        var defaultSide = InvoiceType is InvoiceType.Sell
-            ? PaymentSide.Receive
-            : PaymentSide.Pay;
+        var defaultSide = _selectedSide.Value;
 
         var newPayment = new InvoicePaymentVm
         {
@@ -207,15 +194,6 @@ public partial class PaymentDialog
             CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
         };
 
-        var parameters = new DialogParameters<PaymentEditor>
-        {
-            { x => x.Model, newPayment },
-            { x => x.BasePriceUnit, PriceUnit },
-            { x => x.PriceUnits, PriceUnits },
-            { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, TotalRemaining }
-        };
-
         var dialog = ResponsiveDialogs.Show<PaymentEditor>(paymentType.GetDisplayTitle(),
             new Dictionary<string, object>
             {
@@ -223,7 +201,8 @@ public partial class PaymentDialog
                 [nameof(PaymentEditor.BasePriceUnit)] = PriceUnit,
                 [nameof(PaymentEditor.PriceUnits)] = PriceUnits,
                 [nameof(PaymentEditor.InvoiceType)] = InvoiceType,
-                [nameof(PaymentEditor.TotalRemaining)] = TotalRemaining
+                [nameof(PaymentEditor.TotalRemaining)] = CurrentRemaining,
+                [nameof(PaymentEditor.LockPaymentSide)] = true
             }, wide: true);
 
         var result = await dialog.Result;
@@ -231,6 +210,7 @@ public partial class PaymentDialog
         if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
         {
             Items.Add(addedPayment);
+            ShowReview();
         }
     }
 
@@ -243,12 +223,6 @@ public partial class PaymentDialog
             .Where(p => p.VoucherId.HasValue)
             .Select(p => p.VoucherId!.Value)
             .ToList();
-
-        var parameters = new DialogParameters<PaymentVouchersSelectorList>
-        {
-            { x => x.CustomerId, CustomerId.Value },
-            { x => x.SelectedPaymentVouchers, selectedVoucherIds }
-        };
 
         var dialog = ResponsiveDialogs.Show<PaymentVouchersSelectorList>("انتخاب اسناد پیش‌پرداخت",
             new Dictionary<string, object>
@@ -289,6 +263,7 @@ public partial class PaymentDialog
 
                 Items.Add(paymentVm);
             }
+            ShowReview();
             StateHasChanged();
         }
     }

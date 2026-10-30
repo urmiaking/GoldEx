@@ -388,96 +388,35 @@ else
                                     </div>
                                 </div>
                                 <div class="d-md-block d-none flex-grow-1"></div>
-                                <div @onclick:stopPropagation="true" class="ml-md-3">
-                                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                                        @if (_model.InvoicePayments.Any())
-                                        {
-                                            <MudBadge Content="@(_model.InvoicePayments.Any() ? _model.InvoicePayments.Count : null)" Color="Color.Success" Overlap="true">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                                               Color="Color.Primary"
-                                                               Variant="Variant.Filled"
-                                                               OnClick="OpenPaymentsDialog" />
-                                            </MudBadge>
-                                        }
-                                        else
-                                        {
-                                            <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                                           Color="Color.Primary"
-                                                           Variant="Variant.Filled"
-                                                           OnClick="OpenPaymentsDialog" />
-                                        }
-
-                                        <MudMenu EndIcon="@Icons.Material.Filled.ArrowDropUp"
-                                                 Label="ثبت پرداخت"
-                                                 @bind-Open="_paymentMenuOpen"
-                                                 AnchorOrigin="Origin.BottomCenter"
-                                                 TransformOrigin="Origin.TopCenter">
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Success"
-                                                           StartIcon="@Icons.Material.Filled.Payment"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.InternalCash)">
-                                                    <MudText>پرداخت نقدی</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Tertiary"
-                                                           StartIcon="@Icons.Material.Filled.SwapHoriz"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">
-                                                    <MudText>حواله</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Info"
-                                                           StartIcon="@Icons.Material.Filled.Money"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.Check)">
-                                                    <MudText>چک بانکی</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Error"
-                                                           StartIcon="@Icons.Material.Filled.Recycling"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
-                                                    <MudText>طلای شکسته</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Warning"
-                                                           StartIcon="@Icons.Material.Filled.Whatshot"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
-                                                    <MudText Color="Color.Dark">طلای آبشده</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Secondary"
-                                                           StartIcon="@Icons.Material.Filled.MonetizationOn"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="() => OnAddPayment(PaymentType.Coin)">
-                                                    <MudText>سکه</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Success"
-                                                           StartIcon="@Icons.Material.Filled.Discount"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="OnDiscountMenuToggled">
-                                                    <MudText>ثبت تخفیف</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                            <MudMenuItem>
-                                                <MudButton Class="ml-2" Color="Color.Error"
-                                                           StartIcon="@Icons.Material.Filled.SwitchAccessShortcutAdd"
-                                                           Variant="Variant.Filled" FullWidth="true"
-                                                           OnClick="OnExtraCostsMenuToggled">
-                                                    <MudText>ثبت مخارج جانبی</MudText>
-                                                </MudButton>
-                                            </MudMenuItem>
-                                        </MudMenu>
-                                    </MudButtonGroup>
+                                <div class="invoice-settlement-trigger" @onclick:stopPropagation="true">
+                                    <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
+                                               OnClick="() => OpenPaymentsDialog(false)">
+                                        تسویه فاکتور
+                                    </MudButton>
+                                    @if (_model.InvoicePayments.Count > 0)
+                                    {
+                                        <MudBadge Content="@_model.InvoicePayments.Count" Color="Color.Success" Overlap="true">
+                                            <MudTooltip Text="مشاهده تسویه‌های ثبت‌شده">
+                                                <MudIconButton Icon="@Icons.Material.Outlined.ReceiptLong"
+                                                               aria-label="مشاهده تسویه‌های ثبت‌شده"
+                                                               Variant="Variant.Outlined" Color="Color.Primary"
+                                                               OnClick="() => OpenPaymentsDialog(true)" />
+                                            </MudTooltip>
+                                        </MudBadge>
+                                    }
+                                    <MudTooltip Text="ثبت تخفیف">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Discount"
+                                                       aria-label="ثبت تخفیف"
+                                                       Variant="Variant.Outlined" Color="Color.Default"
+                                                       OnClick="OnDiscountMenuToggled" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="ثبت مخارج جانبی">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.ReceiptLong"
+                                                       aria-label="ثبت مخارج جانبی"
+                                                       Variant="Variant.Outlined" Color="Color.Default"
+                                                       OnClick="OnExtraCostsMenuToggled" />
+                                    </MudTooltip>
                                 </div>
                             </div>
                         </TitleContent>
