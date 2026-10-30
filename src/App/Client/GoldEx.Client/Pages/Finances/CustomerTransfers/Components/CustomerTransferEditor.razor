@@ -1,3 +1,4 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Shared.DTOs.PriceUnits
 @using GoldEx.Shared.DTOs.Invoices
 @using GoldEx.Shared.Helpers
@@ -6,12 +7,13 @@
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(Validator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="transfer-editor-form">
             <MudGrid Spacing="3">
                 <!-- Accounting Flow Preview Card -->
                 <MudItem xs="12">
-                    <MudPaper Class="pa-3 rounded-lg" Elevation="0" Style="background: var(--mud-palette-background-grey); border: 1px solid var(--mud-palette-lines-default);">
+                    <MudPaper Class="transfer-editor-preview pa-3" Elevation="0">
                         <div class="d-flex align-center justify-space-between mb-2">
                             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="d-flex align-center gap-1">
                                 <MudIcon Icon="@Icons.Material.Outlined.Preview" Size="Size.Small" />
@@ -20,7 +22,7 @@
                         </div>
                         <MudGrid AlignItems="Center" Spacing="2">
                             <MudItem xs="12" sm="5">
-                                <MudPaper Class="pa-2 text-center rounded-lg" Elevation="1" Style="border-right: 4px solid var(--mud-palette-error);">
+                                <MudPaper Class="transfer-editor-account transfer-editor-account--source pa-3" Elevation="0">
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">فرستنده (حواله‌دهنده / بدهکار)</MudText>
                                     <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
                                         @(Model.SourceCustomer?.FullName ?? "انتخاب نشده")
@@ -61,7 +63,7 @@
 
                             <MudItem xs="12" sm="2" Class="text-center">
                                 <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="0">
-                                    <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Color="Color.Primary" Size="Size.Medium" />
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Medium" />
                                     <MudText Typo="Typo.caption" Color="Color.Primary" Style="font-weight: bold;">
                                         @(Model.Amount > 0 ? Model.Amount.ToCurrencyFormat(Model.PriceUnit?.Title) : "مبلغ / وزن")
                                     </MudText>
@@ -69,7 +71,7 @@
                             </MudItem>
 
                             <MudItem xs="12" sm="5">
-                                <MudPaper Class="pa-2 text-center rounded-lg" Elevation="1" Style="border-right: 4px solid var(--mud-palette-success);">
+                                <MudPaper Class="transfer-editor-account transfer-editor-account--destination pa-3" Elevation="0">
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">گیرنده (دریافت‌کننده / بستانکار)</MudText>
                                     <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
                                         @(Model.DestinationCustomer?.FullName ?? "انتخاب نشده")
@@ -112,6 +114,7 @@
                 </MudItem>
 
                 <!-- Customers Selection -->
+                <MudItem xs="12"><div class="transfer-editor-section"><MudIcon Icon="@Icons.Material.Outlined.People" Size="Size.Small" /><span>طرف‌های حواله</span></div></MudItem>
                 <MudItem xs="12" md="6">
                     <div class="d-flex align-center gap-2">
                         <MudAutocomplete T="CustomerVm"
@@ -155,6 +158,7 @@
                 </MudItem>
 
                 <!-- Asset Unit, Amount & Transfer Date -->
+                <MudItem xs="12"><div class="transfer-editor-section"><MudIcon Icon="@Icons.Material.Outlined.Payments" Size="Size.Small" /><span>مشخصات حواله</span></div></MudItem>
                 <MudItem xs="12" md="4">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="Model.PriceUnit"
@@ -194,6 +198,8 @@
 
                 <MudItem xs="12" md="4">
                     <MudDatePicker @bind-Date="@Model.TransferDate"
+                                   Adornment="Adornment.Start"
+                                   Class="transfer-editor-date w-100"
                                    Label="تاریخ حواله *"
                                    For="() => Model.TransferDate"
                                    Margin="Margin.Dense"
@@ -219,6 +225,7 @@
                 }
 
                 <!-- Optional Invoice Pickers -->
+                <MudItem xs="12"><div class="transfer-editor-section"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Small" /><span>فاکتورهای مرتبط (اختیاری)</span></div></MudItem>
                 <MudItem xs="12" md="6">
                     <MudSelect T="GetTinyInvoiceResponse?"
                                @bind-Value="Model.SourceInvoice"
@@ -265,17 +272,18 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
+            </div>
         </DialogContent>
 
         <DialogActions>
-            <MudButton Color="Color.Error"
+            <MudButton Color="Color.Default"
                        OnClick="Cancel"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">
+                       Variant="Variant.Outlined">
                 انصراف
             </MudButton>
 
-            <MudButton Class="m-2"
+            <MudButton
                        Color="Color.Primary"
                        Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
@@ -292,5 +300,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

@@ -1,0 +1,4 @@
+.transfer-delete-warning { display:grid; justify-items:center; text-align:center; gap:12px; padding:20px 8px; }
+.transfer-delete-warning h3 { margin:0; font-size:1.05rem; font-weight:600; }
+.transfer-delete-warning p { margin:0; line-height:1.8; font-size:.9rem; color:var(--mud-palette-text-secondary); }
+.transfer-delete-warning strong { color:var(--mud-palette-text-primary); font-weight:600; }

@@ -1,0 +1,55 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.DTOs.PriceUnits
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-directory-filter-form">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="@(r => _dateRange = r)"
+                                        Label="تاریخ حواله" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                        MaxMonthColumns="1" DisplayMonths="1" ShowToolbar="false"
+                                        Rounded="true" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                        RelativeWidth="DropdownWidth.Adaptive" Clearable="true" Adornment="Adornment.Start"
+                                        Class="w-100 gex-filter-date-range" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="Guid?" Label="نوع دارایی / واحد قیمت" Value="_unitId"
+                               ValueChanged="@(v => _unitId = v)" Variant="Variant.Outlined"
+                               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Paid"
+                               Margin="Margin.Dense" Dense="true" Clearable="true" Class="w-100">
+                        <MudSelectItem T="Guid?" Value="@(null as Guid?)">همه واحدها</MudSelectItem>
+                        @foreach (var unit in PriceUnits) { <MudSelectItem T="Guid?" Value="@((Guid?)unit.Id)">@unit.Title</MudSelectItem> }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" Class="gex-filter-mobile-sort">
+                    <div class="gex-filter-section-title"><ShellIcon Name="list" /><span>مرتب‌سازی نمایش</span></div>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel"
+                                       ValueChanged="@(v => _sortLabel = v)"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                                <MudSelectItem Value="@("TransferDate")">تاریخ حواله</MudSelectItem>
+                                <MudSelectItem Value="@("VoucherNumber")">شماره حواله</MudSelectItem>
+                                <MudSelectItem Value="@("Amount")">مبلغ / وزن</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_sortDescending"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                                <MudSelectItem T="bool" Value="true">نزولی</MudSelectItem>
+                                <MudSelectItem T="bool" Value="false">صعودی</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Delete" OnClick="Clear">بازنشانی</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Cancel">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check" OnClick="Apply">اعمال فیلترها</MudButton>
+    </DialogActions>
+</EditorDialogFrame>
