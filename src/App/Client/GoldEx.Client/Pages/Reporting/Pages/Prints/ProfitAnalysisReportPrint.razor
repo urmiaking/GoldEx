@@ -8,7 +8,7 @@
 <link href="/css/reports/report-utilities.css" rel="stylesheet" />
 <link href="/css/reports/report-print.css" rel="stylesheet" />
 
-<ReportPrintBase IsLoading="IsLoading" FromDate="Filters.DateRange?.Start" ToDate="Filters.DateRange?.End"
+<ReportPrintBase Landscape="true" IsLoading="IsLoading" FromDate="Filters.DateRange?.Start" ToDate="Filters.DateRange?.End"
                  Data="Data" ReportTitle="گزارش تحلیل سود فروش" Summary="PrintSummary">
     @if (Data is not null)
     {

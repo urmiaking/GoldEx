@@ -1,0 +1,126 @@
+@import url('/fonts/vazir/Vazirmatn-font-face.css');
+/* GoldEx Enterprise Print System — a single language of print for all report routes.
+   No fixed sample financial metrics, no unsupported aggregations. */
+@page {
+    size: A4 portrait;
+    margin: 12mm 11mm 17mm;
+    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt Tahoma, sans-serif; color: #75674f; }
+    @bottom-left { content: "صفحه " counter(page) " از " counter(pages); font: 8pt Tahoma, sans-serif; color: #75674f; }
+}
+@page gex-landscape {
+    size: A4 landscape;
+    margin: 11mm 11mm 17mm;
+    @bottom-right { content: "GoldEx | گزارش حسابداری"; font: 8pt Tahoma, sans-serif; color: #75674f; }
+    @bottom-left { content: "صفحه " counter(page) " از " counter(pages); font: 8pt Tahoma, sans-serif; color: #75674f; }
+}
+.gex-print-document{
+    --gex-ink:#272520;--gex-muted:#716c61;--gex-gold:#a57518;--gex-soft-gold:#ddc493;
+    --gex-line:#ddd5c8;--gex-warm:#fbfaf7;--gex-tint:#f4f0e9;
+    direction:rtl!important;color:var(--gex-ink)!important;background:#fff!important;
+    font-family:Vazirmatn,'IRANSans',Tahoma,Arial,sans-serif!important;
+    line-height:1.55;font-size:10pt;margin:0 auto;padding:8mm 8mm 6mm;max-width:210mm;
+    border:1px solid #e8dfd1;box-sizing:border-box;min-width:0;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.gex-print-document *, .gex-print-document *::before,.gex-print-document *::after{box-sizing:border-box}
+.gex-print-document *{direction:inherit}
+.gex-print-letterhead{display:flex;justify-content:space-between;align-items:flex-start;gap:15mm;min-height:34mm;padding:1mm 0 6mm;position:relative;border-bottom:1.5pt solid var(--gex-gold);break-inside:avoid}
+.gex-print-store{display:grid;align-content:start;gap:2.5mm;min-width:0;max-width:65%}
+.gex-print-store-identity{display:flex;align-items:center;gap:3mm}
+.gex-print-store-logo{max-width:17mm;max-height:17mm;object-fit:contain}
+.gex-print-store-name{display:grid;gap:1mm}
+.gex-print-store-name strong{font-size:17pt;font-weight:700;line-height:1.4}
+.gex-print-store-name>span{font-size:8pt;color:var(--gex-muted)}
+.gex-print-contact{display:flex;align-items:baseline;gap:2mm;color:var(--gex-muted);font-size:7.9pt;min-width:0;overflow-wrap:anywhere}
+.gex-print-contact>span:first-child{white-space:nowrap;color:var(--gex-gold);font-weight:600}
+.gex-print-brand{text-align:center!important;display:grid;justify-items:center;align-content:start;gap:0;min-width:44mm;line-height:1.2}
+.gex-print-brand-mark{color:var(--gex-gold);font-size:25pt;line-height:1}
+.gex-print-wordmark{font-family:Georgia,'Times New Roman',serif!important;color:#33302b;font-size:31pt;letter-spacing:.025em;direction:ltr!important;text-align:center!important;white-space:nowrap}
+.gex-print-wordmark span{color:var(--gex-gold)}
+.gex-print-brand small{font-family:Arial,Helvetica,sans-serif;font-size:5.5pt;letter-spacing:1.4px;color:#625745;direction:ltr!important;text-align:center!important}
+.gex-print-brand-caption{font-size:7.6pt;color:var(--gex-muted);margin-top:2mm}
+.gex-print-letterhead::after{content:"◇";position:absolute;bottom:-3.5mm;left:50%;transform:translateX(-50%);background:#fff;color:var(--gex-gold);font-family:Georgia,serif;font-size:16pt;line-height:1;padding:0 3mm}
+.gex-print-report-intro{display:flex;justify-content:space-between;align-items:center;gap:10mm;padding:5.5mm 0;border-bottom:1px solid var(--gex-line);break-inside:avoid}
+.gex-print-report-main{min-width:0;text-align:center!important;flex:1 1 auto}
+.gex-print-eyebrow{display:block;color:var(--gex-gold);font-size:7.2pt;letter-spacing:.015em}
+.gex-print-report-main h1{font-size:16pt;line-height:1.5;font-weight:700;text-align:center!important;margin:1mm 0 1.5mm;color:var(--gex-ink);overflow-wrap:anywhere}
+.gex-print-date-range{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:2mm;font-size:8.4pt}
+.gex-print-date-range>span{color:var(--gex-muted)}
+.gex-print-date-range strong{font-weight:600;white-space:nowrap}
+.gex-print-report-meta{flex:0 0 42mm;display:grid;gap:1.5mm;border-right:1px solid var(--gex-line);padding-right:4mm}
+.gex-print-report-meta>div{display:flex;justify-content:space-between;gap:3mm;font-size:7.8pt}
+.gex-print-report-meta span{color:var(--gex-muted);white-space:nowrap}
+.gex-print-report-meta strong{font-weight:600;text-align:left!important;white-space:nowrap}
+.gex-print-highlights{margin-top:6mm;break-inside:avoid}
+.gex-print-section-heading{display:flex;align-items:center;justify-content:space-between;gap:4mm;margin-bottom:2.5mm;padding-right:3mm;border-right:2.5pt solid var(--gex-gold);break-after:avoid}
+.gex-print-section-heading h2{font-size:10.2pt;color:var(--gex-ink);font-weight:700;line-height:1.5;margin:0}
+.gex-print-section-heading span{font-size:7.8pt;color:var(--gex-muted);overflow-wrap:anywhere}
+.gex-print-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2.5mm}
+.gex-print-kpi{display:grid;align-content:start;justify-items:start;gap:1.2mm;min-width:0;border:1px solid var(--gex-line);border-top:2px solid var(--gex-soft-gold);border-radius:2mm;padding:3mm;background:var(--gex-warm);min-height:20mm;break-inside:avoid}
+.gex-print-kpi-symbol{font-size:8pt;color:var(--gex-gold)}
+.gex-print-kpi-label{color:var(--gex-muted);font-size:7.8pt;line-height:1.45}
+.gex-print-kpi-value{font-size:10pt;font-weight:700;color:var(--gex-ink);line-height:1.7;overflow-wrap:anywhere;word-break:normal;text-align:right!important;direction:rtl!important}
+.gex-print-detail-section{margin-top:6mm;min-width:0}
+.gex-print-table-wrap{min-width:0;position:relative}
+.gex-print-table-wrap::before{content:"GOLDEX";font-family:Georgia,serif;position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) rotate(-27deg);font-size:42pt;letter-spacing:4px;color:rgba(165,117,24,.045);pointer-events:none;z-index:0}
+.gex-print-document .table{position:relative;z-index:1;table-layout:auto;width:100%;border:1px solid var(--gex-line);border-collapse:collapse;border-radius:0!important;box-shadow:none!important;overflow:visible!important;margin:0!important;font-size:8pt;line-height:1.5;color:var(--gex-ink)}
+.gex-print-document .table thead{display:table-header-group!important;background:var(--gex-tint)!important;color:var(--gex-ink)!important}
+.gex-print-document .table th{font-size:7.6pt;font-weight:600;text-align:right!important;color:#4b3d28!important;background:var(--gex-tint)!important;padding:2.4mm 2mm;border:1px solid var(--gex-line);border-bottom:1.2pt solid var(--gex-soft-gold);white-space:normal;overflow-wrap:break-word;vertical-align:middle;letter-spacing:0}
+.gex-print-document .table td{font-size:7.6pt;line-height:1.55;border:1px solid #e8e3db;padding:2mm 2mm;vertical-align:middle;overflow-wrap:anywhere}
+.gex-print-document .table tr:nth-child(even){background:#fcfbf9!important}
+.gex-print-document .table tr:nth-child(odd){background:#fff!important}
+.gex-print-document .table tbody tr:hover{background:inherit!important}
+.gex-print-document .table tbody tr{break-inside:avoid;page-break-inside:avoid}
+.gex-print-document .table td.text-end,.gex-print-document .table td.text-left{text-align:left!important;font-variant-numeric:tabular-nums}
+.gex-print-document .table .transaction-amount{justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:2px}
+.gex-print-document .table strong{font-weight:600}
+.gex-print-document .table .text-success{color:#326249!important}
+.gex-print-document .table .text-danger{color:#9f4444!important}
+.gex-print-document .table .hierarchy-row{break-inside:avoid}
+.gex-print-summary-section{margin-top:6mm}
+.gex-print-document .summary{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:0!important;break-inside:auto!important}
+.gex-print-document .summary-title{font-size:10.2pt;font-weight:700;color:var(--gex-ink);margin:0 0 3mm;padding:0 3mm 0 0;border:0;border-right:2.5pt solid var(--gex-gold);text-align:right!important;break-after:avoid}
+.gex-print-document .summary-section{padding:3mm;border:1px solid var(--gex-line);border-radius:2mm;box-shadow:none!important;background:#fff;margin:0 0 3mm;break-inside:avoid;page-break-inside:avoid}
+.gex-print-document .summary-header{display:flex;align-items:baseline;justify-content:space-between;gap:4mm;margin:0 0 2mm;padding:0 0 2mm;border-bottom:1px solid var(--gex-line)}
+.gex-print-document .summary-section-title{font-size:9pt;font-weight:650;margin:0;color:#473c2b}
+.gex-print-document .summary-info{font-size:7.6pt;color:var(--gex-muted)}
+.gex-print-document .summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2mm;margin:0}
+.gex-print-document .summary-item{border:1px solid #e7e1d6;background:var(--gex-warm)!important;border-radius:1.5mm;text-align:right!important;padding:2.5mm;break-inside:avoid;min-width:0}
+.gex-print-document .summary-item.debit{border-right:2pt solid #a85e56}
+.gex-print-document .summary-item.credit{border-right:2pt solid #52816b}
+.gex-print-document .summary-item.net{border-right:2pt solid var(--gex-gold)}
+.gex-print-document .summary-label{color:var(--gex-muted);font-size:7.6pt;text-align:right!important;font-weight:400;margin:0 0 1.5mm}
+.gex-print-document .summary-value{color:var(--gex-ink)!important;font-size:8.5pt;font-weight:650;display:block;text-align:right!important;overflow-wrap:anywhere;line-height:1.6}
+.gex-print-document .summary-value .icon{display:none}
+.gex-print-document .summary-footer{border-top:1px solid var(--gex-line);padding:2.5mm 0 0;margin-top:2.5mm}
+.gex-print-document .summary-footer-item{justify-content:space-between}
+.gex-print-document .summary-footer-label{font-size:8pt;color:var(--gex-muted)}
+.gex-print-document .summary-footer-value{font-size:9pt;font-weight:700}
+.gex-print-notes{margin:5mm 0 3mm;border:1px solid var(--gex-line);border-radius:2mm;padding:3mm 4mm;background:var(--gex-warm);break-inside:avoid}
+.gex-print-notes h2{font-size:8.8pt;color:var(--gex-gold);margin:0 0 1mm;font-weight:700}
+.gex-print-notes p{font-size:7.3pt;color:#655f54;line-height:1.65;margin:0}
+.gex-print-document-footer{border-top:1px solid var(--gex-soft-gold);padding:3mm 0 0;display:flex;align-items:center;justify-content:space-between;gap:5mm;font-size:7.3pt;color:var(--gex-muted);break-inside:avoid}
+.gex-print-document-footer strong{font-family:Georgia,serif;font-size:10pt;color:var(--gex-gold);direction:ltr}
+.gex-print-loading{max-width:210mm;margin:30px auto;text-align:center;font-family:Vazirmatn,Tahoma,sans-serif;color:#716c61}
+.gex-print-landscape{max-width:297mm;page:gex-landscape}
+@media screen{
+    body:has(.gex-print-document){background:#eae8e3!important;padding:22px 10px!important;margin:0!important}
+    .gex-print-document{box-shadow:0 8px 34px rgba(40,34,26,.12)}
+}
+@media print{
+    html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}
+    body:has(.gex-print-document){margin:0!important;padding:0!important}
+    .gex-print-document{border:0!important;padding:0!important;max-width:none!important;width:100%!important;margin:0!important;box-shadow:none!important}
+    .gex-print-letterhead,.gex-print-report-intro,.gex-print-highlights,.gex-print-section-heading,.gex-print-notes,.gex-print-document-footer{break-inside:avoid;page-break-inside:avoid}
+    .gex-print-detail-section{break-inside:auto;page-break-inside:auto}
+    .gex-print-document .table{font-size:7.4pt}
+    .gex-print-document .table th{padding:2mm 1.6mm}
+    .gex-print-document .table td{padding:1.6mm}
+    .gex-print-document .table thead{display:table-header-group!important}
+    .gex-print-document .table tbody{display:table-row-group}
+    .gex-print-document .table tbody tr{break-inside:avoid!important;page-break-inside:avoid!important}
+    .gex-print-document .summary-section{break-inside:avoid}
+    .gex-print-table-wrap::before{opacity:.65}
+    .gex-print-landscape .table th,.gex-print-landscape .table td{font-size:7.5pt}
+}
+@media print and (monochrome){.gex-print-document{--gex-gold:#5b564c;--gex-soft-gold:#aaa;--gex-tint:#f0f0f0}}
