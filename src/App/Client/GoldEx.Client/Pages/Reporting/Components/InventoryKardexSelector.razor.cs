@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -12,10 +12,8 @@ public partial class InventoryKardexSelector
 
     private void OnSelectedItemsChanged(HashSet<InventoryStockVm>? items)
     {
-        if (items is null || !items.Any())
-            return;
-
-        _selectedItems = items.ToList();
+        // The selector reports cleared selections as an empty set.
+        _selectedItems = items?.ToList() ?? [];
     }
 
     private void OnSubmit()

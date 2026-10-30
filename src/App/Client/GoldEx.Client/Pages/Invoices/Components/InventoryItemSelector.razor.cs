@@ -39,7 +39,11 @@ public partial class InventoryItemSelector
             return;
 
         _selectedItems = items.ToList();
+        _products = null;
+        _coins = null;
+        _currencies = null;
 
+        if (items.Count == 0) return;
         if (items.All(x => x.Product is not null))
         {
             _products = items.Select(x => x.Product!).ToList();
