@@ -1,38 +1,61 @@
-﻿@using GoldEx.Client.Pages.InventoryStocks.Components.MeltingBatches
+@using GoldEx.Client.Pages.InventoryStocks.Components.MeltingBatches
+@using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
-
-<MudPaper Elevation="@Elevation" Class="@Class">
-    <MudStepper @ref="_stepper" ActiveIndex="_activeIndex" ActiveIndexChanged="OnIndexChanged">
-        <ChildContent>
-            <MudStep Title="انتخاب محصولات">
-                <ProductSelectionStep @bind-Model="_model" 
-                                      OnMeltingProducts="HandleMeltingProducts" 
-                                      Processing="_processing" />
-            </MudStep>
-
-            <MudStep Title="ارسال به آزمایشگاه">
-                <LabSubmissionStep @bind-Model="_model" 
-                                   OnSendToLab="HandleSendToLab" 
-                                   Processing="_processing" />
-            </MudStep>
-
-            <MudStep Title="تبدیل به طلای آبشده">
-                <MeltedGoldStep @bind-Model="_model" 
-                                OnCompleteProcess="HandleCompleteProcess" 
-                                Processing="_processing"
-                                FinancialAccounts="_financialAccounts"
-                                OnAddFinancialAccount="OnAddFinancialAccount"
-                                OnSelectFeePriceUnit="SelectFeePriceUnit"
-                                PriceUnits="_priceUnits" />
-            </MudStep>
-        </ChildContent>
-        <ActionContent>
-            <div class="d-flex justify-content-center align-items-center w-100 my-2">
-                <MudButton Variant="Variant.Filled" 
-                           Color="Color.Info" 
-                           OnClick="BackToList" 
-                           StartIcon="@Icons.Material.Filled.ExitToApp">بازگشت به لیست</MudButton>
-            </div>
-        </ActionContent>
-    </MudStepper>
-</MudPaper>
+<section class="melting-workflow">
+    <header class="melting-workflow-heading">
+        <div>
+            <h1>@(Id.HasValue ? "ادامه فرایند ذوب طلا" : "درخواست جدید ذوب طلا")</h1>
+            <p>انتخاب اجناس مستعمل، ارسال برای ری‌گیری و ثبت آبشده نهایی</p>
+        </div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="melting-workflow-back"
+                   StartIcon="@Icons.Material.Outlined.ArrowBack" OnClick="BackToList">بازگشت</MudButton>
+    </header>
+    <div class="melting-workflow-summary">
+        <div><span>مرحله جاری</span><strong>@CurrentStepTitle</strong></div>
+        @if (_model.TotalWeight.HasValue && _model.TotalWeight.Value > 0)
+        {
+            <div><span>وزن اجناس</span><strong>@_model.TotalWeight.Value.ToWeightFormat(_model.WeightUnitType)</strong></div>
+        }
+        @if (_model.Assayer is not null)
+        {
+            <div><span>آزمایشگاه</span><strong>@_model.Assayer.FullName</strong></div>
+        }
+    </div>
+    <div class="melting-workflow-frame">
+        <MudStepper @ref="_stepper" ActiveIndex="_activeIndex" ActiveIndexChanged="OnIndexChanged" Elevation="0">
+            <ChildContent>
+                <MudStep Title="انتخاب اجناس">
+                    <div class="melting-step-content">
+                        <ProductSelectionStep @bind-Model="_model"
+                                              OnMeltingProducts="HandleMeltingProducts"
+                                              Processing="_processing" />
+                    </div>
+                </MudStep>
+                <MudStep Title="ارسال به آزمایشگاه">
+                    <div class="melting-step-content">
+                        <LabSubmissionStep @bind-Model="_model"
+                                           OnSendToLab="HandleSendToLab"
+                                           Processing="_processing" />
+                    </div>
+                </MudStep>
+                <MudStep Title="ثبت آبشده نهایی">
+                    <div class="melting-step-content">
+                        <MeltedGoldStep @bind-Model="_model"
+                                        OnCompleteProcess="HandleCompleteProcess"
+                                        Processing="_processing"
+                                        FinancialAccounts="_financialAccounts"
+                                        OnAddFinancialAccount="OnAddFinancialAccount"
+                                        OnSelectFeePriceUnit="SelectFeePriceUnit"
+                                        PriceUnits="_priceUnits" />
+                    </div>
+                </MudStep>
+            </ChildContent>
+            <ActionContent>
+                <div class="melting-workflow-footer">
+                    <span>برای ثبت هر مرحله از دکمه همان مرحله استفاده کنید.</span>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="BackToList">بازگشت به لیست</MudButton>
+                </div>
+            </ActionContent>
+        </MudStepper>
+    </div>
+</section>

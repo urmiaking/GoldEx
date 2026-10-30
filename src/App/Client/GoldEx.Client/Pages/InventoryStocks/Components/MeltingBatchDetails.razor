@@ -1,0 +1,70 @@
+@using GoldEx.Client.Pages.InventoryStocks.ViewModels
+@using GoldEx.Shared.DTOs.MeltingBatches
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+<div class="melting-detail-panel">
+    <div class="melting-detail-heading">
+        <span>اجناس ذوب‌شده</span>
+        @if (Batch.Assayer is not null) { <small>آزمایشگاه: @Batch.Assayer.FullName</small> }
+    </div>
+    @if (Batch.Products.Count == 0)
+    { <p class="melting-detail-muted">هنوز جنسی برای این درخواست ثبت نشده است.</p> }
+    else
+    {
+        <div class="melting-detail-scroll">
+            <table><thead><tr><th>بارکد</th><th>جنس</th><th>وزن</th><th>عیار</th></tr></thead>
+                <tbody>
+                @foreach (var product in Batch.Products)
+                {
+                    <tr @key="product.Id">
+                        <td>@product.Barcode</td>
+                        <td>@product.Name <small>@product.ProductType.GetDisplayName()</small></td>
+                        <td>@Math.Abs(product.Weight).ToWeightFormat(Batch.WeightUnitType)</td>
+                        <td>@product.Fineness.ToString("G29")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    @if (Batch.FinalProductDetail is { } final)
+    {
+        <div class="melting-detail-heading"><span>آبشده نهایی</span></div>
+        <div class="melting-final-summary">
+            <div><small>بارکد</small><strong>@final.Product.Barcode</strong></div>
+            <div><small>وزن نهایی</small><strong>@final.Weight.ToWeightFormat(final.WeightUnitType)</strong></div>
+            <div><small>عیار</small><strong>@final.Fineness.ToString("G29")</strong></div>
+            <div><small>شماره انگ</small><strong>@final.AssayNumber</strong></div>
+            <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Outlined.Print" OnClick="() => OnPrintBarcode.InvokeAsync(final)">چاپ بارکد</MudButton>
+        </div>
+        <div class="melting-detail-totals">
+            <span>وزن اولیه: @Batch.TotalWeight.ToWeightFormat(Batch.WeightUnitType)</span>
+            <span>کسری ذوب: @Batch.WasteWeight?.ToWeightFormat(Batch.WeightUnitType) (@Batch.WastePercentage?.ToString("0.##")٪)</span>
+        </div>
+    }
+    @if (Batch.Transactions is { Count: > 0 })
+    {
+        <div class="melting-detail-heading"><span>تراکنش‌های مرتبط</span></div>
+        <div class="melting-detail-scroll">
+            <table><thead><tr><th>تاریخ</th><th>نوع تراکنش</th><th>مبلغ</th><th>شرح</th><th>حساب</th></tr></thead>
+                <tbody>
+                    @foreach (var transaction in Batch.Transactions)
+                    {
+                        <tr>
+                            <td>@transaction.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>@transaction.TransactionType.GetDisplayName()</td>
+                            <td>@transaction.Amount.ToCurrencyFormat(transaction.PriceUnit)</td>
+                            <td>@transaction.Description</td>
+                            <td>@transaction.LedgerAccount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+@code {
+    [Parameter, EditorRequired] public MeltingBatchListVm Batch { get; set; } = default!;
+    [Parameter] public EventCallback<GetMeltingBatchDetailResponse> OnPrintBarcode { get; set; }
+}

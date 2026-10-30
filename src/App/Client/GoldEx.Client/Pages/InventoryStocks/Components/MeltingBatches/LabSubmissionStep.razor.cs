@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
@@ -10,6 +11,7 @@ namespace GoldEx.Client.Pages.InventoryStocks.Components.MeltingBatches;
 
 public partial class LabSubmissionStep
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     [Parameter] public MeltingBatchVm Model { get; set; } = new();
     [Parameter] public EventCallback<MeltingBatchVm> ModelChanged { get; set; }
     [Parameter] public bool Processing { get; set; }
@@ -32,17 +34,13 @@ public partial class LabSubmissionStep
 
     private async Task OnAddAssayer()
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        var parameters = new DialogParameters<Customers.Components.Editor>
-        {
-            { x => x.ReturnModel, true },
-            { x => x.CustomerType, CustomerType.AssayingLab },
-            { x => x.ShowFinancialAccounts, false }
-        };
-
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن آزمایشگاه جدید", parameters, dialogOptions);
-
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن آزمایشگاه جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.CustomerType)] = CustomerType.AssayingLab,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CustomerVm customerVm })

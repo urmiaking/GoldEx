@@ -1,0 +1,19 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-delete-confirm">
+            <MudIcon Icon="@Icons.Material.Outlined.WarningAmber" Color="Color.Warning" Size="Size.Large" />
+            <h3>تأیید مرحله ذوب طلا</h3>
+            <p>@Message</p>
+            <p>پس از ثبت، مرحله بعدی فرایند فعال می‌شود.</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="() => Session?.Close(true)">@ActionLabel</MudButton>
+    </DialogActions>
+</EditorDialogFrame>

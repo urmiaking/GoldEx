@@ -1,0 +1,62 @@
+.melting-workflow{min-width:0;padding:4px 0 26px;color:var(--mud-palette-text-primary)}
+.melting-workflow *{box-sizing:border-box}
+.melting-workflow-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
+.melting-workflow-heading h1{margin:0;font-size:1.4rem;font-weight:500;line-height:1.6}
+.melting-workflow-heading p{margin:3px 0 0;font-size:.84rem;color:var(--mud-palette-text-secondary)}
+.melting-workflow-heading ::deep .melting-workflow-back{border-radius:11px;min-height:40px;flex:none}
+.melting-workflow-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.melting-workflow-summary>div{min-width:135px;flex:1 1 155px;display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:11px 14px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:12px}
+.melting-workflow-summary span{font-size:.76rem;color:var(--mud-palette-text-secondary)}
+.melting-workflow-summary strong{font-size:.83rem;font-weight:500;overflow-wrap:anywhere}
+.melting-workflow-frame{padding:14px 16px;border:1px solid var(--mud-palette-lines-default);border-radius:17px;background:var(--mud-palette-surface);box-shadow:0 4px 18px rgba(10,30,40,.04)}
+.melting-workflow-frame ::deep .mud-stepper{box-shadow:none!important;background:transparent!important}
+.melting-workflow-frame ::deep .mud-stepper-header{padding:8px 0 14px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.melting-workflow-frame ::deep .mud-stepper-content{padding:12px 0}
+.melting-workflow-frame ::deep .mud-step-title{font-size:.82rem;font-weight:500}
+.melting-workflow-frame ::deep .mud-step-icon{font-weight:500}
+.melting-step-content{min-width:0;padding:12px 0}
+.melting-workflow-frame ::deep .melting-step-help{display:flex;align-items:flex-start;gap:9px;margin-bottom:16px;padding:12px;border-radius:11px;background:rgba(var(--mud-palette-primary-rgb),.055);border:1px solid var(--mud-palette-lines-default)}
+.melting-workflow-frame ::deep .melting-step-help .mud-icon-root{flex:none;color:var(--mud-palette-primary)}
+.melting-workflow-frame ::deep .melting-step-help .mud-typography{font-size:.82rem;line-height:1.9;color:var(--mud-palette-text-secondary);font-weight:400}
+.melting-workflow-frame ::deep .melting-step-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px;padding:13px 0 0!important;margin-top:12px;border-top:1px solid var(--mud-palette-lines-default)}
+.melting-workflow-frame ::deep .melting-step-stats{display:flex;align-items:center;flex-wrap:wrap;gap:13px}
+.melting-workflow-frame ::deep .melting-step-stats span{font-size:.82rem;color:var(--mud-palette-text-secondary)}
+.melting-workflow-frame ::deep .melting-step-stats strong{font-weight:600;color:var(--mud-palette-text-primary)}
+.melting-workflow-frame ::deep .melting-lab-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:14px}
+.melting-workflow-frame ::deep .melting-lab-assayer{min-width:0;gap:8px}
+.melting-workflow-frame ::deep .melting-lab-assayer>.mud-input-control{min-width:0;flex:1 1 auto}
+.melting-workflow-frame ::deep .melting-lab-assayer>.mud-icon-button{flex:none}
+.melting-workflow-frame ::deep .melting-lab-fields>.mud-button-root{grid-column:1/-1;justify-self:end;min-height:42px;border-radius:11px}
+.melting-workflow-frame ::deep .melting-lab-fields>.mud-input-control{min-width:0}
+.melting-workflow-frame ::deep .melting-complete-grid{row-gap:5px}
+.melting-workflow-frame ::deep .melting-complete-grid .mud-input-control{min-width:0}
+.melting-workflow-frame ::deep .melting-complete-grid .mud-grid-item{min-width:0}
+.melting-workflow-frame ::deep .melting-inline-input{display:flex;align-items:center;gap:7px;min-width:0}
+.melting-workflow-frame ::deep .melting-inline-input>.mud-input-control{min-width:0;flex:1 1 auto}
+.melting-workflow-frame ::deep .melting-inline-input>.mud-tooltip-root{flex:none}
+.melting-workflow-frame ::deep .melting-complete-stats{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 0;margin-top:12px;border-top:1px solid var(--mud-palette-lines-default)}
+.melting-workflow-frame ::deep .melting-complete-stats>.mud-typography{padding:7px 10px;border-radius:9px;background:var(--mud-palette-background);color:var(--mud-palette-text-primary);font-size:.81rem;font-weight:400}
+.melting-workflow-frame ::deep .melting-complete-stats--value{border-top:0;margin-top:0;padding-top:2px}
+.melting-workflow-frame ::deep .melting-complete-actions{display:flex;justify-content:flex-end;margin-top:14px}
+.melting-workflow-frame ::deep .melting-complete-actions>.mud-button-root{min-height:43px;border-radius:11px}
+.melting-workflow-footer{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;width:100%;padding:12px 0 0;border-top:1px solid var(--mud-palette-lines-default)}
+.melting-workflow-footer span{color:var(--mud-palette-text-secondary);font-size:.77rem}
+@media(max-width:699px){
+ .melting-workflow-heading{align-items:flex-start;margin-bottom:12px}
+ .melting-workflow-heading h1{font-size:1.13rem}
+ .melting-workflow-heading p{font-size:.76rem;max-width:210px}
+ .melting-workflow-heading ::deep .melting-workflow-back{min-height:37px;padding:5px 8px;font-size:.75rem}
+ .melting-workflow-summary>div{min-width:0;padding:9px 11px;flex-basis:100%}
+ .melting-workflow-frame{padding:9px}
+ .melting-step-content{padding:7px 0}
+ .melting-workflow-frame ::deep .mud-stepper-header{padding:8px 0}
+ .melting-workflow-frame ::deep .mud-step-title{font-size:.73rem}
+ .melting-workflow-frame ::deep .melting-lab-fields{grid-template-columns:minmax(0,1fr);gap:11px}
+ .melting-workflow-frame ::deep .melting-lab-fields>.mud-button-root{grid-column:1;justify-self:stretch}
+ .melting-workflow-frame ::deep .melting-step-footer{align-items:stretch}
+ .melting-workflow-frame ::deep .melting-step-footer>.mud-button-root{width:100%;margin-top:3px}
+ .melting-workflow-frame ::deep .melting-complete-grid>.mud-grid-item{flex-basis:100%;max-width:100%}
+ .melting-workflow-frame ::deep .melting-complete-stats{gap:6px}
+ .melting-workflow-frame ::deep .melting-complete-stats>.mud-typography{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.melting-workflow-frame *{transition:none!important;animation:none!important}}

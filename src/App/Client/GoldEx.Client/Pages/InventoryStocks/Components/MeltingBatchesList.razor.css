@@ -1,0 +1,73 @@
+.melting-directory{min-width:0;padding:4px 0 24px;color:var(--mud-palette-text-primary)}
+.melting-directory *{box-sizing:border-box}
+.melting-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.melting-heading h1{margin:0;display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:1.4rem;font-weight:500;line-height:1.6}
+.melting-heading p{margin:3px 0 0;color:var(--mud-palette-text-secondary);font-size:.85rem}
+.melting-count{padding:3px 9px;border-radius:8px;background:rgba(var(--mud-palette-primary-rgb),.09);font-size:.75rem;font-weight:400}
+.melting-heading ::deep .melting-create{min-height:44px;flex:none;border-radius:12px}
+.melting-filters{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px);z-index:calc(var(--mud-zindex-drawer,1200) - 5);background:var(--mud-palette-background);padding-bottom:10px;isolation:isolate;margin-bottom:8px}
+.melting-filters:before{content:"";position:absolute;inset:-8px 0 0;background:inherit;z-index:-1;pointer-events:none}
+.melting-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(145px,190px) 44px;gap:10px;align-items:center;padding:12px;border:1px solid var(--mud-palette-lines-default);border-radius:15px;background:var(--mud-palette-surface)}
+.melting-toolbar ::deep .mud-input-control{margin:0;min-width:0}
+.melting-toolbar ::deep .melting-filter-button{min-height:44px;white-space:nowrap}
+.melting-filter-count{font-size:.7rem;display:inline-grid;place-items:center;min-width:19px;height:19px;border-radius:6px;border:1px solid var(--mud-palette-primary);margin-inline-start:5px}
+.melting-results{border:1px solid var(--mud-palette-lines-default);border-radius:16px;background:var(--mud-palette-surface);min-height:100px}
+.melting-table{width:100%;border-collapse:separate;border-spacing:0;text-align:start}
+.melting-table th{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px + var(--invoice-filters-block-size,96px));z-index:3;background:var(--mud-palette-background-gray);color:var(--mud-palette-text-secondary);font-size:.78rem;font-weight:400;text-align:start;padding:12px 11px;white-space:nowrap;border-bottom:1px solid var(--mud-palette-lines-default)}
+.melting-table td{padding:11px;font-size:.83rem;border-bottom:1px solid var(--mud-palette-lines-default);vertical-align:middle}
+.melting-table tbody tr:last-child td{border-bottom:none}
+.melting-table tbody tr:not(.melting-detail-row):hover{background:rgba(var(--mud-palette-primary-rgb),.04)}
+.melting-number{display:inline-flex;align-items:center;font-size:.79rem;font-weight:500;padding:4px 9px;border:0;border-radius:8px;background:rgba(var(--mud-palette-primary-rgb),.09);color:var(--mud-palette-text-primary);cursor:pointer}
+.melting-weight{font-size:.87rem;font-weight:600;white-space:nowrap}
+.melting-table time{white-space:nowrap;font-size:.79rem}
+.melting-status{display:inline-flex;align-items:center;border-radius:8px;padding:4px 8px;white-space:nowrap;font-size:.75rem;font-weight:500}
+.melting-status.is-melting{color:var(--mud-palette-error);background:color-mix(in srgb,var(--mud-palette-error) 10%,transparent)}
+.melting-status.is-lab{color:var(--mud-palette-primary);background:rgba(var(--mud-palette-primary-rgb),.1)}
+.melting-status.is-completed{color:var(--mud-palette-success);background:color-mix(in srgb,var(--mud-palette-success) 12%,transparent)}
+.melting-actions{display:flex;align-items:center;gap:8px}
+.melting-actions>button:not(.mud-button-root){width:35px;height:35px;border:1px solid var(--mud-palette-lines-default);border-radius:9px;display:grid;place-items:center;cursor:pointer;background:var(--mud-palette-surface);color:var(--mud-palette-primary)}
+.melting-actions ::deep .gex-shell-icon{width:18px;height:18px}
+.melting-detail-row td{padding:12px 16px;background:var(--mud-palette-background)}
+.melting-mobile{display:none}
+.melting-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 3px}
+.melting-pagination label{display:flex;align-items:center;gap:8px;color:var(--mud-palette-text-secondary);font-size:.82rem}
+.melting-pagination select{height:35px;padding-inline:9px 18px;border-radius:8px;border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-surface);color:var(--mud-palette-text-primary);font:inherit}
+.melting-pagination nav{display:flex;align-items:center;gap:5px;margin-inline-start:auto;border:1px solid var(--mud-palette-lines-default);border-radius:10px;background:var(--mud-palette-surface);padding:3px}
+.melting-pagination nav button{min-height:34px;padding:5px 10px;border:0;border-radius:7px;background:transparent;color:var(--mud-palette-text-primary);font:inherit;font-size:.82rem;cursor:pointer}
+.melting-pagination nav button:disabled{opacity:.35;cursor:default}
+.melting-pagination nav span{min-width:65px;font-size:.82rem;text-align:center}
+.melting-skeleton{padding:13px;display:grid;gap:9px}
+.melting-skeleton>div{padding:17px;display:grid;grid-template-columns:18% 33% 20%;gap:14px;border-radius:9px;background:var(--mud-palette-background)}
+.melting-skeleton span{height:14px;border-radius:5px;background:var(--mud-palette-lines-default);animation:melting-pulse 1.3s ease-in-out infinite alternate}
+@keyframes melting-pulse{to{opacity:.3}}
+.melting-empty{min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:28px 12px;text-align:center}
+.melting-empty strong{font-size:.96rem;font-weight:500}
+.melting-empty p{font-size:.82rem;color:var(--mud-palette-text-secondary);margin:0}
+@media(max-width:959.98px){
+ .melting-toolbar{grid-template-columns:minmax(0,1fr) 44px;padding:8px;gap:8px}
+ .melting-toolbar ::deep .melting-sort,.melting-toolbar ::deep .melting-sort-direction{display:none!important}
+ .melting-toolbar ::deep .melting-filter-button{position:relative;min-width:44px;width:44px;height:44px;padding:0}
+ .melting-toolbar ::deep .melting-filter-button .mud-button-icon-start{margin:0}
+ .melting-filter-label{display:none}
+ .melting-filter-count{position:absolute;inset-block-start:2px;inset-inline-end:3px;min-width:15px;width:15px;height:15px;border-radius:50%;margin:0;font-size:.63rem}
+ .melting-desktop{display:none}
+ .melting-mobile{display:grid;gap:8px;padding:8px 0}
+ .melting-results{border:0;background:transparent;min-height:0}
+ .melting-card{border:1px solid var(--mud-palette-lines-default);border-radius:13px;padding:11px 12px;min-width:0;background:var(--mud-palette-surface)}
+ .melting-card header{display:flex;align-items:center;justify-content:space-between;gap:9px;padding-bottom:8px;border-bottom:1px solid var(--mud-palette-lines-default)}
+ .melting-card-primary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 5px}
+ .melting-card-primary>div{display:grid;gap:3px}
+ .melting-card-primary small{font-size:.73rem;color:var(--mud-palette-text-secondary)}
+ .melting-card-primary strong{font-size:.9rem;font-weight:600}
+ .melting-card-primary time{font-size:.75rem;color:var(--mud-palette-text-secondary)}
+ .melting-meta{display:flex;gap:7px;font-size:.77rem;padding:5px 0}
+ .melting-meta span:first-child{color:var(--mud-palette-text-secondary)}
+ .melting-meta span:last-child{font-weight:500}
+ .melting-card footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;margin-top:5px;border-top:1px solid var(--mud-palette-lines-default)}
+ .melting-details-toggle{display:flex;align-items:center;gap:5px;padding:5px 7px;border:0;background:transparent;color:var(--mud-palette-primary);font:inherit;font-size:.78rem;cursor:pointer}
+ .melting-details-toggle ::deep .gex-shell-icon{width:16px;height:16px}
+ .melting-card ::deep footer .mud-button-root{min-height:35px;padding:5px 10px;font-size:.76rem}
+ .melting-mobile-details{margin-top:10px;border-top:1px solid var(--mud-palette-lines-default);padding-top:9px}
+}
+@media(max-width:599px){.melting-heading{align-items:flex-start;margin-bottom:15px}.melting-heading h1{font-size:1.13rem}.melting-heading p{font-size:.77rem;max-width:190px}.melting-heading ::deep .melting-create{font-size:.76rem;min-height:40px;padding:5px 10px}}
+@media(prefers-reduced-motion:reduce){.melting-skeleton span{animation:none}}
