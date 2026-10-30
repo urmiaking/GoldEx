@@ -76,6 +76,14 @@ window.goldexVitrine = {
     }
   },
 
+  setFilterDrawerOpen: function (isOpen) {
+    if (isOpen) {
+      document.body.classList.add("vitrine-filter-drawer-open");
+    } else {
+      document.body.classList.remove("vitrine-filter-drawer-open");
+    }
+  },
+
   // --------------------------------------------------------------------------
   // 9:16 (1080x1920) Story Card Generator on HTML5 Canvas
   // --------------------------------------------------------------------------
@@ -475,3 +483,11 @@ window.goldexVitrine = {
     }
   }
 };
+
+// Close filter drawer on Escape key
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && document.body.classList.contains("vitrine-filter-drawer-open")) {
+    var closeBtn = document.querySelector(".catalog-drawer-close");
+    if (closeBtn) closeBtn.click();
+  }
+});
