@@ -59,3 +59,34 @@ test('native DevExpress print dialog has opening animation but respects reduced 
  assert.match(style,/@media \(prefers-reduced-motion: reduce\)/);
  assert.match(style,/animation: none/);
 });
+
+test('mobile prioritizes print/export actions without changing native handlers or desktop order', () => {
+ function run(width) {
+  const templates=new Map();
+  const ids={Print:'print',PrintPage:'printPage',ExportTo:'export',PrevPage:'previous',NextPage:'next',ZoomIn:'zoom'};
+  const actions=['zoom','previous','printPage','export','next','print'].map(id=>({id,clickAction:()=>id}));
+  const original=actions.map(a=>a.id);
+  const handlers=new Map(actions.map(a=>[a.id,a.clickAction]));
+  const doc={getElementById:id=>templates.get(id),createElement:()=>({}),head:{appendChild:x=>templates.set(x.id,x)}};
+  const win={innerWidth:width,DevExpress:{Reporting:{Viewer:{ActionId:ids}}}};
+  runInNewContext(script,{window:win,document:doc});
+  win.reportingCustomization.onCustomizeMenuActions(null,{Actions:actions,GetById:id=>actions.find(a=>a.id===id)});
+  for(const a of actions) assert.equal(a.clickAction,handlers.get(a.id));
+  return {after:actions.map(a=>a.id),original,templates};
+ }
+ const desktop=run(1440);
+ assert.deepEqual(desktop.after,desktop.original);
+ const mobile=run(390);
+ assert.deepEqual(mobile.after.slice(0,3),['printPage','export','print']);
+ assert.deepEqual(mobile.after.slice(3),['zoom','previous','next']);
+ assert.match(mobile.templates.get('gex-report-icon-previous').innerHTML,/data-gex-icon="previous"/);
+});
+test('desktop toolbar and print popup are responsive', () => {
+ assert.match(style,/justify-content: safe center !important/);
+ assert.match(style,/width: 24px/);
+ assert.match(style,/direction: ltr !important/);
+ assert.match(style,/scaleX\(-1\)/);
+ assert.match(style,/width: calc\(100vw - 24px\) !important/);
+ assert.match(style,/gex-report-print-centered-enter/);
+ assert.match(style,/translate: 0 14px/);
+});

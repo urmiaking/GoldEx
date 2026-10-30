@@ -921,3 +921,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 - For accounting/business logic, financial correctness, inventory calculations and API changes: KEEP .NET unit/integration tests and run focused builds/tests. Never remove business tests merely to speed up cosmetic work.
 - This maintenance-only cleanup makes no runtime/end-user change and does not bump enterprise releases.json. The current maintained test list and instructions are in scripts/tests/README.md.
 - Historical notes may reference prior test totals: those totals describe previous development, not the current active suite.
+
+## DevExpress document viewer responsive print behavior (2026-10-30)
+- Mobile reports use CustomizeMenuActions to place the native Print, PrintPage and ExportTo toolbar actions first without changing handlers or desktop action order; page selector stays RTL.
+- Desktop viewer toolbar is centered when it fits, while keeping overflow-x scrolling. Scoped print-confirmation popup styles allow centered, animated, viewport-safe presentation.
+- See .matemcp/skills/devexpress-report-viewer/SKILL.md; CSS is in devexpress-viewer-fixes.css, JS is reporting-customization.js, release 1.0.122.

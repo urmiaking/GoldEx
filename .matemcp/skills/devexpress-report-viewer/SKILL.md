@@ -25,3 +25,11 @@ The GoldEx invoice viewer is `DxWasmDocumentViewer` from DevExpress Blazor JSBas
 - To localize viewer UI, use installed-v24.2.7-supported DxDocumentViewerCallbacks.CustomizeLocalization and sender.UpdateLocalization with case-sensitive English text keys and Persian UI strings. Do not replace DOM text or rewrite report/PDF. Targeted dictionary localizes common viewer labels only, not every specialized DevExpress resource (a complete pack would require vendor localization dictionaries).
 - .dxrd-print-dialog .dx-overlay-content receives a short opening animation unless prefers-reduced-motion. This affects the DevExpress options dialog, not the OS/browser print window. Chrome QA in manual DevExpress viewer browser inspection verifies animationName.
 - Release 1.0.120, issue #272. Local Dev commit; no push without user request.
+
+## #273 — Centered desktop toolbar and mobile print-first controls
+
+- CustomizeMenuActions provides args.Actions and args.GetById. On mobile only, move native Print, PrintPage and ExportTo actions to the beginning of args.Actions, in their original relative order; preserve handlers and desktop ordering. Mobile toolbar needs direction:ltr to display the first command immediately; the native page picker remains RTL.
+- Custom navigation SVG templates include data-gex-icon for mobile-only chevron reversal. Desktop stays untouched. Toolbar glyphs are 24px on desktop and 23px on mobile.
+- Desktop toolbar uses safe center alignment to avoid losing actions on narrow desktop widths; keep flex nowrap and horizontal scrolling.
+- The DevExpress print confirmation popup is portalled, not necessarily nested under .gex-report-viewer. Only target .dxrd-print-dialog and its .dx-overlay-content for fixed viewport centering, responsive max-width/max-height, motion and reduced-motion fallback. Never change report/PDF bricks or browser print UI.
+- Tests: devexpress-responsive-viewer.test.mjs and devexpress-viewer-rtl-localization.test.mjs. With mobile action reordering, tests must compare callback identities by action ID, never array position. Release 1.0.122; authenticated live popup visual validation remains to be performed after rebuilding locally.

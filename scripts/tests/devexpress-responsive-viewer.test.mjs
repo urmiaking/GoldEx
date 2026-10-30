@@ -38,11 +38,11 @@ test('before-render fits page width on mobile and retains whole page on desktop'
 test('native toolbar actions keep execute callbacks while receiving original GoldEx SVG icons', () => {
     const {app, registered} = instantiate(375);
     const actions = Array.from({length: 6}, (_, i) => ({id: i+1, execute: () => 'native ' + i}));
-    const original = actions.map(a => a.execute);
+    const original = new Map(actions.map(a => [a.id, a.execute]));
     const args = { GetById: id => actions.find(a => a.id === id), Actions: actions };
     app.onCustomizeMenuActions(null, args);
     for (let i=0; i<actions.length; i++) {
-        assert.equal(actions[i].execute, original[i]);
+        assert.equal(actions[i].execute, original.get(actions[i].id));
         assert.match(actions[i].imageTemplateName, /^gex-report-icon-/);
     }
     assert.ok(registered.size >= 6);

@@ -167,3 +167,96 @@
         animation: none;
     }
 }
+
+/* #273: center the desktop command group; preserve safe overflow. */
+@media (min-width: 960px) {
+  .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper {
+    display: flex !important;
+    align-items: center;
+    justify-content: safe center !important;
+  }
+  .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper .dxrd-toolbar {
+    margin-inline: auto !important;
+    flex: none !important;
+  }
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper .dxrd-toolbar-item .gex-report-glyph {
+  width: 24px;
+  height: 24px;
+}
+@media (max-width: 959.98px) {
+  /* Print/export actions are moved first via official CustomizeMenuActions. */
+  .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper .dxrd-toolbar {
+    direction: ltr !important;
+    margin-inline: 0 !important;
+  }
+  .gex-report-viewer .dxrd-toolbar-wrapper .dxrd-preview-pager,
+  .gex-report-viewer .dxrd-toolbar-wrapper .dxrd-preview-pager-selectbox { direction: rtl; }
+  .gex-report-viewer .dxrd-toolbar .gex-report-glyph[data-gex-icon="previous"],
+  .gex-report-viewer .dxrd-toolbar .gex-report-glyph[data-gex-icon="next"] { transform: scaleX(-1); }
+  .gex-report-viewer .dxrd-toolbar-wrapper .dxrd-toolbar-item .gex-report-glyph { width: 23px; height: 23px; }
+}
+
+/* DevExpress portals the print dialog outside the viewer. Override its
+   fixed desktop dimensions and inline placement, not any report/PDF content. */
+.dxrd-print-dialog .dx-overlay-content,
+.dxrd-print-dialog.dx-overlay-content,
+.dxrd-print-dialog.dx-overlay-wrapper > .dx-overlay-content {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: min(560px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  min-width: 0 !important;
+  max-height: calc(100dvh - 32px) !important;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0 !important;
+  border-radius: 16px;
+  transform: translate(-50%, -50%) !important;
+  animation: gex-report-print-centered-enter .26s cubic-bezier(.2,.8,.2,1) both;
+  transform-origin: center;
+}
+.dxrd-print-dialog .dx-popup-content,
+.dxrd-print-dialog.dx-overlay-content .dx-popup-content {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  font-family: Vazirmatn, IRANSans, Tahoma, sans-serif;
+  unicode-bidi: plaintext;
+}
+.dxrd-print-dialog .dx-popup-title,
+.dxrd-print-dialog .dx-popup-bottom .dx-toolbar {
+  font-family: Vazirmatn, IRANSans, Tahoma, sans-serif;
+}
+@keyframes gex-report-print-centered-enter {
+  /* Individual transform properties compose with the !important centering
+     transform so opening motion cannot displace the popup off screen. */
+  from { opacity: 0; translate: 0 14px; scale: .97; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+@media (max-width: 599.98px) {
+  .dxrd-print-dialog .dx-overlay-content,
+  .dxrd-print-dialog.dx-overlay-content,
+  .dxrd-print-dialog.dx-overlay-wrapper > .dx-overlay-content {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 14px;
+  }
+  .dxrd-print-dialog .dx-popup-content {
+    padding: 16px !important;
+    min-width: 0;
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dxrd-print-dialog .dx-overlay-content,
+  .dxrd-print-dialog.dx-overlay-content,
+  .dxrd-print-dialog.dx-overlay-wrapper > .dx-overlay-content {
+    animation: none !important;
+  }
+}

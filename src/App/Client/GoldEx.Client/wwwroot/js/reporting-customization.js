@@ -25,7 +25,7 @@
             const template = document.createElement("script");
             template.type = "text/html";
             template.id = id;
-            template.innerHTML = '<svg class="gex-report-glyph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + shape + "</svg>";
+            template.innerHTML = '<svg class="gex-report-glyph" data-gex-icon="' + name + '" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + shape + "</svg>";
             document.head.appendChild(template);
         }
     }
@@ -43,6 +43,20 @@
             // Older/flat variants still support this action-level template.
             action.imageTemplateName = templateName;
         }
+    }
+
+    // On mobile, put the built-in print/export actions first without replacing
+    // any DevExpress handlers or changing the desktop toolbar sequence.
+    function prioritizeMobilePrintActions(args, ids) {
+        if (window.innerWidth >= 960 || !Array.isArray(args.Actions)) return;
+        const toolbar = args.Actions;
+        const printActions = ["Print", "PrintPage", "ExportTo"]
+            .filter(name => ids[name] !== undefined)
+            .map(name => args.GetById(ids[name]))
+            .filter(action => action && toolbar.includes(action));
+        const inOriginalOrder = toolbar.filter(action => printActions.includes(action));
+        for (const action of inOriginalOrder) toolbar.splice(toolbar.indexOf(action), 1);
+        toolbar.unshift(...inOriginalOrder);
     }
 
     // DevExpress localization: keys are case-sensitive English UI strings.
@@ -67,6 +81,9 @@
         "Print Document": "چاپ سند",
         "Print Preview": "پیش‌نمایش چاپ",
         "Printing...": "در حال آماده‌سازی چاپ...",
+        "The browser sent the document to the printer.": "سند برای چاپ به مرورگر ارسال شد.",
+        "If the operation fails, you can download the document in PDF format and print it out from another application.": "اگر چاپ انجام نشد، فایل PDF را دریافت کنید و با برنامه دیگری چاپ کنید.",
+        "If the operation fails, you can download the {0} and print it out from another application.": "اگر چاپ انجام نشد، می‌توانید {0} را دریافت کرده و با برنامه دیگری چاپ کنید.",
         "Export": "خروجی",
         "Export To": "خروجی گرفتن",
         "Export to": "خروجی گرفتن",
@@ -133,6 +150,7 @@
                 if (action) action.imageTemplateName = "gex-report-icon-" + glyph;
             }
             if (ids.ExportTo !== undefined) customizeExportAction(args.GetById(ids.ExportTo));
+            prioritizeMobilePrintActions(args, ids);
         }
     };
 })();
