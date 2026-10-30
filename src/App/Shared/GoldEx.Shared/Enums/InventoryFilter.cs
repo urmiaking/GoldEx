@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.Enums;
+namespace GoldEx.Shared.Enums;
 
 public record InventoryFilter(
     WarehouseActionType? ActionType,
@@ -7,4 +7,5 @@ public record InventoryFilter(
     DateTime? Start,
     DateTime? End,
     Guid? InventoryEntryId = null,
-    Guid? InventoryExitId = null);
+    Guid? InventoryExitId = null,
+    bool? ShowInVitrine = null);

@@ -930,3 +930,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 ## GoldEx mobile quick-create entry point (2026-10-30)
 - Drawer.razor uses a shared gex-sidebar-create link for the desktop dock and mobile drawer. Only hide it below 960px in appearance.css; the MobileNav QuickCreateMenu is the single mobile new-invoice entry point. Keep the desktop dock CTA.
 - QuickCreateMenu typography is scoped to .gex-quick-create: Vazirmatn headings and card titles use standard weight 600, descriptions use 400 and the theme secondary text color. Keep the existing links, dialog animation and native accessibility behaviors.
+## Inventory vitrine filter and RTL dates (2026-10-30)
+- Main InventoryDirectory applies a nullable ShowInVitrine filter for products only. UI choices are all/inside/outside; the selected value is persisted as the optional vitrine query parameter, included in active filter counts, and cleared for other item types/reset.
+- Shared InventoryFilter has an optional nullable ShowInVitrine property. InventoryStockRepository filters by Product.ShowInVitrine before aggregating, counting and paginating inventory; old callers are unaffected because the argument defaults to null. Product QR/GUID lookup clears the filter to preserve deep-link behavior.
+- The date range field in inventory/customer/invoice filter dialogs uses the gex-filter-date-range scoped class, standard MudDateRangePicker Adornment.Start and RTL input adornment order to position the calendar on the right.
+- Static regression tests are in scripts/tests/inventory-vitrine-filter.test.mjs; targeted infrastructure/client builds succeed. See .matemcp/skills/inventory-directory-ux/SKILL.md. Changes appended to enterprise 1.0.122.

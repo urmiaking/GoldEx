@@ -1478,6 +1478,17 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 
 /* Customer and Invoice filters now use the customer editor's responsive
    native modal and common two-column field grid. Only mobile needs sorting. */
+/* RTL date picker: put the calendar adornment at the leading (right) edge
+   in inventory, customer and invoice filter sheets, without changing other inputs. */
+.gex-directory-filter-form .gex-filter-date-range .mud-input-root {
+    direction: rtl;
+    flex-direction: row;
+}
+.gex-directory-filter-form .gex-filter-date-range .mud-input-adornment {
+    order: -1;
+    margin-inline-start: 0;
+    margin-inline-end: 8px;
+}
 .gex-directory-filter-form { display: flex; flex-direction: column; gap: 16px; min-width: 0; width: 100%; }
 .gex-filter-description {
     margin: 0 0 2px; color: var(--mud-palette-text-secondary);

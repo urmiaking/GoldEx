@@ -13,6 +13,7 @@ public partial class InventoryDirectoryFiltersDialog
     [Parameter] public ItemType ItemType { get; set; }
     [Parameter] public ItemStatus ItemStatus { get; set; }
     [Parameter] public ProductCategoryVm? CategoryFilter { get; set; }
+    [Parameter] public bool? VitrineFilter { get; set; }
     [Parameter] public List<ProductCategoryVm> Categories { get; set; } = [];
     [Parameter] public DateRange DateRange { get; set; } = new();
     [Parameter] public string SortLabel { get; set; } = "CurrentQuantity";
@@ -21,6 +22,7 @@ public partial class InventoryDirectoryFiltersDialog
     private ItemType _itemType;
     private ItemStatus _itemStatus;
     private ProductCategoryVm? _categoryFilter;
+    private bool? _vitrineFilter;
     private DateRange _dateRange = new();
     private string _sortLabel = "CurrentQuantity";
     private bool _sortDescending = true;
@@ -38,6 +40,7 @@ public partial class InventoryDirectoryFiltersDialog
         _itemType = ItemType;
         _itemStatus = ItemStatus;
         _categoryFilter = CategoryFilter;
+        _vitrineFilter = _itemType is ItemType.Product ? VitrineFilter : null;
         _dateRange = new DateRange(DateRange.Start, DateRange.End);
         _sortLabel = SortLabel;
         _sortDescending = SortDescending;
@@ -48,6 +51,7 @@ public partial class InventoryDirectoryFiltersDialog
         if (_itemType == type) return;
         _itemType = type;
         _categoryFilter = null;
+        _vitrineFilter = null;
         _sortLabel = "CurrentQuantity";
         if (type is ItemType.UsedProduct)
         {
@@ -73,6 +77,7 @@ public partial class InventoryDirectoryFiltersDialog
             ? ItemStatus.Available : _itemStatus;
         Session?.Close(new InventoryDirectory.MobileFiltersResult(
             _itemType, selectedStatus, _itemType == ItemType.Product ? _categoryFilter : null,
+            _itemType == ItemType.Product ? _vitrineFilter : null,
             new DateRange(_dateRange.Start, _dateRange.End), _sortLabel, _sortDescending));
     }
 
@@ -81,6 +86,7 @@ public partial class InventoryDirectoryFiltersDialog
         _itemType = ItemType.Product;
         _itemStatus = ItemStatus.Available;
         _categoryFilter = null;
+        _vitrineFilter = null;
         _dateRange = new DateRange();
         _sortLabel = "CurrentQuantity";
         _sortDescending = true;

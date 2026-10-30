@@ -48,13 +48,26 @@
                         </MudSelect>
                     </MudItem>
                 }
+                @if (_itemType is ItemType.Product)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="bool?" Label="وضعیت ویترین" Variant="Variant.Outlined"
+                                   Value="_vitrineFilter" ValueChanged="@(v => _vitrineFilter = v)"
+                                   Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.Storefront" Class="w-100">
+                            <MudSelectItem T="bool?" Value="@(null as bool?)">همه اجناس</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)true)">داخل ویترین</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)false)">خارج از ویترین</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                }
                 <MudItem xs="12" sm="6">
                     <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="@(r => _dateRange = r)"
                                         Label="@DateRangeLabel" Variant="Variant.Outlined" Margin="Margin.Dense"
                                         MaxMonthColumns="1" DisplayMonths="1" Rounded="true" ShowToolbar="false"
                                         AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
                                         RelativeWidth="DropdownWidth.Adaptive" Clearable="true"
-                                        Class="w-100" />
+                                        Adornment="Adornment.Start" Class="w-100 gex-filter-date-range" />
                 </MudItem>
                 <MudItem xs="12" Class="gex-filter-mobile-sort">
                     <MudGrid Spacing="2">

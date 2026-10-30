@@ -39,6 +39,7 @@ public partial class InventoryDirectory
     [Parameter, SupplyParameterFromQuery(Name = "type")] public string? TypeQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "status")] public string? StatusQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "category")] public string? CategoryQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "vitrine")] public bool? VitrineQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "sort")] public string? SortQuery { get; set; }
@@ -54,6 +55,7 @@ public partial class InventoryDirectory
     private WarehouseActionType _actionType = WarehouseActionType.In;
     private List<ProductCategoryVm> _categories = [];
     private ProductCategoryVm? _categoryFilter;
+    private bool? _vitrineFilter;
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small };
     private ElementReference _directory, _filterBar;
@@ -64,6 +66,7 @@ public partial class InventoryDirectory
     private bool CanNext => !_loading && _pageIndex + 1 < PageCount;
     private int ActiveFilterCount => (ItemType != ItemType.Product ? 1 : 0) +
         (ItemStatus != ItemStatus.Available ? 1 : 0) + (_categoryFilter is not null ? 1 : 0) +
+        (_vitrineFilter.HasValue && ItemType == ItemType.Product ? 1 : 0) +
         ((_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue) ? 1 : 0);
 
     private string DateRangeFilterLabel => ItemStatus switch
@@ -169,7 +172,7 @@ public partial class InventoryDirectory
     {
         await base.OnParametersSetAsync();
         var signature = string.Join("|", PageQuery, SizeQuery, SearchQueryQuery, SearchQuery,
-            TypeQuery, StatusQuery, CategoryQuery, StartQuery, EndQuery, SortQuery, AscendingQuery);
+            TypeQuery, StatusQuery, CategoryQuery, VitrineQuery, StartQuery, EndQuery, SortQuery, AscendingQuery);
         if (_initialized && signature == _lastQuerySignature) return;
 
         // The list updates the URL after loading. A subsequent parameter update with
@@ -180,6 +183,7 @@ public partial class InventoryDirectory
         var previousType = ItemType;
         var previousStatus = ItemStatus;
         var previousCategory = _categoryFilter?.Id;
+        var previousVitrine = _vitrineFilter;
         var previousStart = _filterDateRange.Start;
         var previousEnd = _filterDateRange.End;
         var previousSort = _sortLabel;
@@ -207,6 +211,7 @@ public partial class InventoryDirectory
         _categoryFilter = ItemType == ItemType.Product && Guid.TryParse(CategoryQuery, out var categoryId)
             ? _categories.FirstOrDefault(x => x.Id == categoryId) ?? new ProductCategoryVm { Id = categoryId }
             : null;
+        _vitrineFilter = ItemType == ItemType.Product ? VitrineQuery : null;
         DateTime? ParseDate(string? value) => DateTime.TryParseExact(value, "yyyy-MM-dd",
             CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
         _filterDateRange = new DateRange(ParseDate(StartQuery), ParseDate(EndQuery));
@@ -217,7 +222,8 @@ public partial class InventoryDirectory
 
         var changed = !_initialized || previousPage != _pageIndex || previousSize != _pageSize ||
             previousSearch != SearchQuery || previousType != ItemType || previousStatus != ItemStatus ||
-            previousCategory != _categoryFilter?.Id || previousStart != _filterDateRange.Start ||
+            previousCategory != _categoryFilter?.Id || previousVitrine != _vitrineFilter ||
+            previousStart != _filterDateRange.Start ||
             previousEnd != _filterDateRange.End || previousSort != _sortLabel ||
             previousDirection != _sortDirection;
         _initialized = true;
@@ -296,7 +302,8 @@ public partial class InventoryDirectory
             var request = new RequestFilter(_pageIndex * _pageSize, _pageSize, SearchQuery,
                 _sortLabel, _sortDirection);
             var inventory = new InventoryFilter(_actionType, ItemType, _categoryFilter?.Id,
-                _filterDateRange.Start, _filterDateRange.End, InventoryEntryId, InventoryExitId);
+                _filterDateRange.Start, _filterDateRange.End, InventoryEntryId, InventoryExitId,
+                ItemType == ItemType.Product ? _vitrineFilter : null);
             await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
                 action: (s, token) => s.GetListAsync(request, inventory, token),
                 afterSend: response =>
@@ -425,6 +432,7 @@ public partial class InventoryDirectory
         ItemStatus = ItemStatus.Available;
         _actionType = WarehouseActionType.In;
         _categoryFilter = null;
+        _vitrineFilter = null;
         _filterDateRange = new DateRange();
         await RefreshAsync();
     }
@@ -496,6 +504,7 @@ public partial class InventoryDirectory
     private async Task SetItemTypeFilterText(ItemType itemType)
     {
         ItemType = itemType;
+        if (ItemType != ItemType.Product) _vitrineFilter = null;
 
         if (ItemType is not ItemType.UsedProduct && ItemStatus is ItemStatus.Melted)
         {
@@ -682,6 +691,7 @@ public partial class InventoryDirectory
             { nameof(InventoryDirectoryFiltersDialog.ItemType), ItemType },
             { nameof(InventoryDirectoryFiltersDialog.ItemStatus), ItemStatus },
             { nameof(InventoryDirectoryFiltersDialog.CategoryFilter), _categoryFilter! },
+            { nameof(InventoryDirectoryFiltersDialog.VitrineFilter), _vitrineFilter! },
             { nameof(InventoryDirectoryFiltersDialog.Categories), _categories },
             { nameof(InventoryDirectoryFiltersDialog.DateRange), _filterDateRange },
             { nameof(InventoryDirectoryFiltersDialog.SortLabel), _sortLabel },
@@ -708,6 +718,7 @@ public partial class InventoryDirectory
         }
 
         _categoryFilter = ItemType is ItemType.Product ? result.CategoryFilter : null;
+        _vitrineFilter = ItemType is ItemType.Product ? result.VitrineFilter : null;
         _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
         _actionType = ItemStatus == ItemStatus.Available ? WarehouseActionType.In : WarehouseActionType.Out;
 
@@ -721,6 +732,7 @@ public partial class InventoryDirectory
         ItemType ItemType,
         ItemStatus ItemStatus,
         ProductCategoryVm? CategoryFilter,
+        bool? VitrineFilter,
         DateRange DateRange,
         string SortLabel,
         bool SortDescending
@@ -798,6 +810,8 @@ public partial class InventoryDirectory
 
         if (_categoryFilter != null)
             parameters.Add("category", _categoryFilter.Id);
+        if (ItemType == ItemType.Product && _vitrineFilter.HasValue)
+            parameters.Add("vitrine", _vitrineFilter.Value);
 
         if (_filterDateRange?.Start.HasValue == true)
             parameters.Add("start", _filterDateRange.Start.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
