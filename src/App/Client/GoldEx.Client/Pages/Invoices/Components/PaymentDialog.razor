@@ -1,139 +1,100 @@
-@inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Client.Pages.Finances.PaymentVouchers.Components
 @using GoldEx.Shared.DTOs.PaymentVouchers
+@inherits GoldExComponentBase
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">جزئیات پرداخت ها</MudText>
-    </TitleContent>
+<EditorDialogFrame>
     <DialogContent>
-        <MudTable T="InvoicePaymentVm" Hover="true" FixedHeader="true" Dense="true" Items="Items"
-                  SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="2" ContainerStyle="max-height: 300px;">
-            <ToolBarContent>
-                <div class="d-flex flex-1 gap-2 justify-content-md-center justify-content-between flex-wrap">
-                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        <MudButton Class="ml-4" Color="Color.Success" EndIcon="@Icons.Material.Filled.Payment" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.InternalCash)">
-                            <MudText>پرداخت نقدی</MudText>
-                        </MudButton>
-                        <MudButton Class="ml-4" Color="Color.Tertiary" EndIcon="@Icons.Material.Filled.SwapHoriz" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">
-                            <MudText>حواله</MudText>
-                        </MudButton>
-                        <MudButton Class="ml-4" Color="Color.Info" EndIcon="@Icons.Material.Filled.Money" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Check)">
-                            <MudText>چک بانکی</MudText>
-                        </MudButton>
-                        <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Recycling" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
-                            <MudText>طلای شکسته</MudText>
-                        </MudButton>
-                        <MudButton Class="ml-4" Color="Color.Warning" EndIcon="@Icons.Material.Filled.Whatshot" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
-                            <MudText Color="Color.Dark">طلای آبشده</MudText>
-                        </MudButton>
-                        <MudButton Class="ml-4" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.MonetizationOn" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Coin)">
-                            <MudText>سکه</MudText>
-                        </MudButton>
-                        @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
-                        {
-                            <MudButton Class="ml-4" Color="Color.Dark" EndIcon="@Icons.Material.Filled.Assignment" Variant="Variant.Filled" OnClick="OnApplyPrepaymentVouchers">
-                                <MudText>اعمال پیش‌پرداخت‌ها</MudText>
-                            </MudButton>
-                        }
-                    </MudHidden>
-
-                    <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                        <MudTooltip Color="Color.Primary" Text="پرداخت نقدی" Arrow="true">
-                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Payment" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.InternalCash)" />
-                        </MudTooltip>
-                        <MudTooltip Color="Color.Tertiary" Text="حواله" Arrow="true">
-                            <MudIconButton Color="@Color.Tertiary" Icon="@Icons.Material.Filled.SwapHoriz" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)" />
-                        </MudTooltip>
-                        <MudTooltip Color="Color.Info" Text="چک بانکی" Arrow="true">
-                            <MudIconButton Color="@Color.Info" Icon="@Icons.Material.Filled.Money" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Check)" />
-                        </MudTooltip>
-                        <MudTooltip Color="Color.Primary" Text="طلای شکسته" Arrow="true">
-                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Recycling" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)" />
-                        </MudTooltip>
-                        <MudTooltip Color="Color.Warning" Text="طلای آبشده" Arrow="true">
-                            <MudIconButton Color="@Color.Warning" Icon="@Icons.Material.Filled.Whatshot" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)" />
-                        </MudTooltip>
-                        <MudTooltip Color="Color.Secondary" Text="سکه" Arrow="true">
-                            <MudIconButton Color="@Color.Secondary" Icon="@Icons.Material.Filled.MonetizationOn" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Coin)" />
-                        </MudTooltip>
-                        @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
-                        {
-                            <MudTooltip Color="Color.Dark" Text="اعمال پیش‌پرداخت‌ها" Arrow="true">
-                                <MudIconButton Color="@Color.Dark" Icon="@Icons.Material.Filled.Assignment" Variant="@Variant.Filled" OnClick="OnApplyPrepaymentVouchers" />
-                            </MudTooltip>
-                        }
-                    </MudHidden>
+        <div class="invoice-payment-dialog">
+            <p class="invoice-payment-hint">نوع پرداخت یا دریافت را انتخاب کنید.</p>
+            <div class="invoice-payment-add-actions" role="group" aria-label="افزودن پرداخت">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Payments" OnClick="() => OnAddPayment(PaymentType.InternalCash)">نقدی</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.SwapHoriz" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">حواله</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Receipt" OnClick="() => OnAddPayment(PaymentType.Check)">چک بانکی</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Recycling" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">طلای شکسته</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Whatshot" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">طلای آبشده</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Toll" OnClick="() => OnAddPayment(PaymentType.Coin)">سکه</MudButton>
+                @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Assignment" OnClick="OnApplyPrepaymentVouchers">اعمال پیش‌پرداخت‌ها</MudButton>
+                }
+            </div>
+            @if (Items.Count == 0)
+            {
+                <div class="invoice-payment-empty">
+                    <MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" Size="Size.Large" />
+                    <strong>هنوز پرداختی ثبت نشده است</strong>
+                    <span>برای شروع، یکی از روش‌های بالا را انتخاب کنید.</span>
                 </div>
-                
-            </ToolBarContent>
-            <HeaderContent>
-                <MudTh>مبلغ</MudTh>
-                <MudTh>توضیحات</MudTh>
-                <MudTh>تاریخ پرداخت</MudTh>
-                <MudTh>عملیات</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="مبلغ">@context.Amount.ToCurrencyFormat(context.PriceUnit?.Title)</MudTd>
-                <MudTd DataLabel="توضیحات">@context.Description</MudTd>
-                <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate?.ToString("f")</MudTd>
-                <MudTd DataLabel="عملیات">
-                    <div class="d-flex gap-2">
-                        @if (context.PaymentType is not PaymentType.TransferedPayment)
-                        {
-                            <MudTooltip Text="ویرایش">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                               Color="Color.Primary" OnClick="() => OnEdit(context)"></MudIconButton>
-                            </MudTooltip>
-                            <MudTooltip Text="حذف">
-                                <MudIconButton OnClick="@(_ => OnDelete(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                               Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                            </MudTooltip>
-                        }
-                    </div>
-                </MudTd>
-            </RowTemplate>
-            <NoRecordsContent>
-                <MudText Typo="Typo.body2">
-                    هیچ پرداختی ثبت نشده است.
-                </MudText>
-            </NoRecordsContent>
-        </MudTable>
-        <MudDivider Class="mt-5" />
-    </DialogContent>
-    <DialogActions>
-        <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
-            <div class="d-flex flex-column flex-md-row gap-2 mr-md-4">
-
+            }
+            else
+            {
+                <div class="invoice-payment-desktop">
+                    <table class="invoice-payment-table">
+                        <thead><tr><th>نوع</th><th>مبلغ یا وزن</th><th>تاریخ</th><th>شرح</th><th>عملیات</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Items)
+                            {
+                                <tr @key="item">
+                                    <td>@item.PaymentType.GetDisplayTitle()</td>
+                                    <td><strong>@item.Amount.ToCurrencyFormat(item.PriceUnit?.Title)</strong></td>
+                                    <td>@item.PaymentDate?.ToString("yyyy/MM/dd")</td>
+                                    <td><span class="invoice-payment-description" title="@item.Description">@(!string.IsNullOrWhiteSpace(item.Description) ? item.Description : "—")</span></td>
+                                    <td>
+                                        @if (item.PaymentType is not PaymentType.TransferedPayment)
+                                        {
+                                            <div class="invoice-payment-row-actions">
+                                                <button type="button" aria-label="ویرایش پرداخت" title="ویرایش پرداخت" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                                <button type="button" class="is-danger" aria-label="حذف پرداخت" title="حذف پرداخت" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-payment-mobile">
+                    @foreach (var item in Items)
+                    {
+                        <article class="invoice-payment-card" @key="item">
+                            <div class="invoice-payment-card-primary">
+                                <div class="invoice-payment-card-type">
+                                    <span>@item.PaymentType.GetDisplayTitle()</span>
+                                    <small>@item.PaymentDate?.ToString("yyyy/MM/dd")</small>
+                                </div>
+                                <strong>@item.Amount.ToCurrencyFormat(item.PriceUnit?.Title)</strong>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                            {
+                                <p title="@item.Description">@item.Description</p>
+                            }
+                            @if (item.PaymentType is not PaymentType.TransferedPayment)
+                            {
+                                <div class="invoice-payment-row-actions">
+                                    <button type="button" aria-label="ویرایش پرداخت" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                    <button type="button" class="is-danger" aria-label="حذف پرداخت" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
+                                </div>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+            <div class="invoice-payment-totals" aria-label="جمع پرداخت‌ها">
                 @if (TotalReceiptsAmount > 0)
                 {
-                    <MudText Class="price-text" Typo="Typo.h6" Color="Color.Success">
-                        جمع دریافتی‌ها:
-                        @TotalReceiptsAmount.ToCurrencyFormat(PriceUnit.Title)
-                    </MudText>
+                    <div><span>جمع دریافتی‌ها</span><strong class="is-receipt">@TotalReceiptsAmount.ToCurrencyFormat(PriceUnit.Title)</strong></div>
                 }
-
                 @if (TotalPaymentsAmount > 0)
                 {
-                    <MudText Class="price-text" Typo="Typo.h6" Color="Color.Error">
-                        جمع پرداختی‌ها:
-                        @TotalPaymentsAmount.ToCurrencyFormat(PriceUnit.Title)
-                    </MudText>
+                    <div><span>جمع پرداختی‌ها</span><strong class="is-payment">@TotalPaymentsAmount.ToCurrencyFormat(PriceUnit.Title)</strong></div>
                 }
-
-            </div>
-
-            <div class="button-group">
-                <MudButton Color="Color.Error"
-                           OnClick="Close"
-                           StartIcon="@Icons.Material.Filled.Close"
-                           Variant="Variant.Filled">انصراف</MudButton>
-                <MudButton Class="m-2"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Save"
-                           OnClick="Save"
-                           Variant="Variant.Filled">ذخیره</MudButton>
             </div>
         </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Close">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check" OnClick="Save">ثبت پرداخت‌ها</MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

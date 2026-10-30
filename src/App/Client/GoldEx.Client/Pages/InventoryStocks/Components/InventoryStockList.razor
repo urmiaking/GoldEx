@@ -8,7 +8,7 @@
     <MudDivider />
 }
 
-<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="@(Selectable ? 10 : 14)" Hover="true" @ref="_table" FixedHeader="true"
           OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">

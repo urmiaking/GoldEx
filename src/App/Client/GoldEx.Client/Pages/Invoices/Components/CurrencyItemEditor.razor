@@ -1,10 +1,12 @@
-﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_currencyItemValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-item-editor">
             <MudGrid Spacing="4">
                 <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <MudSelect T="GetPriceUnitTitleResponse?"
@@ -119,15 +121,15 @@
                     </MudItem>
                 }
             </MudGrid>
+                    </div>
         </DialogContent>
         <DialogActions>
-            <MudButton Color="Color.Error"
+            <MudButton Color="Color.Default"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
 
-            <MudButton Class="m-2"
-                       Color="Color.Primary"
+            <MudButton                        Color="Color.Primary"
                        Disabled="@_isProcessing"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
@@ -147,5 +149,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

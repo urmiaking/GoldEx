@@ -1,0 +1,24 @@
+.invoice-prepayment-picker{min-width:0}
+.invoice-prepayment-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 11px;color:var(--mud-palette-text-secondary);font-size:.79rem}
+.invoice-prepayment-heading span:last-child{font-size:.74rem}
+.invoice-prepayment-desktop{max-height:57vh;overflow:auto;border:1px solid var(--mud-palette-lines-default);border-radius:12px}
+.invoice-prepayment-desktop table{width:100%;border-collapse:collapse;text-align:start;font-size:.79rem}
+.invoice-prepayment-desktop th{position:sticky;top:0;background:var(--mud-palette-background);padding:8px;text-align:start;font-weight:500;color:var(--mud-palette-text-secondary);z-index:1}
+.invoice-prepayment-desktop td{padding:8px;border-top:1px solid var(--mud-palette-lines-default)}
+.invoice-prepayment-desktop td:first-child{width:48px}
+.invoice-prepayment-desktop tr.is-selected{background:rgba(var(--mud-palette-primary-rgb),.06)}
+.invoice-prepayment-number{display:inline-block;padding:4px 7px;border-radius:7px;background:rgba(var(--mud-palette-primary-rgb),.08);font-size:.77rem;font-weight:500}
+.invoice-prepayment-mobile{display:none}
+.invoice-prepayment-empty{padding:55px 12px;text-align:center;color:var(--mud-palette-text-secondary);font-size:.82rem}
+.invoice-prepayment-count{font-size:.74rem;color:var(--mud-palette-text-secondary);align-self:center}
+@media(max-width:699px){
+.invoice-prepayment-desktop{display:none}
+.invoice-prepayment-mobile{display:grid;gap:8px;max-height:58dvh;overflow:auto}
+.invoice-prepayment-card{display:flex;align-items:flex-start;gap:4px;padding:9px 10px;border:1px solid var(--mud-palette-lines-default);border-radius:12px;background:var(--mud-palette-surface);cursor:pointer}
+.invoice-prepayment-card.is-selected{border-color:var(--mud-palette-primary);background:rgba(var(--mud-palette-primary-rgb),.04)}
+.invoice-prepayment-card-info{flex:1;min-width:0;display:grid;gap:5px}
+.invoice-prepayment-card-info>div{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.invoice-prepayment-card-info time,.invoice-prepayment-card-info small{color:var(--mud-palette-text-secondary);font-size:.72rem}
+.invoice-prepayment-card-info strong{font-size:.86rem;font-weight:600;overflow-wrap:anywhere}
+.invoice-prepayment-card-info p{font-size:.75rem;margin:0;color:var(--mud-palette-text-secondary);overflow-wrap:anywhere}
+}

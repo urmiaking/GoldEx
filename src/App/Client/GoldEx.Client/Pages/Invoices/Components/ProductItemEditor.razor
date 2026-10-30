@@ -1,10 +1,12 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Client.Pages.Settings.ViewModels
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_productItemValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-item-editor">
             <div class="d-flex flex-wrap justify-center align-center gap-md-3 mb-1">
                 @if (!PriceUnit.IsGoldBased)
                 {
@@ -576,6 +578,7 @@
                     </MudItem>
                 }
             </MudGrid>
+                    </div>
         </DialogContent>
         <DialogActions>
             <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
@@ -587,10 +590,9 @@
                     <MudButton Color="Color.Error"
                                OnClick="Close"
                                StartIcon="@Icons.Material.Filled.Close"
-                               Variant="Variant.Filled">انصراف</MudButton>
+                               Variant="Variant.Outlined">انصراف</MudButton>
 
-                    <MudButton Class="m-2"
-                               Color="Color.Primary"
+                    <MudButton                                Color="Color.Primary"
                                Disabled="@_isProcessing"
                                StartIcon="@Icons.Material.Filled.Save"
                                OnClick="@(async () => await Submit())"
@@ -610,5 +612,5 @@
                 </div>
             </div>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

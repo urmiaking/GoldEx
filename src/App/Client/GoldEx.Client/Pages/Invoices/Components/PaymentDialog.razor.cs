@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 using GoldEx.Shared.DTOs.Licenses;
@@ -21,6 +22,8 @@ public partial class PaymentDialog
     [Parameter] public decimal TotalRemaining { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     [Inject] public ISettingService SettingService { get; set; } = default!;
 
@@ -89,9 +92,9 @@ public partial class PaymentDialog
             afterSend: response => _license = response);
     }
 
-    private void Close() => Dialog.Close();
+    private void Close() { if (Session is not null) Session.Cancel(); else Dialog.Close(); }
 
-    private void Save() => Dialog.Close(Items);
+    private void Save() { if (Session is not null) Session.Close(Items); else Dialog.Close(Items); }
 
     /// <summary>
     /// مانده قبل از اعمال پرداختی که در حال ویرایش است.
@@ -128,7 +131,15 @@ public partial class PaymentDialog
             { x => x.TotalRemaining, GetRemainingBefore(payment) }
         };
 
-        var dialog = await DialogService.ShowAsync<PaymentEditor>("ویرایش پرداخت", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<PaymentEditor>("ویرایش پرداخت",
+            new Dictionary<string, object>
+            {
+                [nameof(PaymentEditor.Model)] = payment,
+                [nameof(PaymentEditor.BasePriceUnit)] = PriceUnit,
+                [nameof(PaymentEditor.PriceUnits)] = PriceUnits,
+                [nameof(PaymentEditor.InvoiceType)] = InvoiceType,
+                [nameof(PaymentEditor.TotalRemaining)] = GetRemainingBefore(payment)
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -144,11 +155,14 @@ public partial class PaymentDialog
 
     private async Task OnDelete(InvoicePaymentVm model)
     {
-        var result = await DialogService.ShowMessageBoxAsync("حذف پرداخت",
-            $"آیا مطمئن هستید که می‌خواهید پرداخت با مبلغ {model.Amount.ToCurrencyFormat(model.PriceUnit?.Title)} را حذف کنید؟",
-            yesText: "بله", noText: "خیر");
+        var dialog = ResponsiveDialogs.Show<InvoicePaymentDeleteDialog>("حذف پرداخت",
+            new Dictionary<string, object>
+            {
+                [nameof(InvoicePaymentDeleteDialog.AmountText)] = model.Amount.ToCurrencyFormat(model.PriceUnit?.Title)
+            });
+        var result = await dialog.Result;
 
-        if (result is true)
+        if (result is { Canceled: false, Data: true })
         {
             Items.Remove(model);
         }
@@ -202,7 +216,15 @@ public partial class PaymentDialog
             { x => x.TotalRemaining, TotalRemaining }
         };
 
-        var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<PaymentEditor>(paymentType.GetDisplayTitle(),
+            new Dictionary<string, object>
+            {
+                [nameof(PaymentEditor.Model)] = newPayment,
+                [nameof(PaymentEditor.BasePriceUnit)] = PriceUnit,
+                [nameof(PaymentEditor.PriceUnits)] = PriceUnits,
+                [nameof(PaymentEditor.InvoiceType)] = InvoiceType,
+                [nameof(PaymentEditor.TotalRemaining)] = TotalRemaining
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -228,10 +250,12 @@ public partial class PaymentDialog
             { x => x.SelectedPaymentVouchers, selectedVoucherIds }
         };
 
-        var dialog = await DialogService.ShowAsync<PaymentVouchersSelectorList>(
-            "انتخاب اسناد پیش‌پرداخت",
-            parameters,
-            _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = ResponsiveDialogs.Show<PaymentVouchersSelectorList>("انتخاب اسناد پیش‌پرداخت",
+            new Dictionary<string, object>
+            {
+                [nameof(PaymentVouchersSelectorList.CustomerId)] = CustomerId.Value,
+                [nameof(PaymentVouchersSelectorList.SelectedPaymentVouchers)] = selectedVoucherIds
+            }, wide: true);
 
         var result = await dialog.Result;
 

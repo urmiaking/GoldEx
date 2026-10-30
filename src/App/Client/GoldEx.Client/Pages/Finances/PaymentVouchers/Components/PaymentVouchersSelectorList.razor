@@ -1,44 +1,64 @@
-﻿@using GoldEx.Shared.DTOs.PaymentVouchers
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.DTOs.PaymentVouchers
 @inherits GoldExComponentBase
 
-<MudDialog>
+<EditorDialogFrame>
     <DialogContent>
-        <MudTable T="GetPaymentVoucherResponse" Hover="true" FixedHeader="true" Dense="true" Items="_paymentVouchers" Loading="IsBusy"
-                  @bind-SelectedItems="_selectedItems" SelectOnRowClick="true" MultiSelection="true" Breakpoint="Breakpoint.Xs" Elevation="0">
-            <HeaderContent>
-                <MudTh>شماره سند</MudTh>
-                <MudTh>ارزش کل</MudTh>
-                <MudTh>شرح</MudTh>
-                <MudTh>تاریخ پرداخت</MudTh>
-                <MudTh>پرداخت از حساب</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="ردیف">@context.VoucherNumber</MudTd>
-                <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit?.Title)</MudTd>
-                <MudTd DataLabel="شرح">@context.Description</MudTd>
-                <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate.ToShortDateString()</MudTd>
-                <MudTd DataLabel="پرداخت از حساب">@context.SourceFinancialAccount.Title</MudTd>
-            </RowTemplate>
-            <NoRecordsContent>
-                <MudText>هیچ سند پرداختی وجود ندارد</MudText>
-            </NoRecordsContent>
-            <LoadingContent>
-                <MudText>در حال بارگیری</MudText>
-            </LoadingContent>
-        </MudTable>
+        <div class="invoice-prepayment-picker">
+            <div class="invoice-prepayment-heading">
+                <span>اسناد پیش‌پرداخت قابل اعمال به فاکتور</span>
+                <span>@_selectedItems.Count سند انتخاب شده</span>
+            </div>
+            @if (_paymentVouchers is null)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+            }
+            else if (!_paymentVouchers.Any())
+            {
+                <div class="invoice-prepayment-empty">سند پیش‌پرداختی برای این مشتری وجود ندارد.</div>
+            }
+            else
+            {
+                <div class="invoice-prepayment-desktop">
+                    <table>
+                        <thead><tr><th>انتخاب</th><th>شماره سند</th><th>ارزش</th><th>تاریخ پرداخت</th><th>حساب</th><th>شرح</th></tr></thead>
+                        <tbody>
+                        @foreach (var item in _paymentVouchers)
+                        {
+                            <tr @key="item.Id" class="@(_selectedItems.Contains(item) ? "is-selected" : "")">
+                                <td><MudCheckBox T="bool" Value="@_selectedItems.Contains(item)" ValueChanged="@(v => ToggleItem(item,v))" aria-label="@($"انتخاب سند {item.VoucherNumber}")" /></td>
+                                <td><span class="invoice-prepayment-number">#@item.VoucherNumber</span></td>
+                                <td>@item.Amount.ToCurrencyFormat(item.PriceUnit?.Title)</td>
+                                <td>@item.PaymentDate.ToShortDateString()</td>
+                                <td>@item.SourceFinancialAccount.Title</td>
+                                <td>@item.Description</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-prepayment-mobile">
+                    @foreach (var item in _paymentVouchers)
+                    {
+                        <label class="invoice-prepayment-card @(_selectedItems.Contains(item) ? "is-selected" : "")" @key="item.Id">
+                            <MudCheckBox T="bool" Value="@_selectedItems.Contains(item)" ValueChanged="@(v => ToggleItem(item,v))" aria-label="@($"انتخاب سند {item.VoucherNumber}")"/>
+                            <div class="invoice-prepayment-card-info">
+                                <div><span class="invoice-prepayment-number">سند #@item.VoucherNumber</span><time>@item.PaymentDate.ToShortDateString()</time></div>
+                                <strong>@item.Amount.ToCurrencyFormat(item.PriceUnit?.Title)</strong>
+                                <small>@item.SourceFinancialAccount.Title</small>
+                                @if (!string.IsNullOrWhiteSpace(item.Description)) { <p>@item.Description</p> }
+                            </div>
+                        </label>
+                    }
+                </div>
+            }
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Error"
-                   OnClick="Close"
-                   StartIcon="@Icons.Material.Filled.Close"
-                   Variant="Variant.Filled">انصراف</MudButton>
-
-        <MudButton Class="m-2"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Save"
-                   OnClick="Submit"
-                   Variant="Variant.Filled">
-            <MudText>ذخیره</MudText>
-        </MudButton>
+        <span class="invoice-prepayment-count">@_selectedItems.Count انتخاب</span>
+        <MudSpacer />
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Close">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="Submit">اعمال پیش‌پرداخت‌ها</MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

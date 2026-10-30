@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
@@ -30,6 +31,8 @@ public partial class PaymentEditor
     [Parameter, EditorRequired] public GetPriceUnitTitleResponse BasePriceUnit { get; set; }
     [Parameter, EditorRequired] public InvoiceType InvoiceType { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private List<GetCustomerResponse>? _customers;
@@ -154,7 +157,7 @@ public partial class PaymentEditor
         return model.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
     }
 
-    private void Close() => Dialog.Cancel();
+    private void Close() { if (Session is not null) Session.Cancel(); else Dialog.Cancel(); }
 
     private async Task Submit()
     {
@@ -172,7 +175,8 @@ public partial class PaymentEditor
             Model.CheckImageFile = null;
         }
 
-        Dialog.Close(DialogResult.Ok(Model));
+        if (Session is not null) Session.Close(Model);
+        else Dialog.Close(DialogResult.Ok(Model));
     }
 
 
@@ -273,8 +277,13 @@ public partial class PaymentEditor
             { x => x.SubmitIndependently, true }
         };
 
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
-            parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(FinancialAccountEditor.PriceUnits)] = PriceUnits,
+                [nameof(FinancialAccountEditor.IsSystemAccount)] = true,
+                [nameof(FinancialAccountEditor.SubmitIndependently)] = true
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -297,8 +306,15 @@ public partial class PaymentEditor
             { x => x.AccountHolderName, customer.FullName }
         };
 
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"افزودن حساب مالی برای {customer.FullName}",
-            parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>($"افزودن حساب مالی برای {customer.FullName}",
+            new Dictionary<string, object>
+            {
+                [nameof(FinancialAccountEditor.PriceUnits)] = PriceUnits,
+                [nameof(FinancialAccountEditor.IsSystemAccount)] = false,
+                [nameof(FinancialAccountEditor.CustomerId)] = customer.Id!,
+                [nameof(FinancialAccountEditor.SubmitIndependently)] = true,
+                [nameof(FinancialAccountEditor.AccountHolderName)] = customer.FullName
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -343,7 +359,12 @@ public partial class PaymentEditor
             { x => x.ReturnModel, true }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>($"افزودن {title} جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>($"افزودن {title} جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -583,7 +604,13 @@ public partial class PaymentEditor
             { x => x.ShowFinancialAccounts, false }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن کارگاه جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن کارگاه جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.CustomerType)] = CustomerType.Workshop,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
 
         var result = await dialog.Result;
 

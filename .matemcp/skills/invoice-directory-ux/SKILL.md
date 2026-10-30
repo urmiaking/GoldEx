@@ -38,3 +38,11 @@ Read `AGENTS.md` (especially the sections on invoice directory UI, color/typogra
 - InvoicesList and CustomersList now display only numeric badges on the filter button, not a second applied-filter chip/clear row under the sticky search/filter toolbar. Keep filtering and clear behavior inside each filter dialog.
 - InvoicesList icon buttons use restrained semantic accents (print=info, edit=primary, delete=error) in desktop and mobile, matching inventory icon operation styling; CustomerCard ledger/invoices actions use a slightly stronger pastel accent and its edit menu icon is info. Theme variables only.
 - Check visually in the actual browser; release 1.0.116, issue #268.
+## Invoice editor P0 refresh (2026-10-30)
+- Invoice create/edit route now relies on AppBar breadcrumb, with `.invoice-editor-shell` instead of the raised old MudCard.
+- `PaymentDialog`: native EditorDialogFrame with responsive plain table and mobile compact payment cards, all seven payment options (cash, transfer, check, used gold, molten gold, coin, conditional prepayment), existing Receipt/Pay sums.
+- `PaymentEditor`, `ProductItemEditor`, `CoinItemEditor`, `CurrencyItemEditor`, `UsedProductEditor`, `InventoryItemSelector` use EditorDialogFrame and ResponsiveDialogSession with MudDialog fallback for older consumers. Launch from EditorForm using ResponsiveDialogService, including nested account/customer/category dialogs.
+- `InvoiceItemDeleteDialog` and `InvoicePaymentDeleteDialog` require positive explicit confirmation, so no barcode release or model item removal on cancel. Existing reservation and financial balance calculations must be preserved.
+- `InventoryStockList` is shared with melt, history and kardex: keep main logic intact; selection-mode page size 10. The selection dialog uses the existing SelectedItemsChanged callback and financial-price conversion; do not rewrite its shared underlying API without separate cross-workflow tests.
+- `PaymentVouchersSelectorList` contains native table on desktop and checkable cards on mobile; reselects saved IDs and returns the same HashSet DTO set.
+- Run `node --test scripts/tests/invoice-p0-redesign.test.mjs scripts/tests/invoice-directory.test.mjs`; use targeted build only for structural component changes. Validate real mobile UI in authenticated browser before production. Version 1.0.122 unshipped, local commit only.

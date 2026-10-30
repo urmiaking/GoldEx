@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -25,6 +26,8 @@ public partial class ProductItemEditor
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public TradeScale TradeScale { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private readonly ProductItemValidator _productItemValidator = new();
 
@@ -139,10 +142,10 @@ public partial class ProductItemEditor
         }
 
         _isProcessing = false;
-        MudDialog.Close(DialogResult.Ok(Model));
+        if (Session is not null) Session.Close(Model); else MudDialog.Close(DialogResult.Ok(Model));
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close() { if (Session is not null) Session.Cancel(); else MudDialog.Cancel(); }
 
     private void OnProductTypeChanged(ProductType productType)
     {
@@ -292,7 +295,7 @@ public partial class ProductItemEditor
     {
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن دسته بندی جدید", dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Editor>("افزودن دسته بندی جدید", wide: true);
 
         var result = await dialog.Result;
 
@@ -405,7 +408,12 @@ public partial class ProductItemEditor
             { x => x.CustomerType, CustomerType.AssayingLab }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن آزمایشگاه جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن آزمایشگاه جدید",
+            new Dictionary<string, object> {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.CustomerType)] = CustomerType.AssayingLab,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
 
         var result = await dialog.Result;
 

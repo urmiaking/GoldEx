@@ -7,12 +7,6 @@
 <PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
-
     <EditorForm Id="@IdValue" CustomerId="@CustomerId" Barcode="@EffectiveBarcode" TradeScale="@TradeScaleValue" InvoiceType="@InvoiceTypeValue" />
 
 </MudContainer>

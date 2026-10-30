@@ -1702,3 +1702,25 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 .gex-delete-confirm h3 { margin:0; font-weight:600; font-size:1.05rem; line-height:1.65; overflow-wrap:anywhere; }
 .gex-delete-confirm p { margin:0; color:var(--mud-palette-text-secondary); line-height:1.8; font-size:.88rem; }
 .gex-delete-confirm .mud-icon-root { flex:none; }
+/* Invoice P0: native item editors and shared stock picker */
+.invoice-editor-shell.mud-card{border:1px solid var(--mud-palette-lines-default);border-radius:18px;background:var(--mud-palette-surface);padding:20px 22px;box-shadow:none;min-width:0}
+.invoice-editor-shell .mud-typography-h6{font-size:1.02rem;font-weight:500;line-height:1.65}
+.invoice-editor-shell .mud-typography-subtitle1{font-weight:500}
+.invoice-editor-shell .mud-grid-item{min-width:0}
+.invoice-editor-shell .mud-input-control{min-width:0}
+.invoice-editor-shell .mud-button-root{font-weight:500}
+.invoice-editor-shell .mud-chip{font-weight:500}
+.invoice-item-editor{min-width:0}
+.invoice-item-editor .mud-grid-item{min-width:0}
+.invoice-item-editor .mud-input-control{min-width:0}
+.invoice-item-editor .mud-chip{font-size:.8rem;font-weight:500}
+.invoice-item-editor .mud-typography-h6,.invoice-item-editor .mud-typography-subtitle1{font-size:.96rem;font-weight:500}
+.invoice-item-editor .mud-button-root{font-weight:500}
+.invoice-item-editor .mud-input-adornment{font-weight:400}
+@media(max-width:699px){
+.invoice-editor-shell.mud-card{padding:12px 10px;border-radius:14px}
+.invoice-editor-shell .mud-typography-h6{font-size:.92rem}
+.invoice-item-editor .mud-grid{row-gap:2px}
+.invoice-item-editor .mud-typography-h6{font-size:.89rem}
+.invoice-item-editor .mud-input-root{min-width:0}
+}

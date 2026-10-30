@@ -1,9 +1,11 @@
-﻿@using GoldEx.Shared.DTOs.Coins
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.DTOs.Coins
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_coinItemValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-item-editor">
             <div class="align-center d-flex flex-wrap gap-md-3 justify-center justify-md-space-between mb-1">
                 <div class="d-flex flex-wrap align-center gap-3 my-3">
                     <MudText Typo="Typo.body1" Class="d-none d-md-block">نوع سکه:</MudText>
@@ -239,15 +241,15 @@
                     </MudItem>
                 </MudGrid>
             }
+                    </div>
         </DialogContent>
         <DialogActions>
-            <MudButton Color="Color.Error"
+            <MudButton Color="Color.Default"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
 
-            <MudButton Class="m-2"
-                       Color="Color.Primary"
+            <MudButton                        Color="Color.Primary"
                        Disabled="@_isProcessing"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
@@ -267,5 +269,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

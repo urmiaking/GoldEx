@@ -1,0 +1,18 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-delete-confirm">
+            <MudIcon Icon="@Icons.Material.Outlined.WarningAmber" Color="Color.Error" Size="Size.Large" />
+            <h3>حذف پرداخت</h3>
+            <p>پرداخت به مبلغ <strong>@AmountText</strong> از فاکتور حذف شود؟</p>
+            <p>بعد از حذف، مانده فاکتور دوباره محاسبه خواهد شد.</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
+                   OnClick="() => Session?.Close(true)">حذف پرداخت</MudButton>
+    </DialogActions>
+</EditorDialogFrame>
