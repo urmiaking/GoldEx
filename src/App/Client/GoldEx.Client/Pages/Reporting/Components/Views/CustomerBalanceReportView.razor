@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
 @inherits GoldExComponentBase
@@ -6,10 +7,7 @@
 {
     @if (IsLoading)
     {
-        <div class="balance-report-loading" role="status">
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-            <span>در حال آماده‌سازی گزارش...</span>
-        </div>
+        <ReportTableSkeleton />
     }
     else
     {
@@ -45,8 +43,7 @@ else
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach (var row in VisibleItems)
-                    {
+                    <Virtualize Items="@OrderedItems" Context="row" ItemSize="54" SpacerElement="tr">
                         <tr @key="row">
                             <td><strong>@row.CustomerName</strong><small>کد @row.CustomerCode</small></td>
                             <td>@row.CustomerPhoneNumber</td>
@@ -57,13 +54,12 @@ else
                                 <ShellIcon Name="eye" /> ریز تراکنش‌ها
                             </button></td>
                         </tr>
-                    }
+                    </Virtualize>
                     </tbody>
                 </table>
             </div>
             <div class="balance-report-mobile">
-                @foreach (var row in VisibleItems)
-                {
+                <Virtualize Items="@OrderedItems" Context="row" ItemSize="160">
                     <article class="balance-report-card" @key="row">
                         <header><div><strong>@row.CustomerName</strong><small>کد @row.CustomerCode</small></div>
                             <span class="@NetClass(row)">@GetNetAmount(row)</span></header>
@@ -77,20 +73,9 @@ else
                             <ShellIcon Name="eye" /> ریز تراکنش‌ها
                         </button>
                     </article>
-                }
+                </Virtualize>
             </div>
-            <footer class="balance-report-pagination">
-                <label>تعداد ردیف
-                    <select value="@_pageSize" @onchange="ChangePageSize" aria-label="تعداد ردیف در صفحه">
-                        <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
-                    </select>
-                </label>
-                <nav aria-label="صفحه‌بندی گزارش">
-                    <button type="button" disabled="@(_pageIndex==0)" @onclick="() => ChangePage(-1)">قبلی</button>
-                    <span>@(_pageIndex+1) از @PageCount</span>
-                    <button type="button" disabled="@(_pageIndex+1>=PageCount)" @onclick="() => ChangePage(1)">بعدی</button>
-                </nav>
-            </footer>
+
         }
     </section>
     <CustomerBalanceSummary Summary="@_summary" />

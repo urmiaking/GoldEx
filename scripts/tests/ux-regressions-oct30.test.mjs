@@ -32,7 +32,7 @@ test('selector keeps a real responsive filter dialog and used gold is locked to 
 test('reports have exactly one apply button, not two non-working responsive copies',()=>{
  const view=read('Reporting/Components/ReportFiltersBase.razor');
  assert.equal(view.match(/ButtonType="ButtonType.Submit"/g)?.length,1);
- assert.match(view,/class="report-filter-actions"/);
+ assert.match(view,/Class="report-filter-action-item"/);
  assert.match(view,/@ChildContent/);
  assert.match(view,/OnSubmit.InvokeAsync\(Model\)/);
 });
@@ -44,7 +44,9 @@ test('profit analysis has mobile cards, one print trigger and full data summary'
  assert.match(view,/profit-analysis-desktop/);
  assert.equal(view.match(/OnPrintReport.InvokeAsync/g)?.length,1);
  assert.match(view,/<ProfitAnalysisSummary Report="Report"/);
- assert.match(logic,/Report\?\.Items.Skip\(_pageIndex \* _pageSize\)/);
+ assert.match(logic,/Report\?\.Items.ToList/);
+ assert.equal((view.match(/<Virtualize/g)||[]).length,2);
+ assert.doesNotMatch(view,/profit-analysis-pagination/);
 });
 test('manual inventory entry opens product, coin, currency and Excel native modal and confirms explicitly',()=>{
  const base='InventoryEntry/Components/';

@@ -16,39 +16,28 @@ public partial class CustomerBalanceReportView
 
     private CustomerBalanceReportSummary? _summary;
     private List<CustomerRemainingBalanceRpResponse>? _lastItems;
-    private int _pageIndex, _pageSize = 10;
+    private List<CustomerRemainingBalanceRpResponse> _orderedItems = [];
+    private ICollection<CustomerRemainingBalanceRpResponse> OrderedItems => _orderedItems;
     private string _sort = "name";
     private bool _descending;
-    private int PageCount => Math.Max(1, ((Items?.Count ?? 0) + _pageSize - 1) / _pageSize);
-    private IEnumerable<CustomerRemainingBalanceRpResponse> VisibleItems
+    private void UpdateOrderedItems()
     {
-        get
+        if (Items is null) { _orderedItems = []; return; }
+        IEnumerable<CustomerRemainingBalanceRpResponse> sorted = _sort switch
         {
-            IEnumerable<CustomerRemainingBalanceRpResponse> sorted = _sort switch
-            {
-                "payable" => _descending ? Items!.OrderByDescending(x => x.PayableAmount) : Items!.OrderBy(x => x.PayableAmount),
-                "receivable" => _descending ? Items!.OrderByDescending(x => x.ReceivableAmount) : Items!.OrderBy(x => x.ReceivableAmount),
-                "net" => _descending ? Items!.OrderByDescending(GetNet) : Items!.OrderBy(GetNet),
-                _ => _descending ? Items!.OrderByDescending(x => x.CustomerName) : Items!.OrderBy(x => x.CustomerName)
-            };
-            return sorted.Skip(_pageIndex * _pageSize).Take(_pageSize);
-        }
+            "payable" => _descending ? Items.OrderByDescending(x => x.PayableAmount) : Items.OrderBy(x => x.PayableAmount),
+            "receivable" => _descending ? Items.OrderByDescending(x => x.ReceivableAmount) : Items.OrderBy(x => x.ReceivableAmount),
+            "net" => _descending ? Items.OrderByDescending(GetNet) : Items.OrderBy(GetNet),
+            _ => _descending ? Items.OrderByDescending(x => x.CustomerName) : Items.OrderBy(x => x.CustomerName)
+        };
+        _orderedItems = sorted.ToList();
     }
     private string SortIndicator(string field) => field == _sort ? (_descending ? "↓" : "↑") : "";
     private void SetSort(string field)
     {
         _descending = field == _sort ? !_descending : field != "name";
         _sort = field;
-        _pageIndex = 0;
-    }
-    private void ChangePage(int delta) => _pageIndex = Math.Clamp(_pageIndex + delta, 0, PageCount - 1);
-    private void ChangePageSize(ChangeEventArgs args)
-    {
-        if (int.TryParse(args.Value?.ToString(), out var size) && size is 10 or 25 or 50)
-        {
-            _pageSize = size;
-            _pageIndex = 0;
-        }
+        UpdateOrderedItems();
     }
     private static string AmountClass(decimal amount) => amount > 0 ? "is-debit" : amount < 0 ? "is-credit" : "";
     private string NetClass(CustomerRemainingBalanceRpResponse item) => GetNet(item) > 0 ? "is-debit" : GetNet(item) < 0 ? "is-credit" : "";
@@ -59,7 +48,7 @@ public partial class CustomerBalanceReportView
         if (!ReferenceEquals(Items, _lastItems))
         {
             _lastItems = Items;
-            _pageIndex = 0;
+            UpdateOrderedItems();
         }
         CalculateSummary();
         base.OnParametersSet();

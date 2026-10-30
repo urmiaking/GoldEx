@@ -5,9 +5,9 @@
 .balance-report-heading h2{font-size:.96rem;font-weight:500;margin:0}
 .balance-report-heading span{color:var(--mud-palette-text-secondary);font-size:.76rem}
 .balance-report-heading ::deep .mud-button-root{border-radius:10px;min-height:36px;font-weight:500}
-.balance-report-desktop{max-width:100%;overflow-x:auto}
+.balance-report-desktop{max-width:100%;max-height:min(65vh,680px);overflow:auto}
 .balance-report-desktop table{width:100%;border-collapse:collapse;text-align:start;font-size:.8rem}
-.balance-report-desktop th{background:var(--mud-palette-background);padding:11px 9px;font-size:.77rem;font-weight:400;color:var(--mud-palette-text-secondary);text-align:start;border-bottom:1px solid var(--mud-palette-lines-default);white-space:nowrap}
+.balance-report-desktop th{position:sticky;top:0;z-index:1;background:var(--mud-palette-background);padding:11px 9px;font-size:.77rem;font-weight:400;color:var(--mud-palette-text-secondary);text-align:start;border-bottom:1px solid var(--mud-palette-lines-default);white-space:nowrap}
 .balance-report-desktop th button{border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:0}
 .balance-report-desktop td{padding:11px 9px;border-bottom:1px solid var(--mud-palette-lines-default)}
 .balance-report-desktop tr:last-child td{border-bottom:0}
@@ -19,15 +19,7 @@
 .balance-report-details{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mud-palette-lines-default);border-radius:8px;background:transparent;color:var(--mud-palette-primary);font:inherit;font-size:.76rem;padding:6px 9px;cursor:pointer;white-space:nowrap}
 .balance-report-details ::deep .gex-shell-icon{width:15px;height:15px}
 .balance-report-mobile{display:none}
-.balance-report-pagination{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--mud-palette-lines-default)}
-.balance-report-pagination label{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--mud-palette-text-secondary)}
-.balance-report-pagination select{border:1px solid var(--mud-palette-lines-default);border-radius:8px;padding:5px 9px;color:var(--mud-palette-text-primary);background:var(--mud-palette-surface);font:inherit}
-.balance-report-pagination nav{display:flex;align-items:center;gap:6px;border:1px solid var(--mud-palette-lines-default);border-radius:8px;padding:3px;margin-inline-start:auto}
-.balance-report-pagination nav button{border:0;background:transparent;color:var(--mud-palette-text-primary);font:inherit;font-size:.77rem;padding:6px 9px;cursor:pointer}
-.balance-report-pagination nav button:disabled{opacity:.35;cursor:default}
-.balance-report-pagination nav span{min-width:55px;text-align:center;font-size:.77rem}
-.balance-report-empty,.balance-report-loading{min-height:180px;padding:30px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--mud-palette-text-secondary);font-size:.83rem}
-.balance-report-loading ::deep .mud-progress-linear{width:100%}
+.balance-report-empty{min-height:180px;padding:30px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--mud-palette-text-secondary);font-size:.83rem}
 @media(max-width:959.98px){
 .balance-report{background:transparent;border:0;border-radius:0;overflow:visible}
 .balance-report-heading{background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:12px;padding:10px 12px;margin-bottom:9px}
@@ -45,6 +37,5 @@
 .balance-report-values small{color:var(--mud-palette-text-secondary);font-size:.7rem}
 .balance-report-values span{font-size:.77rem;overflow-wrap:anywhere}
 .balance-report-card>.balance-report-details{margin-top:8px}
-.balance-report-pagination{margin-top:9px;border:1px solid var(--mud-palette-lines-default);border-radius:10px;background:var(--mud-palette-surface)}
 }
 @media(max-width:599px){.balance-report-heading h2{font-size:.87rem}.balance-report-heading ::deep .mud-button-root{min-height:34px;font-size:.76rem}}

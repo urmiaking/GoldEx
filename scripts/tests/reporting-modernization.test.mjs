@@ -23,21 +23,22 @@ test('report routes use only shared AppBar breadcrumb',()=>{
   assert.match(s,/gex-report-page/,page);
  }
 });
-test('customer balance summary stays whole-report while cards and paged table use visible rows',()=>{
+test('customer balance keeps full summary while virtualizing desktop rows and mobile cards',()=>{
  const view=read('Components/Views/CustomerBalanceReportView.razor');
  const logic=read('Components/Views/CustomerBalanceReportView.razor.cs');
  assert.doesNotMatch(view,/<MudTable/);
  assert.match(view,/balance-report-desktop/);
  assert.match(view,/balance-report-mobile/);
- assert.match(view,/VisibleItems/g);
+ assert.equal((view.match(/<Virtualize/g)||[]).length,2);
+ assert.doesNotMatch(view,/balance-report-pagination|_pageSize|_pageIndex/);
  assert.match(view,/OnViewSource\(row\)/);
  assert.match(view,/<CustomerBalanceSummary Summary="@_summary"/);
- assert.match(logic,/Items!\.OrderBy/);
- assert.match(logic,/Skip\(_pageIndex \* _pageSize\)\.Take\(_pageSize\)/);
+ assert.match(logic,/Items.OrderBy/);
+ assert.match(logic,/sorted.ToList/);
  assert.match(logic,/GroupBy\(x => x.PriceUnitTitle\)/);
  assert.match(logic,/g.Sum\(x => x.PayableAmount\)/);
  assert.match(logic,/g.Sum\(x => x.ReceivableAmount\)/);
- assert.match(logic,/private int _pageIndex, _pageSize = 10/);
+ assert.doesNotMatch(logic,/_pageIndex|_pageSize|PageCount/);
 });
 test('remaining legacy report tables retain services and have neutral shadow',()=>{
  const names=['SellInvoiceReportView','PurchaseInvoiceReportView','CustomerTransactionsReportView',

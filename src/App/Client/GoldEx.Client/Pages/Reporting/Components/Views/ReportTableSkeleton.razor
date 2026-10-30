@@ -1,0 +1,34 @@
+<div class="report-table-skeleton" role="status" aria-label="در حال آماده‌سازی گزارش">
+    <div class="report-table-skeleton-desktop" aria-hidden="true">
+        <div class="report-table-skeleton-heading">
+            <MudSkeleton Animation="Animation.Wave" Width="160px" Height="20px" />
+            <MudSkeleton Animation="Animation.Wave" Width="90px" Height="33px" />
+        </div>
+        @for (var i = 0; i < 6; i++)
+        {
+            <div class="report-table-skeleton-row">
+                <MudSkeleton Animation="Animation.Wave" Width="78%" Height="17px" />
+                <MudSkeleton Animation="Animation.Wave" Width="68%" Height="17px" />
+                <MudSkeleton Animation="Animation.Wave" Width="82%" Height="17px" />
+                <MudSkeleton Animation="Animation.Wave" Width="60%" Height="17px" />
+                <MudSkeleton Animation="Animation.Wave" Width="90%" Height="17px" />
+            </div>
+        }
+    </div>
+    <div class="report-table-skeleton-mobile" aria-hidden="true">
+        @for (var i = 0; i < 3; i++)
+        {
+            <div class="report-table-skeleton-card">
+                <div class="report-table-skeleton-card-heading">
+                    <MudSkeleton Animation="Animation.Wave" Width="48%" Height="20px" />
+                    <MudSkeleton Animation="Animation.Wave" Width="26%" Height="17px" />
+                </div>
+                <MudSkeleton Animation="Animation.Wave" Width="78%" Height="17px" />
+                <div class="report-table-skeleton-card-values">
+                    <MudSkeleton Animation="Animation.Wave" Width="100%" Height="50px" SkeletonType="SkeletonType.Rectangle" />
+                    <MudSkeleton Animation="Animation.Wave" Width="100%" Height="50px" SkeletonType="SkeletonType.Rectangle" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
