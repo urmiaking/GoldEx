@@ -53,6 +53,8 @@ public partial class EditorForm
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice = true;
+    private int _activeItemTab;
+    private int InvoiceItemCount => _model.ProductItems.Count + _model.CoinItems.Count + _model.CurrencyItems.Count + _model.UsedProducts.Count;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);

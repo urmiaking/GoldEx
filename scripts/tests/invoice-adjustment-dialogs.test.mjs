@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const root = new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/', import.meta.url);
 const read = name => readFileSync(new URL(name, root), 'utf8');
-test('invoice finance controls use pill buttons and left clearance', () => {
+test('invoice actions retain full pill buttons and sticky summary',()=>{
  const css=read('EditorForm.razor.css');
- assert.match(css,/padding:4px 8px 4px 38px/);
- assert.match(css,/\.invoice-finance-actions ::deep \.mud-button-root\{[^}]*border-radius:999px/);
+ assert.match(css,/\.invoice-financial-actions ::deep \.mud-button-root\{[^}]*border-radius:999px/);
  assert.match(css,/\.invoice-form-actions ::deep \.mud-button-root\{[^}]*border-radius:999px/);
+ assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
 });
 test('discount and expense use responsive modal, no old popover',()=>{
  const view=read('EditorForm.razor'), code=read('EditorForm.razor.cs'), dialog=read('InvoiceAdjustmentsDialog.razor');

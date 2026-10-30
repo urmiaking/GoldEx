@@ -1,39 +1,43 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
+<div class="invoice-line-list">
+    <div class="invoice-line-toolbar">
+        <div class="invoice-line-toolbar-info"><strong>طلای مستعمل</strong><span>@Items.Count قلم</span></div>
+        <div class="invoice-line-toolbar-actions">
 
-<MudPaper Elevation="@Elevation" Class="@Class">
-    <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
-        <MudText Typo="Typo.h6" Class="d-none d-md-block">فهرست اقلام کهنه خریداری شده</MudText>
-        <MudSpacer />
-        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Error" Text="افزودن جنس مستعمل">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
-                           Variant="Variant.Filled" Color="Color.Error" OnClick="OnAddItem"></MudIconButton>
-        </MudTooltip>
-    </MudStack>
 
-    <MudTable Dense="true" Hover="true" Items="@Items" T="UsedProductVm" Class="@TableClass">
-        <ColGroup>
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-        </ColGroup>
-        <HeaderContent>
-            <MudTh>ردیف</MudTh>
-            <MudTh>عنوان</MudTh>
-            <MudTh>کسری عیار</MudTh>
-            <MudTh>وزن</MudTh>
-            <MudTh>ارزش کالا</MudTh>
-            <MudTh>مخارج جانبی</MudTh>
-            <MudTh>ارزش کل</MudTh>
-            <MudTh>عملیات</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Outlined.Add" OnClick="OnAddItem">افزودن طلای مستعمل</MudButton>
+        </div>
+    </div>
+    @if (Items.Count == 0)
+    {
+        <div class="invoice-line-empty">
+            <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Size="Size.Large" />
+            <strong>هنوز قلمی در این گروه ثبت نشده</strong>
+            <span>برای شروع، «افزودن طلای مستعمل» را انتخاب کنید.</span>
+        </div>
+    }
+    else
+    {
+        <div class="invoice-line-desktop">
+            <table>
+                <thead><tr>
+            <th scope="col">ردیف</th>
+            <th scope="col">عنوان</th>
+            <th scope="col">کسری عیار</th>
+            <th scope="col">وزن</th>
+            <th scope="col">ارزش کالا</th>
+            <th scope="col">مخارج جانبی</th>
+            <th scope="col">ارزش کل</th>
+            <th scope="col">عملیات</th>
+        </tr></thead>
+                <tbody>
+                    @foreach (var context in Items)
+                    {
+                        <tr @key="context">
+
+            <td>@context.Index</td>
+            <td>
                 <div class="d-flex gap-2">
                     @if (context.IsBroken)
                     {
@@ -45,34 +49,44 @@
                     }
                     @context.Description
                 </div>
-            </MudTd>
-            <MudTd DataLabel="کسری عیار">@context.FinenessDeductionRate.ToString("G29")</MudTd>
-            <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>
-            <MudTd DataLabel="ارزش کالا">@context.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="مخارج جانبی">@context.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="ارزش کل">@context.ItemFinalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="عملیات">
+            </td>
+            <td>@context.FinenessDeductionRate.ToString("G29")</td>
+            <td>@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</td>
+            <td>@context.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</td>
+            <td>@context.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</td>
+            <td>@context.ItemFinalAmount.ToCurrencyFormat(PriceUnit?.Title)</td>
+            <td>
                 <div class="d-flex gap-2">
                     <MudTooltip Text="چاپ بارکد">
-                        <MudIconButton Icon="@Icons.Material.Filled.Print" Size="Size.Small" Variant="Variant.Filled"
+                        <MudIconButton Icon="@Icons.Material.Filled.Print" Size="Size.Small" Variant="Variant.Outlined"
                                        Color="Color.Success" OnClick="() => OnPrintBarcode.InvokeAsync(context)"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="ویرایش جنس">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Outlined"
                                        Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="حذف جنس">
                         <MudIconButton OnClick="@(_ => OnRemoveItem.InvokeAsync(context))" ClickPropagation="true"
-                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                                       Size="@Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                     </MudTooltip>
                 </div>
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2">هیچ جنسی ثبت نشده است</MudText>
-        </NoRecordsContent>
-        <LoadingContent>
-            <MudText Typo="Typo.body2">در حال بارگیری</MudText>
-        </LoadingContent>
-    </MudTable>
-</MudPaper>
+            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="invoice-line-mobile">
+            @foreach (var item in Items)
+            {
+                <div class="invoice-line-card" @key="item">
+<header><span class="invoice-line-kind">@(item.IsBroken ? "طلای شکسته" : "طلای مستعمل")</span><strong>@item.ItemFinalAmount.ToCurrencyFormat(PriceUnit?.Title)</strong></header><h3>@item.Description</h3>
+<div class="invoice-line-facts"><div><span>وزن</span><strong>@item.Weight?.ToString("G29") @item.UnitType.GetDisplayName()</strong></div><div><span>کسری عیار</span><strong>@item.FinenessDeductionRate.ToString("G29")</strong></div><div><span>ارزش جنس</span><strong>@item.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</strong></div><div><span>مخارج</span><strong>@item.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</strong></div></div>
+<footer><MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Edit" OnClick="() => OnEditItem.InvokeAsync(item)">ویرایش</MudButton>
+<MudIconButton Icon="@Icons.Material.Outlined.Print" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" aria-label="چاپ بارکد" OnClick="() => OnPrintBarcode.InvokeAsync(item)" />
+<MudIconButton Icon="@Icons.Material.Outlined.DeleteOutline" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small" aria-label="حذف مستعمل" OnClick="() => OnRemoveItem.InvokeAsync(item)" /></footer></div>
+            }
+        </div>
+    }
+</div>

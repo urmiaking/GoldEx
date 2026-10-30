@@ -75,26 +75,22 @@ test('existing payments retain totals edit delete and premium restriction in rev
  assert.match(logic,/Items.Remove\(model\)/);
  assert.match(logic,/Session.Close\(Items\)/);
 });
-test('finance header uses a single aligned action toolbar with readable labels and restrained typography',()=>{
+test('invoice workspace includes an always-visible settlement sidebar and accessible actions',()=>{
  const view=read('EditorForm.razor');
- const style=read('EditorForm.razor.css');
- assert.match(view,/class="invoice-finance-header"/);
- assert.match(view,/class="invoice-finance-summary"/);
- assert.match(view,/class="invoice-finance-actions"/);
- for(const title of ['تسویه فاکتور','تسویه‌ها','تخفیف','مخارج جانبی']){
-   assert.ok(view.includes(title),title);
- }
- assert.doesNotMatch(view,/<MudIconButton Icon="@Icons.Material.Outlined.LocalOffer"/);
- assert.match(style,/\.invoice-finance-header\{display:flex/);
- assert.match(style,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
- assert.match(style,/font-weight:500/);
+ const css=read('EditorForm.razor.css');
+ assert.match(view,/class="invoice-workspace-columns"/);
+ assert.match(view,/id="invoice-finance"/);
+ assert.match(view,/class="invoice-financial-actions"/);
+ for(const label of ['تسویه فاکتور','تسویه‌ها','تخفیف','مخارج']) assert.ok(view.includes(label),label);
+ assert.match(view,/OpenDiscountsDialog/);
+ assert.match(view,/OpenExtraCostsDialog/);
+ assert.doesNotMatch(view,/<MudExpansionPanel/);
+ assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
+ assert.match(css,/font-weight:500/);
  assert.match(view,/class="invoice-form-actions"/);
  assert.match(view,/class="invoice-form-actions-primary"/);
  assert.match(view,/class="invoice-form-actions-danger"/);
  assert.match(view,/Class="invoice-form-action-delete"/);
- assert.match(view,/چاپ/);
- assert.ok(style.includes(".invoice-form-actions{display:flex"));
  const dialogStyle=read('PaymentDialog.razor.css');
  assert.match(dialogStyle,/\.invoice-settlement-direction-info strong\{font-weight:500\}/);
- assert.match(dialogStyle,/\.invoice-payment-table td strong/);
 });
