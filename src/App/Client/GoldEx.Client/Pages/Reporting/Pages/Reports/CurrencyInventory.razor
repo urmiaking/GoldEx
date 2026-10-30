@@ -1,17 +1,11 @@
-﻿@attribute [Route(ClientRoutes.Reporting.CurrencyInventory)]
+@attribute [Route(ClientRoutes.Reporting.CurrencyInventory)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits CurrencyInventoryPageBase
 
 <PageTitle>گزارش موجودی ارز</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
-
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="gex-report-page">
     <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
         <CurrencyInventoryFilters Model="@Filters" />
     </ReportFiltersBase>

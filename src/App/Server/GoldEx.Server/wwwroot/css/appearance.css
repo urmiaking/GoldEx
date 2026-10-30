@@ -1724,3 +1724,22 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 .invoice-item-editor .mud-typography-h6{font-size:.89rem}
 .invoice-item-editor .mud-input-root{min-width:0}
 }
+/* GoldEx report pages: responsive legacy report table polish */
+.gex-report-page{min-width:0}
+.gex-report-page>.mud-typography-h5{font-size:1.1rem;font-weight:500}
+.gex-report-page .mud-table{box-shadow:none!important;border:1px solid var(--mud-palette-lines-default);border-radius:14px;background:var(--mud-palette-surface);overflow:hidden}
+.gex-report-page .mud-table-toolbar{padding:11px 14px;min-height:56px;gap:9px}
+.gex-report-page .mud-table-toolbar .mud-typography-h6{font-size:.95rem;font-weight:500}
+.gex-report-page .mud-table-head .mud-table-cell{color:var(--mud-palette-text-secondary);background:var(--mud-palette-background);font-size:.76rem;font-weight:500;padding:11px 9px}
+.gex-report-page .mud-table-body .mud-table-cell{font-size:.8rem;font-weight:400;padding:9px 10px;line-height:1.65}
+.gex-report-page .mud-table-row:hover{background:rgba(var(--mud-palette-primary-rgb),.035)}
+.gex-report-page .mud-table-cell .mud-typography-h6{font-size:.9rem;font-weight:500}
+.gex-report-page .mud-table-cell .mud-button-root{font-weight:500;border-radius:9px;min-height:32px;font-size:.77rem}
+.gex-report-page .mud-table .mud-chip{font-size:.73rem;font-weight:500}
+@media(max-width:959.98px){
+.gex-report-page .mud-table-toolbar{padding:9px 11px;min-height:48px;flex-wrap:wrap}
+.gex-report-page .mud-table-toolbar .mud-typography-h6{font-size:.87rem}
+.gex-report-page .mud-table-body .mud-table-row{border-color:var(--mud-palette-lines-default)}
+.gex-report-page .mud-table-body .mud-table-cell{font-size:.77rem;padding:7px 10px}
+.gex-report-page .mud-table{border-radius:12px}
+}

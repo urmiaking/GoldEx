@@ -1,17 +1,11 @@
-﻿@attribute [Route(ClientRoutes.Reporting.InventoryKardex)]
+@attribute [Route(ClientRoutes.Reporting.InventoryKardex)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits InventoryKardexPageBase
 
 <PageTitle>گزارش کاردکس کالا</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
-
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="gex-report-page">
     <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
         <InventoryKardexFilters Model="@Filters" />
     </ReportFiltersBase>
