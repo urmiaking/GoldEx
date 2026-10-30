@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { bind } from '../../src/App/Client/GoldEx.Client.Components/wwwroot/js/quick-create.js';
 
 function target() {
@@ -81,4 +82,22 @@ test('disposing an open menu clears scroll lock and every listener', () => {
     assert.equal(e.panel.open, false);
     assert.equal(e.classes.size, 0);
     for (const element of [e.trigger, e.panel, e.media]) assert.equal(element.listeners.size, 0);
+});
+
+test('mobile drawer hides duplicate invoice creation while desktop dock retains it', () => {
+    const css = readFileSync(new URL('../../src/App/Server/GoldEx.Server/wwwroot/css/appearance.css', import.meta.url), 'utf8');
+    const drawer = readFileSync(new URL('../../src/App/Client/GoldEx.Client.Components/Layouts/Components/Drawer.razor', import.meta.url), 'utf8');
+    const mobileStart = css.indexOf('@media (max-width: 959.98px)');
+    const mobileEnd = css.indexOf('@media (max-width: 650px)', mobileStart);
+    assert.ok(mobileStart >= 0 && mobileEnd > mobileStart);
+    assert.match(css.slice(mobileStart, mobileEnd), /\.gex-sidebar \.gex-sidebar-create \{ display: none; \}/);
+    assert.match(drawer, /class="gex-sidebar-create" href="@ClientRoutes\.Invoices\.Create"/);
+    assert.match(css, /@media \(min-width: 960px\)/);
+});
+test('quick-create typography uses standard weights and readable action descriptions', () => {
+    const css = readFileSync(new URL('../../src/App/Server/GoldEx.Server/wwwroot/css/appearance.css', import.meta.url), 'utf8');
+    assert.match(css, /\.gex-quick-create-heading h2 \{[^}]*font-weight: 600;/);
+    assert.match(css, /\.gex-quick-create-action strong \{[^}]*font-size: 14px;[^}]*font-weight: 600;/);
+    assert.match(css, /\.gex-quick-create-action small \{[^}]*font-size: 12px;[^}]*font-weight: 400;[^}]*var\(--mud-palette-text-secondary\)/);
+    assert.doesNotMatch(css, /\.gex-quick-create-(?:heading h2|action strong) \{[^}]*font-weight: (?:750|800);/);
 });

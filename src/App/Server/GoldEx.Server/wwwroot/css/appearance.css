@@ -250,6 +250,8 @@ html[data-gex-appearance-transition] *::after { transition: none !important; }
     }
     .gex-sidebar.mobile-open { visibility: visible; pointer-events: auto; transform: translateX(0); }
     .gex-sidebar > .gex-shell-brand { padding-inline-end: 44px; margin-bottom: 20px; }
+    /* Keep the desktop dock action; on mobile, use only the bottom Create menu. */
+    .gex-sidebar .gex-sidebar-create { display: none; }
     .gex-menu-close { display: flex; position: absolute; inset-block-start: max(20px, env(safe-area-inset-top, 0px)); inset-inline-end: 16px; }
     .gex-menu-scrim { display: block; position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; padding: 0; border: 0; background: rgba(12, 22, 28, .6); z-index: var(--mud-zindex-drawer); cursor: pointer; }
     html.gex-navigation-open { overflow: hidden; }
@@ -339,13 +341,13 @@ html.gex-quick-create-open, html.gex-quick-create-open body { overflow: hidden; 
     margin: 0 auto; padding: 20px; overflow-y: auto; overscroll-behavior: contain;
     border: 1px solid var(--mud-palette-lines-default); border-radius: 28px;
     background: var(--mud-palette-surface); color: var(--mud-palette-text-primary);
-    box-shadow: 0 20px 80px rgba(0,0,0,.24); font-family: inherit;
+    box-shadow: 0 20px 80px rgba(0,0,0,.24); font-family: Vazirmatn, IRANSans, Tahoma, sans-serif;
 }
 .gex-quick-create[open] { animation: gex-quick-create-enter 240ms cubic-bezier(.22,1,.36,1) both; }
 .gex-quick-create::backdrop { background: rgba(16, 24, 30, .48); backdrop-filter: blur(3px); }
 .gex-quick-create-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .gex-quick-create-heading > div { display: flex; align-items: center; gap: 10px; }
-.gex-quick-create-heading h2 { margin: 0; font-size: 18px; font-weight: 800; line-height: 1.5; }
+.gex-quick-create-heading h2 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.6; }
 .gex-quick-create-symbol { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: rgba(var(--mud-palette-primary-rgb), .12); color: var(--mud-palette-primary); }
 .gex-quick-create-symbol .gex-shell-icon { width: 19px; height: 19px; }
 .gex-quick-create-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
@@ -358,12 +360,12 @@ html.gex-quick-create-open, html.gex-quick-create-open body { overflow: hidden; 
 }
 .gex-quick-create-action:hover { background: rgba(var(--quick-rgb), .055); color: var(--mud-palette-text-primary); border-color: rgba(var(--quick-rgb), .3); }
 .gex-quick-create-action > span:not(.gex-quick-create-icon):not(.gex-quick-create-arrow) { min-width: 0; }
-.gex-quick-create-action strong { display: block; font-size: 13px; line-height: 1.7; font-weight: 750; }
-.gex-quick-create-action small { display: block; margin-top: 3px; font-size: 11px; line-height: 1.7; color: var(--mud-palette-text-primary); opacity: .68; }
+.gex-quick-create-action strong { display: block; font-size: 14px; line-height: 1.6; font-weight: 600; }
+.gex-quick-create-action small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.65; font-weight: 400; color: var(--mud-palette-text-secondary); }
 .gex-quick-create-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 13px; background: rgba(var(--quick-rgb), .11); color: var(--quick-accent); }
 .gex-quick-create-icon .gex-shell-icon { width: 23px; height: 23px; }
 .gex-quick-create-featured { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 82px; background: rgba(var(--quick-rgb), .065); border-color: rgba(var(--quick-rgb), .25); }
-.gex-quick-create-featured strong { font-size: 15px; }
+.gex-quick-create-featured strong { font-size: 15px; font-weight: 600; }
 .gex-quick-create-featured .gex-quick-create-icon { width: 46px; height: 46px; border-radius: 15px; background: var(--quick-accent); color: var(--mud-palette-primary-text); }
 .gex-quick-create-arrow { margin-inline-start: auto; color: var(--quick-accent); }
 .gex-quick-create-arrow .gex-shell-icon { width: 19px; height: 19px; }

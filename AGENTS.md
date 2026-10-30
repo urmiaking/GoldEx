@@ -926,3 +926,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Mobile reports use CustomizeMenuActions to place the native Print, PrintPage and ExportTo toolbar actions first without changing handlers or desktop action order; page selector stays RTL.
 - Desktop viewer toolbar is centered when it fits, while keeping overflow-x scrolling. Scoped print-confirmation popup styles allow centered, animated, viewport-safe presentation.
 - See .matemcp/skills/devexpress-report-viewer/SKILL.md; CSS is in devexpress-viewer-fixes.css, JS is reporting-customization.js, release 1.0.122.
+
+## GoldEx mobile quick-create entry point (2026-10-30)
+- Drawer.razor uses a shared gex-sidebar-create link for the desktop dock and mobile drawer. Only hide it below 960px in appearance.css; the MobileNav QuickCreateMenu is the single mobile new-invoice entry point. Keep the desktop dock CTA.
+- QuickCreateMenu typography is scoped to .gex-quick-create: Vazirmatn headings and card titles use standard weight 600, descriptions use 400 and the theme secondary text color. Keep the existing links, dialog animation and native accessibility behaviors.
