@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.Enums;
@@ -10,6 +11,7 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
 public partial class InventoryEntryList
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     private MudTable<InventoryEntryListVm> _table = default!;
     private bool _isProcessing;
 
@@ -65,12 +67,15 @@ public partial class InventoryEntryList
 
     private async Task DeleteEntry(InventoryEntryListVm context)
     {
-        var result = await DialogService.ShowMessageBoxAsync("تأیید حذف",
-            "با تایید شما تمامی اجناسی که طی این عملیات به انبار افزوده شده اند، حذف خواهند شد",
-            yesText: "حذف",
-            cancelText: "انصراف");
+        var dialog = ResponsiveDialogs.Show<InventoryEntryConfirmDialog>("حذف ورود انبار",
+            new Dictionary<string, object> {
+                [nameof(InventoryEntryConfirmDialog.Message)] = "تمامی اجناسی که در این عملیات وارد انبار شده‌اند حذف خواهند شد. آیا اطمینان دارید؟",
+                [nameof(InventoryEntryConfirmDialog.ActionLabel)] = "حذف ورود",
+                [nameof(InventoryEntryConfirmDialog.Destructive)] = true
+            });
+        var result = await dialog.Result;
 
-        if (result == true)
+        if (result is { Canceled: false, Data: true })
         {
             _isProcessing = true;
             StateHasChanged(); // Force UI to render the overlay immediately

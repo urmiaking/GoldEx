@@ -1,22 +1,11 @@
 .report-filter-form{min-width:0}
-.report-filter-panel{padding:17px 19px;margin-bottom:15px;border-radius:15px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);box-shadow:none}
-.report-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-.report-filter-heading h2{font-size:1rem;font-weight:500;line-height:1.6;margin:0}
-.report-filter-heading p{font-size:.78rem;color:var(--mud-palette-text-secondary);margin:2px 0 0}
-.report-filter-heading ::deep .mud-button-root{min-height:39px;border-radius:11px;font-weight:500;font-size:.82rem;flex:none}
-.report-filter-fields{align-items:end}
+.report-filter-panel{padding:14px 17px;margin-bottom:15px;border-radius:14px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);box-shadow:none}
+.report-filter-heading{margin-bottom:12px}
+.report-filter-heading h2{font-size:.97rem;font-weight:500;margin:0;line-height:1.6}
+.report-filter-heading p{font-size:.77rem;color:var(--mud-palette-text-secondary);margin:2px 0 0}
+.report-filter-fields{align-items:start}
 .report-filter-fields ::deep .mud-grid-item{min-width:0}
-.report-filter-fields ::deep .mud-input-control{min-width:0;margin:0}
-.report-filter-fields ::deep .mud-input-control .mud-input-root{min-height:42px}
-.report-filter-fields ::deep .mud-typography{font-weight:400}
-.report-filter-mobile-submit{display:none}
-@media(max-width:699px){
- .report-filter-panel{padding:11px 10px;border-radius:12px}
- .report-filter-heading{margin-bottom:11px}
- .report-filter-heading h2{font-size:.94rem}
- .report-filter-heading p{font-size:.73rem}
- .report-filter-submit-desktop{display:none!important}
- .report-filter-mobile-submit{display:block;padding-top:5px}
- .report-filter-mobile-submit ::deep .mud-button-root{min-height:43px;border-radius:11px;font-weight:500}
- .report-filter-fields{row-gap:4px}
-}
+.report-filter-fields ::deep .mud-input-control{width:100%;min-width:0;margin:0}
+.report-filter-actions{display:flex;justify-content:flex-end;margin-top:12px;padding-top:11px;border-top:1px solid var(--mud-palette-lines-default)}
+.report-filter-actions ::deep .mud-button-root{min-height:39px;border-radius:10px;font-weight:500;padding-inline:17px;font-size:.83rem}
+@media(max-width:699px){.report-filter-panel{padding:11px;margin-bottom:10px}.report-filter-heading{margin-bottom:8px}.report-filter-heading h2{font-size:.9rem}.report-filter-heading p{font-size:.72rem}.report-filter-actions{margin-top:9px;padding-top:9px}.report-filter-actions ::deep .mud-button-root{width:100%;min-height:41px}}

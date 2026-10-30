@@ -3,114 +3,144 @@
 @inherits GoldExComponentBase
 
 <div class="profit-analysis-report">
-@if (IsLoading)
-{
-    <div class="d-flex flex-column justify-center align-center" style="min-height: 200px;" role="status" aria-live="polite">
-        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
-        <MudText Typo="Typo.h6" Class="mt-4">در حال آماده‌سازی گزارش…</MudText>
-    </div>
-}
-else if (Report is null)
-{
-    <ReportViewPlaceHolder />
-}
-else
-{
-    <MudTable T="ProfitAnalysisRow" Items="Report.Items" Virtualize="true" Dense="true" Hover="true" Bordered="true" Striped="true"
-              FixedHeader="true" Breakpoint="Breakpoint.Sm" SortLabel="مرتب‌سازی"
-              ContainerClass="responsive-table-toolbar" Class="profit-analysis-table" Elevation="0">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">گزارش تحلیل سود فروش</MudText>
-            <MudSpacer />
-            <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                <MudButton StartIcon="@Icons.Material.Filled.Print" Class="ml-2"
-                           Color="Color.Success" Variant="Variant.Filled"
-                           OnClick="@(() => OnPrintReport.InvokeAsync())">پرینت</MudButton>
-            </MudHidden>
-            <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                <MudTooltip Text="پرینت گزارش" Color="Color.Success" Arrow="true">
-                    <MudIconButton Icon="@Icons.Material.Filled.Print" Color="Color.Success" Variant="Variant.Filled"
-                                   OnClick="@(() => OnPrintReport.InvokeAsync())" aria-label="پرینت گزارش" />
-                </MudTooltip>
-            </MudHidden>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>مشخصات فاکتور</MudTh>
-            <MudTh>کالا</MudTh>
-            <MudTh>گرم ۱۸</MudTh>
-            <MudTh>فروش خالص</MudTh>
-            <MudTh>بهای خرید</MudTh>
-            <MudTh>سود ناخالص</MudTh>
-            <MudTh>اثر نرخ طلا</MudTh>
-            @if (ShowExchangeRate) { <MudTh>اثر ارز</MudTh> }
-            <MudTh>حاشیه معامله</MudTh>
-            <MudTh Class="profit-actions-cell">عملیات</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="مشخصات فاکتور">
-                <MudText Typo="Typo.body2">فروش #@context.InvoiceNumber</MudText>
-                <MudText Typo="Typo.caption" Class="profit-meta">@context.InvoiceDate.ToShortDateString() · @context.CustomerName</MudText>
-            </MudTd>
-            <MudTd DataLabel="کالا">
-                <MudText Typo="Typo.body2">@context.ProductName</MudText>
-                <MudText Typo="Typo.caption" Class="profit-meta">بارکد: @context.Barcode</MudText>
-            </MudTd>
-            <MudTd DataLabel="گرم ۱۸" Class="profit-number">@Math.Round(context.WeightEquivalent, 3).ToWeightFormat(GoldUnitType.Gram)</MudTd>
-            <MudTd DataLabel="فروش خالص" Class="profit-number">@Money(context.NetSales, context.PriceUnit)</MudTd>
-            <MudTd DataLabel="بهای خرید" Class="profit-number">@Money(context.PurchaseCost, context.PriceUnit)</MudTd>
-            <MudTd DataLabel="سود ناخالص" Class="profit-number">@Money(context.GrossProfit, context.PriceUnit)</MudTd>
-            <MudTd DataLabel="اثر نرخ طلا" Class="profit-number">@Money(context.GoldPriceEffect, context.PriceUnit)</MudTd>
-            @if (ShowExchangeRate)
-            { <MudTd DataLabel="اثر ارز" Class="profit-number">@Money(context.ExchangeRateEffect, context.PriceUnit)</MudTd> }
-            <MudTd DataLabel="حاشیه معامله">
-                <MudText Typo="Typo.body2" Class="profit-number profit-margin">@Money(context.TradingMargin, context.PriceUnit)</MudText>
-            </MudTd>
-            <MudTd DataLabel="عملیات" Class="profit-actions-cell">
-                <div class="d-flex gap-2 profit-row-actions">
-                    <MudTooltip Text="مشاهده فاکتور فروش" Color="Color.Info" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" Color="Color.Info"
-                                       Variant="Variant.Filled" Href="@InvoiceUrl(context.InvoiceNumber, InvoiceType.Sell)" aria-label="مشاهده فاکتور فروش" />
-                    </MudTooltip>
-                    <MudTooltip Text="جزئیات خرید و محاسبه" Color="Color.Info" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Info"
-                                       Variant="Variant.Filled" OnClick="@(() => ToggleDetails(context))" aria-label="جزئیات خرید و محاسبه"
-                                       aria-expanded="@ReferenceEquals(_expandedItem, context).ToString().ToLowerInvariant()" />
-                    </MudTooltip>
-                </div>
-            </MudTd>
-        </RowTemplate>
-        <ChildRowContent>
-            @if (ReferenceEquals(_expandedItem, context))
+    @if (IsLoading)
+    {
+        <div class="profit-analysis-loading" role="status">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+            <span>در حال آماده‌سازی گزارش…</span>
+        </div>
+    }
+    else if (Report is null)
+    {
+        <ReportViewPlaceHolder />
+    }
+    else
+    {
+        <section class="profit-analysis-results">
+            <header class="profit-analysis-heading">
+                <div><h2>تحلیل سود فروش</h2><span>@Report.Items.Count() ردیف گزارش</span></div>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Print"
+                           OnClick="() => OnPrintReport.InvokeAsync()">چاپ گزارش</MudButton>
+            </header>
+            @if (!Report.Items.Any())
             {
-                <MudTr><MudTd ColSpan="@(ShowExchangeRate ? 10 : 9)" Class="pa-4">
-                    <MudStack Spacing="2">
-                        @if (context.PurchaseInvoiceNumber.HasValue)
-                        {
-                            <MudText Typo="Typo.body2">خرید مرتبط: #@context.PurchaseInvoiceNumber · @context.PurchaseDate?.ToShortDateString()</MudText>
-                            <MudButton Href="@InvoiceUrl(context.PurchaseInvoiceNumber.Value, InvoiceType.Purchase)"
-                                       StartIcon="@Icons.Material.Filled.ReceiptLong" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">مشاهده فاکتور خرید</MudButton>
-                        }
-                        <MudText Typo="Typo.body2">سود ناخالص = حاشیه معامله + اثر نرخ طلا + اثر ارز</MudText>
-                    </MudStack>
-                </MudTd></MudTr>
+                <div class="profit-analysis-empty">فروش قابل محاسبه‌ای در این بازه وجود ندارد.</div>
             }
-        </ChildRowContent>
-        <NoRecordsContent><MudText Typo="Typo.body2" Class="pa-4">فروش قابل محاسبه‌ای در این بازه وجود ندارد.</MudText></NoRecordsContent>
-    </MudTable>
-
-    <ProfitAnalysisSummary Report="Report" />
-
-    <MudExpansionPanels Class="mt-4">
-        <MudExpansionPanel Text="روش محاسبه گزارش">
-            <MudText Typo="Typo.body2">
-                این گزارش فقط فروش طلای ساخته‌شده و جواهر را بررسی می‌کند. فروش خالص پس از سهم تخفیف و بدون مالیات است؛ بهای خرید هم به سهم فروخته‌شده و پس از سهم تخفیف خرید محاسبه می‌شود.
-                هزینه‌های اضافی فاکتور، هزینه‌های مغازه و تغییر ارزش موجودی فروش‌نرفته در این گزارش نیستند.
-                اثر نرخ طلا از زمان خرید تا فروش و بر اساس نرخ ذخیره‌شده اسناد محاسبه می‌شود.
-                فقط فروش‌های دارای اطلاعات خرید و نرخ تاریخی قابل محاسبه در جدول و جمع گزارش نمایش داده می‌شوند.
-                خرید و فروش گرمی فقط با نرخ تبدیل تاریخی خود سند ارزش‌گذاری می‌شوند؛ تغییر ارزش بدهی‌های گرمی و هزینه تسویه آن‌ها محاسبه نشده است.
-                در اسناد پولی، اثر طلا با نرخ تبدیل فروش و اثر ارز بر بهای خرید محاسبه می‌شود. واحدهای پایه متفاوت با هم جمع نمی‌شوند.
-            </MudText>
-        </MudExpansionPanel>
-    </MudExpansionPanels>
-}
+            else
+            {
+                <div class="profit-analysis-desktop">
+                    <table>
+                        <thead><tr>
+                            <th>فاکتور / مشتری</th><th>جنس / بارکد</th><th>گرم ۱۸</th>
+                            <th>فروش خالص</th><th>بهای خرید</th><th>سود ناخالص</th>
+                            <th>اثر نرخ طلا</th>
+                            @if (ShowExchangeRate) { <th>اثر ارز</th> }
+                            <th>حاشیه معامله</th><th>عملیات</th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach (var item in VisibleItems)
+                            {
+                                <tr @key="item" class="@(ReferenceEquals(_expandedItem,item) ? "is-expanded" : "")">
+                                    <td><strong>فروش #@item.InvoiceNumber</strong><small>@item.InvoiceDate.ToShortDateString() · @item.CustomerName</small></td>
+                                    <td><strong>@item.ProductName</strong><small>بارکد: @item.Barcode</small></td>
+                                    <td>@Math.Round(item.WeightEquivalent,3).ToWeightFormat(GoldUnitType.Gram)</td>
+                                    <td>@Money(item.NetSales,item.PriceUnit)</td>
+                                    <td>@Money(item.PurchaseCost,item.PriceUnit)</td>
+                                    <td>@Money(item.GrossProfit,item.PriceUnit)</td>
+                                    <td>@Money(item.GoldPriceEffect,item.PriceUnit)</td>
+                                    @if (ShowExchangeRate) { <td>@Money(item.ExchangeRateEffect,item.PriceUnit)</td> }
+                                    <td class="profit-trading-margin">@Money(item.TradingMargin,item.PriceUnit)</td>
+                                    <td>
+                                        <div class="profit-analysis-actions">
+                                            <a class="profit-analysis-action" href="@InvoiceUrl(item.InvoiceNumber,InvoiceType.Sell)" title="مشاهده فاکتور" aria-label="مشاهده فاکتور">
+                                                <ShellIcon Name="eye" />
+                                            </a>
+                                            <button type="button" class="profit-analysis-action" title="جزئیات محاسبه"
+                                                    aria-expanded="@ReferenceEquals(_expandedItem,item)"
+                                                    @onclick="() => ToggleDetails(item)">
+                                                <ShellIcon Name="info" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @if (ReferenceEquals(_expandedItem,item))
+                                {
+                                    <tr class="profit-analysis-detail"><td colspan="@(ShowExchangeRate ? 10 : 9)">
+                                        @if (item.PurchaseInvoiceNumber.HasValue)
+                                        {
+                                            <span>خرید مرتبط: #@item.PurchaseInvoiceNumber · @item.PurchaseDate?.ToShortDateString()</span>
+                                            <a href="@InvoiceUrl(item.PurchaseInvoiceNumber.Value,InvoiceType.Purchase)">مشاهده فاکتور خرید</a>
+                                        }
+                                        <span>سود ناخالص = حاشیه معامله + اثر نرخ طلا + اثر ارز</span>
+                                    </td></tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="profit-analysis-mobile">
+                    @foreach (var item in VisibleItems)
+                    {
+                        <article class="profit-analysis-card" @key="item">
+                            <header>
+                                <div><strong>فروش #@item.InvoiceNumber</strong><small>@item.InvoiceDate.ToShortDateString() · @item.CustomerName</small></div>
+                                <span>@Math.Round(item.WeightEquivalent,3).ToWeightFormat(GoldUnitType.Gram)</span>
+                            </header>
+                            <div class="profit-analysis-product"><strong>@item.ProductName</strong><small>بارکد @item.Barcode</small></div>
+                            <div class="profit-analysis-metrics">
+                                <div><small>فروش خالص</small><span>@Money(item.NetSales,item.PriceUnit)</span></div>
+                                <div><small>بهای خرید</small><span>@Money(item.PurchaseCost,item.PriceUnit)</span></div>
+                                <div><small>سود ناخالص</small><span>@Money(item.GrossProfit,item.PriceUnit)</span></div>
+                                <div><small>حاشیه معامله</small><strong>@Money(item.TradingMargin,item.PriceUnit)</strong></div>
+                            </div>
+                            <footer>
+                                <a class="profit-analysis-action" href="@InvoiceUrl(item.InvoiceNumber,InvoiceType.Sell)">
+                                    <ShellIcon Name="eye" /> مشاهده فاکتور
+                                </a>
+                                <button type="button" class="profit-analysis-action" @onclick="() => ToggleDetails(item)">
+                                    <ShellIcon Name="info" /> @(ReferenceEquals(_expandedItem,item) ? "بستن جزئیات" : "جزئیات سود")
+                                </button>
+                            </footer>
+                            @if (ReferenceEquals(_expandedItem,item))
+                            {
+                                <div class="profit-analysis-card-details">
+                                    <div>اثر نرخ طلا: @Money(item.GoldPriceEffect,item.PriceUnit)</div>
+                                    @if (ShowExchangeRate) { <div>اثر ارز: @Money(item.ExchangeRateEffect,item.PriceUnit)</div> }
+                                    @if (item.PurchaseInvoiceNumber.HasValue)
+                                    {
+                                        <a href="@InvoiceUrl(item.PurchaseInvoiceNumber.Value,InvoiceType.Purchase)">فاکتور خرید #@item.PurchaseInvoiceNumber</a>
+                                    }
+                                </div>
+                            }
+                        </article>
+                    }
+                </div>
+                <footer class="profit-analysis-pagination">
+                    <label>تعداد ردیف
+                        <select value="@_pageSize" @onchange="OnPageSizeChanged">
+                            <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+                        </select>
+                    </label>
+                    <nav aria-label="صفحه‌بندی گزارش سود">
+                        <button type="button" disabled="@(_pageIndex==0)" @onclick="() => ChangePage(-1)">قبلی</button>
+                        <span>@(_pageIndex+1) از @PageCount</span>
+                        <button type="button" disabled="@(_pageIndex+1>=PageCount)" @onclick="() => ChangePage(1)">بعدی</button>
+                    </nav>
+                </footer>
+            }
+        </section>
+        <ProfitAnalysisSummary Report="Report" />
+        <MudExpansionPanels Class="mt-3">
+            <MudExpansionPanel Text="روش محاسبه گزارش">
+                <MudText Typo="Typo.body2">
+                    این گزارش فقط فروش طلای ساخته‌شده و جواهر را بررسی می‌کند. فروش خالص پس از سهم تخفیف و بدون مالیات است؛ بهای خرید هم به سهم فروخته‌شده و پس از سهم تخفیف خرید محاسبه می‌شود.
+                    هزینه‌های اضافی فاکتور، هزینه‌های مغازه و تغییر ارزش موجودی فروش‌نرفته در این گزارش نیستند.
+                    اثر نرخ طلا از زمان خرید تا فروش و بر اساس نرخ ذخیره‌شده اسناد محاسبه می‌شود.
+                    فقط فروش‌های دارای اطلاعات خرید و نرخ تاریخی قابل محاسبه در جدول و جمع گزارش نمایش داده می‌شوند.
+                    خرید و فروش گرمی فقط با نرخ تبدیل تاریخی خود سند ارزش‌گذاری می‌شوند؛ تغییر ارزش بدهی‌های گرمی و هزینه تسویه آن‌ها محاسبه نشده است.
+                    در اسناد پولی، اثر طلا با نرخ تبدیل فروش و اثر ارز بر بهای خرید محاسبه می‌شود. واحدهای پایه متفاوت با هم جمع نمی‌شوند.
+                </MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
 </div>

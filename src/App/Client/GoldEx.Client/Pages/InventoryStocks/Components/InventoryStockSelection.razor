@@ -5,56 +5,22 @@
 
 <section class="stock-selector" aria-label="انتخاب کالا از انبار">
     <div class="stock-selector-toolbar">
-        <MudTextField T="string" Value="_search" ValueChanged="OnSearch" Immediate="true" DebounceInterval="450"
-                      Clearable="true" Label="جست‌وجوی کالا" Placeholder="نام، بارکد یا شماره انگ"
+        <MudTextField T="string" Value="@_search" ValueChanged="OnSearch" Immediate="true" DebounceInterval="450"
+                      Clearable="true" Label="جست‌وجوی کالا" Placeholder="نام جنس، بارکد یا شماره انگ"
                       Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
                       Margin="Margin.Dense" Variant="Variant.Outlined" />
-        <MudSelect T="ItemType" Label="نوع جنس" Value="_type" ValueChanged="OnTypeChanged"
-                   Margin="Margin.Dense" Variant="Variant.Outlined">
-            @foreach (var kind in SelectableTypes)
-            { <MudSelectItem T="ItemType" Value="@kind">@kind.GetDisplayName()</MudSelectItem> }
-        </MudSelect>
-        @if (ShowItemStatus)
-        {
-            <MudSelect T="ItemStatus" Label="وضعیت موجودی" Value="_status" ValueChanged="OnStatusChanged"
-                       Margin="Margin.Dense" Variant="Variant.Outlined">
-                <MudSelectItem T="ItemStatus" Value="ItemStatus.Available">موجود</MudSelectItem>
-                <MudSelectItem T="ItemStatus" Value="ItemStatus.Sold">فروخته‌شده</MudSelectItem>
-                @if (_type is ItemType.UsedProduct)
-                { <MudSelectItem T="ItemStatus" Value="ItemStatus.Melted">ذوب‌شده</MudSelectItem> }
-            </MudSelect>
-        }
-        <MudButton Class="stock-selector-filter-button" Variant="Variant.Outlined" Color="@((_dateRange.Start.HasValue || _dateRange.End.HasValue || _categoryId.HasValue) ? Color.Primary : Color.Default)"
-                   StartIcon="@Icons.Material.Outlined.Tune" OnClick="ToggleAdvancedFilters"
-                   aria-expanded="@_advancedFilters" aria-label="نمایش فیلترهای بیشتر">
-            <span>فیلترها</span>
+        <MudButton Class="stock-selector-filter-button" Variant="Variant.Outlined"
+                   Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)"
+                   StartIcon="@Icons.Material.Outlined.Tune" OnClick="OpenFilters"
+                   aria-label="فیلتر انتخاب کالا">
+            فیلترها
+            @if (ActiveFilterCount > 0) { <span class="stock-selector-filter-count">@ActiveFilterCount</span> }
         </MudButton>
     </div>
-    @if (_advancedFilters)
-    {
-        <div class="stock-selector-advanced">
-            <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="OnDateRangeChanged" Label="تاریخ ثبت"
-                                Adornment="Adornment.Start" Class="gex-filter-date-range" Clearable="true"
-                                DisplayMonths="1" MaxMonthColumns="1" ShowToolbar="false"
-                                Margin="Margin.Dense" Variant="Variant.Outlined" />
-            @if (_type is ItemType.Product)
-            {
-                <MudSelect T="Guid?" Label="دسته‌بندی" Value="_categoryId" ValueChanged="OnCategoryChanged"
-                           Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
-                    <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه دسته‌بندی‌ها</MudSelectItem>
-                    @foreach (var category in _categories)
-                    { <MudSelectItem T="Guid?" Value="@((Guid?)category.Id)">@category.Title</MudSelectItem> }
-                </MudSelect>
-            }
-            <MudSelect T="string" Label="مرتب‌سازی" Value="_sort" ValueChanged="OnSortChanged"
-                       Variant="Variant.Outlined" Margin="Margin.Dense">
-                <MudSelectItem Value="@("CurrentQuantity")">موجودی فعلی</MudSelectItem>
-                <MudSelectItem Value="@("Product.Barcode")">بارکد</MudSelectItem>
-                <MudSelectItem Value="@("Product.Name")">عنوان کالا</MudSelectItem>
-            </MudSelect>
-            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="ClearAdvancedFilters">پاک‌کردن فیلترها</MudButton>
-        </div>
-    }
+    <div class="stock-selector-current">
+        <span>@_type.GetDisplayName()</span>
+        @if (ShowItemStatus) { <span>@_status.GetDisplayName()</span> }
+    </div>
     <div class="stock-selector-selection">
         <span>@_selected.Count قلم انتخاب‌شده</span>
         @if (_selected.Count > 0)

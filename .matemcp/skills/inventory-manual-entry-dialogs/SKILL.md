@@ -1,0 +1,7 @@
+# GoldEx manual inventory entry — native dialogs
+
+- In `Pages/InventoryEntry/Components/`, ProductList, CoinList and CurrencyList are the separate manual-entry item lists. Add/Edit actions now call `ResponsiveDialogs.Show<Invoices.Components.ProductItemEditor / CoinItemEditor / CurrencyItemEditor>` instead of Mud `DialogService.ShowAsync`. Existing model, price unit, invoice type and recalculate/reserve barcode logic stay unchanged. These invoice item editors were already migrated to `EditorDialogFrame`.
+- ProductList ExcelUpload opens `ResponsiveDialogs.Show<ExcelUploadDialog>`, and ExcelUploadDialog uses `EditorDialogFrame`, optional `ResponsiveDialogSession` (with legacy MudDialog fallback), and no global `.mud-dialog-content` style. Its file processing, skipped-row results, progress/cancellation and returned `List<ProductItemVm>` must remain intact.
+- `InventoryEntryConfirmDialog` is a shared responsive confirmation for removing product/coin/currency items, final submit in InventoryEntryContainer and rolling back an existing entry in InventoryEntryList. Only `{ Canceled:false, Data:true }` may mutate records or release reserved barcodes. Never trigger removals on Cancel or overlay dismiss.
+- Text weights restrained, RTL, touch-friendly and centered dialogs on desktop, fully visible on mobile.
+- Run `scripts/tests/ux-regressions-oct30.test.mjs`, target client build only for structural Razor/C# changes, and an authenticated browser visual validation before production. Version 1.0.122 remains unshipped; local Dev commit only until authorized push.

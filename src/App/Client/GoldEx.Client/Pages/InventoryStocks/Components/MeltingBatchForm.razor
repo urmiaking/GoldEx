@@ -8,7 +8,7 @@
             <p>انتخاب اجناس مستعمل، ارسال برای ری‌گیری و ثبت آبشده نهایی</p>
         </div>
         <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="melting-workflow-back"
-                   StartIcon="@Icons.Material.Outlined.ArrowBack" OnClick="BackToList">بازگشت</MudButton>
+                   StartIcon="@Icons.Material.Outlined.ArrowForward" OnClick="BackToList">بازگشت</MudButton>
     </header>
     <div class="melting-workflow-summary">
         <div><span>مرحله جاری</span><strong>@CurrentStepTitle</strong></div>
@@ -53,7 +53,6 @@
             <ActionContent>
                 <div class="melting-workflow-footer">
                     <span>برای ثبت هر مرحله از دکمه همان مرحله استفاده کنید.</span>
-                    <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="BackToList">بازگشت به لیست</MudButton>
                 </div>
             </ActionContent>
         </MudStepper>

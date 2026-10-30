@@ -8,8 +8,7 @@
                 <h2>فیلتر گزارش</h2>
                 <p>بازه زمانی و شرایط گزارش را انتخاب کنید.</p>
             </div>
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit"
-                       StartIcon="@Icons.Material.Filled.Search" Class="report-filter-submit-desktop">مشاهده گزارش</MudButton>
+
         </header>
         <MudGrid Spacing="2" Class="report-filter-fields">
             <MudItem xs="12" sm="6" md="3">
@@ -31,11 +30,12 @@
                                     Clearable="true" />
             </MudItem>
             @ChildContent
-            <MudItem xs="12" Class="report-filter-mobile-submit">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit"
-                           StartIcon="@Icons.Material.Filled.Search" FullWidth="true">مشاهده گزارش</MudButton>
-            </MudItem>
+
         </MudGrid>
+        <div class="report-filter-actions">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit"
+                       StartIcon="@Icons.Material.Filled.Search">مشاهده گزارش</MudButton>
+        </div>
     </MudPaper>
 </EditForm>
 

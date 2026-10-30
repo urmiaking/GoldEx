@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -10,6 +11,7 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
 public partial class CurrencyList
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
     [Parameter, EditorRequired] public GetPriceUnitResponse? PriceUnit { get; set; }
@@ -17,12 +19,14 @@ public partial class CurrencyList
 
     private async Task RemoveItem(CurrencyItemVm context)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            $"آیا برای حذف ارز {context.Currency.Title} مطمئن هستید؟",
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is true)
+        var dialog = ResponsiveDialogs.Show<InventoryEntryConfirmDialog>("حذف از ورود انبار",
+            new Dictionary<string, object> {
+                [nameof(InventoryEntryConfirmDialog.Message)] = $"آیا «{context.Currency.Title}» از لیست ورود انبار حذف شود؟",
+                [nameof(InventoryEntryConfirmDialog.ActionLabel)] = "حذف جنس",
+                [nameof(InventoryEntryConfirmDialog.Destructive)] = true
+            });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: true })
         {
             Model.CurrencyItems.Remove(context);
             StateHasChanged();
@@ -40,7 +44,7 @@ public partial class CurrencyList
             { x => x.PriceUnit, new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }
         };
 
-        var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("افزودن ارز جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CurrencyItemEditor>("افزودن ارز جدید", new Dictionary<string, object> { [nameof(CurrencyItemEditor.InvoiceType)] = InvoiceType.Purchase, [nameof(CurrencyItemEditor.PriceUnit)] = new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }, wide: true);
 
         var result = await dialog.Result;
 
@@ -70,7 +74,7 @@ public partial class CurrencyList
             { x => x.PriceUnit, new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }
         };
 
-        var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("ویرایش سکه", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CurrencyItemEditor>("ویرایش ارز", new Dictionary<string, object> { [nameof(CurrencyItemEditor.Model)] = context, [nameof(CurrencyItemEditor.PriceUnit)] = new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }, wide: true);
 
         var result = await dialog.Result;
 

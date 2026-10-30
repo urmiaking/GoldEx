@@ -19,3 +19,7 @@
 - Targeted `node --test scripts/tests/reporting-modernization.test.mjs`, client build on structural changes, `git diff --check`.
 - Authenticated visual verification of desktop/mobile filters and report cards still needed before production.
 - Notes appended to unshipped GoldEx enterprise v1.0.122; commit locally on Dev without push/deploy unless authorized.
+## User screenshot regression: duplicate report action and profit-analysis UX
+- The previous report-filter layout had TWO buttons with ButtonType.Submit in separate desktop/mobile areas, and CSS isolation on generated MudItem markup did not hide one reliably. Keep EXACTLY ONE submit button in a native `div.report-filter-actions` after the shared MudGrid, with desktop end-alignment and mobile width:100%. Do not add a second breakpoint-dependent action. Date range and specialized fields remain editable in one EditForm.
+- `ProfitAnalysisReportView.razor[.cs|.css]` now uses a native desktop semantic table and compact mobile cards, exactly one print control, per-row invoice navigation, expanded details/purchase reference and 10/25/50 client pagination. Preserve the original `ProfitAnalysisSummary Report="Report"` from the full report DTO, not paged VisibleItems, and maintain `ShowExchangeRate` conditional rows. Rendering/printing do not change API calculations.
+- Do not use old thick-bordered, striped, bold MudTable here. RTL and dark-mode colors reference palette variables. Test with `scripts/tests/ux-regressions-oct30.test.mjs`. Authenticated desktop/mobile screenshots still require visual review.

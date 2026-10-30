@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
@@ -19,6 +20,7 @@ namespace GoldEx.Client.Pages.InventoryStocks.Components;
 /// </summary>
 public partial class InventoryStockSelection
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
     [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
@@ -37,9 +39,10 @@ public partial class InventoryStockSelection
     private string _sort = "CurrentQuantity";
     private ItemType _type;
     private ItemStatus _status;
-    private bool _advancedFilters, _initialized, _loading, _loadFailed;
+    private bool _initialized, _loading, _loadFailed;
     private int _pageIndex, _pageSize = 10, _totalItems;
     private int PageCount => Math.Max(1, (_totalItems + _pageSize - 1) / _pageSize);
+    private int ActiveFilterCount => (_type != SelectableTypes.FirstOrDefault() ? 1 : 0) + (ShowItemStatus && _status != ItemStatus.Available ? 1 : 0) + (_categoryId.HasValue ? 1 : 0) + (_dateRange.Start.HasValue || _dateRange.End.HasValue ? 1 : 0) + (_sort != "CurrentQuantity" ? 1 : 0);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -48,7 +51,7 @@ public partial class InventoryStockSelection
         _initialized = true;
         _type = SelectableTypes.Contains(ItemType) ? ItemType : SelectableTypes.FirstOrDefault();
         _status = ItemStatus;
-        _search = SearchQuery;
+        _search = string.Equals(SearchQuery, nameof(SearchQuery), StringComparison.Ordinal) ? null : SearchQuery;
         await LoadAsync();
     }
 
@@ -165,7 +168,33 @@ public partial class InventoryStockSelection
         _sort = value;
         await RefreshAsync();
     }
-    private void ToggleAdvancedFilters() => _advancedFilters = !_advancedFilters;
+    private async Task OpenFilters()
+    {
+        var dialog = ResponsiveDialogs.Show<InventoryStockSelectionFiltersDialog>("فیلتر انتخاب کالا",
+            new Dictionary<string, object>
+            {
+                [nameof(InventoryStockSelectionFiltersDialog.ItemType)] = _type,
+                [nameof(InventoryStockSelectionFiltersDialog.ItemStatus)] = _status,
+                [nameof(InventoryStockSelectionFiltersDialog.SelectableTypes)] = SelectableTypes,
+                [nameof(InventoryStockSelectionFiltersDialog.ShowItemStatus)] = ShowItemStatus,
+                [nameof(InventoryStockSelectionFiltersDialog.Categories)] = _categories,
+                [nameof(InventoryStockSelectionFiltersDialog.CategoryId)] = _categoryId!,
+                [nameof(InventoryStockSelectionFiltersDialog.DateRange)] = _dateRange,
+                [nameof(InventoryStockSelectionFiltersDialog.SortLabel)] = _sort
+            }, wide: true);
+        if (await dialog.Result is not { Canceled: false, Data: InventoryStockSelectionFiltersDialog.FilterResult result })
+            return;
+
+        var selectionChanged = _type != result.Type || _status != result.Status;
+        _type = result.Type;
+        _status = result.Status;
+        _categoryId = result.CategoryId;
+        _dateRange = new(result.DateRange.Start, result.DateRange.End);
+        _sort = result.SortLabel;
+        if (selectionChanged) await ClearSelection();
+        await RefreshAsync();
+    }
+
     private async Task ClearAdvancedFilters()
     {
         _dateRange = new();

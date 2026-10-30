@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -23,6 +24,7 @@ public partial class ExcelUploadDialog
 
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     private void HandleFilesChanged()
     {
@@ -60,7 +62,7 @@ public partial class ExcelUploadDialog
         await ProcessExcelAsync(bytes);
     }
 
-    private void Close() => MudDialog.Close();
+    private void Close() { if (Session is not null) Session.Cancel(); else MudDialog.Close(); }
 
     private async Task ProcessExcelAsync(byte[] bytes)
     {
@@ -113,7 +115,8 @@ public partial class ExcelUploadDialog
 
         _processing = false;
 
-        MudDialog.Close(DialogResult.Ok(result));
+        if (Session is not null) Session.Close(result);
+        else MudDialog.Close(DialogResult.Ok(result));
     }
 
     private async Task SimulateProgressAsync(CancellationToken ct)

@@ -51,3 +51,11 @@
 }
 @media(max-width:599px){.stock-selector-toolbar{grid-template-columns:minmax(0,1fr) 45px}.stock-selector-toolbar ::deep .mud-input-control:nth-child(2){grid-column:1/-1;grid-row:2}.stock-selector-toolbar ::deep .stock-selector-filter-button{grid-column:2;grid-row:1}.stock-selector-toolbar ::deep .mud-input-control:nth-child(3){grid-column:1/-1;grid-row:3}}
 @media(prefers-reduced-motion:reduce){.stock-selector-loading span{animation:none}}
+/* Only search and filter remain in the selector toolbar; advanced controls live in a dialog. */
+.stock-selector-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.stock-selector-toolbar ::deep .stock-selector-filter-button{min-height:42px;border-radius:11px;padding:5px 12px;white-space:nowrap}
+.stock-selector-current{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 0 3px}
+.stock-selector-current>span{padding:3px 8px;font-size:.74rem;background:var(--mud-palette-background);border:1px solid var(--mud-palette-lines-default);border-radius:7px;color:var(--mud-palette-text-secondary)}
+.stock-selector-filter-count{margin-inline-start:5px;border-radius:6px;min-width:17px;padding:1px 5px;background:rgba(var(--mud-palette-primary-rgb),.13);font-size:.7rem}
+@media(max-width:960px){.stock-selector-toolbar{grid-template-columns:minmax(0,1fr) auto}.stock-selector-toolbar ::deep .stock-selector-filter-button{width:auto;min-width:42px;padding:6px 11px}.stock-selector-toolbar ::deep .stock-selector-filter-button span{display:inline}.stock-selector-toolbar ::deep .stock-selector-filter-button .mud-button-icon-start{margin-inline-end:5px}}
+@media(max-width:599px){.stock-selector-toolbar{grid-template-columns:minmax(0,1fr) 44px}.stock-selector-toolbar ::deep .stock-selector-filter-button{width:44px;padding:0}.stock-selector-toolbar ::deep .stock-selector-filter-button .mud-button-icon-start{margin:0}.stock-selector-toolbar ::deep .stock-selector-filter-button>span:not(.stock-selector-filter-count){display:none}.stock-selector-toolbar ::deep .stock-selector-filter-button .stock-selector-filter-count{position:absolute;inset-block-start:0;inset-inline-end:0}}
