@@ -31,388 +31,389 @@ else
                 <a href="#invoice-lines"><span>۳</span>اقلام فاکتور</a>
                 <a href="#invoice-finance"><span>۴</span>تسویه و جمع‌بندی</a>
 </nav>
-            <div class="invoice-workspace-top">
-                <section id="invoice-core" class="invoice-section invoice-core-section">
-                    <div class="invoice-section-header">
-                        <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" /></span>
-                        <div>
-                            <span class="invoice-section-kicker">بخش ۱</span>
-                            <h2>مشخصات فاکتور</h2>
-                        </div>
-                    </div>
-                    <div class="invoice-core-primary-grid @(IsEditMode ? "is-edit" : "is-create")">
-                        @if (!IsEditMode)
-                        {
-                            <div class="invoice-core-field invoice-core-field--type">
-                                <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" Size="Size.Small" /> نوع معامله</span>
-                                <MudSelect T="InvoiceType"
-                                           Value="_model.InvoiceType"
-                                           ValueChanged="OnInvoiceTypeChanged"
-                                           Label="@_model.GetDisplayName(() => _model.InvoiceType)"
-                                           For="() => _model.InvoiceType"
-                                           FitContent="false"
-                                           Margin="Margin.Dense"
-                                           Variant="Variant.Outlined">
-                                    @foreach (var invoiceType in Enum.GetValues<InvoiceType>())
-                                    {
-                                        <MudSelectItem Value="invoiceType">
-                                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudText Color="@(invoiceType == InvoiceType.Purchase ? Color.Success : Color.Error)">@invoiceType.GetDisplayName()</MudText>
-                                            </MudStack>
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
+            <div class="invoice-workspace-columns">
+                <main class="invoice-workspace-main">
+                    <div class="invoice-workspace-top">
+                        <section id="invoice-core" class="invoice-section invoice-core-section">
+                            <div class="invoice-section-header">
+                                <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" /></span>
+                                <div>
+                                    <span class="invoice-section-kicker">بخش ۱</span>
+                                    <h2>مشخصات فاکتور</h2>
+                                </div>
                             </div>
-                            <div class="invoice-core-field invoice-core-field--scale">
-                                <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Small" /> مقیاس معامله</span>
-                                <MudSelect T="TradeScale"
-                                           Value="_model.TradeScale"
-                                           ValueChanged="OnTradeScaleChanged"
-                                           Label="@_model.GetDisplayName(() => _model.TradeScale)"
-                                           For="() => _model.TradeScale"
-                                           FitContent="false"
-                                           Margin="Margin.Dense"
-                                           Variant="Variant.Outlined">
-                                    @foreach (var tradeScale in Enum.GetValues<TradeScale>())
-                                    {
-                                        <MudSelectItem Value="tradeScale">
-                                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudText>@tradeScale.GetDisplayName()</MudText>
-                                            </MudStack>
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                        }
-                        <div class="invoice-core-field invoice-core-field--number">
-                            <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Tag" Size="Size.Small" /> شناسه فاکتور</span>
-                            <MudNumericField @bind-Value="_model.InvoiceNumber"
-                                             For="@(() => _model.InvoiceNumber)"
-                                             dir="ltr"
-                                             HideSpinButtons="true"
-                                             Label="@(_model.GetDisplayName(() => _model.InvoiceNumber))"
-                                             Margin="Margin.Dense"
-                                             Adornment="Adornment.End"
-                                             AdornmentIcon="@Icons.Material.Filled.Numbers"
-                                             Variant="Variant.Outlined" />
-                        </div>
-                        <div class="invoice-core-field invoice-core-field--date">
-                            <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Event" Size="Size.Small" /> زمان ثبت</span>
-                            <MudDatePicker @bind-Date="_model.InvoiceDate"
-                                           Color="Color.Secondary"
-                                           Editable="true"
-                                           AnchorOrigin="Origin.TopCenter"
-                                           TransformOrigin="Origin.BottomCenter"
-                                           For="@(() => _model.InvoiceDate)"
-                                           dir="ltr"
-                                           Label="@(_model.GetDisplayName(() => _model.InvoiceDate))"
-                                           ImmediateText="true"
-                                           Margin="Margin.Dense"
-                                           Rounded="true"
-                                           Variant="Variant.Outlined" />
-                        </div>
-                        <div class="invoice-core-field invoice-core-field--due">
-                            <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.EventAvailable" Size="Size.Small" /> موعد تسویه</span>
-                            <div class="invoice-core-due-control">
-                                <MudDatePicker @bind-Date="_model.DueDate"
-                                               Color="Color.Secondary"
-                                               Editable="true"
-                                               dir="ltr"
-                                               AnchorOrigin="Origin.TopCenter"
-                                               TransformOrigin="Origin.BottomCenter"
-                                               For="@(() => _model.DueDate)"
-                                               Label="@(_model.GetDisplayName(() => _model.DueDate))"
-                                               ImmediateText="true"
-                                               Margin="Margin.Dense"
-                                               Rounded="true"
-                                               Variant="Variant.Outlined" />
-                                @if (_model.IsOverdue)
+                            <div class="invoice-core-primary-grid @(IsEditMode ? "is-edit" : "is-create")">
+                                @if (!IsEditMode)
                                 {
-                                    <MudTooltip Text="ارسال پیامک یادآوری تسویه">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Send"
-                                                       Variant="Variant.Outlined"
-                                                       Color="Color.Primary"
-                                                       OnClick="HandleSendReminderClick" />
-                                    </MudTooltip>
+                                    <div class="invoice-core-field invoice-core-field--type">
+                                        <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" Size="Size.Small" /> نوع معامله</span>
+                                        <MudSelect T="InvoiceType"
+                                                   Value="_model.InvoiceType"
+                                                   ValueChanged="OnInvoiceTypeChanged"
+                                                   Label="@_model.GetDisplayName(() => _model.InvoiceType)"
+                                                   For="() => _model.InvoiceType"
+                                                   FitContent="false"
+                                                   Margin="Margin.Dense"
+                                                   Variant="Variant.Outlined">
+                                            @foreach (var invoiceType in Enum.GetValues<InvoiceType>())
+                                            {
+                                                <MudSelectItem Value="invoiceType">
+                                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                        <MudText Color="@(invoiceType == InvoiceType.Purchase ? Color.Success : Color.Error)">@invoiceType.GetDisplayName()</MudText>
+                                                    </MudStack>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
+                                    <div class="invoice-core-field invoice-core-field--scale">
+                                        <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Small" /> مقیاس معامله</span>
+                                        <MudSelect T="TradeScale"
+                                                   Value="_model.TradeScale"
+                                                   ValueChanged="OnTradeScaleChanged"
+                                                   Label="@_model.GetDisplayName(() => _model.TradeScale)"
+                                                   For="() => _model.TradeScale"
+                                                   FitContent="false"
+                                                   Margin="Margin.Dense"
+                                                   Variant="Variant.Outlined">
+                                            @foreach (var tradeScale in Enum.GetValues<TradeScale>())
+                                            {
+                                                <MudSelectItem Value="tradeScale">
+                                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                        <MudText>@tradeScale.GetDisplayName()</MudText>
+                                                    </MudStack>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
+                                }
+                                <div class="invoice-core-field invoice-core-field--number">
+                                    <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Tag" Size="Size.Small" /> شناسه فاکتور</span>
+                                    <MudNumericField @bind-Value="_model.InvoiceNumber"
+                                                     For="@(() => _model.InvoiceNumber)"
+                                                     dir="ltr"
+                                                     HideSpinButtons="true"
+                                                     Label="@(_model.GetDisplayName(() => _model.InvoiceNumber))"
+                                                     Margin="Margin.Dense"
+                                                     Adornment="Adornment.End"
+                                                     AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                                     Variant="Variant.Outlined" />
+                                </div>
+                                <div class="invoice-core-field invoice-core-field--date">
+                                    <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.Event" Size="Size.Small" /> زمان ثبت</span>
+                                    <MudDatePicker @bind-Date="_model.InvoiceDate"
+                                                   Color="Color.Secondary"
+                                                   Editable="true"
+                                                   AnchorOrigin="Origin.TopCenter"
+                                                   TransformOrigin="Origin.BottomCenter"
+                                                   For="@(() => _model.InvoiceDate)"
+                                                   dir="ltr"
+                                                   Label="@(_model.GetDisplayName(() => _model.InvoiceDate))"
+                                                   ImmediateText="true"
+                                                   Margin="Margin.Dense"
+                                                   Rounded="true"
+                                                   Variant="Variant.Outlined" />
+                                </div>
+                                <div class="invoice-core-field invoice-core-field--due">
+                                    <span class="invoice-core-field-caption"><MudIcon Icon="@Icons.Material.Outlined.EventAvailable" Size="Size.Small" /> موعد تسویه</span>
+                                    <div class="invoice-core-due-control">
+                                        <MudDatePicker @bind-Date="_model.DueDate"
+                                                       Color="Color.Secondary"
+                                                       Editable="true"
+                                                       dir="ltr"
+                                                       AnchorOrigin="Origin.TopCenter"
+                                                       TransformOrigin="Origin.BottomCenter"
+                                                       For="@(() => _model.DueDate)"
+                                                       Label="@(_model.GetDisplayName(() => _model.DueDate))"
+                                                       ImmediateText="true"
+                                                       Margin="Margin.Dense"
+                                                       Rounded="true"
+                                                       Variant="Variant.Outlined" />
+                                        @if (_model.IsOverdue)
+                                        {
+                                            <MudTooltip Text="ارسال پیامک یادآوری تسویه">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                                               Variant="Variant.Outlined"
+                                                               Color="Color.Primary"
+                                                               OnClick="HandleSendReminderClick" />
+                                            </MudTooltip>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="invoice-core-price-strip">
+                                <div class="invoice-core-strip-title">
+                                    <MudIcon Icon="@Icons.Material.Outlined.Payments" Size="Size.Small" />
+                                    <span>واحد محاسبه</span>
+                                </div>
+                                <div class="invoice-core-price-controls">
+                                    <div class="invoice-core-unit-control">
+                                        <MudSelect T="GetPriceUnitTitleResponse?"
+                                                   Value="_model.InvoicePriceUnit"
+                                                   ValueChanged="OnInvoicePriceUnitChanged"
+                                                   Label="@_model.GetDisplayName(() => _model.InvoicePriceUnit)"
+                                                   For="() => _model.InvoicePriceUnit"
+                                                   Margin="Margin.Dense"
+                                                   Variant="Variant.Outlined">
+                                            @foreach (var item in _priceUnits)
+                                            {
+                                                <MudSelectItem Value="item">
+                                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                        <MudAvatar Size="Size.Small">
+                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                                        </MudAvatar>
+                                                        <MudText>@item.Title</MudText>
+                                                    </MudStack>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
+                                    @if (_model.InvoicePriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
+                                    {
+                                        <div class="invoice-core-rate-control">
+                                            <MudNumericField T="decimal?"
+                                                             @bind-Value="@_model.ExchangeRate"
+                                                             Variant="Variant.Outlined"
+                                                             dir="ltr"
+                                                             Label="@_model.GetDisplayName(() => _model.ExchangeRate)"
+                                                             For="() => _model.ExchangeRate"
+                                                             Format="#,##0.##"
+                                                             DebounceInterval="1"
+                                                             HideSpinButtons="true"
+                                                             Adornment="Adornment.End"
+                                                             AdornmentText="@_priceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
+                                                             Margin="Margin.Dense" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </section>
+                        <section id="invoice-customer" class="invoice-section invoice-customer-section">
+                            <div class="invoice-section-header">
+                                <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.PersonOutline" /></span>
+                                <div>
+                                    <span class="invoice-section-kicker">بخش ۲</span>
+                                    <h2>طرف‌حساب</h2>
+                                </div>
+                                @if (_model.Customer is not null)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
                                 }
                             </div>
-                        </div>
-                    </div>
-                    <div class="invoice-core-price-strip">
-                        <div class="invoice-core-strip-title">
-                            <MudIcon Icon="@Icons.Material.Outlined.Payments" Size="Size.Small" />
-                            <span>واحد محاسبه</span>
-                        </div>
-                        <div class="invoice-core-price-controls">
-                            <div class="invoice-core-unit-control">
-                                <MudSelect T="GetPriceUnitTitleResponse?"
-                                           Value="_model.InvoicePriceUnit"
-                                           ValueChanged="OnInvoicePriceUnitChanged"
-                                           Label="@_model.GetDisplayName(() => _model.InvoicePriceUnit)"
-                                           For="() => _model.InvoicePriceUnit"
-                                           Margin="Margin.Dense"
-                                           Variant="Variant.Outlined">
-                                    @foreach (var item in _priceUnits)
-                                    {
-                                        <MudSelectItem Value="item">
-                                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudAvatar Size="Size.Small">
-                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
-                                                </MudAvatar>
-                                                <MudText>@item.Title</MudText>
-                                            </MudStack>
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                            @if (_model.InvoicePriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
-                            {
-                                <div class="invoice-core-rate-control">
-                                    <MudNumericField T="decimal?"
-                                                     @bind-Value="@_model.ExchangeRate"
-                                                     Variant="Variant.Outlined"
-                                                     dir="ltr"
-                                                     Label="@_model.GetDisplayName(() => _model.ExchangeRate)"
-                                                     For="() => _model.ExchangeRate"
-                                                     Format="#,##0.##"
-                                                     DebounceInterval="1"
-                                                     HideSpinButtons="true"
-                                                     Adornment="Adornment.End"
-                                                     AdornmentText="@_priceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
-                                                     Margin="Margin.Dense" />
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </section>
-                <section id="invoice-customer" class="invoice-section invoice-customer-section">
-                    <div class="invoice-section-header">
-                        <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.PersonOutline" /></span>
-                        <div>
-                            <span class="invoice-section-kicker">بخش ۲</span>
-                            <h2>طرف‌حساب</h2>
-                        </div>
-                        @if (_model.Customer is not null)
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
-                        }
-                    </div>
-                    <div class="invoice-customer-tools">
-                        <MudAutocomplete T="CustomerVm"
-                                         @bind-Value="_model.Customer"
-                                         Text="@_model.Customer?.FullName"
-                                         For="@(() => _model.Customer!)"
-                                         Placeholder="جستجوی مشتری..."
-                                         ToStringFunc="@(customer => customer != null ? $"{customer.FullName} - {customer.CustomerType.GetDisplayName()}" : null)"
-                                         Margin="Margin.Dense"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Outlined.Search"
-                                         Variant="Variant.Outlined"
-                                         SearchFunc="@SearchCustomers"
-                                         ResetValueOnEmptyText="true"
-                                         DebounceInterval="0"
-                                         ShowProgressIndicator="false" />
-                        <MudTooltip Text="مشتری جدید">
-                            <MudIconButton Icon="@Icons.Material.Outlined.PersonAdd"
-                                           Class="invoice-customer-add"
-                                           Color="Color.Primary"
-                                           Variant="Variant.Outlined"
-                                           OnClick="OnAddCustomer" />
-                        </MudTooltip>
-                    </div>
-                    @if (_model.Customer is { } customer)
-                    {
-                        <div class="invoice-customer-card">
-                            <div class="invoice-customer-card-head">
-                                <div class="invoice-customer-avatar"><MudIcon Icon="@Icons.Material.Outlined.Person" Size="Size.Small" /></div>
-                                <div class="invoice-customer-identity">
-                                    <strong>@customer.FullName</strong>
-                                    <span>@customer.CustomerType.GetDisplayName()</span>
-                                </div>
-                                <MudTooltip Text="ویرایش مشتری">
-                                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                            <div class="invoice-customer-tools">
+                                <MudAutocomplete T="CustomerVm"
+                                                 @bind-Value="_model.Customer"
+                                                 Text="@_model.Customer?.FullName"
+                                                 For="@(() => _model.Customer!)"
+                                                 Placeholder="جستجوی مشتری..."
+                                                 ToStringFunc="@(customer => customer != null ? $"{customer.FullName} - {customer.CustomerType.GetDisplayName()}" : null)"
+                                                 Margin="Margin.Dense"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentIcon="@Icons.Material.Outlined.Search"
+                                                 Variant="Variant.Outlined"
+                                                 SearchFunc="@SearchCustomers"
+                                                 ResetValueOnEmptyText="true"
+                                                 DebounceInterval="0"
+                                                 ShowProgressIndicator="false" />
+                                <MudTooltip Text="مشتری جدید">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.PersonAdd"
+                                                   Class="invoice-customer-add"
+                                                   Color="Color.Primary"
                                                    Variant="Variant.Outlined"
-                                                   Color="Color.Default"
-                                                   OnClick="OnEditCustomer" />
+                                                   OnClick="OnAddCustomer" />
                                 </MudTooltip>
                             </div>
-                            <div class="invoice-customer-details">
-                                <div>
-                                    <span>شماره تماس</span>
-                                    <strong dir="ltr">@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "ثبت نشده" : customer.PhoneNumber)</strong>
-                                </div>
-                                <div>
-                                    <span>کد ملی / شناسه</span>
-                                    <strong dir="ltr">@(string.IsNullOrWhiteSpace(customer.NationalId) ? "ثبت نشده" : customer.NationalId)</strong>
-                                </div>
-                                @if (customer.Id.HasValue)
-                                {
-                                    <div class="invoice-customer-balance">
-                                        <span>مانده طرف‌حساب</span>
-                                        <CustomerRemaining CustomerId="customer.Id.Value"
-                                                           TextTypo="Typo.body2"
-                                                           PriceUnit="_model.InvoicePriceUnit"
-                                                           EnableManualSlide="true"
-                                                           AddedValue="@(_applyCurrentInvoice
-                                                               ? (IsEditMode ? GetCustomerBalanceChange() : GetNewInvoiceCustomerBalanceEffect())
-                                                               : null)" />
+                            @if (_model.Customer is { } customer)
+                            {
+                                <div class="invoice-customer-card">
+                                    <div class="invoice-customer-card-head">
+                                        <div class="invoice-customer-avatar"><MudIcon Icon="@Icons.Material.Outlined.Person" Size="Size.Small" /></div>
+                                        <div class="invoice-customer-identity">
+                                            <strong>@customer.FullName</strong>
+                                            <span>@customer.CustomerType.GetDisplayName()</span>
+                                        </div>
+                                        <MudTooltip Text="ویرایش مشتری">
+                                            <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                                           Variant="Variant.Outlined"
+                                                           Color="Color.Default"
+                                                           OnClick="OnEditCustomer" />
+                                        </MudTooltip>
                                     </div>
-                                }
-                            </div>
-                            @if (customer.Id.HasValue)
-                            {
-                                <div class="invoice-customer-balance-option">
-                                    <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Primary" Size="Size.Small" />
-                                    <span>@RemainingTooltipText</span>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="invoice-customer-empty">
-                            <MudIcon Icon="@Icons.Material.Outlined.PersonSearch" Size="Size.Small" />
-                            <span>برای شروع، طرف‌حساب را انتخاب کنید.</span>
-                        </div>
-                    }
-                </section>
-                <aside id="invoice-finance" class="invoice-workspace-side">
-                    <div class="invoice-settlement-main">
-                        <section class="invoice-section invoice-financial-card">
-                        <div class="invoice-section-header">
-                            <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" /></span>
-                            <div><span class="invoice-section-kicker">بخش ۴</span><h2>مالی و تسویه</h2><p>خلاصه زنده محاسبات فاکتور</p></div>
-                        </div>
-                        <div class="invoice-financial-total">
-                            <span>مبلغ نهایی فاکتور</span>
-                            <strong>@_model.TotalInvoiceAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong>
-                        </div>
-                        <div class="invoice-financial-balance">
-                            <span>مانده نهایی</span>
-                            <strong class="@( _model.TotalUnpaidAmount == 0 ? "is-clear" : "" )">
-                                @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate,
-                                                             _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
-                            </strong>
-                            <div class="invoice-financial-unit">
-                                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
-                                           StartIcon="@Icons.Material.Outlined.SwapHoriz"
-                                           OnClick="OnTotalUnpaidMenuToggled">تغییر واحد مانده</MudButton>
-                                <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="pa-3"
-                                            AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
-                                    <div class="invoice-unit-popover">
-                                        <UnpaidPriceSelector PriceUnits="_priceUnits"
-                                                             TotalUnpaidAmount="@Math.Abs(_model.TotalUnpaidAmount)"
-                                                             TotalUnpaidSecondaryAmount="@Math.Abs(_model.TotalUnpaidSecondaryAmount)"
-                                                             MainPriceUnit="_model.InvoicePriceUnit"
-                                                             @bind-UnpaidPriceUnit="_model.UnpaidPriceUnit"
-                                                             @bind-ExchangeRate="_model.UnpaidExchangeRate" />
-                                        <MudButton OnClick="OnTotalUnpaidMenuToggled" Variant="Variant.Filled"
-                                                   Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check">تأیید</MudButton>
+                                    <div class="invoice-customer-details">
+                                        <div>
+                                            <span>شماره تماس</span>
+                                            <strong dir="ltr">@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "ثبت نشده" : customer.PhoneNumber)</strong>
+                                        </div>
+                                        <div>
+                                            <span>کد ملی / شناسه</span>
+                                            <strong dir="ltr">@(string.IsNullOrWhiteSpace(customer.NationalId) ? "ثبت نشده" : customer.NationalId)</strong>
+                                        </div>
+                                        @if (customer.Id.HasValue)
+                                        {
+                                            <div class="invoice-customer-balance">
+                                                <span>مانده طرف‌حساب</span>
+                                                <CustomerRemaining CustomerId="customer.Id.Value"
+                                                                   TextTypo="Typo.body2"
+                                                                   PriceUnit="_model.InvoicePriceUnit"
+                                                                   EnableManualSlide="true"
+                                                                   AddedValue="@(_applyCurrentInvoice
+                                                                       ? (IsEditMode ? GetCustomerBalanceChange() : GetNewInvoiceCustomerBalanceEffect())
+                                                                       : null)" />
+                                            </div>
+                                        }
                                     </div>
-                                </MudPopover>
-                            </div>
-                        </div>
-                        <div class="invoice-financial-breakdown">
-                            <div><span>ارزش خام اقلام</span><strong>@_model.TotalItemsRawAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>اجرت ساخت</span><strong>@_model.TotalItemsWageAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>سود اقلام</span><strong>@_model.TotalItemsProfitAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>مالیات</span><strong>@_model.TotalItemsTaxAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>تخفیف‌ها</span><strong>@_model.TotalDiscountsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>مخارج جانبی</span><strong>@_model.TotalExtraCostsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            @if (_model.UsedProducts.Count > 0)
-                            {
-                                <div><span>طلای مستعمل خریداری‌شده</span><strong>@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            }
-                            <div><span>دریافتی</span><strong>@_model.TotalReceivedPaymentAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                            <div><span>پرداختی</span><strong>@_model.TotalPaidPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
-                        </div>
-                        <div class="invoice-financial-actions">
-                            @if (InvoiceItemCount == 0)
-                            {
-                                <div class="invoice-financial-hint">
-                                    <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" />
-                                    ابتدا یک قلم به فاکتور اضافه کنید تا امکان تسویه و اعمال تخفیف فعال شود.
+                                    @if (customer.Id.HasValue)
+                                    {
+                                        <div class="invoice-customer-balance-option">
+                                            <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Primary" Size="Size.Small" />
+                                            <span>@RemainingTooltipText</span>
+                                        </div>
+                                    }
                                 </div>
-                            }
-                            <MudButton Color="Color.Primary" Variant="Variant.Filled"
-                                       StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
-                                       Disabled="@(InvoiceItemCount == 0)"
-                                       OnClick="() => OpenPaymentsDialog(false)">تسویه فاکتور</MudButton>
-                            @if (_model.InvoicePayments.Count > 0)
-                            {
-                                <MudButton Color="Color.Default" Variant="Variant.Outlined"
-                                           StartIcon="@Icons.Material.Outlined.ReceiptLong"
-                                           OnClick="() => OpenPaymentsDialog(true)">تسویه‌ها (@_model.InvoicePayments.Count)</MudButton>
-                            }
-                            <div class="invoice-financial-secondary-actions">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Default"
-                                           StartIcon="@Icons.Material.Outlined.LocalOffer" Disabled="@(InvoiceItemCount == 0)" OnClick="OpenDiscountsDialog">تخفیف</MudButton>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Default"
-                                           StartIcon="@Icons.Material.Outlined.ReceiptLong" Disabled="@(InvoiceItemCount == 0)" OnClick="OpenExtraCostsDialog">مخارج</MudButton>
-                            </div>
-                        </div>
-                    </section>
-                        <section class="invoice-section invoice-final-review">
-                        <div class="invoice-final-review-title"><MudIcon Icon="@Icons.Material.Outlined.FactCheck" /><span>آماده ثبت</span></div>
-                        <p>تعداد اقلام: <strong>@InvoiceItemCount</strong></p>
-                        <p>طرف‌حساب: <strong>@(_model.Customer?.FullName ?? "انتخاب نشده")</strong></p>
-                        <p>وضعیت: <strong>@(_model.TotalUnpaidAmount == 0 ? "بدون مانده" : "دارای مانده")</strong></p>
-                    </section>
-                    </div>
-                </aside>
-            </div>
-
-            <main class="invoice-workspace-main">
-                <section id="invoice-lines" class="invoice-section invoice-lines-section">
-                        <div class="invoice-section-header">
-                            <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.Inventory2" /></span>
-                            <div><span class="invoice-section-kicker">بخش ۳</span><h2>اقلام فاکتور</h2><p>جنس را انتخاب کنید و اقلام فاکتور را مدیریت کنید.</p></div>
-                            <span class="invoice-section-count">@InvoiceItemCount قلم</span>
-                        </div>
-                        <div class="invoice-item-switch" role="tablist" aria-label="گروه اقلام فاکتور">
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 0)" class="@(_activeItemTab == 0 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 0"><MudIcon Icon="@Icons.Material.Outlined.Diamond" Size="Size.Small" /> طلا و جواهر <span>@_model.ProductItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 1)" class="@(_activeItemTab == 1 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 1"><MudIcon Icon="@Icons.Material.Outlined.Toll" Size="Size.Small" /> سکه <span>@_model.CoinItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 2)" class="@(_activeItemTab == 2 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 2"><MudIcon Icon="@Icons.Material.Outlined.CurrencyExchange" Size="Size.Small" /> ارز <span>@_model.CurrencyItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 3)" class="@(_activeItemTab == 3 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 3"><MudIcon Icon="@Icons.Material.Outlined.Recycling" Size="Size.Small" /> طلای مستعمل <span>@_model.UsedProducts.Count</span></button>
-                        </div>
-                        <div class="invoice-item-tab-content" role="tabpanel" @key="_activeItemTab">
-                            @if (_activeItemTab == 0)
-                            {
-                                <ProductItemsList Items="_model.ProductItems" PriceUnit="_model.InvoicePriceUnit"
-                                                  OnEditItem="OnEditProductItem" OnRemoveItem="OnRemoveProductItem"
-                                                  InvoiceType="_model.InvoiceType" OnAddItem="OnAddProductItem"
-                                                  OnOpenSelector="OnOpenProductSelector"
-                                                  OnBarcodeChanged="OnProductBarcodeChanged"
-                                                  OnPrintBarcode="OnPrintProductBarcode" />
-                            }
-                            else if (_activeItemTab == 1)
-                            {
-                                <CoinItemsList Items="_model.CoinItems" PriceUnit="_model.InvoicePriceUnit"
-                                               InvoiceType="_model.InvoiceType" OnEditItem="OnEditCoinItem"
-                                               OnRemoveItem="OnRemoveCoinItem" OnAddItem="OnAddCoinItem"
-                                               OnOpenSelector="OnOpenCoinSelector" OnBarcodeChanged="OnCoinBarcodeChanged"
-                                               OnPrintBarcode="OnPrintCoinBarcode" />
-                            }
-                            else if (_activeItemTab == 2)
-                            {
-                                <CurrencyItemsList Items="_model.CurrencyItems" PriceUnit="_model.InvoicePriceUnit"
-                                                   InvoiceType="_model.InvoiceType" OnEditItem="OnEditCurrencyItem"
-                                                   OnRemoveItem="OnRemoveCurrencyItem" OnAddItem="OnAddCurrencyItem"
-                                                   OnOpenSelector="OnOpenCurrencySelector" />
                             }
                             else
                             {
-                                <UsedProductsList Items="_model.UsedProducts" PriceUnit="_model.InvoicePriceUnit"
-                                                  OnEditItem="OnEditUsedProduct" OnRemoveItem="OnRemoveUsedProduct"
-                                                  OnAddItem="OnAddUsedProduct" OnPrintBarcode="OnPrintUsedBarcode" />
+                                <div class="invoice-customer-empty">
+                                    <MudIcon Icon="@Icons.Material.Outlined.PersonSearch" Size="Size.Small" />
+                                    <span>برای شروع، طرف‌حساب را انتخاب کنید.</span>
+                                </div>
                             }
-                        </div>
-                    </section>
-            </main>
+                        </section>
+                    </div>
+                    <section id="invoice-lines" class="invoice-section invoice-lines-section">
+                                <div class="invoice-section-header">
+                                    <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.Inventory2" /></span>
+                                    <div><span class="invoice-section-kicker">بخش ۳</span><h2>اقلام فاکتور</h2><p>جنس را انتخاب کنید و اقلام فاکتور را مدیریت کنید.</p></div>
+                                    <span class="invoice-section-count">@InvoiceItemCount قلم</span>
+                                </div>
+                                <div class="invoice-item-switch" role="tablist" aria-label="گروه اقلام فاکتور">
+                                    <button type="button" role="tab" aria-selected="@(_activeItemTab == 0)" class="@(_activeItemTab == 0 ? "is-active" : "")"
+                                            @onclick="() => _activeItemTab = 0"><MudIcon Icon="@Icons.Material.Outlined.Diamond" Size="Size.Small" /> طلا و جواهر <span>@_model.ProductItems.Count</span></button>
+                                    <button type="button" role="tab" aria-selected="@(_activeItemTab == 1)" class="@(_activeItemTab == 1 ? "is-active" : "")"
+                                            @onclick="() => _activeItemTab = 1"><MudIcon Icon="@Icons.Material.Outlined.Toll" Size="Size.Small" /> سکه <span>@_model.CoinItems.Count</span></button>
+                                    <button type="button" role="tab" aria-selected="@(_activeItemTab == 2)" class="@(_activeItemTab == 2 ? "is-active" : "")"
+                                            @onclick="() => _activeItemTab = 2"><MudIcon Icon="@Icons.Material.Outlined.CurrencyExchange" Size="Size.Small" /> ارز <span>@_model.CurrencyItems.Count</span></button>
+                                    <button type="button" role="tab" aria-selected="@(_activeItemTab == 3)" class="@(_activeItemTab == 3 ? "is-active" : "")"
+                                            @onclick="() => _activeItemTab = 3"><MudIcon Icon="@Icons.Material.Outlined.Recycling" Size="Size.Small" /> طلای مستعمل <span>@_model.UsedProducts.Count</span></button>
+                                </div>
+                                <div class="invoice-item-tab-content" role="tabpanel" @key="_activeItemTab">
+                                    @if (_activeItemTab == 0)
+                                    {
+                                        <ProductItemsList Items="_model.ProductItems" PriceUnit="_model.InvoicePriceUnit"
+                                                          OnEditItem="OnEditProductItem" OnRemoveItem="OnRemoveProductItem"
+                                                          InvoiceType="_model.InvoiceType" OnAddItem="OnAddProductItem"
+                                                          OnOpenSelector="OnOpenProductSelector"
+                                                          OnBarcodeChanged="OnProductBarcodeChanged"
+                                                          OnPrintBarcode="OnPrintProductBarcode" />
+                                    }
+                                    else if (_activeItemTab == 1)
+                                    {
+                                        <CoinItemsList Items="_model.CoinItems" PriceUnit="_model.InvoicePriceUnit"
+                                                       InvoiceType="_model.InvoiceType" OnEditItem="OnEditCoinItem"
+                                                       OnRemoveItem="OnRemoveCoinItem" OnAddItem="OnAddCoinItem"
+                                                       OnOpenSelector="OnOpenCoinSelector" OnBarcodeChanged="OnCoinBarcodeChanged"
+                                                       OnPrintBarcode="OnPrintCoinBarcode" />
+                                    }
+                                    else if (_activeItemTab == 2)
+                                    {
+                                        <CurrencyItemsList Items="_model.CurrencyItems" PriceUnit="_model.InvoicePriceUnit"
+                                                           InvoiceType="_model.InvoiceType" OnEditItem="OnEditCurrencyItem"
+                                                           OnRemoveItem="OnRemoveCurrencyItem" OnAddItem="OnAddCurrencyItem"
+                                                           OnOpenSelector="OnOpenCurrencySelector" />
+                                    }
+                                    else
+                                    {
+                                        <UsedProductsList Items="_model.UsedProducts" PriceUnit="_model.InvoicePriceUnit"
+                                                          OnEditItem="OnEditUsedProduct" OnRemoveItem="OnRemoveUsedProduct"
+                                                          OnAddItem="OnAddUsedProduct" OnPrintBarcode="OnPrintUsedBarcode" />
+                                    }
+                                </div>
+                            </section>
+                </main>
+                <aside id="invoice-finance" class="invoice-workspace-side">
+                    <div class="invoice-settlement-main">
+                        <section class="invoice-section invoice-financial-card">
+                                <div class="invoice-section-header">
+                                    <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" /></span>
+                                    <div><span class="invoice-section-kicker">بخش ۴</span><h2>مالی و تسویه</h2><p>خلاصه زنده محاسبات فاکتور</p></div>
+                                </div>
+                                <div class="invoice-financial-total">
+                                    <span>مبلغ نهایی فاکتور</span>
+                                    <strong>@_model.TotalInvoiceAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong>
+                                </div>
+                                <div class="invoice-financial-balance">
+                                    <span>مانده نهایی</span>
+                                    <strong class="@( _model.TotalUnpaidAmount == 0 ? "is-clear" : "" )">
+                                        @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate,
+                                                                     _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
+                                    </strong>
+                                    <div class="invoice-financial-unit">
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                                                   StartIcon="@Icons.Material.Outlined.SwapHoriz"
+                                                   OnClick="OnTotalUnpaidMenuToggled">تغییر واحد مانده</MudButton>
+                                        <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="pa-3"
+                                                    AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                                            <div class="invoice-unit-popover">
+                                                <UnpaidPriceSelector PriceUnits="_priceUnits"
+                                                                     TotalUnpaidAmount="@Math.Abs(_model.TotalUnpaidAmount)"
+                                                                     TotalUnpaidSecondaryAmount="@Math.Abs(_model.TotalUnpaidSecondaryAmount)"
+                                                                     MainPriceUnit="_model.InvoicePriceUnit"
+                                                                     @bind-UnpaidPriceUnit="_model.UnpaidPriceUnit"
+                                                                     @bind-ExchangeRate="_model.UnpaidExchangeRate" />
+                                                <MudButton OnClick="OnTotalUnpaidMenuToggled" Variant="Variant.Filled"
+                                                           Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check">تأیید</MudButton>
+                                            </div>
+                                        </MudPopover>
+                                    </div>
+                                </div>
+                                <div class="invoice-financial-breakdown">
+                                    <div><span>ارزش خام اقلام</span><strong>@_model.TotalItemsRawAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>اجرت ساخت</span><strong>@_model.TotalItemsWageAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>سود اقلام</span><strong>@_model.TotalItemsProfitAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>مالیات</span><strong>@_model.TotalItemsTaxAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>تخفیف‌ها</span><strong>@_model.TotalDiscountsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>مخارج جانبی</span><strong>@_model.TotalExtraCostsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    @if (_model.UsedProducts.Count > 0)
+                                    {
+                                        <div><span>طلای مستعمل خریداری‌شده</span><strong>@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    }
+                                    <div><span>دریافتی</span><strong>@_model.TotalReceivedPaymentAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                    <div><span>پرداختی</span><strong>@_model.TotalPaidPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
+                                </div>
+                                <div class="invoice-financial-actions">
+                                    @if (InvoiceItemCount == 0)
+                                    {
+                                        <div class="invoice-financial-hint">
+                                            <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" />
+                                            ابتدا یک قلم به فاکتور اضافه کنید تا امکان تسویه و اعمال تخفیف فعال شود.
+                                        </div>
+                                    }
+                                    <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
+                                               Disabled="@(InvoiceItemCount == 0)"
+                                               OnClick="() => OpenPaymentsDialog(false)">تسویه فاکتور</MudButton>
+                                    @if (_model.InvoicePayments.Count > 0)
+                                    {
+                                        <MudButton Color="Color.Default" Variant="Variant.Outlined"
+                                                   StartIcon="@Icons.Material.Outlined.ReceiptLong"
+                                                   OnClick="() => OpenPaymentsDialog(true)">تسویه‌ها (@_model.InvoicePayments.Count)</MudButton>
+                                    }
+                                    <div class="invoice-financial-secondary-actions">
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                                   StartIcon="@Icons.Material.Outlined.LocalOffer" Disabled="@(InvoiceItemCount == 0)" OnClick="OpenDiscountsDialog">تخفیف</MudButton>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                                   StartIcon="@Icons.Material.Outlined.ReceiptLong" Disabled="@(InvoiceItemCount == 0)" OnClick="OpenExtraCostsDialog">مخارج</MudButton>
+                                    </div>
+                                </div>
+                            </section>
+                        <section class="invoice-section invoice-final-review">
+                                <div class="invoice-final-review-title"><MudIcon Icon="@Icons.Material.Outlined.FactCheck" /><span>آماده ثبت</span></div>
+                                <p>تعداد اقلام: <strong>@InvoiceItemCount</strong></p>
+                                <p>طرف‌حساب: <strong>@(_model.Customer?.FullName ?? "انتخاب نشده")</strong></p>
+                                <p>وضعیت: <strong>@(_model.TotalUnpaidAmount == 0 ? "بدون مانده" : "دارای مانده")</strong></p>
+                            </section>
+                    </div>
+                </aside>
+            </div>
             <div id="invoice-review" class="invoice-workspace-footer">
                 <div class="invoice-form-actions">
                 <div class="invoice-form-actions-danger">

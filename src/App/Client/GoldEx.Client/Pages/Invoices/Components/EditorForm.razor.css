@@ -14,10 +14,11 @@
 .invoice-workspace-steps a:hover,.invoice-workspace-steps a:focus-visible{border-color:var(--mud-palette-primary);color:var(--mud-palette-primary);transform:translateY(-1px)}
 .invoice-workspace-steps a span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:rgba(var(--mud-palette-primary-rgb),.1);color:var(--mud-palette-primary);font-size:.79rem}
 
-.invoice-workspace-main{display:block;min-width:0}
-.invoice-workspace-top{display:grid;grid-template-columns:minmax(0,3fr) minmax(245px,1fr) minmax(355px,2fr);align-items:start;gap:12px;min-width:0;margin-bottom:14px}
-.invoice-workspace-top>.invoice-section,.invoice-workspace-top>.invoice-workspace-side{min-width:0}
-.invoice-workspace-top .invoice-core-section{min-height:285px}
+.invoice-workspace-columns{display:grid;grid-template-columns:minmax(0,2fr) minmax(335px,1fr);align-items:start;gap:14px}
+.invoice-workspace-main{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:14px;min-width:0}
+.invoice-workspace-top{display:grid;grid-template-columns:minmax(0,3fr) minmax(195px,1fr);align-items:start;gap:12px;min-width:0}
+.invoice-workspace-top>.invoice-section{min-width:0}
+.invoice-workspace-top .invoice-core-section{height:auto}
 
 .invoice-workspace-top .invoice-section-header{margin-bottom:12px}
 .invoice-section{min-width:0;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:19px;padding:18px;scroll-margin-top:120px}
@@ -28,7 +29,7 @@
 .invoice-section-header p{margin:0;font-size:.75rem;color:var(--mud-palette-text-secondary);line-height:1.65}
 .invoice-section-complete,.invoice-section-count{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border-radius:999px;padding:5px 10px;background:var(--mud-palette-background);color:var(--mud-palette-text-secondary);font-size:.73rem}
 .invoice-section-complete{color:var(--mud-palette-success)}
-/* Header, compact customer and settlement sit in a single RTL row; items are full-width below. */
+/* Main column: invoice header + compact customer side by side; items fill this column below. Finance stays in its own left sidebar. */
 .invoice-core-primary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
 .invoice-core-field{grid-column:span 2;min-width:0;padding:0;border:0;border-radius:0;background:transparent}
 .invoice-core-primary-grid.is-create .invoice-core-field--date,
@@ -75,7 +76,7 @@
 .invoice-item-switch button.is-active{background:var(--mud-palette-surface);color:var(--mud-palette-primary);border-color:var(--mud-palette-lines-default);box-shadow:0 2px 7px rgba(0,0,0,.055);font-weight:500}
 .invoice-item-switch button>span{display:grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:rgba(var(--mud-palette-primary-rgb),.09);font-size:.72rem;padding-inline:5px}
 .invoice-item-tab-content{animation:invoice-ws-fadein .23s ease both;min-width:0}
-.invoice-workspace-side{min-width:0;scroll-margin-top:120px}
+.invoice-workspace-side{min-width:0;position:sticky;top:110px;scroll-margin-top:120px}
 .invoice-settlement-layout{display:block}
 .invoice-settlement-main{display:grid;gap:12px;min-width:0}
 .invoice-customer-section{padding:10px}
@@ -144,21 +145,24 @@
 .invoice-workspace ::deep .invoice-line-desktop .mud-icon-button{border-radius:10px;border:1px solid var(--mud-palette-lines-default);width:32px;height:32px;box-shadow:none}
 .invoice-workspace ::deep .invoice-line-mobile{display:none}
 @media(max-width:1500px){
-.invoice-workspace-top{grid-template-columns:minmax(0,2.5fr) minmax(210px,1fr) minmax(320px,1.8fr);gap:10px}
+.invoice-workspace-columns{gap:12px}
+.invoice-workspace-top{grid-template-columns:minmax(0,3fr) minmax(190px,1fr);gap:10px}
 .invoice-core-field{padding:0}
 .invoice-financial-card{padding:12px}
 .invoice-customer-section{padding:9px}
 }
 @media(max-width:1199.98px){
-.invoice-workspace-top{grid-template-columns:minmax(0,1.65fr) minmax(285px,1fr);grid-template-areas:"core finance" "customer finance";gap:12px}
-.invoice-core-section{grid-area:core}
-.invoice-customer-section{grid-area:customer}
-.invoice-workspace-side{grid-area:finance}
+.invoice-workspace-columns{grid-template-columns:minmax(0,1fr) minmax(290px,.62fr)}
+.invoice-workspace-top{grid-template-columns:minmax(0,2.5fr) minmax(190px,1fr)}
 .invoice-section{padding:13px}
 .invoice-item-switch button{font-size:.72rem}
 }
+@media(max-width:1099.98px){
+.invoice-workspace-columns{grid-template-columns:minmax(0,1fr)}
+.invoice-workspace-side{position:static}
+.invoice-workspace-top{grid-template-columns:minmax(0,3fr) minmax(210px,1fr)}
+}
 @media(max-width:959.98px){
-.invoice-workspace-top{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"core core" "customer finance"}
 .invoice-core-primary-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
 .invoice-workspace-steps{gap:6px}
 .invoice-workspace-steps a{flex:0 0 auto}
@@ -189,7 +193,7 @@
 .invoice-core-unit-control,.invoice-core-rate-control{max-width:none}
 .invoice-customer-tools{gap:8px}
 .invoice-customer-details{gap:0}
-.invoice-workspace-top{grid-template-columns:1fr;grid-template-areas:"core" "customer" "finance"}
+.invoice-workspace-top{grid-template-columns:minmax(0,1fr);gap:10px}
 .invoice-financial-breakdown{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
 .invoice-item-switch{margin-bottom:11px}
 .invoice-item-switch button{font-size:.73rem}

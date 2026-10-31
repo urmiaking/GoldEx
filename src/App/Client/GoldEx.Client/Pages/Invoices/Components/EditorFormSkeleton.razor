@@ -3,24 +3,33 @@
         <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="220px" Height="49px" />
         <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="125px" Height="32px" />
     </header>
-    <div class="invoice-workspace-top">
-        <section class="invoice-section invoice-core-section">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="180px" Height="38px" />
-            <div class="invoice-core-primary-grid mt-3">
-                @for (var i = 0; i < 5; i++)
-                {
-                    <div class="invoice-core-field">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="58px" />
+    <div class="invoice-workspace-columns">
+        <main class="invoice-workspace-main">
+            <div class="invoice-workspace-top">
+                <section class="invoice-section invoice-core-section">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="180px" Height="38px" />
+                    <div class="invoice-core-primary-grid mt-3">
+                        @for (var i = 0; i < 5; i++)
+                        {
+                            <div class="invoice-core-field">
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="58px" />
+                            </div>
+                        }
                     </div>
-                }
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="55px" Class="mt-3" />
+                </section>
+                <section class="invoice-section invoice-customer-section">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="110px" Height="35px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="40px" Class="my-2" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="155px" />
+                </section>
             </div>
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="55px" Class="mt-3" />
-        </section>
-        <section class="invoice-section invoice-customer-section">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="110px" Height="35px" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="40px" Class="my-2" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="155px" />
-        </section>
+            <section class="invoice-section invoice-lines-section">
+                <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="165px" Height="40px" />
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="45px" Class="my-3" />
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="190px" />
+            </section>
+        </main>
         <aside class="invoice-workspace-side">
             <div class="invoice-settlement-main">
                 <section class="invoice-section invoice-financial-card">
@@ -28,14 +37,11 @@
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="80px" Class="my-2" />
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="115px" />
                 </section>
+                <section class="invoice-section invoice-final-review">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="105px" Height="30px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="75px" Class="mt-2" />
+                </section>
             </div>
         </aside>
     </div>
-    <main class="invoice-workspace-main">
-        <section class="invoice-section invoice-lines-section">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="165px" Height="40px" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="45px" Class="my-3" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="190px" />
-        </section>
-    </main>
 </div>
