@@ -78,14 +78,14 @@ test('existing payments retain totals edit delete and premium restriction in rev
 test('invoice workspace includes an always-visible settlement sidebar and accessible actions',()=>{
  const view=read('EditorForm.razor');
  const css=read('EditorForm.razor.css');
- assert.match(view,/class="invoice-workspace-columns"/);
+ assert.match(view,/class="invoice-workspace-top"/);
  assert.match(view,/id="invoice-finance"/);
  assert.match(view,/class="invoice-financial-actions"/);
  for(const label of ['تسویه فاکتور','تسویه‌ها','تخفیف','مخارج']) assert.ok(view.includes(label),label);
  assert.match(view,/OpenDiscountsDialog/);
  assert.match(view,/OpenExtraCostsDialog/);
  assert.doesNotMatch(view,/<MudExpansionPanel/);
- assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
+ assert.match(css,/\.invoice-workspace-top\{[^}]*display:grid/);
  assert.match(css,/font-weight:500/);
  assert.match(view,/class="invoice-form-actions"/);
  assert.match(view,/class="invoice-form-actions-primary"/);

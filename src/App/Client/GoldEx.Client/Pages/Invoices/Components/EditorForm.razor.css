@@ -13,10 +13,12 @@
 .invoice-workspace-steps a{display:inline-flex;align-items:center;gap:9px;flex:1 1 0;min-width:max-content;padding:10px 14px;border-radius:13px;text-decoration:none;font-size:.78rem;color:var(--mud-palette-text-secondary);border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-surface);transition:background .2s,border-color .2s,transform .2s}
 .invoice-workspace-steps a:hover,.invoice-workspace-steps a:focus-visible{border-color:var(--mud-palette-primary);color:var(--mud-palette-primary);transform:translateY(-1px)}
 .invoice-workspace-steps a span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:rgba(var(--mud-palette-primary-rgb),.1);color:var(--mud-palette-primary);font-size:.79rem}
-.invoice-workspace-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:start;gap:14px}
-.invoice-workspace-main{display:grid;gap:14px;min-width:0}
-.invoice-workspace-top{display:block;min-width:0;margin-bottom:14px}
-.invoice-workspace-top>.invoice-section{height:100%}
+
+.invoice-workspace-main{display:block;min-width:0}
+.invoice-workspace-top{display:grid;grid-template-columns:minmax(0,3fr) minmax(245px,1fr) minmax(355px,2fr);align-items:start;gap:12px;min-width:0;margin-bottom:14px}
+.invoice-workspace-top>.invoice-section,.invoice-workspace-top>.invoice-workspace-side{min-width:0}
+.invoice-workspace-top .invoice-core-section{min-height:285px}
+
 .invoice-workspace-top .invoice-section-header{margin-bottom:12px}
 .invoice-section{min-width:0;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:19px;padding:18px;scroll-margin-top:120px}
 .invoice-section-header{display:flex;align-items:center;gap:12px;margin-bottom:17px}
@@ -26,13 +28,13 @@
 .invoice-section-header p{margin:0;font-size:.75rem;color:var(--mud-palette-text-secondary);line-height:1.65}
 .invoice-section-complete,.invoice-section-count{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border-radius:999px;padding:5px 10px;background:var(--mud-palette-background);color:var(--mud-palette-text-secondary);font-size:.73rem}
 .invoice-section-complete{color:var(--mud-palette-success)}
-/* The invoice core stays full-width; the customer belongs beside settlement, not beside the core. */
+/* Header, compact customer and settlement sit in a single RTL row; items are full-width below. */
 .invoice-core-primary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
-.invoice-core-field{grid-column:span 2;min-width:0;padding:8px 10px 9px;border:1px solid var(--mud-palette-lines-default);border-radius:13px;background:var(--mud-palette-background);transition:border-color .2s,background .2s}
+.invoice-core-field{grid-column:span 2;min-width:0;padding:0;border:0;border-radius:0;background:transparent}
 .invoice-core-primary-grid.is-create .invoice-core-field--date,
 .invoice-core-primary-grid.is-create .invoice-core-field--due{grid-column:span 3}
-.invoice-core-field:focus-within{border-color:var(--mud-palette-primary);background:var(--mud-palette-surface)}
-.invoice-core-field-caption{display:flex;align-items:center;gap:5px;min-width:0;margin-bottom:3px;font-size:.7rem;color:var(--mud-palette-text-secondary);font-weight:500}
+.invoice-core-field:focus-within{background:transparent}
+.invoice-core-field-caption{display:none} /* Mud input labels are the sole visible field labels; avoid double labels and nested outlines. */
 .invoice-core-field-caption ::deep .mud-icon-root{font-size:16px;color:var(--mud-palette-primary)}
 .invoice-workspace ::deep .invoice-core-field .mud-input-control,
 .invoice-workspace ::deep .invoice-core-price-controls .mud-input-control{min-width:0;margin:0}
@@ -73,8 +75,8 @@
 .invoice-item-switch button.is-active{background:var(--mud-palette-surface);color:var(--mud-palette-primary);border-color:var(--mud-palette-lines-default);box-shadow:0 2px 7px rgba(0,0,0,.055);font-weight:500}
 .invoice-item-switch button>span{display:grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:rgba(var(--mud-palette-primary-rgb),.09);font-size:.72rem;padding-inline:5px}
 .invoice-item-tab-content{animation:invoice-ws-fadein .23s ease both;min-width:0}
-.invoice-workspace-side{min-width:0;position:sticky;top:110px}
-.invoice-settlement-layout{display:grid;grid-template-columns:minmax(205px,1fr) minmax(0,2fr);align-items:start;gap:12px}
+.invoice-workspace-side{min-width:0;scroll-margin-top:120px}
+.invoice-settlement-layout{display:block}
 .invoice-settlement-main{display:grid;gap:12px;min-width:0}
 .invoice-customer-section{padding:10px}
 .invoice-customer-section .invoice-section-header{gap:7px;margin-bottom:9px}
@@ -100,10 +102,10 @@
 .invoice-financial-unit ::deep .mud-button-root{font-weight:400;font-size:.75rem;padding-inline:0}
 .invoice-unit-popover{display:grid;gap:12px;min-width:min(80vw,320px)}
 .invoice-unit-popover ::deep .mud-button-root{border-radius:999px}
-.invoice-financial-breakdown{border-top:1px solid var(--mud-palette-lines-default);border-bottom:1px solid var(--mud-palette-lines-default);padding-block:12px;display:grid;gap:11px}
-.invoice-financial-breakdown>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;min-width:0}
+.invoice-financial-breakdown{border-top:1px solid var(--mud-palette-lines-default);border-bottom:1px solid var(--mud-palette-lines-default);padding-block:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.invoice-financial-breakdown>div{display:grid;gap:2px;min-width:0}
 .invoice-financial-breakdown span{font-size:.75rem;color:var(--mud-palette-text-secondary)}
-.invoice-financial-breakdown strong{font-size:.76rem;font-weight:500;overflow-wrap:anywhere;text-align:end}
+.invoice-financial-breakdown strong{font-size:.77rem;font-weight:500;overflow-wrap:anywhere;text-align:start}
 .invoice-financial-actions{display:grid;gap:8px;margin-top:13px}
 .invoice-financial-hint{display:flex;align-items:flex-start;gap:7px;padding:10px;border:1px dashed var(--mud-palette-lines-default);border-radius:12px;color:var(--mud-palette-text-secondary);font-size:.73rem;line-height:1.7}
 .invoice-financial-actions ::deep .mud-button-root{border-radius:999px;font-size:.78rem;font-weight:500;min-height:39px;box-shadow:none}
@@ -141,27 +143,28 @@
 .invoice-workspace ::deep .invoice-line-desktop tbody tr:hover{background:rgba(var(--mud-palette-primary-rgb),.033)}
 .invoice-workspace ::deep .invoice-line-desktop .mud-icon-button{border-radius:10px;border:1px solid var(--mud-palette-lines-default);width:32px;height:32px;box-shadow:none}
 .invoice-workspace ::deep .invoice-line-mobile{display:none}
-@media(max-width:1399.98px){
-.invoice-workspace-columns{grid-template-columns:minmax(0,1fr);gap:12px}
-.invoice-workspace-side{position:static}
+@media(max-width:1500px){
+.invoice-workspace-top{grid-template-columns:minmax(0,2.5fr) minmax(210px,1fr) minmax(320px,1.8fr);gap:10px}
+.invoice-core-field{padding:0}
+.invoice-financial-card{padding:12px}
+.invoice-customer-section{padding:9px}
 }
-@media(max-width:1199px){
-.invoice-settlement-layout{grid-template-columns:minmax(215px,1fr) minmax(0,2fr)}
-.invoice-workspace-columns{gap:12px}
+@media(max-width:1199.98px){
+.invoice-workspace-top{grid-template-columns:minmax(0,1.65fr) minmax(285px,1fr);grid-template-areas:"core finance" "customer finance";gap:12px}
+.invoice-core-section{grid-area:core}
+.invoice-customer-section{grid-area:customer}
+.invoice-workspace-side{grid-area:finance}
 .invoice-section{padding:13px}
 .invoice-item-switch button{font-size:.72rem}
 }
 @media(max-width:959.98px){
-.invoice-workspace-top{margin-bottom:12px}
+.invoice-workspace-top{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"core core" "customer finance"}
 .invoice-core-primary-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
-.invoice-workspace-columns{grid-template-columns:1fr}
-.invoice-workspace-side{position:static}
 .invoice-workspace-steps{gap:6px}
 .invoice-workspace-steps a{flex:0 0 auto}
 .invoice-section{border-radius:15px}
 .invoice-item-switch{justify-content:flex-start}
 .invoice-item-switch button{flex:0 0 auto;padding:10px 12px}
-.invoice-financial-breakdown{grid-template-columns:1fr 1fr;gap:12px 18px}
 }
 @media(max-width:699px){
 .invoice-workspace-heading{padding-block:5px 14px}
@@ -179,18 +182,17 @@
 .invoice-core-primary-grid .invoice-core-field,
 .invoice-core-primary-grid.is-create .invoice-core-field--date,
 .invoice-core-primary-grid.is-create .invoice-core-field--due{grid-column:span 1}
-.invoice-core-field{padding:7px 9px}
+.invoice-core-field{padding:0}
 .invoice-core-price-strip{flex-wrap:wrap;gap:8px;padding:10px}
 .invoice-core-strip-title{width:100%}
 .invoice-core-price-controls{justify-content:stretch}
 .invoice-core-unit-control,.invoice-core-rate-control{max-width:none}
 .invoice-customer-tools{gap:8px}
 .invoice-customer-details{gap:0}
-.invoice-settlement-layout{grid-template-columns:1fr}
-.invoice-customer-section{order:-1}
+.invoice-workspace-top{grid-template-columns:1fr;grid-template-areas:"core" "customer" "finance"}
+.invoice-financial-breakdown{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
 .invoice-item-switch{margin-bottom:11px}
 .invoice-item-switch button{font-size:.73rem}
-.invoice-financial-breakdown{grid-template-columns:1fr}
 .invoice-workspace-footer{padding:10px 11px;margin-top:11px}
 .invoice-form-actions{gap:8px}
 .invoice-form-actions-primary{flex:1;justify-content:flex-end}

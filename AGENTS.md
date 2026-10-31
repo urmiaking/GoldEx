@@ -1009,12 +1009,12 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Financial summary is read directly from existing InvoiceVm totals and is **always visible** in a standalone sidebar card; inline original unit selector popover survives. Settlement/discount/expense actions disabled when there are zero invoice items. Bottom save, print and delete preserve their original methods; no accounting logic or backend APIs changed.
 - Run focused invoice tests including `scripts/tests/invoice-workspace-redesign.test.mjs`, `invoice-p0-redesign.test.mjs`, `invoice-settlement-workflow.test.mjs`, and `invoice-adjustment-dialogs.test.mjs`. Client structural build succeeded. Still require signed-in visual QA before production; do not push/deploy unless asked. Notes appended to 1.0.122 unshipped enterprise release.
 
-## Invoice editor core, line items, and settlement/customer panel (2026-10-31)
+## Invoice editor screenshot-aligned top row (2026-10-31)
 
-- `EditorForm.razor` uses a full-width independent `invoice-workspace-top` for invoice core fields. Below it, `invoice-workspace-columns` hosts invoice lines and `invoice-workspace-side` containing `invoice-settlement-layout`: the compact customer card and settlement/financial summary share a **1:2 grid inside the settlement area**, not across the invoice header.
-- Below 1400px, line items and the settlement region stack; at 699px or narrower, customer and financial cards also stack. Customer phone and national ID appear in two separate vertical rows. Search, new/edit customer, balance preview and the switch remain usable.
-- Preserve invoice selectors, dates, exchange rate, customer callbacks, preview and reminder handlers. Matching styling and skeleton are in `EditorForm.razor.css` and `EditorFormSkeleton.razor`.
-- Razor/CSS-only changes follow the no-automatic-`dotnet build` policy; check `git diff --check` and focused invoice tests. Browser QA needs a running authenticated host.
+- `EditorForm.razor`: top row `.invoice-workspace-top` holds (RTL order) the invoice core card on the right, compact customer in the middle, finance/settlement on the left. Wide desktop widths use a 3:1:2 CSS grid. Customer and finance use a 1:2 ratio within their adjacent area; `.invoice-workspace-main` puts line items alone on the full-width next row.
+- Do not restore the earlier full-width header with lower three-column line/customer/finance layout. `EditorFormSkeleton.razor` and isolated CSS mirror the same geometry. Below 1200px the layout changes to two columns, and below 700px cards stack.
+- Preserve customer lookup/add/edit, phone and national ID on separate rows, current balance preview and toggle, invoice data, item callbacks, settlement/payment actions and original account calculations. Do not show duplicate input captions on top of Mud field labels or render double outlines around fields.
+- Focused regression is `scripts/tests/invoice-workspace-redesign.test.mjs`, plus settlement/adjustment tests. For UI-only Razor/CSS work use the no-auto-build rule, and require signed-in visual QA before claiming pixel-perfect behavior.
 
 ## Development-only license bypass (2026-10-31)
 

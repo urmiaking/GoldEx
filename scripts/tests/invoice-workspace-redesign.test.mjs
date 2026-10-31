@@ -10,7 +10,7 @@ test('invoice editor uses four free-navigation cards, no old tabs or expansion p
   assert.ok(view.includes('id="'+id+'"'),id);
  }
  assert.match(view,/class="invoice-workspace-steps"/);
- assert.match(view,/class="invoice-workspace-columns"/);
+ assert.match(view,/class="invoice-workspace-top"/);
  assert.match(view,/class="invoice-workspace-main"/);
  assert.match(view,/class="invoice-workspace-side"/);
  assert.doesNotMatch(view,/<MudTabs|<MudExpansionPanel|<MudCard Class="invoice-editor-shell"/);
@@ -65,9 +65,28 @@ test('financial sidebar always visible with live totals, all payment operations 
  for(const cb of ['OpenPaymentsDialog(false)','OpenPaymentsDialog(true)','OpenDiscountsDialog','OpenExtraCostsDialog','OnTotalUnpaidMenuToggled']){
    assert.ok(view.includes(cb),cb);
  }
- assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
+ assert.match(css,/\.invoice-workspace-top\{[^}]*display:grid/);
  assert.match(css,/@media\(max-width:699px\)/);
  assert.match(css,/\.invoice-workspace ::deep \.invoice-line-desktop\{display:none\}/);
  assert.match(css,/\.invoice-workspace ::deep \.invoice-line-mobile\{display:grid/);
  assert.doesNotMatch(css,/font-weight:(?:700|800|900)/);
+});
+test('core, customer and finance share the top row while items use full width below',()=>{
+ const view=read('EditorForm.razor');
+ const css=read('EditorForm.razor.css');
+ const skeleton=read('EditorFormSkeleton.razor');
+ const skeletonCss=read('EditorFormSkeleton.razor.css');
+ const core=view.indexOf('id="invoice-core"'), customer=view.indexOf('id="invoice-customer"');
+ const finance=view.indexOf('id="invoice-finance"'), lines=view.indexOf('id="invoice-lines"');
+ assert.ok(core>0 && core<customer && customer<finance && finance<lines, 'top cards before items');
+ assert.match(view,/<main class="invoice-workspace-main">/);
+ assert.doesNotMatch(view,/invoice-workspace-columns|invoice-settlement-layout/);
+ assert.match(css,/grid-template-columns:minmax\(0,3fr\) minmax\(245px,1fr\) minmax\(355px,2fr\)/);
+ assert.match(css,/\.invoice-customer-details\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
+ assert.match(css,/grid-template-areas:"core" "customer" "finance"/);
+ assert.match(css,/\.invoice-core-field-caption\{display:none\}/);
+ assert.ok(skeleton.indexOf('invoice-core-section')<skeleton.indexOf('invoice-customer-section'));
+ assert.ok(skeleton.indexOf('invoice-customer-section')<skeleton.indexOf('invoice-financial-card'));
+ assert.ok(skeleton.indexOf('invoice-financial-card')<skeleton.indexOf('invoice-lines-section'));
+ assert.match(skeletonCss,/grid-template-columns:minmax\(0,3fr\)/);
 });

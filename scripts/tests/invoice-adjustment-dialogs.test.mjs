@@ -7,7 +7,7 @@ test('invoice actions retain full pill buttons and sticky summary',()=>{
  const css=read('EditorForm.razor.css');
  assert.match(css,/\.invoice-financial-actions ::deep \.mud-button-root\{[^}]*border-radius:999px/);
  assert.match(css,/\.invoice-form-actions ::deep \.mud-button-root\{[^}]*border-radius:999px/);
- assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
+ assert.match(css,/\.invoice-workspace-top\{[^}]*display:grid/);
 });
 test('discount and expense use responsive modal, no old popover',()=>{
  const view=read('EditorForm.razor'), code=read('EditorForm.razor.cs'), dialog=read('InvoiceAdjustmentsDialog.razor');

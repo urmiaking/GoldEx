@@ -26,10 +26,10 @@ else
                 </div>
             </header>
             <nav class="invoice-workspace-steps" aria-label="مراحل ثبت فاکتور">
-    <a href="#invoice-core"><span>۱</span>اطلاعات اصلی</a>
-    <a href="#invoice-lines"><span>۲</span>اقلام فاکتور</a>
-    <a href="#invoice-customer"><span>۳</span>طرف‌حساب</a>
-    <a href="#invoice-finance"><span>۴</span>تسویه و جمع‌بندی</a>
+                <a href="#invoice-core"><span>۱</span>اطلاعات اصلی</a>
+                <a href="#invoice-customer"><span>۲</span>طرف‌حساب</a>
+                <a href="#invoice-lines"><span>۳</span>اقلام فاکتور</a>
+                <a href="#invoice-finance"><span>۴</span>تسویه و جمع‌بندی</a>
 </nav>
             <div class="invoice-workspace-top">
                 <section id="invoice-core" class="invoice-section invoice-core-section">
@@ -185,70 +185,11 @@ else
                         </div>
                     </div>
                 </section>
-
-
-            </div>
-
-            <div class="invoice-workspace-columns">
-                <main class="invoice-workspace-main">
-                    <section id="invoice-lines" class="invoice-section invoice-lines-section">
-                        <div class="invoice-section-header">
-                            <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.Inventory2" /></span>
-                            <div><span class="invoice-section-kicker">بخش ۲</span><h2>اقلام فاکتور</h2><p>جنس را انتخاب کنید و اقلام فاکتور را مدیریت کنید.</p></div>
-                            <span class="invoice-section-count">@InvoiceItemCount قلم</span>
-                        </div>
-                        <div class="invoice-item-switch" role="tablist" aria-label="گروه اقلام فاکتور">
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 0)" class="@(_activeItemTab == 0 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 0"><MudIcon Icon="@Icons.Material.Outlined.Diamond" Size="Size.Small" /> طلا و جواهر <span>@_model.ProductItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 1)" class="@(_activeItemTab == 1 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 1"><MudIcon Icon="@Icons.Material.Outlined.Toll" Size="Size.Small" /> سکه <span>@_model.CoinItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 2)" class="@(_activeItemTab == 2 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 2"><MudIcon Icon="@Icons.Material.Outlined.CurrencyExchange" Size="Size.Small" /> ارز <span>@_model.CurrencyItems.Count</span></button>
-                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 3)" class="@(_activeItemTab == 3 ? "is-active" : "")"
-                                    @onclick="() => _activeItemTab = 3"><MudIcon Icon="@Icons.Material.Outlined.Recycling" Size="Size.Small" /> طلای مستعمل <span>@_model.UsedProducts.Count</span></button>
-                        </div>
-                        <div class="invoice-item-tab-content" role="tabpanel" @key="_activeItemTab">
-                            @if (_activeItemTab == 0)
-                            {
-                                <ProductItemsList Items="_model.ProductItems" PriceUnit="_model.InvoicePriceUnit"
-                                                  OnEditItem="OnEditProductItem" OnRemoveItem="OnRemoveProductItem"
-                                                  InvoiceType="_model.InvoiceType" OnAddItem="OnAddProductItem"
-                                                  OnOpenSelector="OnOpenProductSelector"
-                                                  OnBarcodeChanged="OnProductBarcodeChanged"
-                                                  OnPrintBarcode="OnPrintProductBarcode" />
-                            }
-                            else if (_activeItemTab == 1)
-                            {
-                                <CoinItemsList Items="_model.CoinItems" PriceUnit="_model.InvoicePriceUnit"
-                                               InvoiceType="_model.InvoiceType" OnEditItem="OnEditCoinItem"
-                                               OnRemoveItem="OnRemoveCoinItem" OnAddItem="OnAddCoinItem"
-                                               OnOpenSelector="OnOpenCoinSelector" OnBarcodeChanged="OnCoinBarcodeChanged"
-                                               OnPrintBarcode="OnPrintCoinBarcode" />
-                            }
-                            else if (_activeItemTab == 2)
-                            {
-                                <CurrencyItemsList Items="_model.CurrencyItems" PriceUnit="_model.InvoicePriceUnit"
-                                                   InvoiceType="_model.InvoiceType" OnEditItem="OnEditCurrencyItem"
-                                                   OnRemoveItem="OnRemoveCurrencyItem" OnAddItem="OnAddCurrencyItem"
-                                                   OnOpenSelector="OnOpenCurrencySelector" />
-                            }
-                            else
-                            {
-                                <UsedProductsList Items="_model.UsedProducts" PriceUnit="_model.InvoicePriceUnit"
-                                                  OnEditItem="OnEditUsedProduct" OnRemoveItem="OnRemoveUsedProduct"
-                                                  OnAddItem="OnAddUsedProduct" OnPrintBarcode="OnPrintUsedBarcode" />
-                            }
-                        </div>
-                    </section>
-                </main>
-
-                <aside id="invoice-finance" class="invoice-workspace-side">
-                    <div class="invoice-settlement-layout">
                 <section id="invoice-customer" class="invoice-section invoice-customer-section">
                     <div class="invoice-section-header">
                         <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.PersonOutline" /></span>
                         <div>
-                            <span class="invoice-section-kicker">بخش ۳</span>
+                            <span class="invoice-section-kicker">بخش ۲</span>
                             <h2>طرف‌حساب</h2>
                         </div>
                         @if (_model.Customer is not null)
@@ -335,8 +276,9 @@ else
                         </div>
                     }
                 </section>
-                        <div class="invoice-settlement-main">
-                    <section class="invoice-section invoice-financial-card">
+                <aside id="invoice-finance" class="invoice-workspace-side">
+                    <div class="invoice-settlement-main">
+                        <section class="invoice-section invoice-financial-card">
                         <div class="invoice-section-header">
                             <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" /></span>
                             <div><span class="invoice-section-kicker">بخش ۴</span><h2>مالی و تسویه</h2><p>خلاصه زنده محاسبات فاکتور</p></div>
@@ -410,17 +352,67 @@ else
                             </div>
                         </div>
                     </section>
-                    <section class="invoice-section invoice-final-review">
+                        <section class="invoice-section invoice-final-review">
                         <div class="invoice-final-review-title"><MudIcon Icon="@Icons.Material.Outlined.FactCheck" /><span>آماده ثبت</span></div>
                         <p>تعداد اقلام: <strong>@InvoiceItemCount</strong></p>
                         <p>طرف‌حساب: <strong>@(_model.Customer?.FullName ?? "انتخاب نشده")</strong></p>
                         <p>وضعیت: <strong>@(_model.TotalUnpaidAmount == 0 ? "بدون مانده" : "دارای مانده")</strong></p>
                     </section>
-                        </div>
-
                     </div>
                 </aside>
             </div>
+
+            <main class="invoice-workspace-main">
+                <section id="invoice-lines" class="invoice-section invoice-lines-section">
+                        <div class="invoice-section-header">
+                            <span class="invoice-section-icon"><MudIcon Icon="@Icons.Material.Outlined.Inventory2" /></span>
+                            <div><span class="invoice-section-kicker">بخش ۳</span><h2>اقلام فاکتور</h2><p>جنس را انتخاب کنید و اقلام فاکتور را مدیریت کنید.</p></div>
+                            <span class="invoice-section-count">@InvoiceItemCount قلم</span>
+                        </div>
+                        <div class="invoice-item-switch" role="tablist" aria-label="گروه اقلام فاکتور">
+                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 0)" class="@(_activeItemTab == 0 ? "is-active" : "")"
+                                    @onclick="() => _activeItemTab = 0"><MudIcon Icon="@Icons.Material.Outlined.Diamond" Size="Size.Small" /> طلا و جواهر <span>@_model.ProductItems.Count</span></button>
+                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 1)" class="@(_activeItemTab == 1 ? "is-active" : "")"
+                                    @onclick="() => _activeItemTab = 1"><MudIcon Icon="@Icons.Material.Outlined.Toll" Size="Size.Small" /> سکه <span>@_model.CoinItems.Count</span></button>
+                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 2)" class="@(_activeItemTab == 2 ? "is-active" : "")"
+                                    @onclick="() => _activeItemTab = 2"><MudIcon Icon="@Icons.Material.Outlined.CurrencyExchange" Size="Size.Small" /> ارز <span>@_model.CurrencyItems.Count</span></button>
+                            <button type="button" role="tab" aria-selected="@(_activeItemTab == 3)" class="@(_activeItemTab == 3 ? "is-active" : "")"
+                                    @onclick="() => _activeItemTab = 3"><MudIcon Icon="@Icons.Material.Outlined.Recycling" Size="Size.Small" /> طلای مستعمل <span>@_model.UsedProducts.Count</span></button>
+                        </div>
+                        <div class="invoice-item-tab-content" role="tabpanel" @key="_activeItemTab">
+                            @if (_activeItemTab == 0)
+                            {
+                                <ProductItemsList Items="_model.ProductItems" PriceUnit="_model.InvoicePriceUnit"
+                                                  OnEditItem="OnEditProductItem" OnRemoveItem="OnRemoveProductItem"
+                                                  InvoiceType="_model.InvoiceType" OnAddItem="OnAddProductItem"
+                                                  OnOpenSelector="OnOpenProductSelector"
+                                                  OnBarcodeChanged="OnProductBarcodeChanged"
+                                                  OnPrintBarcode="OnPrintProductBarcode" />
+                            }
+                            else if (_activeItemTab == 1)
+                            {
+                                <CoinItemsList Items="_model.CoinItems" PriceUnit="_model.InvoicePriceUnit"
+                                               InvoiceType="_model.InvoiceType" OnEditItem="OnEditCoinItem"
+                                               OnRemoveItem="OnRemoveCoinItem" OnAddItem="OnAddCoinItem"
+                                               OnOpenSelector="OnOpenCoinSelector" OnBarcodeChanged="OnCoinBarcodeChanged"
+                                               OnPrintBarcode="OnPrintCoinBarcode" />
+                            }
+                            else if (_activeItemTab == 2)
+                            {
+                                <CurrencyItemsList Items="_model.CurrencyItems" PriceUnit="_model.InvoicePriceUnit"
+                                                   InvoiceType="_model.InvoiceType" OnEditItem="OnEditCurrencyItem"
+                                                   OnRemoveItem="OnRemoveCurrencyItem" OnAddItem="OnAddCurrencyItem"
+                                                   OnOpenSelector="OnOpenCurrencySelector" />
+                            }
+                            else
+                            {
+                                <UsedProductsList Items="_model.UsedProducts" PriceUnit="_model.InvoicePriceUnit"
+                                                  OnEditItem="OnEditUsedProduct" OnRemoveItem="OnRemoveUsedProduct"
+                                                  OnAddItem="OnAddUsedProduct" OnPrintBarcode="OnPrintUsedBarcode" />
+                            }
+                        </div>
+                    </section>
+            </main>
             <div id="invoice-review" class="invoice-workspace-footer">
                 <div class="invoice-form-actions">
                 <div class="invoice-form-actions-danger">
