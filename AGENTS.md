@@ -1008,3 +1008,22 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Four small calculator-style line-item tabs (products including molten, coins, currency, used gold), with visible counts and a single live child list; all original add, edit, delete, barcode and stock-picker callbacks preserved. ProductItemsList/CoinItemsList/CurrencyItemsList/UsedProductsList no longer render MudTable: they have semantic desktop table, mobile cards, compact toolbar and empty state, with shared style via `.invoice-workspace ::deep` in EditorForm. Don't regress to dense MudTable/filled action icon clusters or heavy font weights.
 - Financial summary is read directly from existing InvoiceVm totals and is **always visible** in a standalone sidebar card; inline original unit selector popover survives. Settlement/discount/expense actions disabled when there are zero invoice items. Bottom save, print and delete preserve their original methods; no accounting logic or backend APIs changed.
 - Run focused invoice tests including `scripts/tests/invoice-workspace-redesign.test.mjs`, `invoice-p0-redesign.test.mjs`, `invoice-settlement-workflow.test.mjs`, and `invoice-adjustment-dialogs.test.mjs`. Client structural build succeeded. Still require signed-in visual QA before production; do not push/deploy unless asked. Notes appended to 1.0.122 unshipped enterprise release.
+
+## Invoice editor core, line items, and settlement/customer panel (2026-10-31)
+
+- `EditorForm.razor` uses a full-width independent `invoice-workspace-top` for invoice core fields. Below it, `invoice-workspace-columns` hosts invoice lines and `invoice-workspace-side` containing `invoice-settlement-layout`: the compact customer card and settlement/financial summary share a **1:2 grid inside the settlement area**, not across the invoice header.
+- Below 1400px, line items and the settlement region stack; at 699px or narrower, customer and financial cards also stack. Customer phone and national ID appear in two separate vertical rows. Search, new/edit customer, balance preview and the switch remain usable.
+- Preserve invoice selectors, dates, exchange rate, customer callbacks, preview and reminder handlers. Matching styling and skeleton are in `EditorForm.razor.css` and `EditorFormSkeleton.razor`.
+- Razor/CSS-only changes follow the no-automatic-`dotnet build` policy; check `git diff --check` and focused invoice tests. Browser QA needs a running authenticated host.
+
+## Development-only license bypass (2026-10-31)
+
+- The server must bypass GoldEx licensing **only** when the server's actual `IHostEnvironment.IsDevelopment()` is true; never use a client-supplied header/query string or a freely configurable production license bypass.
+- `LicenseResolutionMiddleware` sets the per-request `ProductLicense` to a non-expiring `LicensePlan.Regular` in Development without querying `AppLicense` or `ILicenseCache`. `LicenseService.GetLicenseAsync` returns an equivalent synthetic result to SSR and WASM clients. License token/registration/callback service methods explicitly refuse to contact the remote licensing vendor in Development.
+- `InitializeLicenseAsync` skips startup license I/O, and `AddHostedServices(builder.Environment)` does not register `LicenseUpdaterBackgroundService` in Development; other hosted services run normally. `CreateStoreRequestValidator` bypasses only the license-related MaxStores restriction in Development.
+- Production/Staging continue using real licenses, cache, external activation and updates unchanged. Do not write a synthetic development license to persistent tables. Always verify the no-remote-check/normal-production branches when editing this flow.
+
+### End-of-task Git rule (2026-10-31)
+- After each completed GoldEx task, create a local git commit containing all related changes.
+- Verify with git status --porcelain -uall after the commit; leave no task-related tracked or untracked changes.
+- Split unrelated completed tasks into separate commits. Do not push or deploy unless explicitly requested.

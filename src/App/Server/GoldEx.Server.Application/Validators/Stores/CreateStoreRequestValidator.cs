@@ -7,6 +7,7 @@ using GoldEx.Server.Infrastructure.Specifications.Stores;
 using GoldEx.Shared.DTOs.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,15 +20,18 @@ public class CreateStoreRequestValidator : AbstractValidator<StoreRequest>
     private readonly IStoreRepository _storeRepository;
     private readonly IConfiguration _configuration;
     private readonly GoldExDbContext _dbContext;
+    private readonly IHostEnvironment _environment;
 
     public CreateStoreRequestValidator(
         IStoreRepository storeRepository,
         IConfiguration configuration,
-        GoldExDbContext dbContext)
+        GoldExDbContext dbContext,
+        IHostEnvironment environment)
     {
         _storeRepository = storeRepository;
         _configuration = configuration;
         _dbContext = dbContext;
+        _environment = environment;
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("نام فروشگاه نمی‌تواند خالی باشد.");
@@ -52,6 +56,9 @@ public class CreateStoreRequestValidator : AbstractValidator<StoreRequest>
 
     private async Task<bool> NotExceedMaxStoresLimit(StoreRequest request, CancellationToken cancellationToken)
     {
+        if (_environment.IsDevelopment())
+            return true;
+
         var licenseMode = _configuration["License:Mode"] ?? "Hybrid";
         if (licenseMode.Equals("InstanceWide", StringComparison.OrdinalIgnoreCase))
         {

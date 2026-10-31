@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using System.Data;
 using GoldEx.Server.Application.Extensions;
 using VHDLicenseManager;
@@ -47,12 +48,17 @@ internal class LicenseService(
 {
     public Task<GetLicenseResponse> GetLicenseAsync(CancellationToken cancellationToken = default)
     {
+        if (environment.IsDevelopment())
+            return Task.FromResult(new GetLicenseResponse(LicensePlan.Regular, DateTime.Today, DateTime.MaxValue));
+
         return Task.FromResult(new GetLicenseResponse(productLicense.Plan, productLicense.RegisteredAt, productLicense.ExpireDate));
-        //return Task.FromResult(new GetLicenseResponse(LicensePlan.Trial, DateTime.Now.AddDays(2)));
     }
 
     public async Task RegisterProductAsync(RegisterProductRequest request, CancellationToken cancellationToken = default)
     {
+        if (environment.IsDevelopment())
+            throw new BadRequestException("فعال‌سازی لایسنس در محیط توسعه غیرفعال است.");
+
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
         await using var dbTransaction = await settingRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
@@ -165,6 +171,9 @@ internal class LicenseService(
 
     public async Task SendTokenAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
+        if (environment.IsDevelopment())
+            throw new BadRequestException("ارسال کد لایسنس در محیط توسعه غیرفعال است.");
+
         var response = await licenseManager.SendTokenAsync(phoneNumber, cancellationToken);
 
         if (!response.Sent)
@@ -173,6 +182,9 @@ internal class LicenseService(
 
     public async Task ActivateProductAsync(LicenseCallbackRequest request, CancellationToken cancellationToken = default)
     {
+        if (environment.IsDevelopment())
+            throw new BadRequestException("تأیید لایسنس در محیط توسعه غیرفعال است.");
+
         var activationResponse = await licenseManager.ActivateAsync(request.LicenseId, request.VerificationKey, cancellationToken);
 
         switch (activationResponse.Result)

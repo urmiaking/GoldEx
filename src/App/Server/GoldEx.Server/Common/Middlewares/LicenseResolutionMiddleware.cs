@@ -18,8 +18,18 @@ public class LicenseResolutionMiddleware(RequestDelegate next)
         ProductLicense productLicense, 
         ILicenseCache licenseCache,
         GoldExDbContext dbContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
+        if (environment.IsDevelopment())
+        {
+            // Local development never reads or changes tenant license records.
+            productLicense.UpdateLicense(storeContext.StoreId ?? Guid.Empty,
+                LicensePlan.Regular, DateTime.Today, DateTime.MaxValue);
+            await next(context);
+            return;
+        }
+
         var licenseMode = configuration["License:Mode"] ?? "Hybrid";
         
         // 1. Determine target store ID
