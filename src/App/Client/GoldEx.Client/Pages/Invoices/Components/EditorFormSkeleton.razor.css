@@ -1,0 +1,20 @@
+/* Skeleton layout mirrors the responsive invoice workspace without loading live controls. */
+.invoice-workspace-loading{min-width:0;padding-bottom:10px}
+.invoice-workspace-loading *{box-sizing:border-box}
+.invoice-workspace-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.invoice-workspace-top{margin-bottom:14px}
+.invoice-workspace-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:start;gap:14px}
+.invoice-workspace-main,.invoice-settlement-main{display:grid;gap:12px;min-width:0}
+.invoice-settlement-layout{display:grid;grid-template-columns:minmax(205px,1fr) minmax(0,2fr);align-items:start;gap:12px}
+.invoice-section{min-width:0;border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-surface);border-radius:19px;padding:16px}
+.invoice-customer-section{padding:10px}
+.invoice-core-primary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.invoice-core-field{grid-column:span 2;min-width:0}
+@media(max-width:1399.98px){.invoice-workspace-columns{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:699px){
+.invoice-settlement-layout{grid-template-columns:minmax(0,1fr)}
+.invoice-core-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.invoice-core-field{grid-column:span 1}
+.invoice-section{padding:11px;border-radius:14px}
+}
+@media(max-width:420px){.invoice-core-primary-grid{grid-template-columns:minmax(0,1fr)}}
