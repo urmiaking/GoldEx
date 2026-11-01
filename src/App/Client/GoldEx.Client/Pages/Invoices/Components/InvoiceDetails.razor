@@ -92,11 +92,6 @@
                 </ol>
                 <div class="invoice-details-footer">
                     <span>@_transactionTotal تراکنش</span>
-                    <div>
-                        <button type="button" disabled="@(_transactionsLoading || _transactionPage == 0)" @onclick="() => ChangeTransactionPage(-1)">قبلی</button>
-                        <span>صفحه @(_transactionPage + 1) از @Math.Max(1, (_transactionTotal + DetailPageSize - 1) / DetailPageSize)</span>
-                        <button type="button" disabled="@(_transactionsLoading || (_transactionPage + 1) * DetailPageSize >= _transactionTotal)" @onclick="() => ChangeTransactionPage(1)">بعدی</button>
-                    </div>
                 </div>
             }
         </div>
@@ -162,11 +157,6 @@
                 </ol>
                 <div class="invoice-details-footer">
                     <span>@_inventoryTotal رویداد انبار</span>
-                    <div>
-                        <button type="button" disabled="@(_inventoryLoading || _inventoryPage == 0)" @onclick="() => ChangeInventoryPage(-1)">قبلی</button>
-                        <span>صفحه @(_inventoryPage + 1) از @Math.Max(1, (_inventoryTotal + DetailPageSize - 1) / DetailPageSize)</span>
-                        <button type="button" disabled="@(_inventoryLoading || (_inventoryPage + 1) * DetailPageSize >= _inventoryTotal)" @onclick="() => ChangeInventoryPage(1)">بعدی</button>
-                    </div>
                 </div>
             }
         </div>
@@ -186,9 +176,9 @@
     [Parameter] public Guid CustomerId { get; set; }
     [Parameter] public DateTime PostingDate { get; set; }
 
-    private const int DetailPageSize = 8;
+    private const int TimelineBatchSize = 100;
     private readonly string _panelId = $"invoice-details-{Guid.NewGuid():N}";
-    private int _activeTab, _transactionPage, _inventoryPage, _transactionTotal, _inventoryTotal;
+    private int _activeTab, _transactionTotal, _inventoryTotal;
     private bool _transactionsLoading, _inventoryLoading, _transactionsFailed, _inventoryFailed, _inventoryLoaded;
     private List<GetTransactionResponse> _transactions = [];
     private List<GetInventoryStockItemResponse> _inventory = [];
@@ -241,60 +231,89 @@
         if (tab == 1 && !_inventoryLoaded) await LoadInventoryAsync();
     }
 
-    private async Task ChangeTransactionPage(int delta)
-    {
-        _transactionPage += delta;
-        await LoadTransactionsAsync();
-    }
-
-    private async Task ChangeInventoryPage(int delta)
-    {
-        _inventoryPage += delta;
-        await LoadInventoryAsync();
-    }
-
     private async Task LoadTransactionsAsync()
     {
+        if (_transactionsLoading) return;
         _transactionsLoading = true;
         _transactionsFailed = false;
         await InvokeAsync(StateHasChanged);
         await Task.Yield();
         try
         {
-            var filter = new RequestFilter(_transactionPage * DetailPageSize, DetailPageSize);
+            var collected = new List<GetTransactionResponse>();
+            var total = 0;
+            var offset = 0;
             var txnFilter = new TransactionFilter(InvoiceId, null, null, null, null, null, true, false);
-            await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
-                (service, token) => service.GetListAsync(txnFilter, filter, token),
-                afterSend: response =>
+            do
+            {
+                List<GetTransactionResponse>? batch = null;
+                var failed = false;
+                await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
+                    (service, token) => service.GetListAsync(
+                        txnFilter, new RequestFilter(offset, TimelineBatchSize), token),
+                    afterSend: response =>
+                    {
+                        batch = response.Data.ToList();
+                        total = response.Total;
+                    },
+                    onFailure: () => failed = true,
+                    createScope: true);
+
+                if (failed || batch is null || (batch.Count == 0 && offset < total))
                 {
-                    _transactions = response.Data.ToList();
-                    _transactionTotal = response.Total;
-                },
-                onFailure: () => { _transactionsFailed = true; },
-                createScope: true);
+                    _transactionsFailed = true;
+                    return;
+                }
+                collected.AddRange(batch);
+                offset += batch.Count;
+            } while (offset < total);
+
+            _transactions = collected;
+            _transactionTotal = collected.Count;
         }
         finally { _transactionsLoading = false; }
     }
 
     private async Task LoadInventoryAsync()
     {
+        if (_inventoryLoading) return;
         _inventoryLoading = true;
         _inventoryFailed = false;
         await InvokeAsync(StateHasChanged);
         await Task.Yield();
         try
         {
-            var filter = new RequestFilter(_inventoryPage * DetailPageSize, DetailPageSize);
-            await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockItemResponse>>(
-                (service, token) => service.GetInvoiceInventoryItemsAsync(InvoiceId, filter, token),
-                afterSend: response =>
+            var collected = new List<GetInventoryStockItemResponse>();
+            var total = 0;
+            var offset = 0;
+            do
+            {
+                List<GetInventoryStockItemResponse>? batch = null;
+                var failed = false;
+                await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockItemResponse>>(
+                    (service, token) => service.GetInvoiceInventoryItemsAsync(
+                        InvoiceId, new RequestFilter(offset, TimelineBatchSize), token),
+                    afterSend: response =>
+                    {
+                        batch = response.Data.ToList();
+                        total = response.Total;
+                    },
+                    onFailure: () => failed = true);
+
+                if (failed || batch is null || (batch.Count == 0 && offset < total))
                 {
-                    _inventory = response.Data.ToList();
-                    _inventoryTotal = response.Total;
-                    _inventoryLoaded = true;
-                },
-                onFailure: () => { _inventoryFailed = true; });
+                    _inventoryFailed = true;
+                    return;
+                }
+                collected.AddRange(batch);
+                offset += batch.Count;
+            } while (offset < total);
+
+            _inventory = collected;
+            _inventoryTotal = collected.Count;
+            _inventoryLoaded = true;
         }
         finally { _inventoryLoading = false; }
     }
+
 }
