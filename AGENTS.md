@@ -1047,3 +1047,6 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Default home mounts HomeOperations (one unpaid-invoice call), not ExecutiveDashboard/ProfitAnalysisOverview.
 - Statistics tab=5 lazy-loads SVG daily bars, independent KPI cards and an expandable category breakdown; old tab ids 1-4 remain. No MudChart or timer.
 - Dashboard SQL projections replace full Invoice Includes for daily trade, unpaid invoices and today sales; customer balance uses grouped ledger summary. Preserve finance formulas. See .matemcp/skills/home-dashboard/SKILL.md.
+
+## EF Core owned invoice items (2026-11-01)
+- InvoiceProductItem is EF Core owned by Invoice; never query it with DbContext.Set<InvoiceProductItem>(). Always start with Invoice and project ProductItems through SelectMany for dashboard trends.

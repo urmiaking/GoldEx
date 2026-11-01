@@ -1211,7 +1211,7 @@ h1:focus {
 
 .market-card-price {
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--mud-palette-text-primary);
 }
 

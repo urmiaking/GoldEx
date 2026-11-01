@@ -131,11 +131,19 @@ internal class DashboardRepository(GoldExDbContext dbContext) : IDashboardReposi
                 ExtraCost = x.ExtraCosts.Sum(i => (decimal?)(i.Amount * (i.ExchangeRate ?? 1m))) ?? 0m
             }).ToListAsync(cancellationToken);
 
-        var rows = await dbContext.Set<InvoiceProductItem>().AsNoTracking()
-            .Where(i => i.Invoice.InvoiceDate >= startDate && i.Invoice.InvoiceDate <= today &&
-                (i.Invoice.InvoiceType == InvoiceType.Sell || i.Invoice.InvoiceType == InvoiceType.Purchase) &&
-                (i.Invoice.PriceUnit == null || (i.Invoice.PriceUnit.UnitType != UnitType.Gold18K && i.Invoice.PriceUnit.UnitType != UnitType.Mesghal)))
-            .Select(i => new { i.InvoiceId, i.ItemFinalAmount, i.GramPrice })
+        var rows = await dbContext.Set<Invoice>()
+            .AsNoTracking()
+            .Where(invoice => invoice.InvoiceDate >= startDate && invoice.InvoiceDate <= today &&
+                (invoice.InvoiceType == InvoiceType.Sell || invoice.InvoiceType == InvoiceType.Purchase) &&
+                (invoice.PriceUnit == null ||
+                 (invoice.PriceUnit.UnitType != UnitType.Gold18K &&
+                  invoice.PriceUnit.UnitType != UnitType.Mesghal)))
+            .SelectMany(invoice => invoice.ProductItems.Select(item => new
+            {
+                InvoiceId = invoice.Id,
+                item.ItemFinalAmount,
+                item.GramPrice
+            }))
             .ToListAsync(cancellationToken);
 
         var equivalents = rows.GroupBy(i => i.InvoiceId).ToDictionary(
