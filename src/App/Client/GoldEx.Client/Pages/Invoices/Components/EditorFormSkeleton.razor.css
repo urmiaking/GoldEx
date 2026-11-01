@@ -17,7 +17,7 @@
 .invoice-section-header h2{font-size:1.1rem;font-weight:500;margin:0}
 .invoice-section-icon{flex:0 0 38px;width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:rgba(var(--mud-palette-primary-rgb),.09);color:var(--mud-palette-primary)}
 .invoice-core-section{display:flex;flex-direction:column}
-.invoice-core-primary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.invoice-core-primary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:11px;row-gap:20px;margin-bottom:20px}
 .invoice-core-field{min-width:0;display:grid;gap:7px}
 .invoice-skeleton-label{font-size:.74rem;color:var(--mud-palette-text-secondary)}
 .invoice-core-price-strip{margin-top:auto;padding:12px 0 0;display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -39,7 +39,7 @@
 .invoice-workspace-steps{display:flex;overflow:auto}
 .invoice-workspace-steps span{white-space:nowrap;flex:none}
 .invoice-workspace-top{grid-template-columns:1fr}
-.invoice-core-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.invoice-core-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:8px;row-gap:16px;margin-bottom:16px}
 .invoice-section{border-radius:14px;padding:11px}
 .invoice-skeleton-tabs span{font-size:.67rem}
 .invoice-skeleton-toolbar{grid-template-columns:minmax(0,1fr) auto}

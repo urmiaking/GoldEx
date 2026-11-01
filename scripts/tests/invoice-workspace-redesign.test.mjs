@@ -198,3 +198,12 @@ test('compact customer always previews current invoice without the optional togg
  assert.match(view,/AddedValue="@\(IsEditMode \? GetCustomerBalanceChange\(\) : GetNewInvoiceCustomerBalanceEffect\(\)\)"/);
  assert.match(view,/ToStringFunc="@\(customer => customer\?\.FullName\)"/);
 });
+test('invoice header rows keep visible vertical separation on desktop and mobile',()=>{
+ const css=read('EditorForm.razor.css');
+ const loading=read('EditorFormSkeleton.razor.css');
+ for(const sheet of [css,loading]){
+  assert.match(sheet,/\.invoice-core-primary-grid\{[^}]*row-gap:20px;margin-bottom:20px\}/);
+  assert.match(sheet,/@media\(max-width:699px\)[\s\S]*?\.invoice-core-primary-grid\{[^}]*row-gap:16px;margin-bottom:16px\}/);
+ }
+ assert.match(css,/\.invoice-core-section \.invoice-core-price-strip\{margin-top:auto\}/);
+});

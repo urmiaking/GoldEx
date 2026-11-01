@@ -40,7 +40,7 @@
 .invoice-section-complete,.invoice-section-count{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border-radius:999px;padding:5px 10px;background:var(--mud-palette-background);color:var(--mud-palette-text-secondary);font-size:.73rem}
 .invoice-section-complete{color:var(--mud-palette-success)}
 /* RTL: header 50%, customer 25%, finance 25%. The invoice lines fill the right 75% directly below the header/customer row. */
-.invoice-core-primary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.invoice-core-primary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:11px;row-gap:20px;margin-bottom:20px}
 .invoice-core-field{grid-column:span 2;min-width:0;padding:0;border:0;border-radius:0;background:transparent}
 .invoice-core-primary-grid.is-create .invoice-core-field--date,
 .invoice-core-primary-grid.is-create .invoice-core-field--due{grid-column:span 3}
@@ -202,7 +202,7 @@
 .invoice-section-header p{font-size:.7rem}
 .invoice-workspace-steps a{padding:8px 10px;font-size:.72rem}
 .invoice-workspace-steps a span{width:23px;height:23px}
-.invoice-core-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.invoice-core-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:8px;row-gap:16px;margin-bottom:16px}
 .invoice-core-primary-grid .invoice-core-field,
 .invoice-core-primary-grid.is-create .invoice-core-field--date,
 .invoice-core-primary-grid.is-create .invoice-core-field--due{grid-column:span 1}

@@ -1053,3 +1053,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 
 ## Home statistics interactions (2026-11-01)
 - Statistics chart: SVG bars are keyboard, hover and tap selectable and show a pinned/preview daily tooltip without network calls. Category summary accordion retains mounted loaded content for a CSS grid open/close animation (no extra fetch).
+## Invoice core form vertical spacing (2026-11-01)
+
+- In `EditorForm.razor.css`, do not reset the invoice core field grid to a single 7-9px gap. Outlined MudBlazor fields with floating labels need at least a **20px desktop row gap** and **16px mobile row gap** so successive rows do not visually touch.
+- The `invoice-core-primary-grid` has a bottom margin (20px desktop, 16px mobile) independent of the `invoice-core-price-strip`'s auto top margin; this guarantees separation between the date/due-date row and accounting-unit panel even when the card height is constrained by the neighboring customer card. Align `EditorFormSkeleton.razor.css` with the live field spacing and maintain both create/edit grids.
+- Regression test: `scripts/tests/invoice-workspace-redesign.test.mjs`. CSS-only fix: no automatic dotnet build. Commit locally; no push unless requested.
