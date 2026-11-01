@@ -1,0 +1,15 @@
+.gex-home-tabs { margin:0 0 24px; overflow-x:auto; scrollbar-width:thin; }
+.gex-home-tabs .goldex-segmented-container { width:max-content; max-width:none; margin-inline:auto; }
+@media(max-width:700px) { .gex-home-tabs .goldex-segmented-container { margin-inline:0; } .gex-home-tabs .segmented-tab-btn { white-space:nowrap; } }
+.gex-home-launcher { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; padding:18px 22px; margin-bottom:22px; border-radius:20px; }
+.gex-home-launcher-heading { display:flex; gap:12px; align-items:center; min-width:210px; }
+.gex-home-launcher-heading h1 { font-size:1.08rem; font-weight:500; margin:0 0 4px; }
+.gex-home-launcher-heading p { color:var(--mud-palette-text-secondary); font-size:.79rem; margin:0; font-weight:400; }
+.gex-home-quick-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-start; gap:8px; }
+.gex-home-quick-actions .quick-action-pill { display:inline-flex; align-items:center; gap:7px; font-size:.82rem; font-weight:400; white-space:nowrap; text-decoration:none; }
+.gex-home-market-desktop { display:block; margin-bottom:20px; }
+.gex-home-market-mobile { display:none; margin-bottom:16px; }
+.gex-home-container .segmented-tab-btn { font-weight:400; }
+.gex-home-container .segmented-tab-btn.active { font-weight:500; }
+@media(max-width:959px) { .gex-home-launcher { padding:15px; gap:12px; } }
+@media(max-width:599px) { .gex-home-market-desktop { display:none; } .gex-home-market-mobile { display:block; } .gex-home-launcher { padding:14px; } .gex-home-quick-actions { flex-wrap:nowrap; max-width:100%; overflow-x:auto; padding:3px 0 8px; } .gex-home-launcher-heading h1 { font-size:1rem; } }

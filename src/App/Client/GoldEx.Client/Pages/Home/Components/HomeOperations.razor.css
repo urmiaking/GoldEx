@@ -1,0 +1,39 @@
+.gex-home-operations { padding-bottom:22px; }
+.gex-home-section-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 16px; }
+.gex-home-section-heading h2 { margin:0 0 5px; font-size:1.08rem; font-weight:500; }
+.gex-home-section-heading p,.gex-home-panel-heading p { margin:0; font-size:.79rem; font-weight:400; color:var(--mud-palette-text-secondary); }
+.gex-home-more-link { display:inline-flex; gap:4px; align-items:center; text-decoration:none; font-size:.83rem; color:var(--mud-palette-primary); font-weight:400; }
+.gex-home-workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(285px,1fr); gap:17px; align-items:stretch; }
+.gex-home-unpaid,.gex-home-followups { padding:20px; border-radius:20px; min-width:0; }
+.gex-home-panel-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.gex-home-heading-title { display:flex; align-items:center; gap:10px; }
+.gex-home-heading-title h3 { margin:0 0 5px; font-size:.95rem; font-weight:500; }
+.gex-home-heading-icon { display:grid; place-items:center; width:37px; height:37px; border-radius:12px; background:var(--mud-palette-action-default-hover); color:var(--mud-palette-primary); flex:none; }
+.gex-home-heading-icon-alert { color:var(--mud-palette-warning); }
+.gex-home-count-chip { color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); border-radius:20px; padding:5px 10px; font-size:.72rem; font-weight:400; }
+.gex-home-unpaid-list { display:flex; flex-direction:column; gap:8px; }
+.gex-home-unpaid-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; min-height:65px; border:1px solid var(--mud-palette-lines-default); border-radius:13px; color:var(--mud-palette-text-primary); text-decoration:none; transition:background-color .18s ease,border-color .18s ease; }
+.gex-home-unpaid-item:hover { background:var(--mud-palette-action-default-hover); border-color:var(--mud-palette-primary); }
+.gex-home-unpaid-identity { display:flex; align-items:center; gap:10px; min-width:0; }
+.gex-home-unpaid-identity>div,.gex-home-unpaid-amount { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.gex-home-unpaid-identity strong,.gex-home-unpaid-amount strong,.gex-home-followup-link strong { font-size:.85rem; font-weight:500; }
+.gex-home-unpaid-identity span:not(.gex-home-invoice-type),.gex-home-unpaid-amount span { color:var(--mud-palette-text-secondary); font-size:.75rem; }
+.gex-home-invoice-type { border-radius:9px; padding:5px 8px; font-size:.7rem; font-weight:400; flex:none; }
+.gex-home-invoice-type.is-purchase { background:color-mix(in srgb,var(--mud-palette-success) 12%,transparent); color:var(--mud-palette-success); }
+.gex-home-invoice-type.is-sell { background:color-mix(in srgb,var(--mud-palette-error) 12%,transparent); color:var(--mud-palette-error); }
+.gex-home-unpaid-amount { margin-inline-start:auto; text-align:left; }
+.gex-home-unpaid-amount strong { color:var(--mud-palette-error); }
+.gex-home-unpaid-chevron { color:var(--mud-palette-text-secondary); flex:none; }
+.gex-home-panel-footer { margin-top:14px; padding-top:13px; border-top:1px solid var(--mud-palette-lines-default); }
+.gex-home-panel-footer a { text-decoration:none; color:var(--mud-palette-primary); font-size:.82rem; }
+.gex-home-followup-link { display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--mud-palette-lines-default); padding:17px 4px; text-decoration:none; color:var(--mud-palette-text-primary); transition:background-color .18s ease; }
+.gex-home-followup-link:last-child { border-bottom:0; }
+.gex-home-followup-link:hover { background:var(--mud-palette-action-default-hover); }
+.gex-home-followup-link>span { display:flex; flex-direction:column; gap:5px; flex:1; }
+.gex-home-followup-link small { color:var(--mud-palette-text-secondary); font-size:.75rem; font-weight:400; }
+.gex-home-followup-link>.mud-icon-root { color:var(--mud-palette-primary); }
+.gex-home-empty { display:flex; justify-content:center; align-items:center; gap:9px; min-height:180px; color:var(--mud-palette-text-secondary); text-align:center; font-size:.85rem; }
+@media(max-width:950px) { .gex-home-workspace { grid-template-columns:1fr; } }
+@media(max-width:599px) { .gex-home-unpaid,.gex-home-followups { padding:14px; } .gex-home-unpaid-item { gap:7px; padding:10px 8px; } .gex-home-unpaid-identity { gap:7px; } .gex-home-unpaid-amount strong { font-size:.79rem; } }
+@media(prefers-reduced-motion:reduce) { .gex-home-unpaid-item,.gex-home-followup-link { transition:none; } }
+.gex-home-unpaid-identity .gex-home-overdue { color:var(--mud-palette-error); font-size:.7rem; font-weight:400; }

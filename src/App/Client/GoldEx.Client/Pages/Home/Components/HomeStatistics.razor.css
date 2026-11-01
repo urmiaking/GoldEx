@@ -1,0 +1,21 @@
+.gex-home-stats { padding:22px; border-radius:20px; }
+.gex-home-section-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.gex-home-section-heading h2 { font-weight:500; font-size:1.16rem; margin:0 0 5px; }
+.gex-home-section-heading p,.gex-home-chart-unit { color:var(--mud-palette-text-secondary); font-size:.81rem; margin:0; }
+.gex-home-chart-legend { display:flex; gap:18px; justify-content:flex-end; margin-bottom:8px; }
+.gex-home-chart-legend span { display:inline-flex; align-items:center; gap:6px; font-size:.81rem; }
+.gex-home-chart-legend i { width:10px; height:10px; border-radius:3px; display:inline-block; }
+.gex-home-legend-purchase,.gex-home-chart-purchase { fill:var(--mud-palette-success); background:var(--mud-palette-success); }
+.gex-home-legend-sell,.gex-home-chart-sell { fill:var(--mud-palette-error); background:var(--mud-palette-error); }
+.gex-home-chart-scroll { max-width:100%; overflow-x:auto; }
+.gex-home-bars { display:block; width:100%; min-width:670px; height:auto; }
+.gex-home-chart-grid { stroke:var(--mud-palette-divider); stroke-dasharray:4 5; stroke-width:1; }
+.gex-home-chart-tick { fill:var(--mud-palette-text-secondary); font-size:12px; }
+.gex-home-stat-totals { display:flex; gap:16px; border-top:1px solid var(--mud-palette-divider); margin-top:12px; padding-top:16px; }
+.gex-home-stat-totals div { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; }
+.gex-home-stat-totals span { font-size:.8rem; color:var(--mud-palette-text-secondary); }
+.gex-home-stat-totals strong { font-size:1rem; font-weight:500; }
+.gex-home-empty { padding:55px 12px; color:var(--mud-palette-text-secondary); text-align:center; }
+@media(max-width:599px) { .gex-home-stats { padding:14px; } .gex-home-stat-totals { flex-direction:column; gap:12px; } }
+.gex-home-chart-axis { display:grid; grid-template-columns:repeat(30,29px); width:870px; padding-inline-start:18px; box-sizing:content-box; font-size:.74rem; color:var(--mud-palette-text-secondary); direction:ltr; text-align:center; }
+.gex-home-stats strong { font-weight:500; }

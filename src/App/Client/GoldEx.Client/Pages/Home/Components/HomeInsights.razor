@@ -1,0 +1,97 @@
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.DTOs.InventoryStocks
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+@inject IDashboardService Dashboard
+@inject IInventoryStockService Inventory
+
+<div class="gex-home-insights">
+    <section class="goldex-glass-card gex-home-insight">
+        <header><MudIcon Icon="@Icons.Material.Outlined.TrendingUp" Color="Color.Success" Size="Size.Small" /><span>فروش امروز</span></header>
+        @if (!_salesLoaded) { <MudSkeleton Width="75%" Height="32px" /> }
+        else if (_sales.Count == 0) { <div class="gex-home-insight-value">۰</div> }
+        else
+        {
+            var selected = _sales[_saleIndex % _sales.Count];
+            <div class="gex-home-insight-value">@selected.Amount.ToCurrencyFormat(selected.PriceUnit)</div>
+            <footer><span>@selected.Subtitle</span>@if (_sales.Count > 1) { <button type="button" @onclick="() => { _saleIndex++; }" aria-label="واحد بعدی فروش"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Small" /></button> }</footer>
+        }
+    </section>
+    <section class="goldex-glass-card gex-home-insight">
+        <header><MudIcon Icon="@Icons.Material.Outlined.Scale" Color="Color.Warning" Size="Size.Small" /><span>موجودی طلای انبار</span></header>
+        @if (!_inventoryLoaded) { <MudSkeleton Width="75%" Height="32px" /> }
+        else
+        {
+            <div class="gex-home-insight-value">@(((_inventory?.ManufacturedGoldWeight ?? 0m) + (_inventory?.MoltenGoldWeight ?? 0m) + (_inventory?.UsedGoldWeight ?? 0m)).ToCurrencyFormat()) <small>گرم</small></div>
+            <footer><span>ساخته‌شده، آبشده و مستعمل</span></footer>
+        }
+    </section>
+    <section class="goldex-glass-card gex-home-insight">
+        <header><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" Color="Color.Error" Size="Size.Small" /><span>طلب از مشتریان</span></header>
+        @if (!_balancesLoaded) { <MudSkeleton Width="75%" Height="32px" /> }
+        else
+        {
+            var selected = _balances.Receivables;
+            @if (selected.Count > 0)
+            {
+                var value = selected[_receivableIndex % selected.Count];
+                <div class="gex-home-insight-value">@value.Amount.ToCurrencyFormat(value.PriceUnit)</div>
+                <footer><span>@value.Count حساب</span>@if (selected.Count > 1) { <button type="button" @onclick="() => { _receivableIndex++; }" aria-label="واحد بعدی مطالبات"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Small" /></button> }</footer>
+            }
+        }
+    </section>
+    <section class="goldex-glass-card gex-home-insight">
+        <header><MudIcon Icon="@Icons.Material.Outlined.Savings" Color="Color.Success" Size="Size.Small" /><span>بدهی به مشتریان</span></header>
+        @if (!_balancesLoaded) { <MudSkeleton Width="75%" Height="32px" /> }
+        else
+        {
+            var selected = _balances.Payables;
+            @if (selected.Count > 0)
+            {
+                var value = selected[_payableIndex % selected.Count];
+                <div class="gex-home-insight-value">@value.Amount.ToCurrencyFormat(value.PriceUnit)</div>
+                <footer><span>@value.Count حساب</span>@if (selected.Count > 1) { <button type="button" @onclick="() => { _payableIndex++; }" aria-label="واحد بعدی بدهی"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Small" /></button> }</footer>
+            }
+        }
+    </section>
+</div>
+@code {
+    private List<TodaySalesSummaryDto> _sales = [];
+    private GetInventoryOverviewResponse? _inventory;
+    private CustomerBalancesSummaryDto _balances = new();
+    private bool _salesLoaded, _inventoryLoaded, _balancesLoaded;
+    private int _saleIndex, _receivableIndex, _payableIndex;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadSalesAsync(), LoadInventoryAsync(), LoadBalancesAsync());
+    }
+    private async Task LoadSalesAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, List<TodaySalesSummaryDto>>(
+                (s, ct) => s.GetTodaySalesAsync(ct), afterSend: v => _sales = v, createScope: true);
+        }
+        finally { _salesLoaded = true; await InvokeAsync(StateHasChanged); }
+    }
+    private async Task LoadInventoryAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IInventoryStockService, GetInventoryOverviewResponse>(
+                (s, ct) => s.GetInventoryOverviewAsync(ct), afterSend: v => _inventory = v, createScope: true);
+        }
+        finally { _inventoryLoaded = true; await InvokeAsync(StateHasChanged); }
+    }
+    private async Task LoadBalancesAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, CustomerBalancesSummaryDto>(
+                (s, ct) => s.GetCustomerBalancesSummaryAsync(ct), afterSend: v => _balances = v, createScope: true);
+        }
+        finally { _balancesLoaded = true; await InvokeAsync(StateHasChanged); }
+    }
+}

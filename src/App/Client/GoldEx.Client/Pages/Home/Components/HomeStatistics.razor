@@ -1,0 +1,71 @@
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+<HomeInsights />
+<section class="gex-home-stats goldex-glass-card">
+    <header class="gex-home-section-heading">
+        <div><h2>آمار خرید و فروش</h2><p>مقایسه روزانه مبادلات ۳۰ روز اخیر، بر اساس معادل وزنی ۱۸ عیار</p></div><span class="gex-home-chart-unit">واحد: گرم</span>
+    </header>
+    @if (!_loaded) { <MudSkeleton Height="270px" Width="100%" /> }
+    else if (_points.Count == 0 || _points.All(p => p.SellWeight == 0 && p.PurchaseWeight == 0)) { <div class="gex-home-empty">در این دوره خرید یا فروشی برای نمایش در نمودار ثبت نشده است.</div> }
+    else
+    {
+        <div class="gex-home-chart-legend"><span><i class="gex-home-legend-purchase"></i> خرید</span><span><i class="gex-home-legend-sell"></i> فروش</span></div>
+        <div class="gex-home-chart-scroll" role="img" aria-label="نمودار میله‌ای روزانه خرید و فروش سی روز اخیر">
+            <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="gex-home-bars">
+                @for (var line = 0; line <= 4; line++)
+                {
+                    var lineY = 22 + line * 46;
+                    <line x1="9" y1="@lineY" x2="891" y2="@lineY" class="gex-home-chart-grid" />
+                }
+                @for (int i = 0; i < _points.Count; i++)
+                {
+                    var point = _points[i]; var baseX = 18 + i * 29;
+                    var purchaseHeight = GetBarHeight(point.PurchaseWeight);
+                    var sellHeight = GetBarHeight(point.SellWeight);
+                    <rect x="@baseX" y="@(206 - purchaseHeight)" width="10" height="@purchaseHeight" rx="2.5" class="gex-home-chart-purchase"><title>@($"{FormatDate(point.Date)}، خرید: {point.PurchaseWeight:N3} گرم")</title></rect>
+                    <rect x="@(baseX + 11)" y="@(206 - sellHeight)" width="10" height="@sellHeight" rx="2.5" class="gex-home-chart-sell"><title>@($"{FormatDate(point.Date)}، فروش: {point.SellWeight:N3} گرم")</title></rect>
+                }
+            </svg>
+            <div class="gex-home-chart-axis">
+                @for (int i = 0; i < _points.Count; i++)
+                {
+                    <span>@(i % 5 == 0 || i == _points.Count - 1 ? FormatDay(_points[i].Date) : " ")</span>
+                }
+            </div>
+        </div>
+        <div class="gex-home-stat-totals">
+            <div><span>خرید ۳۰ روز اخیر</span><strong>@(_points.Sum(x => x.PurchaseWeight).ToCurrencyFormat()) گرم</strong></div>
+            <div><span>فروش ۳۰ روز اخیر</span><strong>@(_points.Sum(x => x.SellWeight).ToCurrencyFormat()) گرم</strong></div>
+        </div>
+    }
+</section>
+<HomeCategorySales />
+@code {
+    private List<TradeTrendPointDto> _points = [];
+    private bool _loaded;
+    private decimal _maxValue = 1;
+    private readonly System.Globalization.PersianCalendar _calendar = new();
+    private string FormatDay(DateOnly date) => _calendar.GetDayOfMonth(date.ToDateTime(TimeOnly.MinValue)).ToString("00");
+    private string FormatDate(DateOnly date)
+    {
+        var d = date.ToDateTime(TimeOnly.MinValue);
+        return $"{_calendar.GetYear(d)}/{_calendar.GetMonth(d):00}/{_calendar.GetDayOfMonth(d):00}";
+    }
+    private double GetBarHeight(decimal value) => value <= 0 ? 0 : (double)(value / _maxValue) * 174d;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, List<TradeTrendPointDto>>(
+                (service, ct) => service.GetTradeTrend30DaysAsync(ct),
+                afterSend: points =>
+                {
+                    _points = points.OrderBy(p => p.Date).ToList();
+                    _maxValue = Math.Max(1, _points.SelectMany(p => new[] { p.SellWeight, p.PurchaseWeight }).DefaultIfEmpty(0).Max());
+                }, createScope: true);
+        }
+        finally { _loaded = true; }
+    }
+}

@@ -11,4 +11,5 @@ public class TopUnpaidInvoiceDto
     public decimal TotalUnpaidAmount { get; set; }
     public string PriceUnit { get; set; } = "تومان";
     public DateOnly InvoiceDate { get; set; }
+    public DateOnly? DueDate { get; set; }
 }

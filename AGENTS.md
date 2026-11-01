@@ -1043,3 +1043,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - After each completed GoldEx task, create a local git commit containing all related changes.
 - Verify with git status --porcelain -uall after the commit; leave no task-related tracked or untracked changes.
 - Split unrelated completed tasks into separate commits. Do not push or deploy unless explicitly requested.
+## Home dashboard performance (2026-11-01)
+- Default home mounts HomeOperations (one unpaid-invoice call), not ExecutiveDashboard/ProfitAnalysisOverview.
+- Statistics tab=5 lazy-loads SVG daily bars, independent KPI cards and an expandable category breakdown; old tab ids 1-4 remain. No MudChart or timer.
+- Dashboard SQL projections replace full Invoice Includes for daily trade, unpaid invoices and today sales; customer balance uses grouped ledger summary. Preserve finance formulas. See .matemcp/skills/home-dashboard/SKILL.md.

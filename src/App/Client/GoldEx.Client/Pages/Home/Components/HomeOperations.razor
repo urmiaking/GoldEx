@@ -1,0 +1,122 @@
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Routings
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<div class="gex-home-operations">
+    <header class="gex-home-section-heading">
+        <div>
+            <h2>کارهای نیازمند پیگیری</h2>
+            <p>فاکتورهای باز و امور مالی که بهتر است بررسی شوند</p>
+        </div>
+        <a class="gex-home-more-link" href="@ClientRoutes.Invoices.Index">
+            همه فاکتورها <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+        </a>
+    </header>
+    <div class="gex-home-workspace">
+        <section class="goldex-glass-card gex-home-unpaid">
+            <header class="gex-home-panel-heading">
+                <div class="gex-home-heading-title">
+                    <span class="gex-home-heading-icon gex-home-heading-icon-alert"><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Small" /></span>
+                    <div>
+                        <h3>فاکتورهای تسویه‌نشده</h3>
+                        <p>بیشترین مانده‌های باز برای پیگیری</p>
+                    </div>
+                </div>
+                @if (_loaded && _invoices.Count > 0)
+                {
+                    <span class="gex-home-count-chip">@_invoices.Count مورد نمایش</span>
+                }
+            </header>
+            @if (!_loaded)
+            {
+                <div class="gex-home-unpaid-list" aria-label="در حال دریافت فاکتورها">
+                    @for (var i = 0; i < 5; i++)
+                    {
+                        <div class="gex-home-unpaid-item"><MudSkeleton Width="45%" Height="29px" /><MudSkeleton Width="28%" Height="29px" /></div>
+                    }
+                </div>
+            }
+            else if (_invoices.Count == 0)
+            {
+                <div class="gex-home-empty">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" />
+                    فاکتور تسویه‌نشده‌ای وجود ندارد.
+                </div>
+            }
+            else
+            {
+                <div class="gex-home-unpaid-list">
+                    @foreach (var invoice in _invoices)
+                    {
+                        <a href="@(ClientRoutes.Invoices.SetInvoice.Replace("{id?}", invoice.Id.ToString()))" class="gex-home-unpaid-item" @key="invoice.Id">
+                            <div class="gex-home-unpaid-identity">
+                                <span class="gex-home-invoice-type @(invoice.InvoiceType == InvoiceType.Purchase ? "is-purchase" : "is-sell")">@(invoice.InvoiceType == InvoiceType.Purchase ? "خرید" : "فروش")</span>
+                                <div>
+                                    <strong>فاکتور @invoice.InvoiceNumber</strong>
+                                    <span>@invoice.CustomerFullName</span>
+                                    @if (invoice.DueDate is DateOnly due && due < DateOnly.FromDateTime(DateTime.Today))
+                                    {
+                                        <span class="gex-home-overdue">سررسید گذشته</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="gex-home-unpaid-amount">
+                                <strong>@invoice.TotalUnpaidAmount.ToCurrencyFormat(invoice.PriceUnit)</strong>
+                                <span>مانده تسویه‌نشده</span>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" Class="gex-home-unpaid-chevron" />
+                        </a>
+                    }
+                </div>
+            }
+            <footer class="gex-home-panel-footer">
+                <a href="@ClientRoutes.Invoices.Index">مشاهده و مدیریت همه فاکتورها</a>
+            </footer>
+        </section>
+        <aside class="goldex-glass-card gex-home-followups">
+            <header class="gex-home-panel-heading">
+                <div class="gex-home-heading-title">
+                    <span class="gex-home-heading-icon"><MudIcon Icon="@Icons.Material.Outlined.Assignment" Size="Size.Small" /></span>
+                    <div><h3>پیگیری امور فروشگاه</h3><p>دسترسی به بخش‌های مالی</p></div>
+                </div>
+            </header>
+            <a href="@ClientRoutes.Finances.Checks" class="gex-home-followup-link">
+                <MudIcon Icon="@Icons.Material.Outlined.EventNote" Size="Size.Small" />
+                <span><strong>مدیریت چک‌ها</strong><small>سررسید و وضعیت چک‌های ثبت‌شده</small></span>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+            </a>
+            <a href="@ClientRoutes.Customers.Index" class="gex-home-followup-link">
+                <MudIcon Icon="@Icons.Material.Outlined.PeopleOutline" Size="Size.Small" />
+                <span><strong>حساب مشتریان</strong><small>بررسی بدهکاران و بستانکاران</small></span>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+            </a>
+            <a href="@ClientRoutes.Reporting.Index" class="gex-home-followup-link">
+                <MudIcon Icon="@Icons.Material.Outlined.Assessment" Size="Size.Small" />
+                <span><strong>گزارش‌های مدیریتی</strong><small>گزارش فروش، انبار و عملکرد مالی</small></span>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+            </a>
+        </aside>
+    </div>
+</div>
+
+@code {
+    private List<TopUnpaidInvoiceDto> _invoices = [];
+    private bool _loaded;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, List<TopUnpaidInvoiceDto>>(
+                (service, ct) => service.GetTopUnpaidInvoicesAsync(5, ct),
+                afterSend: response => _invoices = response,
+                createScope: true);
+        }
+        finally
+        {
+            _loaded = true;
+        }
+    }
+}

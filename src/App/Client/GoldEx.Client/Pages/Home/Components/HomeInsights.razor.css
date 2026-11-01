@@ -1,0 +1,9 @@
+.gex-home-insights { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; margin-bottom:19px; }
+.gex-home-insight { min-width:0; padding:17px; border-radius:17px; }
+.gex-home-insight header { display:flex; align-items:center; gap:9px; color:var(--mud-palette-text-secondary); font-size:.8rem; font-weight:400; margin-bottom:13px; }
+.gex-home-insight-value { overflow-wrap:anywhere; font-size:1.18rem; font-weight:500; font-variant-numeric:tabular-nums; line-height:1.7; min-height:33px; }
+.gex-home-insight-value small { font-size:.75rem; font-weight:400; }
+.gex-home-insight footer { display:flex; justify-content:space-between; align-items:center; gap:5px; font-size:.74rem; font-weight:400; color:var(--mud-palette-text-secondary); margin-top:5px; }
+.gex-home-insight button { border:0; background:var(--mud-palette-action-default-hover); color:var(--mud-palette-text-primary); border-radius:9px; cursor:pointer; display:grid; place-items:center; padding:3px; }
+@media(max-width:1050px){ .gex-home-insights { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:500px){ .gex-home-insights { gap:9px; } .gex-home-insight { padding:12px; } .gex-home-insight-value { font-size:.98rem; } }
