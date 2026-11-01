@@ -4,8 +4,16 @@
 <EditorDialogFrame>
     <DialogContent>
         <div class="gex-directory-filter-form">
-            <p class="gex-filter-description mud-typography-body2">فاکتورها را بر اساس تاریخ، نوع معامله و وضعیت پرداخت محدود کنید.</p>
+            <p class="gex-filter-description mud-typography-body2">بازه تاریخ ثبت یا تاریخ فاکتور، نوع معامله و وضعیت پرداخت را انتخاب کنید.</p>
             <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudDateRangePicker DateRange="@_createdDateRange"
+                                        DateRangeChanged="@(dr => _createdDateRange = dr)"
+                                        Variant="Variant.Outlined" Label="تاریخ ثبت"
+                                        Margin="Margin.Dense" MaxMonthColumns="1"
+                                        DisplayMonths="1" ShowToolbar="false" Rounded="true" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" RelativeWidth="DropdownWidth.Adaptive"
+                                        Adornment="Adornment.Start" Clearable Class="w-100 gex-filter-date-range" />
+                </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudDateRangePicker DateRange="@_dateRange"
                                         DateRangeChanged="@(dr => _dateRange = dr)"
@@ -54,6 +62,8 @@
                         <MudItem xs="12" sm="6">
                             <MudSelect T="string" Label="مرتب‌سازی بر اساس" @bind-Value="_sortLabel"
                                        Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                                <MudSelectItem Value="@("CreatedAt")">تاریخ ثبت</MudSelectItem>
+                                <MudSelectItem Value="@("InvoiceDate")">تاریخ فاکتور</MudSelectItem>
                                 <MudSelectItem Value="@("InvoiceNumber")">شماره فاکتور</MudSelectItem>
                                 <MudSelectItem Value="@("Customer.FullName")">نام مشتری</MudSelectItem>
                                 <MudSelectItem Value="@("InvoiceType")">نوع فاکتور</MudSelectItem>

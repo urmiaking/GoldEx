@@ -36,6 +36,47 @@ test('sorting, date, text, type and status filters remain wired to the API, not 
     assert.doesNotMatch(code, /MudTable|TableState|TableData/);
 });
 
+test('registration date is the default newest-first sort, independent of invoice date', () => {
+    const dialog = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceFiltersDialog.razor');
+    const dialogCode = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceFiltersDialog.razor.cs');
+    const spec = read('src/App/Server/GoldEx.Server.Infrastructure/Specifications/Invoices/InvoicesByFilterSpecification.cs');
+    const filter = read('src/App/Shared/GoldEx.Shared/DTOs/Invoices/InvoiceFilter.cs');
+
+    assert.match(code, /_sortLabel = "CreatedAt"/);
+    assert.match(code, /_sortDirection = Sdk\.Common\.Definitions\.SortDirection\.Descending/);
+    assert.match(dialogCode, /SortLabel \{ get; set; \} = "CreatedAt"/);
+    assert.match(list, /Value="@"?\("CreatedAt"\)/);
+    assert.match(list, /ChangeSort\("CreatedAt"\)/);
+    assert.match(dialog, /Label="تاریخ ثبت"/);
+    assert.match(dialog, /Label="تاریخ فاکتور"/);
+    assert.match(dialog, /Value="@"?\("CreatedAt"\)/);
+    assert.match(filter, /DateTime\? CreatedStart = null, DateTime\? CreatedEnd = null/);
+    assert.match(spec, /x => x\.CreatedAt >= createdFrom/);
+    assert.match(spec, /x => x\.CreatedAt < createdUntil/);
+    assert.match(spec, /createdUntil = invoiceFilter\.CreatedEnd\.Value\.Date\.AddDays\(1\)/);
+    assert.match(spec, /x => x\.InvoiceDate >= startDateOnly/);
+    assert.match(spec, /x => x\.InvoiceDate <= endDateOnly/);
+});
+
+test('registration date filter survives dialogs, paging, URL persistence and reset', () => {
+    const dialogCode = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/InvoiceFiltersDialog.razor.cs');
+    const spec = read('src/App/Server/GoldEx.Server.Infrastructure/Specifications/Invoices/InvoicesByFilterSpecification.cs');
+    assert.match(code, /new InvoiceFilter\(_invoicePaymentStatus, _invoiceType, _tradeScale,[\s\S]*?_filterCreatedDateRange\.Start, _filterCreatedDateRange\.End\)/);
+    assert.match(code, /nameof\(InvoiceFiltersDialog\.CreatedDateRange\)/);
+    assert.match(code, /_filterCreatedDateRange = new DateRange\(result\.CreatedDateRange\.Start, result\.CreatedDateRange\.End\)/);
+    assert.match(code, /SupplyParameterFromQuery\(Name = "createdStart"\)/);
+    assert.match(code, /SupplyParameterFromQuery\(Name = "createdEnd"\)/);
+    assert.match(code, /_filterCreatedDateRange\.Start != newCreatedStart \|\| _filterCreatedDateRange\.End != newCreatedEnd/);
+    assert.match(code, /parameters\.Add\("createdStart"/);
+    assert.match(code, /parameters\.Add\("createdEnd"/);
+    assert.match(code, /_filterCreatedDateRange = new DateRange\(\)/);
+    assert.match(code, /_filterCreatedDateRange\.Start\.HasValue \|\| _filterCreatedDateRange\.End\.HasValue/);
+    assert.match(dialogCode, /CreatedDateRange \{ get; set; \} = new\(\)/);
+    assert.match(dialogCode, /_createdDateRange = new DateRange\(\)/);
+    assert.match(spec, /invoiceFilter\.CreatedStart\.HasValue/);
+    assert.match(spec, /invoiceFilter\.CreatedEnd\.HasValue/);
+});
+
 test('invoice operation and detail actions are still accessible on both views', () => {
     for (const fn of ['OnViewInvoice(invoice)', 'OnEditInvoice(invoice)', 'OnRemoveInvoice(invoice)', 'ToggleDetails(invoice)'])
         assert.equal(list.split(fn).length - 1, 2, fn);

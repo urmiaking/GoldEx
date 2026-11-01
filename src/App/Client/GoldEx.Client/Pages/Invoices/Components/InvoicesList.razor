@@ -47,6 +47,8 @@
                 <MudSelect T="string" Label="مرتب‌سازی بر اساس"
                            Value="_sortLabel" ValueChanged="OnSortChanged"
                            Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem Value="@("CreatedAt")">تاریخ ثبت</MudSelectItem>
+                    <MudSelectItem Value="@("InvoiceDate")">تاریخ فاکتور</MudSelectItem>
                     <MudSelectItem Value="@("InvoiceNumber")">شماره فاکتور</MudSelectItem>
                     <MudSelectItem Value="@("Customer.FullName")">نام مشتری</MudSelectItem>
                     <MudSelectItem Value="@("InvoiceType")">نوع فاکتور</MudSelectItem>
@@ -129,7 +131,7 @@
                 <table class="invoice-table mud-typography-body2">
                     <thead>
                         <tr>
-                            <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceNumber")'>شماره / تاریخ <span>@SortIndicator("InvoiceNumber")</span></button></th>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("CreatedAt")'>شماره / تاریخ <span>@SortIndicator("CreatedAt")</span></button></th>
                             <th scope="col"><button type="button" @onclick='() => ChangeSort("Customer.FullName")'>طرف حساب <span>@SortIndicator("Customer.FullName")</span></button></th>
                             <th scope="col"><button type="button" @onclick='() => ChangeSort("InvoiceType")'>نوع معامله <span>@SortIndicator("InvoiceType")</span></button></th>
                             <th scope="col">ارزش کل</th>

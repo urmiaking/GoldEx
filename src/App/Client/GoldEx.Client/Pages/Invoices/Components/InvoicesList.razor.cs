@@ -32,6 +32,8 @@ public partial class InvoicesList
     [Parameter, SupplyParameterFromQuery(Name = "scale")] public string? ScaleQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "createdStart")] public string? CreatedStartQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "createdEnd")] public string? CreatedEndQuery { get; set; }
 
     private ElementReference _invoiceDirectory;
     private ElementReference _invoiceFilters;
@@ -65,7 +67,7 @@ public partial class InvoicesList
     }
     private bool _initialized, _loading, _loadFailed;
     private int _pageIndex, _pageSize = 10, _totalItems;
-    private string _sortLabel = "InvoiceNumber";
+    private string _sortLabel = "CreatedAt";
     private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
     private List<InvoiceListVm> _invoices = [];
 
@@ -74,6 +76,7 @@ public partial class InvoicesList
     private TradeScale? _tradeScale;
     private string? _searchString;
     private DateRange _filterDateRange = new();
+    private DateRange _filterCreatedDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
     [Parameter, SupplyParameterFromQuery(Name = "size")] public int? SizeQuery { get; set; }
@@ -81,7 +84,8 @@ public partial class InvoicesList
     private int PageCount => Math.Max(1, (_totalItems + _pageSize - 1) / _pageSize);
     private int ActiveFilterCount => (_invoicePaymentStatus.HasValue ? 1 : 0) +
         (_invoiceType.HasValue ? 1 : 0) + (_tradeScale.HasValue ? 1 : 0) +
-        (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0);
+        (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0) +
+        (_filterCreatedDateRange.Start.HasValue || _filterCreatedDateRange.End.HasValue ? 1 : 0);
     private bool CanPrevious => !_loading && _pageIndex > 0;
     private bool CanNext => !_loading && _pageIndex + 1 < PageCount;
     private string FilterButtonLabel => ActiveFilterCount == 0 ? "فیلتر فاکتورها" : $"فیلتر فاکتورها، {ActiveFilterCount} فیلتر فعال";
@@ -130,7 +134,8 @@ public partial class InvoicesList
             var filter = new RequestFilter(_pageIndex * _pageSize, _pageSize, _searchString,
                 _sortLabel, _sortDirection);
             var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale,
-                _filterDateRange.Start, _filterDateRange.End);
+                _filterDateRange.Start, _filterDateRange.End,
+                _filterCreatedDateRange.Start, _filterCreatedDateRange.End);
             await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
                 action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
                 afterSend: response =>
@@ -177,6 +182,7 @@ public partial class InvoicesList
         _tradeScale = null;
         _invoicePaymentStatus = null;
         _filterDateRange = new DateRange();
+        _filterCreatedDateRange = new DateRange();
         await RefreshAsync();
     }
     private async Task ChangePage(int delta)
@@ -325,6 +331,7 @@ public partial class InvoicesList
 
     public record InvoicesMobileFiltersResult(
             DateRange DateRange,
+            DateRange CreatedDateRange,
             InvoiceType? InvoiceType,
             TradeScale? TradeScale,
             InvoicePaymentStatus? PaymentStatus,
@@ -339,6 +346,7 @@ public partial class InvoicesList
         var parameters = new Dictionary<string, object>
         {
             { nameof(InvoiceFiltersDialog.DateRange), _filterDateRange },
+            { nameof(InvoiceFiltersDialog.CreatedDateRange), _filterCreatedDateRange },
             { nameof(InvoiceFiltersDialog.InvoiceTypeParam), _invoiceType! },
             { nameof(InvoiceFiltersDialog.TradeScaleParam), _tradeScale! },
             { nameof(InvoiceFiltersDialog.PaymentStatus), _invoicePaymentStatus! },
@@ -359,6 +367,7 @@ public partial class InvoicesList
     private async Task ApplyMobileFilters(InvoicesMobileFiltersResult result)
     {
         _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+        _filterCreatedDateRange = new DateRange(result.CreatedDateRange.Start, result.CreatedDateRange.End);
         _invoiceType = result.InvoiceType;
         _tradeScale = result.TradeScale;
         _invoicePaymentStatus = result.PaymentStatus;
@@ -423,10 +432,21 @@ public partial class InvoicesList
                 newEnd = parsedEnd;
             }
 
+            DateTime? newCreatedStart = null;
+            if (!string.IsNullOrWhiteSpace(CreatedStartQuery) &&
+                DateTime.TryParseExact(CreatedStartQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedCreatedStart))
+                newCreatedStart = parsedCreatedStart;
+
+            DateTime? newCreatedEnd = null;
+            if (!string.IsNullOrWhiteSpace(CreatedEndQuery) &&
+                DateTime.TryParseExact(CreatedEndQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedCreatedEnd))
+                newCreatedEnd = parsedCreatedEnd;
+
             var newSize = SizeQuery is 10 or 25 or 50 ? SizeQuery.Value : 10;
             var changed = _searchString != newSearch || _invoicePaymentStatus != newStatus ||
                 _invoiceType != newType || _tradeScale != newScale ||
                 _filterDateRange.Start != newStart || _filterDateRange.End != newEnd ||
+                _filterCreatedDateRange.Start != newCreatedStart || _filterCreatedDateRange.End != newCreatedEnd ||
                 _pageSize != newSize || _pageIndex != newPage;
             if (!_initialized || changed)
             {
@@ -435,6 +455,7 @@ public partial class InvoicesList
                 _invoiceType = newType;
                 _tradeScale = newScale;
                 _filterDateRange = new DateRange(newStart, newEnd);
+                _filterCreatedDateRange = new DateRange(newCreatedStart, newCreatedEnd);
                 _pageSize = newSize;
                 _pageIndex = newPage;
                 if (_initialized) await LoadInvoicesAsync();
@@ -478,6 +499,12 @@ public partial class InvoicesList
 
         if (_filterDateRange?.End.HasValue == true)
             parameters.Add("end", _filterDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterCreatedDateRange.Start.HasValue)
+            parameters.Add("createdStart", _filterCreatedDateRange.Start.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterCreatedDateRange.End.HasValue)
+            parameters.Add("createdEnd", _filterCreatedDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var baseUrl = NavigationManager.Uri.Split('?')[0];
         var newUrl = baseUrl.AppendQueryString(parameters);

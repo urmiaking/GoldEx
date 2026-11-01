@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
@@ -40,6 +40,19 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         {
             var endDateOnly = DateOnly.FromDateTime(invoiceFilter.End.Value.Date);
             AddCriteria(x => x.InvoiceDate <= endDateOnly);
+        }
+
+        // Registration dates are distinct from the editable invoice date.
+        // End is exclusive, so the full selected calendar day is included.
+        if (invoiceFilter.CreatedStart.HasValue)
+        {
+            var createdFrom = invoiceFilter.CreatedStart.Value.Date;
+            AddCriteria(x => x.CreatedAt >= createdFrom);
+        }
+        if (invoiceFilter.CreatedEnd.HasValue)
+        {
+            var createdUntil = invoiceFilter.CreatedEnd.Value.Date.AddDays(1);
+            AddCriteria(x => x.CreatedAt < createdUntil);
         }
 
         // Apply invoice type if provided
