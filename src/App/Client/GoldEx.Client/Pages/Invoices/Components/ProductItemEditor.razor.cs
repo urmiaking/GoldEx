@@ -78,14 +78,9 @@ public partial class ProductItemEditor
 
         OnWageTypeChanged(Model.Product.WageType);
 
-        if (TradeScale is TradeScale.Wholesale)
-        {
-            if (!Model.Id.HasValue)
-            {
-                Model.ProfitPercent = 0;
-                Model.TaxPercent = 0;
-            }
-        }
+        // Profit/tax are initialized only when a new item is created in EditorForm.
+        // Never reset these user-entered values during parameter updates or reopening
+        // an unsaved wholesale item: its Id remains null until invoice persistence.
 
         base.OnParametersSet();
     }

@@ -486,8 +486,11 @@ public partial class EditorForm
         decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
         model.GramPrice = gramPrice;
-        model.TaxPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.TaxPercent ?? 9 : 0;
-        model.ProfitPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.GoldProfitPercent ?? 7 : 0;
+        // Defaults belong to new item creation, never to dialog re-renders or edits.
+        // Wholesale (and purchase) starts at zero, but operators may override either field.
+        var isRetailSale = _model.InvoiceType is InvoiceType.Sell && _model.TradeScale is TradeScale.Retail;
+        model.TaxPercent = isRetailSale ? _setting?.TaxPercent ?? 9 : 0;
+        model.ProfitPercent = isRetailSale ? _setting?.GoldProfitPercent ?? 7 : 0;
         model.IsInstantProduct = _model.InvoiceType is InvoiceType.Sell;
         model.InvoiceType = _model.InvoiceType;
         model.CostPriceUnitId = _model.InvoicePriceUnit?.Id;
