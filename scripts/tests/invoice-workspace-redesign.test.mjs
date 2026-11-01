@@ -62,7 +62,7 @@ test('financial sidebar always visible with live totals, all payment operations 
  for(const key of ['TotalInvoiceAmount','TotalUnpaidAmount','TotalDiscountsAmount','TotalExtraCostsAmount','TotalPaidPaymentsAmount','TotalReceivedPaymentAmount','TotalItemsTaxAmount','TotalItemsWageAmount','TotalItemsProfitAmount','TotalUsedProductsAmount']){
    assert.ok(view.includes('_model.'+key),key);
  }
- for(const cb of ['OpenPaymentsDialog(false)','OpenPaymentsDialog(true)','OpenDiscountsDialog','OpenExtraCostsDialog','OnTotalUnpaidMenuToggled']){
+ for(const cb of ['OpenPaymentsDialog(false)','OpenPaymentsDialog(true)','OpenDiscountsDialog','OpenExtraCostsDialog','OpenUnpaidUnitDialog']){
    assert.ok(view.includes(cb),cb);
  }
  assert.match(css,/\.invoice-workspace-top\{[^}]*display:grid/);
@@ -91,7 +91,7 @@ test('finance owns the left sidebar; header and customer sit above items in the 
  assert.match(css,/\.invoice-workspace-columns\{display:grid;grid-template-columns:minmax\(0,3fr\) minmax\(315px,1fr\);grid-template-areas:"main finance"/);
  assert.match(css,/\.invoice-workspace-top\{display:grid;grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\)/);
  assert.match(css,/\.invoice-workspace-side\{[^}]*position:sticky/);
- assert.match(css,/\.invoice-customer-details\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
+ assert.match(view,/class="invoice-customer-identity"/);
  assert.match(css,/@media\(max-width:1299\.98px\)\{\s*\.invoice-workspace-columns\{grid-template-columns:minmax\(0,1fr\);grid-template-areas:"main" "finance"/);
  assert.match(css,/\.invoice-core-field-caption\{display:none\}/);
  const skMain=skeleton.indexOf('<main class="invoice-workspace-main">');
@@ -106,7 +106,7 @@ test('desktop columns use the exact 50% header, 25% customer, 25% finance propor
  assert.match(css,/\.invoice-workspace-columns>\.invoice-workspace-side\{grid-area:finance;justify-self:stretch;min-width:0;width:100%\}/);
  assert.match(css,/\.invoice-workspace-columns>\.invoice-workspace-side>\.invoice-settlement-main\{width:100%;grid-template-columns:minmax\(0,1fr\)\}/);
  assert.match(css,/\.invoice-workspace-top>\.invoice-section\{min-width:0;height:100%\}/);
- assert.match(css,/\.invoice-customer-details>div\{[^}]*padding:2px 0\}/);
+ assert.match(css,/\.invoice-customer-tools\{[^}]*margin-bottom:13px/);
  assert.match(skeletonCss,/grid-template-areas:"main finance"/);
  assert.doesNotMatch(css,/invoice-core-section\{min-height:285px\}/);
 });
@@ -124,22 +124,77 @@ test('invoice steps navigate using a lazy-loaded module and show active step',()
  assert.match(js,/export function scrollToSection\(sectionId\)/);
  assert.match(js,/scrollIntoView\(/);
 });
-test('financial breakdown is a closed accordion, balance unit is inline, and ready-to-submit card is removed',()=>{
- const view=read('EditorForm.razor');
- const css=read('EditorForm.razor.css');
- const skeleton=read('EditorFormSkeleton.razor');
- assert.match(view,/<details class="invoice-financial-accordion">/);
- assert.match(view,/<summary><span>جزئیات محاسبات<\/span>/);
- assert.doesNotMatch(view,/<details class="invoice-financial-accordion" open/);
- const details=view.indexOf('<details class="invoice-financial-accordion">');
- const breakdown=view.indexOf('<div class="invoice-financial-breakdown">');
- const close=view.indexOf('</details>',details);
- assert.ok(details>0&&details<breakdown&&breakdown<close);
- const balance=view.indexOf('<div class="invoice-financial-balance-row">');
- const change=view.indexOf('تغییر واحد مانده',balance);
- assert.ok(balance>0&&change>balance&&change<details);
+test('animated accounting accordion, modal balance unit selector and no final review card',()=>{
+ const view=read('EditorForm.razor'),code=read('EditorForm.razor.cs');
+ const css=read('EditorForm.razor.css'),skeleton=read('EditorFormSkeleton.razor');
+ const details=view.indexOf('class="invoice-financial-accordion @(');
+ const breakdown=view.indexOf('class="invoice-financial-breakdown"');
+ assert.ok(details>0 && breakdown>details);
+ assert.match(view,/aria-expanded="@_showFinancialDetails"/);
+ assert.match(view,/@onclick="ToggleFinancialDetails"/);
+ assert.match(view,/aria-hidden="@\(!_showFinancialDetails\)"/);
+ assert.match(css,/grid-template-rows:0fr/);
+ assert.match(css,/grid-template-rows:1fr/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(view,/OnClick="OpenUnpaidUnitDialog"/);
+ assert.doesNotMatch(view,/<MudPopover/);
+ assert.match(code,/ResponsiveDialogs.Show<UnpaidBalanceUnitDialog>/);
+ assert.match(code,/Data: UnpaidBalanceUnitDialog.UnitSelection updated/);
  assert.doesNotMatch(view,/invoice-final-review|آماده ثبت/);
  assert.doesNotMatch(skeleton,/invoice-final-review/);
- assert.match(css,/\.invoice-financial-accordion summary\{/);
- assert.match(css,/\.invoice-core-section \.invoice-core-price-strip\{margin-top:auto\}/);
+});
+test('compact customer, clear page header, colored statuses and counts',()=>{
+ const view=read('EditorForm.razor'),css=read('EditorForm.razor.css');
+ const code=read('EditorForm.razor.cs');
+ assert.doesNotMatch(view,/مدیریت فاکتور \/|اطلاعات، اقلام و تسویه را/);
+ assert.match(view,/IsEditMode \? "ویرایش فاکتور" : "ثبت فاکتور"/);
+ assert.match(view,/invoice-type-chip/);
+ assert.match(css,/\.invoice-type-chip.is-purchase/);
+ assert.match(css,/\.invoice-type-chip.is-sale/);
+ assert.match(css,/\.invoice-workspace-state.is-pending/);
+ assert.doesNotMatch(view,/بخش [۱۲۳۴]/);
+ assert.match(view,/customer\?\.FullName/);
+ assert.match(view,/<span class="invoice-customer-id">\(@customer.NationalId\)<\/span>/);
+ assert.match(view,/class="invoice-customer-phone"/);
+ assert.doesNotMatch(view,/customer.CustomerType.GetDisplayName/);
+ assert.doesNotMatch(view,/<MudSwitch/);
+ assert.doesNotMatch(code,/_applyCurrentInvoice/);
+ assert.match(view,/AddedValue="@\(IsEditMode \? GetCustomerBalanceChange\(\) : GetNewInvoiceCustomerBalanceEffect\(\)\)"/);
+ assert.match(view,/InvoiceDiscounts.Count/);
+ assert.match(view,/InvoiceExtraCosts.Count/);
+ assert.match(view,/Color="Color.Success" Variant="Variant.Outlined"/);
+});
+test('mobile barcode stays beside add button and skeleton keeps labels',()=>{
+ const css=read('EditorForm.razor.css'),skeleton=read('EditorFormSkeleton.razor');
+ const skeletonCss=read('EditorFormSkeleton.razor.css');
+ assert.match(css,/:has\(\.mud-input-control\)/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) auto/);
+ assert.match(skeleton,/>مشخصات فاکتور<\/h2>/);
+ assert.match(skeleton,/>مالی و تسویه<\/h2>/);
+ assert.match(skeleton,/>جزئیات محاسبات<\/span>/);
+ assert.match(skeletonCss,/invoice-skeleton-label/);
+});
+test('responsive unpaid-unit dialog previews and safely commits only after confirmation',()=>{
+ const dialog=read('UnpaidBalanceUnitDialog.razor');
+ const css=read('UnpaidBalanceUnitDialog.razor.css');
+ const editor=read('EditorForm.razor.cs');
+ const selector=read('UnpaidPriceSelector.razor');
+ assert.match(dialog,/<EditorDialogFrame>/);
+ assert.match(dialog,/این تغییر مبلغ اصلی فاکتور یا پرداخت‌های ثبت‌شده را تغییر نمی‌دهد/);
+ assert.match(dialog,/UnpaidPriceUnitChanged="OnUnitChanged"/);
+ assert.match(dialog,/ExchangeRateChanged="OnRateChanged"/);
+ assert.match(dialog,/_selectedRate = null/);
+ assert.match(dialog,/Disabled="@InvalidRate"/);
+ assert.match(dialog,/Session\?\.Cancel\(\)/);
+ assert.match(dialog,/Session\?\.Close\(new UnitSelection/);
+ assert.match(editor,/if \(await dialog.Result is \{ Canceled: false, Data: UnpaidBalanceUnitDialog.UnitSelection updated \}\)/);
+ assert.match(css,/@media\(max-width:600px\)/);
+ assert.match(selector,/واحد نمایش مانده/);
+});
+test('compact customer always previews current invoice without the optional toggle',()=>{
+ const view=read('EditorForm.razor'),cs=read('EditorForm.razor.cs');
+ assert.doesNotMatch(view,/invoice-customer-balance-option|MudSwitch/);
+ assert.doesNotMatch(cs,/_applyCurrentInvoice|RemainingTooltipText/);
+ assert.match(view,/AddedValue="@\(IsEditMode \? GetCustomerBalanceChange\(\) : GetNewInvoiceCustomerBalanceEffect\(\)\)"/);
+ assert.match(view,/ToStringFunc="@\(customer => customer\?\.FullName\)"/);
 });

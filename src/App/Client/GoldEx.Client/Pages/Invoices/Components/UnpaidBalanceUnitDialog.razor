@@ -1,0 +1,96 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Client.Components.Services
+@using GoldEx.Shared.DTOs.PriceUnits
+@inherits GoldExComponentBase
+
+<EditorDialogFrame>
+    <DialogContent>
+        <section class="unpaid-unit-dialog">
+            <div class="unpaid-unit-intro">
+                <div class="unpaid-unit-intro-icon"><MudIcon Icon="@Icons.Material.Outlined.CurrencyExchange" /></div>
+                <div>
+                    <h3>مانده فاکتور با چه واحدی نمایش داده شود؟</h3>
+                    <p>مثلاً مانده یک فاکتور تومانی را می‌توانید به گرم طلا پیگیری کنید. این تغییر مبلغ اصلی فاکتور یا پرداخت‌های ثبت‌شده را تغییر نمی‌دهد.</p>
+                </div>
+            </div>
+            <div class="unpaid-unit-current">
+                <span>مانده فعلی بر اساس واحد فاکتور</span>
+                <strong>@TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)</strong>
+            </div>
+            <UnpaidPriceSelector PriceUnits="PriceUnits"
+                                 MainPriceUnit="MainPriceUnit"
+                                 TotalUnpaidAmount="TotalUnpaidAmount"
+                                 TotalUnpaidSecondaryAmount="TotalUnpaidSecondaryAmount"
+                                 UnpaidPriceUnit="_selectedUnit"
+                                 UnpaidPriceUnitChanged="OnUnitChanged"
+                                 ExchangeRate="_selectedRate"
+                                 ExchangeRateChanged="OnRateChanged" />
+            @if (_selectedUnit is not null && _selectedUnit.Id != MainPriceUnit?.Id && _selectedRate is null)
+            {
+                <div class="unpaid-unit-warning"><MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" /> برای نمایش دقیق مانده، نرخ تبدیل این دو واحد را وارد کنید.</div>
+            }
+            <div class="unpaid-unit-note">
+                <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" />
+                <span>این تنظیم فقط نحوه محاسبه و نمایش مانده تسویه‌نشده را تعیین می‌کند؛ اقلام و مبالغ فاکتور ثابت می‌مانند.</span>
+            </div>
+        </section>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" Style="border-radius:999px" OnClick="Cancel">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="border-radius:999px"
+                   Disabled="@InvalidRate"
+                   StartIcon="@Icons.Material.Filled.Check" OnClick="Save">اعمال واحد مانده</MudButton>
+    </DialogActions>
+</EditorDialogFrame>
+
+@code {
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
+    [Parameter] public GetPriceUnitTitleResponse? MainPriceUnit { get; set; }
+    [Parameter] public GetPriceUnitTitleResponse? CurrentUnit { get; set; }
+    [Parameter] public decimal? CurrentExchangeRate { get; set; }
+    [Parameter] public decimal TotalUnpaidAmount { get; set; }
+    [Parameter] public decimal? TotalUnpaidSecondaryAmount { get; set; }
+
+    private bool _initialized;
+    private GetPriceUnitTitleResponse? _selectedUnit;
+    private decimal? _selectedRate;
+
+    protected override void OnParametersSet()
+    {
+        if (_initialized) return;
+        _selectedUnit = CurrentUnit;
+        _selectedRate = CurrentExchangeRate;
+        _initialized = true;
+    }
+
+    private Task OnUnitChanged(GetPriceUnitTitleResponse? unit)
+    {
+        if (_selectedUnit?.Id != unit?.Id)
+            _selectedRate = null;
+        _selectedUnit = unit;
+        return Task.CompletedTask;
+    }
+
+    private Task OnRateChanged(decimal? rate)
+    {
+        _selectedRate = rate;
+        return Task.CompletedTask;
+    }
+
+    private bool InvalidRate =>
+        _selectedUnit is not null && MainPriceUnit is not null &&
+        _selectedUnit.Id != MainPriceUnit.Id &&
+        (!_selectedRate.HasValue || _selectedRate.Value <= 0);
+
+    public sealed record UnitSelection(GetPriceUnitTitleResponse? Unit, decimal? ExchangeRate);
+
+    private void Cancel() => Session?.Cancel();
+    private void Save()
+    {
+        if (InvalidRate) return;
+        var unit = _selectedUnit is not null && _selectedUnit.Id == MainPriceUnit?.Id ? null : _selectedUnit;
+        Session?.Close(new UnitSelection(unit, unit is null ? null : _selectedRate));
+    }
+}

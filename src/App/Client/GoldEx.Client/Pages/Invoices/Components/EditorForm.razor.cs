@@ -50,10 +50,9 @@ public partial class EditorForm
     private GetLicenseResponse? _license;
     private bool _processing;
     private bool _deleting;
-    private bool _totalUnpaidMenuOpen;
+    private bool _showFinancialDetails;
     private int _activeInvoiceStep = 1;
     private bool _isLoadingInvoice;
-    private bool _applyCurrentInvoice = true;
     private int _activeItemTab;
     private async Task ScrollToInvoiceSectionAsync(int step)
     {
@@ -130,11 +129,6 @@ public partial class EditorForm
         InvoiceType.Purchase => Color.Success,
         _ => Color.Default
     };
-
-    private string RemainingTooltipText =>
-        _applyCurrentInvoice
-            ? "اعمال مانده فاکتور جاری در مانده مشتری"
-            : "عدم اعمال مانده فاکتور جاری در مانده مشتری";
 
     private string InvoiceIcon => _model.InvoiceType switch
     {
@@ -1560,9 +1554,30 @@ public partial class EditorForm
             _model.InvoiceExtraCosts = updated;
     }
 
-    private void OnTotalUnpaidMenuToggled()
+    private void ToggleFinancialDetails() => _showFinancialDetails = !_showFinancialDetails;
+
+    private async Task OpenUnpaidUnitDialog()
     {
-        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            [nameof(UnpaidBalanceUnitDialog.PriceUnits)] = _priceUnits,
+            [nameof(UnpaidBalanceUnitDialog.MainPriceUnit)] = _model.InvoicePriceUnit,
+            [nameof(UnpaidBalanceUnitDialog.TotalUnpaidAmount)] = Math.Abs(_model.TotalUnpaidAmount),
+            [nameof(UnpaidBalanceUnitDialog.TotalUnpaidSecondaryAmount)] = Math.Abs(_model.TotalUnpaidSecondaryAmount)
+        };
+        if (_model.UnpaidPriceUnit is { } currentUnit)
+            parameters[nameof(UnpaidBalanceUnitDialog.CurrentUnit)] = currentUnit;
+        if (_model.UnpaidExchangeRate is { } currentRate)
+            parameters[nameof(UnpaidBalanceUnitDialog.CurrentExchangeRate)] = currentRate;
+
+        var dialog = ResponsiveDialogs.Show<UnpaidBalanceUnitDialog>("تغییر واحد مانده", parameters);
+        if (await dialog.Result is { Canceled: false, Data: UnpaidBalanceUnitDialog.UnitSelection updated })
+        {
+            _model.UnpaidPriceUnit = updated.Unit;
+            _model.UnpaidExchangeRate = updated.ExchangeRate;
+        }
     }
 
     #endregion
