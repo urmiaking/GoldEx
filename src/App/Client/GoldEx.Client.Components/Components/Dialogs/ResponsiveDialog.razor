@@ -3,10 +3,10 @@
 @implements IAsyncDisposable
 
 <dialog class="gex-modal-layer @(Open ? "is-active" : null)" open="@(!Open)" role="@(Open ? "dialog" : "presentation")"
-        aria-labelledby="@(Open ? _titleId : null)" aria-modal="@(Open ? "true" : null)" @ref="_dialog" @onkeydown="KeyDown">
+        aria-labelledby="@(Open ? _titleId : null)" aria-modal="@(Open ? "true" : null)" @ref="_dialog">
     @if (Open)
     {
-        <button type="button" class="gex-modal-backdrop" tabindex="-1" aria-label="بستن پنجره" disabled="@Busy" @onclick="Close" />
+        <div class="gex-modal-backdrop" aria-hidden="true"></div>
     }
     <section class="gex-modal-panel @(Wide ? "gex-modal-wide" : null)" hidden="@(!Open)" dir="rtl">
         <header class="gex-modal-header">
@@ -49,11 +49,6 @@
         if (!Open) _focusedSession = null;
     }
     private Task Close() => Busy ? Task.CompletedTask : OnClose.InvokeAsync();
-    private async Task KeyDown(KeyboardEventArgs args)
-    {
-        if (Open && args.Key == "Escape" && !Busy && _module is not null && await _module.InvokeAsync<bool>("canDismiss", _dialog))
-            await Close();
-    }
     public async ValueTask DisposeAsync()
     {
         try

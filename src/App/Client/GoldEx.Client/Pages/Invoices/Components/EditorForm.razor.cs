@@ -510,20 +510,28 @@ public partial class EditorForm
                 [nameof(ProductItemEditor.Model)] = model,
                 [nameof(ProductItemEditor.PriceUnits)] = _priceUnits,
                 [nameof(ProductItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
-                [nameof(ProductItemEditor.TradeScale)] = _model.TradeScale
+                [nameof(ProductItemEditor.TradeScale)] = _model.TradeScale,
+                [nameof(ProductItemEditor.PrepareAndAddAsync)] = (Func<ProductItemVm, Task<bool>>)PrepareAndAddProductItemAsync
             }, wide: true);
 
-        var result = await dialog.Result;
+        // The editor keeps its spinner visible until barcode reservation and list
+        // insertion finish. Its success callback closes the dialog afterward.
+        await dialog.Result;
+    }
 
-        if (result is { Canceled: false, Data: ProductItemVm productItem })
+    private async Task<bool> PrepareAndAddProductItemAsync(ProductItemVm productItem)
+    {
+        await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
+        if (!productItem.Product.Id.HasValue && string.IsNullOrWhiteSpace(productItem.Product.Barcode))
         {
-            // Reserve and assign barcode for brand-new items
-            await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
-
-            productItem.RecalculateAmounts();
-            _model.AddProductItem(productItem);
-            StateHasChanged();
+            AddErrorToast("دریافت بارکد انجام نشد؛ لطفاً دوباره ذخیره کنید.");
+            return false;
         }
+
+        productItem.RecalculateAmounts();
+        _model.AddProductItem(productItem);
+        await InvokeAsync(StateHasChanged);
+        return true;
     }
 
     private async Task OnEditProductItem(ProductItemVm productItemVm)
@@ -810,19 +818,26 @@ public partial class EditorForm
             {
                 [nameof(CoinItemEditor.Model)] = model,
                 [nameof(CoinItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
-                [nameof(CoinItemEditor.InvoiceType)] = _model.InvoiceType
+                [nameof(CoinItemEditor.InvoiceType)] = _model.InvoiceType,
+                [nameof(CoinItemEditor.PrepareAndAddAsync)] = (Func<CoinItemVm, Task<bool>>)PrepareAndAddCoinItemAsync
             }, wide: true);
 
-        var result = await dialog.Result;
+        await dialog.Result;
+    }
 
-        if (result is { Canceled: false, Data: CoinItemVm coinItem })
+    private async Task<bool> PrepareAndAddCoinItemAsync(CoinItemVm coinItem)
+    {
+        await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
+        if (!coinItem.CoinInstance.Id.HasValue && string.IsNullOrWhiteSpace(coinItem.CoinInstance.Barcode))
         {
-            await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
-
-            coinItem.RecalculateAmounts();
-            _model.AddCoinItem(coinItem);
-            StateHasChanged();
+            AddErrorToast("دریافت بارکد انجام نشد؛ لطفاً دوباره ذخیره کنید.");
+            return false;
         }
+
+        coinItem.RecalculateAmounts();
+        _model.AddCoinItem(coinItem);
+        await InvokeAsync(StateHasChanged);
+        return true;
     }
 
     private async Task OnEditCoinItem(CoinItemVm coinItemVm)

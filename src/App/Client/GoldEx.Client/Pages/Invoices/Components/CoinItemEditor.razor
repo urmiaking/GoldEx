@@ -69,7 +69,7 @@
                                      For="() => Model.UnitPrice"
                                      Format="#,##0.##"
                                      dir="ltr"
-                                     DebounceInterval="1"
+                                     Immediate="false"
                                      HideSpinButtons="true"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined"
@@ -113,7 +113,7 @@
                                      dir="ltr"
                                      Disabled="Model.CoinInstance.MintType == CoinMintType.Banking"
                                      Format="G29"
-                                     DebounceInterval="1"
+                                     Immediate="false"
                                      HideSpinButtons="true"
                                      Margin="Margin.Dense"
                                      Label="@(Model.GetDisplayName(() => Model.CoinInstance.Weight))"
@@ -124,7 +124,7 @@
                 <MudItem xs="12" sm="6" md="4">
                     <MudNumericField For="@(() => Model.CoinInstance.Fineness)"
                                      Format="G29"
-                                     DebounceInterval="1"
+                                     Immediate="false"
                                      dir="ltr"
                                      Label="@Model.GetDisplayName(() => Model.CoinInstance.Fineness)"
                                      Margin="Margin.Dense"
@@ -160,7 +160,7 @@
                                          dir="ltr"
                                          HideSpinButtons="true"
                                          Format="G29"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Margin="Margin.Dense"
                                          Variant="Variant.Outlined"
                                          InputMode="InputMode.numeric" />
@@ -178,7 +178,7 @@
                                          For="() => Model.CoinInstance.CoinPackage.VacuumedWeight"
                                          dir="ltr"
                                          Format="G29"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          HideSpinButtons="true"
                                          Margin="Margin.Dense"
                                          Label="@(Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.VacuumedWeight))"
@@ -245,6 +245,7 @@
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Default"
+                       Disabled="@_isProcessing"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Outlined">انصراف</MudButton>

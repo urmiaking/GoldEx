@@ -588,7 +588,8 @@
 
                 <div class="button-group">
                     <MudButton Color="Color.Error"
-                               OnClick="Close"
+                               Disabled="@_isProcessing"
+                       OnClick="Close"
                                StartIcon="@Icons.Material.Filled.Close"
                                Variant="Variant.Outlined">انصراف</MudButton>
 

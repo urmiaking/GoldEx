@@ -20,6 +20,7 @@ public partial class CoinItemEditor
     [Parameter] public CoinItemVm Model { get; set; } = new() { Quantity = 1 };
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
+    [Parameter] public Func<CoinItemVm, Task<bool>>? PrepareAndAddAsync { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
     [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
@@ -77,21 +78,36 @@ public partial class CoinItemEditor
             afterSend: response => _maxAvailableAmount = (int)response.Amount);
     }
 
-    public void Close() { if (Session is not null) Session.Cancel(); else MudDialog.Close(); }
+    public void Close() { if (_isProcessing) return; if (Session is not null) Session.Cancel(); else MudDialog.Close(); }
 
     private async Task Submit()
     {
-        _isProcessing = true;
-        await _form.ValidateAsync();
+        if (_isProcessing) return;
 
-        if (!_form.IsValid)
+        _isProcessing = true;
+        Session?.SetBusy(true);
+        try
+        {
+            await _form.ValidateAsync();
+            if (!_form.IsValid) return;
+
+            // Prepare (including barcode reservation) and add to the invoice before
+            // dismissing the editor, so the item is already in the list on close.
+            if (PrepareAndAddAsync is not null && !await PrepareAndAddAsync(Model))
+                return;
+
+            if (Session is not null) Session.Close(Model);
+            else MudDialog.Close(DialogResult.Ok(Model));
+        }
+        catch (Exception)
+        {
+            AddErrorToast("افزودن قلم انجام نشد. دوباره تلاش کنید.");
+        }
+        finally
         {
             _isProcessing = false;
-            return;
+            Session?.SetBusy(false);
         }
-
-        _isProcessing = false;
-        if (Session is not null) Session.Close(Model); else MudDialog.Close(DialogResult.Ok(Model));
     }
 
     private async Task OnCoinChanged(GetCoinResponse? coin)
