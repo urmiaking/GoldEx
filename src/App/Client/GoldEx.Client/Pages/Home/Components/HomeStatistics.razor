@@ -16,7 +16,8 @@
         <p class="gex-home-chart-help">برای دیدن جزئیات هر روز، نشانگر را روی ستون ببرید یا آن را انتخاب کنید.</p>
         <div class="gex-home-chart-scroll" dir="ltr" aria-label="نمودار میله‌ای روزانه خرید و فروش سی روز اخیر">
             <div class="gex-home-chart-canvas">
-                <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" class="gex-home-bars" aria-label="نمودار خرید و فروش روزانه">
+                <div class="gex-home-chart-plot">
+                    <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" class="gex-home-bars" preserveAspectRatio="none" aria-label="نمودار خرید و فروش روزانه">
                     @for (var line = 0; line <= 4; line++)
                     {
                         var lineY = 22 + line * 46;
@@ -54,8 +55,8 @@
                 {
                     var selected = _points[selectedIndex];
                     <div @key="selectedIndex"
-                         class="gex-home-chart-tooltip @(selectedIndex >= 22 ? "is-before" : "is-after")"
-                         style="@($"left:{GetTooltipLeft(selectedIndex)}px;top:{GetTooltipTop(selectedIndex):0.#}px;")"
+                         class="gex-home-chart-tooltip @(selectedIndex >= 20 ? "is-before" : "is-after")"
+                         style="@GetTooltipStyle(selectedIndex)"
                          dir="rtl" role="status" aria-live="polite">
                         <div class="gex-home-tooltip-date">
                             <span>@FormatDate(selected.Date)</span>
@@ -78,10 +79,14 @@
                         </div>
                     </div>
                 }
+                </div>
                 <div class="gex-home-chart-axis" aria-hidden="true">
                     @for (int i = 0; i < _points.Count; i++)
                     {
-                        <span>@(i % 5 == 0 || i == _points.Count - 1 ? FormatDay(_points[i].Date) : " ")</span>
+                        if (i % 5 == 0 || i == _points.Count - 1)
+                        {
+                            <span style="@GetAxisTickStyle(i)">@FormatDay(_points[i].Date)</span>
+                        }
                     }
                 </div>
             </div>
@@ -110,7 +115,21 @@
     private string GetDayLabel(TradeTrendPointDto p) =>
         $"{FormatDate(p.Date)}، خرید {p.PurchaseWeight.ToCurrencyFormat()} گرم، فروش {p.SellWeight.ToCurrencyFormat()} گرم";
 
-    private int GetTooltipLeft(int index) => 18 + index * 29 + (index >= 22 ? -8 : 29);
+    private static string GetAxisTickStyle(int index)
+    {
+        var centerPercent = (18d + index * 29d + 10.5d) / 900d * 100d;
+        return FormattableString.Invariant($"left:{centerPercent:0.###}%;");
+    }
+
+    private string GetTooltipStyle(int index)
+    {
+        // SVG geometry scales with its container. Position the detail in the same coordinate system.
+        var anchorX = 18 + index * 29 + (index >= 20 ? -8 : 29);
+        var leftPercent = anchorX / 900d * 100d;
+        var topPercent = GetTooltipTop(index) / 250d * 100d;
+        return FormattableString.Invariant($"left:{leftPercent:0.###}%;top:{topPercent:0.###}%;");
+    }
+
     private double GetTooltipTop(int index)
     {
         var p = _points[index];

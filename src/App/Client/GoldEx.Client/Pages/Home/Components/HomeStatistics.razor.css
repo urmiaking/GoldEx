@@ -7,9 +7,10 @@
 .gex-home-chart-legend i { width:10px; height:10px; border-radius:3px; display:inline-block; }
 .gex-home-legend-purchase,.gex-home-chart-purchase { fill:var(--mud-palette-success); background:var(--mud-palette-success); }
 .gex-home-legend-sell,.gex-home-chart-sell { fill:var(--mud-palette-error); background:var(--mud-palette-error); }
-.gex-home-chart-scroll { max-width:100%; overflow-x:auto; }
-.gex-home-chart-canvas { position:relative; width:900px; min-width:900px; }
-.gex-home-bars { display:block; width:900px; height:250px; }
+.gex-home-chart-scroll { width:100%; max-width:100%; overflow:visible; }
+.gex-home-chart-canvas { width:100%; min-width:0; }
+.gex-home-chart-plot { position:relative; width:100%; height:250px; }
+.gex-home-bars { display:block; width:100%; height:100%; }
 .gex-home-chart-grid { stroke:var(--mud-palette-divider); stroke-dasharray:4 5; stroke-width:1; }
 .gex-home-chart-tick { fill:var(--mud-palette-text-secondary); font-size:12px; }
 .gex-home-stat-totals { display:flex; gap:16px; border-top:1px solid var(--mud-palette-divider); margin-top:12px; padding-top:16px; }
@@ -18,7 +19,8 @@
 .gex-home-stat-totals strong { font-size:1rem; font-weight:500; }
 .gex-home-empty { padding:55px 12px; color:var(--mud-palette-text-secondary); text-align:center; }
 @media(max-width:599px) { .gex-home-stats { padding:14px; } .gex-home-stat-totals { flex-direction:column; gap:12px; } }
-.gex-home-chart-axis { display:grid; grid-template-columns:repeat(30,29px); width:870px; padding-inline-start:18px; box-sizing:content-box; font-size:.74rem; color:var(--mud-palette-text-secondary); direction:ltr; text-align:center; }
+.gex-home-chart-axis { position:relative; width:100%; height:27px; font-size:.74rem; color:var(--mud-palette-text-secondary); direction:ltr; text-align:center; }
+.gex-home-chart-axis span { position:absolute; top:5px; transform:translateX(-50%); white-space:nowrap; }
 .gex-home-stats strong { font-weight:500; }
 .gex-home-chart-help { color:var(--mud-palette-text-secondary); font-size:.77rem; font-weight:400; margin:0 0 10px; }
 .gex-home-chart-day { cursor:pointer; outline:none; }
@@ -45,3 +47,8 @@
 .gex-home-tooltip-difference>span:last-child { color:var(--mud-palette-text-primary); font-weight:500; }
 @keyframes gex-home-tooltip-in { from { opacity:0; filter:blur(2px); } to { opacity:1; filter:blur(0); } }
 @media(prefers-reduced-motion:reduce) { .gex-home-chart-tooltip { animation:none; } }
+/* Use the full available chart width. Scrolling is only necessary on narrow touch screens. */
+@media (max-width:700px) {
+    .gex-home-chart-scroll { overflow-x:auto; overflow-y:hidden; }
+    .gex-home-chart-canvas { min-width:720px; }
+}
