@@ -11,18 +11,20 @@
 .invoice-workspace-steps{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0 14px;margin-bottom:6px}
 .invoice-workspace-steps::-webkit-scrollbar{display:none}
 .invoice-workspace-steps a{display:inline-flex;align-items:center;gap:9px;flex:1 1 0;min-width:max-content;padding:10px 14px;border-radius:13px;text-decoration:none;font-size:.78rem;color:var(--mud-palette-text-secondary);border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-surface);transition:background .2s,border-color .2s,transform .2s}
-.invoice-workspace-steps a:hover,.invoice-workspace-steps a:focus-visible{border-color:var(--mud-palette-primary);color:var(--mud-palette-primary);transform:translateY(-1px)}
+.invoice-workspace-steps a:hover,.invoice-workspace-steps a:focus-visible,.invoice-workspace-steps a.is-active{border-color:var(--mud-palette-primary);color:var(--mud-palette-primary);background:rgba(var(--mud-palette-primary-rgb),.055);transform:translateY(-1px)}
+.invoice-workspace-steps a{cursor:pointer}
+.invoice-workspace-steps a:focus-visible{outline:2px solid var(--mud-palette-primary);outline-offset:2px}
 .invoice-workspace-steps a span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:rgba(var(--mud-palette-primary-rgb),.1);color:var(--mud-palette-primary);font-size:.79rem}
 
 .invoice-workspace-columns{display:grid;grid-template-columns:minmax(0,3fr) minmax(315px,1fr);grid-template-areas:"main finance";align-items:start;gap:12px}
 .invoice-workspace-columns>.invoice-workspace-main{grid-area:main;min-width:0}
 .invoice-workspace-columns>.invoice-workspace-side{grid-area:finance;justify-self:stretch;min-width:0;width:100%}
 .invoice-workspace-columns>.invoice-workspace-side>.invoice-settlement-main{width:100%;grid-template-columns:minmax(0,1fr)}
-.invoice-workspace-columns .invoice-financial-card,.invoice-workspace-columns .invoice-final-review{width:100%;min-width:0}
+.invoice-workspace-columns .invoice-financial-card{width:100%;min-width:0}
 .invoice-workspace-main{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:14px;min-width:0}
 .invoice-workspace-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:stretch;gap:12px;min-width:0}
 .invoice-workspace-top>.invoice-section{min-width:0;height:100%}
-.invoice-workspace-top .invoice-core-section{height:auto}
+.invoice-workspace-top .invoice-core-section{display:flex;flex-direction:column;min-height:0;height:100%}
 
 .invoice-workspace-top .invoice-section-header{margin-bottom:12px}
 .invoice-section{min-width:0;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:19px;padding:18px;scroll-margin-top:120px}
@@ -49,7 +51,7 @@
 .invoice-core-due-control{display:flex;align-items:center;gap:6px;min-width:0}
 .invoice-core-due-control ::deep .mud-picker{min-width:0;flex:1 1 0}
 .invoice-core-due-control ::deep .mud-icon-button{flex:none;border-radius:50%}
-.invoice-core-price-strip{display:flex;align-items:center;gap:12px;margin-top:10px;padding:9px 12px;border-radius:13px;border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-background)}
+.invoice-core-price-strip{display:flex;align-items:center;gap:12px;margin-top:auto;padding:9px 12px;border-radius:13px;border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-background)}
 .invoice-core-strip-title{display:flex;align-items:center;gap:7px;flex:0 0 auto;font-size:.76rem;color:var(--mud-palette-text-secondary);white-space:nowrap}
 .invoice-core-strip-title ::deep .mud-icon-root{color:var(--mud-palette-primary)}
 .invoice-core-price-controls{display:flex;flex:1;align-items:center;justify-content:flex-end;gap:9px;min-width:0}
@@ -102,12 +104,20 @@
 .invoice-financial-total strong{font-size:1.07rem;font-weight:500;overflow-wrap:anywhere;line-height:1.65}
 .invoice-financial-balance{display:grid;gap:7px;padding:14px 0 11px}
 .invoice-financial-balance>span{font-size:.78rem;color:var(--mud-palette-text-secondary)}
-.invoice-financial-balance>strong{font-size:1.05rem;font-weight:500;color:var(--mud-palette-error);overflow-wrap:anywhere;line-height:1.65}
-.invoice-financial-balance>strong.is-clear{color:var(--mud-palette-success)}
-.invoice-financial-unit ::deep .mud-button-root{font-weight:400;font-size:.75rem;padding-inline:0}
+.invoice-financial-balance-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;min-width:0}
+.invoice-financial-balance-row>strong{font-size:1.05rem;font-weight:500;color:var(--mud-palette-error);overflow-wrap:anywhere;line-height:1.65}
+.invoice-financial-balance-row>strong.is-clear{color:var(--mud-palette-success)}
+.invoice-financial-unit{margin-inline-start:auto;flex:none}
+.invoice-financial-unit ::deep .mud-button-root{font-weight:500;font-size:.71rem;min-height:28px;padding:2px 7px;border-radius:999px;background:rgba(var(--mud-palette-primary-rgb),.07)}
 .invoice-unit-popover{display:grid;gap:12px;min-width:min(80vw,320px)}
 .invoice-unit-popover ::deep .mud-button-root{border-radius:999px}
-.invoice-financial-breakdown{border-top:1px solid var(--mud-palette-lines-default);border-bottom:1px solid var(--mud-palette-lines-default);padding-block:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.invoice-financial-accordion{border-top:1px solid var(--mud-palette-lines-default);border-bottom:1px solid var(--mud-palette-lines-default);margin-top:4px}
+.invoice-financial-accordion summary{list-style:none;cursor:pointer;padding:11px 2px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--mud-palette-text-secondary);font-size:.77rem;font-weight:500}
+.invoice-financial-accordion summary::-webkit-details-marker{display:none}
+.invoice-financial-accordion summary:focus-visible{outline:2px solid var(--mud-palette-primary);outline-offset:2px;border-radius:6px}
+.invoice-financial-accordion summary ::deep .mud-icon-root{transition:transform .22s ease}
+.invoice-financial-accordion[open] summary ::deep .mud-icon-root{transform:rotate(180deg)}
+.invoice-financial-breakdown{padding-block:6px 12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
 .invoice-financial-breakdown>div{display:grid;gap:2px;min-width:0}
 .invoice-financial-breakdown span{font-size:.75rem;color:var(--mud-palette-text-secondary)}
 .invoice-financial-breakdown strong{font-size:.77rem;font-weight:500;overflow-wrap:anywhere;text-align:start}
@@ -116,10 +126,10 @@
 .invoice-financial-actions ::deep .mud-button-root{border-radius:999px;font-size:.78rem;font-weight:500;min-height:39px;box-shadow:none}
 .invoice-financial-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .invoice-financial-secondary-actions ::deep .mud-button-root{width:100%;border-color:var(--mud-palette-lines-default)}
-.invoice-final-review{padding:14px 16px}
-.invoice-final-review-title{display:flex;align-items:center;gap:8px;font-weight:500;font-size:.89rem;margin-bottom:11px;color:var(--mud-palette-primary)}
-.invoice-final-review p{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.76rem;color:var(--mud-palette-text-secondary);margin:7px 0}
-.invoice-final-review strong{color:var(--mud-palette-text-primary);font-size:.78rem;font-weight:500;text-align:end}
+
+
+
+
 .invoice-workspace-footer{padding:12px 17px;margin-top:14px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:16px}
 .invoice-form-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .invoice-form-actions-primary,.invoice-form-actions-danger{display:flex;align-items:center;gap:8px}
@@ -226,3 +236,6 @@
 .invoice-core-price-controls{flex-wrap:wrap}
 .invoice-core-unit-control,.invoice-core-rate-control{flex:1 1 100%}
 }
+/* Keep the accounting-unit selector anchored at the bottom of the core card even when the customer is taller. */
+.invoice-core-section .invoice-core-price-strip{margin-top:auto}
+@media(max-width:699px){.invoice-core-section .invoice-core-price-strip{margin-top:12px}}

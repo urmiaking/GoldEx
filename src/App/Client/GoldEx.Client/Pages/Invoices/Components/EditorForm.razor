@@ -26,11 +26,11 @@ else
                 </div>
             </header>
             <nav class="invoice-workspace-steps" aria-label="مراحل ثبت فاکتور">
-                <a href="#invoice-core"><span>۱</span>اطلاعات اصلی</a>
-                <a href="#invoice-customer"><span>۲</span>طرف‌حساب</a>
-                <a href="#invoice-lines"><span>۳</span>اقلام فاکتور</a>
-                <a href="#invoice-finance"><span>۴</span>تسویه و جمع‌بندی</a>
-</nav>
+                <a href="#invoice-core" class="@(_activeInvoiceStep == 1 ? "is-active" : "")" aria-current="@(_activeInvoiceStep == 1 ? "step" : null)" @onclick="() => ScrollToInvoiceSectionAsync(1)" @onclick:preventDefault="true"><span>۱</span>اطلاعات اصلی</a>
+                <a href="#invoice-customer" class="@(_activeInvoiceStep == 2 ? "is-active" : "")" aria-current="@(_activeInvoiceStep == 2 ? "step" : null)" @onclick="() => ScrollToInvoiceSectionAsync(2)" @onclick:preventDefault="true"><span>۲</span>طرف‌حساب</a>
+                <a href="#invoice-lines" class="@(_activeInvoiceStep == 3 ? "is-active" : "")" aria-current="@(_activeInvoiceStep == 3 ? "step" : null)" @onclick="() => ScrollToInvoiceSectionAsync(3)" @onclick:preventDefault="true"><span>۳</span>اقلام فاکتور</a>
+                <a href="#invoice-finance" class="@(_activeInvoiceStep == 4 ? "is-active" : "")" aria-current="@(_activeInvoiceStep == 4 ? "step" : null)" @onclick="() => ScrollToInvoiceSectionAsync(4)" @onclick:preventDefault="true"><span>۴</span>تسویه و جمع‌بندی</a>
+            </nav>
             <div class="invoice-workspace-columns">
                 <main class="invoice-workspace-main">
                     <div class="invoice-workspace-top">
@@ -342,29 +342,33 @@ else
                                 </div>
                                 <div class="invoice-financial-balance">
                                     <span>مانده نهایی</span>
-                                    <strong class="@( _model.TotalUnpaidAmount == 0 ? "is-clear" : "" )">
-                                        @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate,
-                                                                     _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
-                                    </strong>
-                                    <div class="invoice-financial-unit">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
-                                                   StartIcon="@Icons.Material.Outlined.SwapHoriz"
-                                                   OnClick="OnTotalUnpaidMenuToggled">تغییر واحد مانده</MudButton>
-                                        <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="pa-3"
-                                                    AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
-                                            <div class="invoice-unit-popover">
-                                                <UnpaidPriceSelector PriceUnits="_priceUnits"
-                                                                     TotalUnpaidAmount="@Math.Abs(_model.TotalUnpaidAmount)"
-                                                                     TotalUnpaidSecondaryAmount="@Math.Abs(_model.TotalUnpaidSecondaryAmount)"
-                                                                     MainPriceUnit="_model.InvoicePriceUnit"
-                                                                     @bind-UnpaidPriceUnit="_model.UnpaidPriceUnit"
-                                                                     @bind-ExchangeRate="_model.UnpaidExchangeRate" />
-                                                <MudButton OnClick="OnTotalUnpaidMenuToggled" Variant="Variant.Filled"
-                                                           Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check">تأیید</MudButton>
-                                            </div>
-                                        </MudPopover>
+                                    <div class="invoice-financial-balance-row">
+                                        <strong class="@(_model.TotalUnpaidAmount == 0 ? "is-clear" : "")">
+                                            @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate,
+                                                                         _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
+                                        </strong>
+                                        <div class="invoice-financial-unit">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                                                       StartIcon="@Icons.Material.Outlined.SwapHoriz"
+                                                       OnClick="OnTotalUnpaidMenuToggled">تغییر واحد مانده</MudButton>
+                                            <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="pa-3"
+                                                        AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                                                <div class="invoice-unit-popover">
+                                                    <UnpaidPriceSelector PriceUnits="_priceUnits"
+                                                                         TotalUnpaidAmount="@Math.Abs(_model.TotalUnpaidAmount)"
+                                                                         TotalUnpaidSecondaryAmount="@Math.Abs(_model.TotalUnpaidSecondaryAmount)"
+                                                                         MainPriceUnit="_model.InvoicePriceUnit"
+                                                                         @bind-UnpaidPriceUnit="_model.UnpaidPriceUnit"
+                                                                         @bind-ExchangeRate="_model.UnpaidExchangeRate" />
+                                                    <MudButton OnClick="OnTotalUnpaidMenuToggled" Variant="Variant.Filled"
+                                                               Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check">تأیید</MudButton>
+                                                </div>
+                                            </MudPopover>
+                                        </div>
                                     </div>
                                 </div>
+                                <details class="invoice-financial-accordion">
+                                    <summary><span>جزئیات محاسبات</span><MudIcon Icon="@Icons.Material.Outlined.ExpandMore" Size="Size.Small" /></summary>
                                 <div class="invoice-financial-breakdown">
                                     <div><span>ارزش خام اقلام</span><strong>@_model.TotalItemsRawAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
                                     <div><span>اجرت ساخت</span><strong>@_model.TotalItemsWageAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
@@ -379,6 +383,7 @@ else
                                     <div><span>دریافتی</span><strong>@_model.TotalReceivedPaymentAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
                                     <div><span>پرداختی</span><strong>@_model.TotalPaidPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</strong></div>
                                 </div>
+                                </details>
                                 <div class="invoice-financial-actions">
                                     @if (InvoiceItemCount == 0)
                                     {
@@ -404,12 +409,6 @@ else
                                                    StartIcon="@Icons.Material.Outlined.ReceiptLong" Disabled="@(InvoiceItemCount == 0)" OnClick="OpenExtraCostsDialog">مخارج</MudButton>
                                     </div>
                                 </div>
-                            </section>
-                        <section class="invoice-section invoice-final-review">
-                                <div class="invoice-final-review-title"><MudIcon Icon="@Icons.Material.Outlined.FactCheck" /><span>آماده ثبت</span></div>
-                                <p>تعداد اقلام: <strong>@InvoiceItemCount</strong></p>
-                                <p>طرف‌حساب: <strong>@(_model.Customer?.FullName ?? "انتخاب نشده")</strong></p>
-                                <p>وضعیت: <strong>@(_model.TotalUnpaidAmount == 0 ? "بدون مانده" : "دارای مانده")</strong></p>
                             </section>
                     </div>
                 </aside>

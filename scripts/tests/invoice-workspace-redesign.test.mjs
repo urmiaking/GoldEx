@@ -85,8 +85,7 @@ test('finance owns the left sidebar; header and customer sit above items in the 
  const mainEnd=view.indexOf('</main>',main);
  const aside=view.indexOf('<aside id="invoice-finance"');
  const finance=view.indexOf('invoice-financial-card',aside);
- const finalReview=view.indexOf('invoice-final-review',aside);
- assert.ok(columns>0 && columns<main && main<top && top<core && core<customer && customer<lines && lines<mainEnd && mainEnd<aside && aside<finance && finance<finalReview);
+ assert.ok(columns>0 && columns<main && main<top && top<core && core<customer && customer<lines && lines<mainEnd && mainEnd<aside && aside<finance && view.indexOf('invoice-final-review',aside)===-1);
  assert.match(view,/<div class="invoice-workspace-columns">\s*<main class="invoice-workspace-main">\s*<div class="invoice-workspace-top">/);
  assert.match(view,/<\/main>\s*<aside id="invoice-finance"/);
  assert.match(css,/\.invoice-workspace-columns\{display:grid;grid-template-columns:minmax\(0,3fr\) minmax\(315px,1fr\);grid-template-areas:"main finance"/);
@@ -110,4 +109,37 @@ test('desktop columns use the exact 50% header, 25% customer, 25% finance propor
  assert.match(css,/\.invoice-customer-details>div\{[^}]*padding:2px 0\}/);
  assert.match(skeletonCss,/grid-template-areas:"main finance"/);
  assert.doesNotMatch(css,/invoice-core-section\{min-height:285px\}/);
+});
+test('invoice steps navigate using a lazy-loaded module and show active step',()=>{
+ const view=read('EditorForm.razor');
+ const code=read('EditorForm.razor.cs');
+ const css=read('EditorForm.razor.css');
+ const js=readFileSync(new URL('../../../wwwroot/js/invoice-workspace.js',root),'utf8');
+ for(let i=1;i<=4;i++) assert.match(view,new RegExp('ScrollToInvoiceSectionAsync\\('+i+'\\)'));
+ assert.match(view,/@onclick:preventDefault="true"/);
+ assert.match(view,/aria-current="@\(_activeInvoiceStep == 1/);
+ assert.match(code,/InvokeAsync<IJSObjectReference>\("import", "\.\/js\/invoice-workspace\.js"\)/);
+ assert.match(code,/InvokeVoidAsync\("scrollToSection", sectionId\)/);
+ assert.match(css,/\.invoice-workspace-steps a\.is-active/);
+ assert.match(js,/export function scrollToSection\(sectionId\)/);
+ assert.match(js,/scrollIntoView\(/);
+});
+test('financial breakdown is a closed accordion, balance unit is inline, and ready-to-submit card is removed',()=>{
+ const view=read('EditorForm.razor');
+ const css=read('EditorForm.razor.css');
+ const skeleton=read('EditorFormSkeleton.razor');
+ assert.match(view,/<details class="invoice-financial-accordion">/);
+ assert.match(view,/<summary><span>جزئیات محاسبات<\/span>/);
+ assert.doesNotMatch(view,/<details class="invoice-financial-accordion" open/);
+ const details=view.indexOf('<details class="invoice-financial-accordion">');
+ const breakdown=view.indexOf('<div class="invoice-financial-breakdown">');
+ const close=view.indexOf('</details>',details);
+ assert.ok(details>0&&details<breakdown&&breakdown<close);
+ const balance=view.indexOf('<div class="invoice-financial-balance-row">');
+ const change=view.indexOf('تغییر واحد مانده',balance);
+ assert.ok(balance>0&&change>balance&&change<details);
+ assert.doesNotMatch(view,/invoice-final-review|آماده ثبت/);
+ assert.doesNotMatch(skeleton,/invoice-final-review/);
+ assert.match(css,/\.invoice-financial-accordion summary\{/);
+ assert.match(css,/\.invoice-core-section \.invoice-core-price-strip\{margin-top:auto\}/);
 });

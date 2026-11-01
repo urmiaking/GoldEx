@@ -51,9 +51,33 @@ public partial class EditorForm
     private bool _processing;
     private bool _deleting;
     private bool _totalUnpaidMenuOpen;
+    private int _activeInvoiceStep = 1;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice = true;
     private int _activeItemTab;
+    private async Task ScrollToInvoiceSectionAsync(int step)
+    {
+        _activeInvoiceStep = step;
+        var sectionId = step switch
+        {
+            1 => "invoice-core",
+            2 => "invoice-customer",
+            3 => "invoice-lines",
+            4 => "invoice-finance",
+            _ => "invoice-core"
+        };
+        // Lazy import also works when this page is reached through Blazor enhanced navigation.
+        var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/invoice-workspace.js");
+        try
+        {
+            await module.InvokeVoidAsync("scrollToSection", sectionId);
+        }
+        finally
+        {
+            await module.DisposeAsync();
+        }
+    }
+
     private int InvoiceItemCount => _model.ProductItems.Count + _model.CoinItems.Count + _model.CurrencyItems.Count + _model.UsedProducts.Count;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
