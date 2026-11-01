@@ -9,36 +9,41 @@
             <h3>فروش به تفکیک گروه کالا</h3>
             <p>مقایسه گروه‌های پرفروش در ۳۰ روز اخیر</p>
         </div>
-        <button type="button" class="gex-home-categories-toggle" @onclick="ToggleAsync" aria-expanded="@_expanded">
+        <button type="button" class="gex-home-categories-toggle @(_expanded ? "is-open" : "")"
+                @onclick="ToggleAsync" aria-expanded="@_expanded" aria-controls="@_panelId">
             @(_expanded ? "بستن" : "نمایش جزئیات")
-            <MudIcon Icon="@(_expanded ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.KeyboardArrowDown)" Size="Size.Small" />
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" />
         </button>
     </div>
-    @if (_expanded)
-    {
-        @if (_loading)
-        {
-            <MudSkeleton Height="170px" Width="100%" />
-        }
-        else if (_data.Count == 0)
-        {
-            <div class="gex-home-empty">در این بازه فروشی برای گروه‌های کالا ثبت نشده است.</div>
-        }
-        else
-        {
-            <div class="gex-home-category-list">
-                @foreach (var item in _data)
-                {
-                    <div class="gex-home-category-row" @key="item.CategoryTitle">
-                        <div class="gex-home-category-info"><span>@item.CategoryTitle</span><span>@item.TotalWeight.ToCurrencyFormat() گرم</span></div>
-                        <div class="gex-home-category-bar"><div style="@($"width:{(double)(item.TotalWeight / _maxWeight) * 100:0.##}%")"></div></div>
-                    </div>
-                }
-            </div>
-        }
-    }
+    <div id="@_panelId"
+         class="gex-home-categories-collapse @(_expanded ? "is-open" : "")"
+         aria-hidden="@(!_expanded)">
+        <div class="gex-home-categories-inner">
+            @if (_loading)
+            {
+                <div class="gex-home-categories-body"><MudSkeleton Height="170px" Width="100%" /></div>
+            }
+            else if (_loaded && _data.Count == 0)
+            {
+                <div class="gex-home-empty">در این بازه فروشی برای گروه‌های کالا ثبت نشده است.</div>
+            }
+            else if (_loaded)
+            {
+                <div class="gex-home-category-list">
+                    @foreach (var item in _data)
+                    {
+                        <div class="gex-home-category-row" @key="item.CategoryTitle">
+                            <div class="gex-home-category-info"><span>@item.CategoryTitle</span><span>@item.TotalWeight.ToCurrencyFormat() گرم</span></div>
+                            <div class="gex-home-category-bar"><div style="@($"width:{(double)(item.TotalWeight / _maxWeight) * 100:0.##}%")"></div></div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 </section>
 @code {
+    private readonly string _panelId = $"gex-home-categories-{Guid.NewGuid():N}";
     private bool _expanded, _loaded, _loading;
     private List<CategorySalesRpResponse> _data = [];
     private decimal _maxWeight = 1m;

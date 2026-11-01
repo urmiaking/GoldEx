@@ -1050,3 +1050,6 @@ The user explicitly confirmed receiving a real device notification after enablin
 
 ## EF Core owned invoice items (2026-11-01)
 - InvoiceProductItem is EF Core owned by Invoice; never query it with DbContext.Set<InvoiceProductItem>(). Always start with Invoice and project ProductItems through SelectMany for dashboard trends.
+
+## Home statistics interactions (2026-11-01)
+- Statistics chart: SVG bars are keyboard, hover and tap selectable and show a pinned/preview daily tooltip without network calls. Category summary accordion retains mounted loaded content for a CSS grid open/close animation (no extra fetch).
