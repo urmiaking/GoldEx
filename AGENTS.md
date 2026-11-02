@@ -1109,3 +1109,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - In ResponsiveDialog.razor.css use a short entrance for mobile and avoid animated backdrop blur there; keep opacity scrim and native modality. Honor prefers-reduced-motion.
 - In responsive-dialog.js keep visualViewport resize handling for keyboard geometry but do not listen to visualViewport scroll for modal repositioning. Cache height and offset to avoid redundant writes. Preserve Escape blocking, scroll lock, nested sessions, provider DOM, focus restoration and non-dismissable backdrop.
 - Behavioral coverage lives in scripts/tests/responsive-dialog.test.mjs. Browser visual/performance checks require an authenticated mobile session.
+
+## Customer history dialogs (2026-11-02)
+- Invoice EditorForm creates and edits customers with ResponsiveDialogs.Show<Customers.Components.Editor>, not legacy DialogService.ShowAsync. Preserve ReturnModel and ShowFinancialAccounts.
+- CustomerHistoryDialog directly hosts a flex-height modal view with a top header, scrolling contents and close footer. Invoice results display compact cards inside the modal. InvoicesList skips its page-level sticky observer for CustomerId-specific views.
+- CustomerLedgerDirectory renders transactions as a semantic desktop table or small-screen cards. Preserve customer filtering, server-side search, date and unit filters and pagination.
+- Customer editor uses consistent rounded RTL UI. Run customer-ledger-modal-redesign.test.mjs after changes.

@@ -1,27 +1,51 @@
-.gex-customer-history { min-width:0; direction:rtl; }
-.gex-customer-history-context { display:flex; align-items:center; gap:14px; padding:16px 18px; margin-bottom:18px; background:var(--mud-palette-background-gray); border:1px solid var(--mud-palette-lines-default); border-radius:17px; }
-.gex-customer-history-avatar { flex:none; display:grid; place-items:center; width:47px; height:47px; background:color-mix(in srgb,var(--mud-palette-primary) 10%,transparent); border-radius:14px; color:var(--mud-palette-primary); }
-.gex-customer-history-context h2 { margin:3px 0; font-size:1.05rem; font-weight:500; }
+.gex-customer-history { display:flex; flex-direction:column; width:100%; height:100%; flex:1 1 auto; min-width:0; min-height:0; direction:rtl; overflow:hidden; }
+.gex-customer-history-context { flex:none; display:flex; align-items:center; gap:12px; padding:16px 20px; margin:0; background:var(--mud-palette-background-gray); border-bottom:1px solid var(--mud-palette-lines-default); }
+.gex-customer-history-avatar { flex:none; display:grid; place-items:center; width:46px; height:46px; background:color-mix(in srgb,var(--mud-palette-primary) 10%,transparent); border-radius:14px; color:var(--mud-palette-primary); }
+.gex-customer-history-heading { min-width:0; }
+.gex-customer-history-heading h2 { margin:2px 0; font-size:1.04rem; font-weight:500; }
 .gex-customer-history-caption { color:var(--mud-palette-primary); font-size:.73rem; font-weight:500; }
-.gex-customer-history-context p { margin:0; color:var(--mud-palette-text-secondary); font-size:.78rem; font-weight:400; }
-.gex-customer-history-content { min-width:0; }
+.gex-customer-history-heading p { margin:0; color:var(--mud-palette-text-secondary); font-size:.76rem; font-weight:400; }
+.gex-customer-history-content { display:block; flex:1 1 auto; min-height:0; min-width:0; overflow-y:auto; overscroll-behavior:contain; padding:15px 19px; }
+.gex-customer-history-actions { flex:none; display:flex; justify-content:flex-end; padding:12px 19px; background:var(--mud-palette-surface); border-top:1px solid var(--mud-palette-lines-default); }
+.gex-customer-history-actions ::deep .mud-button-root { border-radius:999px; min-height:40px; }
 .gex-customer-history-content ::deep .invoice-directory { width:100%; min-width:0; padding:0; margin:0; }
-.gex-customer-history-content ::deep .invoice-directory .directory-heading { margin-bottom:12px; }
-.gex-customer-history-content ::deep .invoice-directory .directory-title { display:none; }
-.gex-customer-history-content ::deep .invoice-directory .directory-filters { position:static !important; top:auto !important; z-index:auto !important; border-radius:15px; }
-.gex-customer-history-content ::deep .invoice-desktop-table { overflow-x:auto; max-width:100%; }
-.gex-customer-history-content ::deep .invoice-table { min-width:740px; }
-.gex-customer-history-content ::deep .mud-table { border:1px solid var(--mud-palette-lines-default); border-radius:15px; overflow:hidden; box-shadow:none; background:var(--mud-palette-surface); }
-.gex-customer-history-content ::deep .mud-table-toolbar { gap:10px; flex-wrap:wrap; padding:12px; height:auto; min-height:64px; }
-.gex-customer-history-content ::deep .mud-table-toolbar .mud-input-control { flex:1 1 180px; min-width:0; }
-.gex-customer-history-content ::deep .mud-table-head th { font-weight:500; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); }
-.gex-customer-history-content ::deep .mud-table-cell { font-size:.8rem; font-weight:400; }
-.gex-customer-history-content ::deep .mud-table-cell .mud-chip { font-size:.73rem; font-weight:400; }
-@media(max-width:599px) {
-    .gex-customer-history-context { padding:12px; border-radius:13px; gap:10px; }
-    .gex-customer-history-avatar { width:38px; height:38px; border-radius:11px; }
-    .gex-customer-history-context h2 { font-size:.94rem; }
-    .gex-customer-history-context p { font-size:.72rem; }
-    .gex-customer-history-content ::deep .mud-table-toolbar { padding:10px; }
-    .gex-customer-history-content ::deep .invoice-table { min-width:0; }
+.gex-customer-history-content ::deep .invoice-directory .directory-heading { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .directory-filters { position:relative !important; top:auto !important; z-index:auto !important; isolation:auto !important; background:transparent; padding:0; margin:0 0 12px; }
+.gex-customer-history-content ::deep .invoice-directory .directory-filters::before { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .directory-toolbar { grid-template-columns:minmax(0,1fr) auto; }
+.gex-customer-history-content ::deep .invoice-directory .directory-sort,
+.gex-customer-history-content ::deep .invoice-directory .directory-sort-toggle { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-results { overflow:visible; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-desktop-table { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-mobile-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card { min-width:0; border-radius:15px; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-pagination { padding:12px 0 0; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card { display:flex; flex-direction:column; position:relative; border:1px solid var(--mud-palette-lines-default); border-radius:15px; background:var(--mud-palette-surface); overflow:hidden; min-width:0; box-shadow:none; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:12px; border-bottom:1px solid var(--mud-palette-lines-default); }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-number { display:grid; gap:4px; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-number strong { font-size:.86rem; font-weight:500; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-number span { font-size:.76rem; color:var(--mud-palette-text-secondary); }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-head .invoice-tags { display:flex; flex-wrap:wrap; gap:5px; justify-content:flex-end; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-customer { display:flex; align-items:center; gap:8px; padding:11px 12px; font-size:.83rem; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-customer > div { display:grid; gap:3px; min-width:0; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-customer strong { font-weight:500; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-customer small { color:var(--mud-palette-text-secondary); }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-amounts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:10px 12px 14px; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-amounts > div { display:grid; gap:6px; min-width:0; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-amounts > div > span { font-size:.76rem; color:var(--mud-palette-text-secondary); }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-amounts strong { font-size:.83rem; font-weight:500; overflow-wrap:anywhere; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; margin-top:auto; border-top:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-background-gray); }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-expand { display:inline-flex; align-items:center; gap:5px; border:0; padding:0; color:var(--mud-palette-primary); background:transparent; font:inherit; font-size:.76rem; cursor:pointer; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-card-expand .gex-shell-icon { width:16px; height:16px; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-placeholder-desktop { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-placeholder-mobile { display:grid; gap:10px; }
+@media(max-width:700px) {
+ .gex-customer-history-context { padding:12px 14px; gap:10px; }
+ .gex-customer-history-avatar { width:38px; height:38px; border-radius:11px; }
+ .gex-customer-history-heading h2 { font-size:.92rem; }
+ .gex-customer-history-heading p { font-size:.69rem; }
+ .gex-customer-history-content { padding:12px; }
+ .gex-customer-history-actions { padding:10px 12px; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-mobile-list { grid-template-columns:minmax(0,1fr); gap:10px; }
+ .gex-customer-history-content ::deep .invoice-directory .directory-toolbar { grid-template-columns:minmax(0,1fr) 44px; padding:9px; }
 }

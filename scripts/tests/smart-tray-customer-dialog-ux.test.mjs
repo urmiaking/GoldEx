@@ -34,8 +34,8 @@ test('both customer dialogs use the new responsive native modal and preserve fil
     const dialog = read(customers + 'CustomerHistoryDialog.razor');
     assert.equal((caller.match(/ResponsiveDialogs\.Show<CustomerHistoryDialog>/g) ?? []).length, 2);
     assert.doesNotMatch(caller, /DialogService\.ShowAsync<TransactionList>|DialogService\.ShowAsync<InvoicesList>/);
-    assert.match(dialog, /<EditorDialogFrame>/);
-    assert.match(dialog, /<TransactionList CustomerId="@CustomerId"/);
+    assert.match(dialog, /class="gex-customer-history"/);
+    assert.match(dialog, /<CustomerLedgerDirectory CustomerId="@CustomerId.Value"/);
     assert.match(dialog, /<InvoicesList CustomerId="@CustomerId"/);
     assert.match(dialog, /Session\?\.Cancel\(\)/);
 });

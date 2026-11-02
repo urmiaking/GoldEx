@@ -1,0 +1,104 @@
+@using GoldEx.Shared.DTOs.Transactions
+@using GoldEx.Shared.DTOs.PriceUnits
+@using GoldEx.Shared.Enums
+@using GoldEx.Sdk.Common.Extensions
+@using MudBlazor
+@inherits GoldExComponentBase
+
+<section class="customer-ledger" aria-label="گردش حساب مشتری">
+    <div class="customer-ledger-toolbar">
+        <div class="customer-ledger-search">
+            <MudTextField T="string" Value="_search" ValueChanged="SearchAsync"
+                          Clearable="true" Immediate="true" DebounceInterval="400"
+                          Label="جستجوی تراکنش" Placeholder="مبلغ، شرح یا نوع تراکنش"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </div>
+        <button type="button" class="customer-ledger-filter-toggle" @onclick="ToggleFilters"
+                aria-expanded="@_showFilters" aria-label="فیلتر گردش حساب">
+            <MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Small" /> فیلترها
+            @if (_priceUnitId.HasValue || _dateRange.Start.HasValue || _dateRange.End.HasValue)
+            {
+                <span class="customer-ledger-active-dot"></span>
+            }
+        </button>
+    </div>
+    @if (_showFilters)
+    {
+        <div class="customer-ledger-filters">
+            <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="ChangeDatesAsync"
+                                Label="بازه تاریخ تراکنش" Variant="Variant.Outlined"
+                                Margin="Margin.Dense" MaxMonthColumns="1" DisplayMonths="1"
+                                Clearable="true" ShowToolbar="false" />
+            <MudSelect T="Guid?" Value="_priceUnitId" ValueChanged="ChangeUnitAsync"
+                       Label="واحد حساب" Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه واحدها</MudSelectItem>
+                @foreach (var unit in _units)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)unit.Id)">@unit.Title</MudSelectItem>
+                }
+            </MudSelect>
+            <button type="button" class="customer-ledger-clear" @onclick="ClearFiltersAsync">پاک کردن فیلترها</button>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="customer-ledger-skeleton" aria-label="در حال بارگذاری گردش حساب">
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudSkeleton Height="62px" Width="100%" />
+            }
+        </div>
+    }
+    else if (_loadFailed)
+    {
+        <div class="customer-ledger-empty">
+            <MudIcon Icon="@Icons.Material.Outlined.ErrorOutline" Size="Size.Large" />
+            <span>دریافت گردش حساب انجام نشد.</span>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadAsync">تلاش دوباره</MudButton>
+        </div>
+    }
+    else if (_items.Count == 0)
+    {
+        <div class="customer-ledger-empty">
+            <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Large" />
+            <span>تراکنشی با این مشخصات پیدا نشد.</span>
+        </div>
+    }
+    else
+    {
+        <div class="customer-ledger-table-scroll">
+            <table class="customer-ledger-table">
+                <thead><tr><th>تاریخ</th><th>نوع</th><th>مبلغ</th><th>شرح تراکنش</th><th>حساب</th></tr></thead>
+                <tbody>
+                    @foreach (var item in _items)
+                    {
+                        <tr @key="item">
+                            <td class="customer-ledger-date" title="@item.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")">@item.PostingDate.ToString("yyyy/MM/dd")</td>
+                            <td><span class="customer-ledger-type @TypeClass(item)">@item.TransactionType.GetDisplayName()</span></td>
+                            <td class="customer-ledger-amount">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
+                            <td class="customer-ledger-description">@item.Description</td>
+                            <td class="customer-ledger-account">@item.LedgerAccount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="customer-ledger-cards">
+            @foreach (var item in _items)
+            {
+                <article class="customer-ledger-card" @key="item">
+                    <header><span class="customer-ledger-type @TypeClass(item)">@item.TransactionType.GetDisplayName()</span><time dir="ltr">@item.PostingDate.ToString("yyyy/MM/dd")</time></header>
+                    <strong class="customer-ledger-card-amount">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong>
+                    <p>@item.Description</p>
+                    <footer><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" Size="Size.Small" /> @item.LedgerAccount</footer>
+                </article>
+            }
+        </div>
+    }
+    <footer class="customer-ledger-pagination" aria-label="صفحه‌بندی گردش حساب">
+        <span>@(_total == 0 ? "۰ تراکنش" : $"نمایش {_page * PageSize + 1} تا {Math.Min((_page + 1) * PageSize, _total)} از {_total} تراکنش")</span>
+        <nav><button type="button" disabled="@(_loading || _page == 0)" @onclick="PreviousAsync">قبلی</button><span>@(_page + 1) از @PageCount</span><button type="button" disabled="@(_loading || _page + 1 >= PageCount)" @onclick="NextAsync">بعدی</button></nav>
+    </footer>
+</section>

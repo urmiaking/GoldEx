@@ -43,7 +43,7 @@ public partial class InvoicesList
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (!firstRender) return;
+        if (!firstRender || CustomerId.HasValue) return;
 
         _stickyModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/invoice-sticky-header.js");
         _stickyTracker = await _stickyModule.InvokeAsync<IJSObjectReference>(

@@ -1,4 +1,5 @@
 using FluentValidation;
+using GoldEx.Client.Components.Components.Dialogs;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
@@ -309,18 +310,15 @@ public partial class EditorForm
 
     private async Task OnAddCustomer()
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        var parameters = new DialogParameters<Customers.Components.Editor>
-        {
-            { x => x.ReturnModel, true },
-            { x => x.ShowFinancialAccounts, false }
-        };
-
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>(
+            "افزودن طرف حساب جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            });
 
         var result = await dialog.Result;
-
         if (result is { Canceled: false, Data: CustomerVm customerVm })
         {
             _model.Customer = customerVm;
@@ -330,20 +328,18 @@ public partial class EditorForm
 
     private async Task OnEditCustomer()
     {
-        if (_model.Customer is null)
-            return;
+        if (_model.Customer is null) return;
 
-        var parameters = new DialogParameters<Customers.Components.Editor>
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>(
+            "ویرایش طرف حساب",
+            new Dictionary<string, object>
             {
-            { x => x.Model, _model.Customer },
-            { x => x.ReturnModel, true },
-            { x => x.ShowFinancialAccounts, true }
-        };
-
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("ویرایش طرف حساب", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+                [nameof(Customers.Components.Editor.Model)] = EditorDraft.Copy(_model.Customer),
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = true
+            });
 
         var result = await dialog.Result;
-
         if (result is { Canceled: false, Data: CustomerVm customerVm })
         {
             _model.Customer = customerVm;
