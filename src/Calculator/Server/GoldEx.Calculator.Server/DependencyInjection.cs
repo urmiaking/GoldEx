@@ -1,6 +1,7 @@
-﻿using AspNetCore.DataProtection.SqlServer;
+using AspNetCore.DataProtection.SqlServer;
 using GoldEx.Calculator.Server.Services;
 using GoldEx.Client.Components;
+using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
@@ -95,6 +96,11 @@ public static class DependencyInjection
 
         internal IServiceCollection AddComponents()
         {
+            // BaseLayout renders ResponsiveDialogHost during server-side prerendering.
+            // Calculator WASM registers this via AddClientComponents, but the server
+            // also needs its own scoped registration for the initial render.
+            services.AddScoped<ResponsiveDialogService>();
+
             services
                 .AddRazorComponents()
                 .AddInteractiveServerComponents()
