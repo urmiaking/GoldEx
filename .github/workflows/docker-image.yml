@@ -97,7 +97,7 @@ jobs:
             -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
             .
 
-      - name: Check version and promote latest aliases
+      - name: Validate immutable Docker image versions
         if: steps.affected.outputs.any == 'true'
         env:
           GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
@@ -109,9 +109,6 @@ jobs:
           if [[ "$CALCULATOR_AFFECTED" == true ]]; then repositories+=(reg.goldexsoft.ir/goldex-karat); fi
           for repository in "${repositories[@]}"; do images+=(--image "$repository"); done
           python3 scripts/docker-version.py --check "${Version}" "${images[@]}"
-          for repository in "${repositories[@]}"; do
-            docker buildx imagetools create --tag "$repository:latest" "$repository:${Version}"
-          done
 
       - name: Deploy
         if: steps.affected.outputs.any == 'true'
@@ -120,22 +117,27 @@ jobs:
           CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
           COMPOSE_FILE_PATH: ${{ vars.GOLDEX_COMPOSE_FILE || '/home/user/docker/goldex/docker-compose.yaml' }}
           APP_BASE_PATH: ${{ vars.GOLDEX_APP_BASE || '/var/volumes/apps/goldex' }}
+          NGINX_CONTAINER: ${{ vars.NGINX_CONTAINER || 'nginx' }}
         run: |
           applications=()
           if [[ "$GOLDEX_AFFECTED" == true ]]; then applications+=(--app goldex); fi
           if [[ "$CALCULATOR_AFFECTED" == true ]]; then applications+=(--app calculator); fi
           python3 scripts/deploy-affected.py \
             --compose-file "$COMPOSE_FILE_PATH" --app-base "$APP_BASE_PATH" \
-            --version "$Version" "${applications[@]}"
+            --version "$Version" --nginx-container "$NGINX_CONTAINER" "${applications[@]}"
 
-      - name: Validate and reload Nginx
+      - name: Promote latest aliases after verified readiness
         if: steps.affected.outputs.any == 'true'
-        shell: bash
         env:
-          NGINX_CONTAINER: ${{ vars.NGINX_CONTAINER || 'nginx' }}
+          GOLDEX_AFFECTED: ${{ steps.affected.outputs.goldex }}
+          CALCULATOR_AFFECTED: ${{ steps.affected.outputs.calculator }}
         run: |
-          docker exec "$NGINX_CONTAINER" nginx -t
-          docker exec "$NGINX_CONTAINER" nginx -s reload
+          if [[ "$GOLDEX_AFFECTED" == true ]]; then
+            docker buildx imagetools create --tag reg.goldexsoft.ir/goldex:latest "reg.goldexsoft.ir/goldex:${Version}"
+          fi
+          if [[ "$CALCULATOR_AFFECTED" == true ]]; then
+            docker buildx imagetools create --tag reg.goldexsoft.ir/goldex-karat:latest "reg.goldexsoft.ir/goldex-karat:${Version}"
+          fi
 
       - name: Record successful application deployments
         if: steps.affected.outputs.any == 'true'

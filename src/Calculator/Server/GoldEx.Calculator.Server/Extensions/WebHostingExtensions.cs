@@ -1,4 +1,5 @@
-﻿using GoldEx.Calculator.Client;
+using Microsoft.EntityFrameworkCore;
+using GoldEx.Calculator.Client;
 using GoldEx.Calculator.Server.Common.Middlewares;
 using GoldEx.Calculator.Server.Components;
 using GoldEx.Server.Application;
@@ -25,6 +26,35 @@ public static class WebHostingExtensions
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
         Assembly[] additionalAssemblies = [typeof(Routes).Assembly];
+
+        // Branch before HTTPS, tenant resolution, license and authentication: localhost must not redirect.
+        app.MapWhen(
+            context => context.Request.Path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase),
+            branch => branch.Run(async context =>
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(TimeSpan.FromSeconds(4));
+                try
+                {
+                    var database = context.RequestServices.GetRequiredService<GoldExDbContext>();
+                    if (!await database.Database.CanConnectAsync(timeout.Token))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                        return;
+                    }
+                    await database.Database.ExecuteSqlRawAsync("SELECT 1", timeout.Token);
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                    await context.Response.WriteAsync("Ready", timeout.Token);
+                }
+                catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+                {
+                    // The caller disconnected.
+                }
+                catch (Exception)
+                {
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                }
+            }));
 
         if (app.Environment.IsDevelopment())
         {

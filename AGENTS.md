@@ -1093,3 +1093,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 
 ## Home responsive behavior (2026-11-02)
 - Authorized Home page at mobile/tablet widths below 960px must show PriceBoard only, not dashboard launcher, tabs, or desktop statistics. Use responsive conditional branches; preserve all desktop dashboard content and custom-domain storefront.
+
+### Health-gated GoldEx / Calculator deployment (2026-11-02)
+- Both host processes expose an early anonymous /health/ready HTTP endpoint that verifies SQL Server connection and SELECT 1 execution; it bypasses HTTPS redirects, tenant/license resolution and authentication. The existing /api/Health dashboard is not the release gate.
+- Docker runtime images install curl and label ir.goldex.health.ready=true. scripts/deploy-affected.py supplies a temporary healthcheck override for every selected Compose service and verifies container health and exact image IDs before Nginx test/reload. Failed rollout restores saved immutable Docker image IDs across all selected tenants/apps; previously uninstalled services are stopped; unselected apps and volumes remain untouched.
+- Legacy images lacking this route are verified for running state on rollback; DB schema and data migrations are never reversed. Promotion of latest follows verified readiness; GitHub's successful-deployment state is recorded last. Post-deployment registry-alias or state-recording failures are not automatically rolled back.
+- See docs/ai/DEPLOYMENT.md and .matemcp/skills/deployment-health-rollback/SKILL.md. Regression: python scripts/test_deploy_affected.py, scripts/test_affected_apps.py, scripts/test_docker_version.py; build both server projects. Current task is local Dev-only, with NO VERSION BUMP OR PUSH.
