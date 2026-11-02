@@ -1092,7 +1092,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Commit locally on Dev after version/release notes, and do not push unless explicitly asked.
 
 ## Home responsive behavior (2026-11-02)
-- Authorized Home page at mobile/tablet widths below 960px must show PriceBoard only, not dashboard launcher, tabs, or desktop statistics. Use responsive conditional branches; preserve all desktop dashboard content and custom-domain storefront.
+- Authorized Home page at mobile/tablet widths below 960px shows PriceBoard followed by HomeOperations (both unpaid-invoice and shop-follow-up cards), stacked vertically. Keep the dashboard launcher, shortcuts, navigation tabs, HomeStatistics and other desktop panels out of the mobile branch. Preserve desktop and custom-domain storefront.
 
 ### Health-gated GoldEx / Calculator deployment (2026-11-02)
 - Both host processes expose an early anonymous /health/ready HTTP endpoint that verifies SQL Server connection and SELECT 1 execution; it bypasses HTTPS redirects, tenant/license resolution and authentication. The existing /api/Health dashboard is not the release gate.

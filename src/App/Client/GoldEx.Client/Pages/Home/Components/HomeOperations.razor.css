@@ -33,7 +33,7 @@
 .gex-home-followup-link small { color:var(--mud-palette-text-secondary); font-size:.75rem; font-weight:400; }
 .gex-home-followup-link>.mud-icon-root { color:var(--mud-palette-primary); }
 .gex-home-empty { display:flex; justify-content:center; align-items:center; gap:9px; min-height:180px; color:var(--mud-palette-text-secondary); text-align:center; font-size:.85rem; }
-@media(max-width:950px) { .gex-home-workspace { grid-template-columns:1fr; } }
+@media(max-width:959px) { .gex-home-workspace { grid-template-columns:1fr; } }
 @media(max-width:599px) { .gex-home-unpaid,.gex-home-followups { padding:14px; } .gex-home-unpaid-item { gap:7px; padding:10px 8px; } .gex-home-unpaid-identity { gap:7px; } .gex-home-unpaid-amount strong { font-size:.79rem; } }
 @media(prefers-reduced-motion:reduce) { .gex-home-unpaid-item,.gex-home-followup-link { transition:none; } }
 .gex-home-unpaid-identity .gex-home-overdue { color:var(--mud-palette-error); font-size:.7rem; font-weight:400; }

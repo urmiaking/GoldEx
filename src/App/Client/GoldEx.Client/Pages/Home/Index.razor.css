@@ -11,7 +11,7 @@
 .gex-home-container .segmented-tab-btn { font-weight:400; }
 .gex-home-container .segmented-tab-btn.active { font-weight:500; }
 @media(max-width:959px) { .gex-home-launcher { padding:15px; gap:12px; } }
-/* In the mobile shell the home page returns to its original price-board-only layout. */
+/* Mobile home keeps live prices first, followed by the operational follow-up cards. */
 .gex-home-mobile-price-board { display:none; }
 @media (max-width:959px) {
     .gex-home-desktop-shell,
@@ -21,3 +21,5 @@
 @media (min-width:960px) {
     .gex-home-mobile-price-board { display:none !important; }
 }
+.gex-home-mobile-operations { margin-top:24px; }
+@media (max-width:599px) { .gex-home-mobile-operations { margin-top:18px; } }
