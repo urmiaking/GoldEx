@@ -1115,3 +1115,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - CustomerHistoryDialog directly hosts a flex-height modal view with a top header, scrolling contents and close footer. Invoice results display compact cards inside the modal. InvoicesList skips its page-level sticky observer for CustomerId-specific views.
 - CustomerLedgerDirectory renders transactions as a semantic desktop table or small-screen cards. Preserve customer filtering, server-side search, date and unit filters and pagination.
 - Customer editor uses consistent rounded RTL UI. Run customer-ledger-modal-redesign.test.mjs after changes.
+
+## Customer invoice dialog and ledger timeline (2026-11-02)
+- CustomerHistoryDialog uses InvoicesList with its original semantic invoice table at desktop viewport widths >=960px, even inside a modal. Do not force invoice-mobile-list visible on desktop. Keep invoice-mobile-list visible only below 960px, using the original invoice cards and correct success-text color for the paid pill. Avoid broad span text color overrides.
+- CustomerLedgerDirectory uses a full customer accounting timeline modeled on InvoiceDetails invoice-event-timeline. Fetch all matching ITransactionService results in bounded 100-event batches. Do not reintroduce manual next/previous page UI. Preserve CustomerId, search, unit/date filters, descending posting date and failure handling; replace the entire collection only after every batch succeeds.
+- Standard GoldEx typography uses 400/500 font weights. Keep the responsive native dialog and its scrolling header/footer intact.
+- Regression: scripts/tests/customer-ledger-modal-redesign.test.mjs; run all JS tests, structural Release build if C# changes. Authenticated responsive browser review is separate.

@@ -1,4 +1,3 @@
-using GoldEx.Client.Pages.Customers.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
@@ -11,16 +10,18 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class CustomerLedgerDirectory
 {
-    [Parameter] public Guid CustomerId { get; set; }
-    private const int PageSize = 10;
-    private readonly List<GetTransactionResponse> _items = [];
+    [Parameter, EditorRequired] public Guid CustomerId { get; set; }
+
+    // Match the invoice accounting/inventory timeline: fetch all events in
+    // bounded batches, with no manual pagination or artificial record limit.
+    private const int TimelineBatchSize = 100;
+    private List<GetTransactionResponse> _items = [];
     private List<GetPriceUnitTitleResponse> _units = [];
     private DateRange _dateRange = new();
     private Guid? _priceUnitId;
     private string? _search;
-    private int _page, _total, _loadVersion;
+    private int _total, _loadVersion;
     private bool _loading = true, _loadFailed, _showFilters;
-    private int PageCount => Math.Max(1, (_total + PageSize - 1) / PageSize);
 
     private TransactionFilter Filter => new(
         null, CustomerId, _priceUnitId, null,
@@ -31,8 +32,9 @@ public partial class CustomerLedgerDirectory
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         await SendRequestAsync<ITransactionService, List<GetPriceUnitTitleResponse>>(
-            (s, ct) => s.GetAvailablePriceUnitsAsync(Filter, ct),
+            (service, ct) => service.GetAvailablePriceUnitsAsync(Filter, ct),
             afterSend: response => _units = response, createScope: true);
         await LoadAsync();
     }
@@ -40,44 +42,71 @@ public partial class CustomerLedgerDirectory
     private async Task LoadAsync()
     {
         var version = ++_loadVersion;
+        var filter = Filter;
+        var search = _search;
+        var results = new List<GetTransactionResponse>();
+        var total = 0;
+        var offset = 0;
         _loading = true;
         _loadFailed = false;
+        await InvokeAsync(StateHasChanged);
         try
         {
-            var request = new RequestFilter(_page * PageSize, PageSize, _search,
-                nameof(GetTransactionResponse.PostingDate),
-                GoldEx.Sdk.Common.Definitions.SortDirection.Descending);
-            await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
-                (s, ct) => s.GetListAsync(Filter, request, ct),
-                afterSend: response =>
+            do
+            {
+                List<GetTransactionResponse>? batch = null;
+                var failed = false;
+                await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
+                    (service, token) => service.GetListAsync(
+                        filter,
+                        new RequestFilter(offset, TimelineBatchSize, search,
+                            nameof(GetTransactionResponse.PostingDate),
+                            GoldEx.Sdk.Common.Definitions.SortDirection.Descending),
+                        token),
+                    afterSend: response =>
+                    {
+                        batch = response.Data.ToList();
+                        total = response.Total;
+                    },
+                    onFailure: () => failed = true,
+                    cancelPrevious: true,
+                    createScope: true);
+
+                if (version != _loadVersion || IsDisposed) return;
+
+                // Do not silently display a partial customer ledger if a later
+                // batch failed or the service stopped returning records.
+                if (failed || batch is null || (batch.Count == 0 && offset < total))
                 {
-                    if (version != _loadVersion) return;
-                    _items.Clear();
-                    _items.AddRange(response.Data);
-                    _total = response.Total;
-                },
-                onFailure: () =>
-                {
-                    if (version == _loadVersion) _loadFailed = true;
-                }, createScope: true, cancelPrevious: true);
+                    _loadFailed = true;
+                    return;
+                }
+                results.AddRange(batch);
+                offset += batch.Count;
+            } while (offset < total);
+
+            if (version != _loadVersion || IsDisposed) return;
+            _items = results;
+            _total = results.Count;
         }
         finally
         {
-            if (version == _loadVersion) _loading = false;
+            if (version == _loadVersion && !IsDisposed)
+            {
+                _loading = false;
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
     private void ToggleFilters() => _showFilters = !_showFilters;
-    private async Task SearchAsync(string? text) { _search = text; _page = 0; await LoadAsync(); }
-    private async Task ChangeDatesAsync(DateRange dates) { _dateRange = dates; _page = 0; await LoadAsync(); }
-    private async Task ChangeUnitAsync(Guid? id) { _priceUnitId = id; _page = 0; await LoadAsync(); }
+    private async Task SearchAsync(string? text) { _search = text; await LoadAsync(); }
+    private async Task ChangeDatesAsync(DateRange dates) { _dateRange = dates; await LoadAsync(); }
+    private async Task ChangeUnitAsync(Guid? id) { _priceUnitId = id; await LoadAsync(); }
     private async Task ClearFiltersAsync()
     {
         _dateRange = new();
         _priceUnitId = null;
-        _page = 0;
         await LoadAsync();
     }
-    private async Task PreviousAsync() { if (_page <= 0 || _loading) return; _page--; await LoadAsync(); }
-    private async Task NextAsync() { if (_page + 1 >= PageCount || _loading) return; _page++; await LoadAsync(); }
 }

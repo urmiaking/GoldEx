@@ -44,16 +44,20 @@
 
     @if (_loading)
     {
-        <div class="customer-ledger-skeleton" aria-label="در حال بارگذاری گردش حساب">
-            @for (int i = 0; i < 4; i++)
+        <div class="customer-ledger-loading" role="status" aria-label="در حال بارگذاری گردش حساب">
+            @for (var skeleton = 0; skeleton < 3; skeleton++)
             {
-                <MudSkeleton Height="62px" Width="100%" />
+                <div class="customer-ledger-skeleton">
+                    <MudSkeleton Height="22px" Width="90px" />
+                    <MudSkeleton Height="18px" Width="135px" />
+                    <MudSkeleton Height="16px" Width="65%" />
+                </div>
             }
         </div>
     }
     else if (_loadFailed)
     {
-        <div class="customer-ledger-empty">
+        <div class="customer-ledger-empty" role="alert">
             <MudIcon Icon="@Icons.Material.Outlined.ErrorOutline" Size="Size.Large" />
             <span>دریافت گردش حساب انجام نشد.</span>
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadAsync">تلاش دوباره</MudButton>
@@ -61,44 +65,46 @@
     }
     else if (_items.Count == 0)
     {
-        <div class="customer-ledger-empty">
+        <div class="customer-ledger-empty" role="status">
             <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Large" />
             <span>تراکنشی با این مشخصات پیدا نشد.</span>
         </div>
     }
     else
     {
-        <div class="customer-ledger-table-scroll">
-            <table class="customer-ledger-table">
-                <thead><tr><th>تاریخ</th><th>نوع</th><th>مبلغ</th><th>شرح تراکنش</th><th>حساب</th></tr></thead>
-                <tbody>
-                    @foreach (var item in _items)
-                    {
-                        <tr @key="item">
-                            <td class="customer-ledger-date" title="@item.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")">@item.PostingDate.ToString("yyyy/MM/dd")</td>
-                            <td><span class="customer-ledger-type @TypeClass(item)">@item.TransactionType.GetDisplayName()</span></td>
-                            <td class="customer-ledger-amount">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
-                            <td class="customer-ledger-description">@item.Description</td>
-                            <td class="customer-ledger-account">@item.LedgerAccount</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="customer-ledger-cards">
+        <ol class="customer-ledger-timeline" aria-label="رویدادهای گردش حساب مشتری">
             @foreach (var item in _items)
             {
-                <article class="customer-ledger-card" @key="item">
-                    <header><span class="customer-ledger-type @TypeClass(item)">@item.TransactionType.GetDisplayName()</span><time dir="ltr">@item.PostingDate.ToString("yyyy/MM/dd")</time></header>
-                    <strong class="customer-ledger-card-amount">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong>
-                    <p>@item.Description</p>
-                    <footer><MudIcon Icon="@Icons.Material.Outlined.AccountBalanceWallet" Size="Size.Small" /> @item.LedgerAccount</footer>
-                </article>
+                <li class="customer-ledger-event @TypeClass(item)" @key="item">
+                    <span class="customer-ledger-node" aria-hidden="true"></span>
+                    <article class="customer-ledger-card">
+                        <div class="customer-ledger-top">
+                            <span class="customer-ledger-type @TypeClass(item)">@item.TransactionType.GetDisplayName()</span>
+                            <time datetime="@item.PostingDate.ToString("yyyy-MM-ddTHH:mm:ss")"
+                                  title="@item.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")">
+                                @item.PostingDate.ToString("yyyy/MM/dd HH:mm")
+                            </time>
+                        </div>
+                        <div class="customer-ledger-detail">
+                            <div class="customer-ledger-main">
+                                <strong class="customer-ledger-amount @TypeClass(item)">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                {
+                                    <p>@item.Description</p>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.LedgerAccount))
+                            {
+                                <div class="customer-ledger-account">
+                                    <span>حساب تحت تأثیر</span>
+                                    <strong>@item.LedgerAccount</strong>
+                                </div>
+                            }
+                        </div>
+                    </article>
+                </li>
             }
-        </div>
+        </ol>
+        <div class="customer-ledger-summary">@_total تراکنش</div>
     }
-    <footer class="customer-ledger-pagination" aria-label="صفحه‌بندی گردش حساب">
-        <span>@(_total == 0 ? "۰ تراکنش" : $"نمایش {_page * PageSize + 1} تا {Math.Min((_page + 1) * PageSize, _total)} از {_total} تراکنش")</span>
-        <nav><button type="button" disabled="@(_loading || _page == 0)" @onclick="PreviousAsync">قبلی</button><span>@(_page + 1) از @PageCount</span><button type="button" disabled="@(_loading || _page + 1 >= PageCount)" @onclick="NextAsync">بعدی</button></nav>
-    </footer>
 </section>

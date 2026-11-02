@@ -5,3 +5,5 @@
 - Use 400/500 weights and rounded surfaces, ::deep for Mud components. Test smart-tray-customer-dialog-ux.test.mjs, build for structural changes, commit locally only.
 
 - CustomerHistoryDialog renders CustomerLedgerDirectory (native desktop table/mobile cards) or InvoicesList (dialog cards) in a bounded flex modal. Do not nest EditorDialogFrame for this read-only list. Do not attach the invoice page sticky observer to CustomerId-specific views.
+
+- Customer invoices must remain original InvoicesList table in desktop modal >=960px, original cards below 960px, preserving invoice-paid foreground contrast. CustomerLedgerDirectory is now an unpaginated accounting timeline; retrieve filtered customer transactions in 100-item batches following InvoiceDetails, not a desktop table or mobile card grid.
