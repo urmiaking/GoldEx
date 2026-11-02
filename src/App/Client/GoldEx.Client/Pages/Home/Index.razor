@@ -18,42 +18,50 @@ else
         </div>
         <AuthorizeView>
             <Authorized>
-                <section class="goldex-glass-card gex-home-launcher">
-                    <div class="gex-home-launcher-heading">
-                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Medium" />
-                        <div><h1>پیشخوان مدیریت گلدکس</h1><p>دسترسی سریع به عملیات روزانه و نرخ‌های بازار</p></div>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <div class="gex-home-desktop-shell">
+                        <section class="goldex-glass-card gex-home-launcher">
+                            <div class="gex-home-launcher-heading">
+                                <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Medium" />
+                                <div><h1>پیشخوان مدیریت گلدکس</h1><p>دسترسی سریع به عملیات روزانه و نرخ‌های بازار</p></div>
+                            </div>
+                            <div class="gex-home-quick-actions">
+                                <a href="@ClientRoutes.Invoices.Create" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Size="Size.Small" /><span>ثبت فاکتور جدید</span></a>
+                                <a href="@($"{ClientRoutes.Calculator.Index}?tab=smart-tray")" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Warning" Size="Size.Small" /><span>سینی هوشمند</span></a>
+                                <a href="@ClientRoutes.PriceBoard.Index" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Info" Size="Size.Small" /><span>تابلو قیمت‌ها</span></a>
+                                <a href="@ClientRoutes.Finances.CustomerTransfers" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Color="Color.Primary" Size="Size.Small" /><span>حواله مشتریان</span></a>
+                                <a href="@ClientRoutes.InventoryStocks.List" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Warning" Size="Size.Small" /><span>موجودی انبار</span></a>
+                            </div>
+                        </section>
+                        <nav class="gex-home-tabs" aria-label="بخش‌های صفحه اصلی">
+                            <div class="goldex-segmented-container">
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 0 ? "active" : "")" @onclick="() => OnTabChanged(0)"><MudIcon Icon="@Icons.Material.Filled.Dashboard" /><span>پیشخوان</span></button>
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 5 ? "active" : "")" @onclick="() => OnTabChanged(5)"><MudIcon Icon="@Icons.Material.Filled.BarChart" /><span>آمار</span></button>
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 1 ? "active" : "")" @onclick="() => OnTabChanged(1)"><MudIcon Icon="@Icons.Material.Outlined.Calculate" /><span>محاسبه‌گر</span></button>
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 2 ? "active" : "")" @onclick="() => OnTabChanged(2)"><MudIcon Icon="@Icons.Material.Filled.LibraryBooks" /><span>فاکتورها</span></button>
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 3 ? "active" : "")" @onclick="() => OnTabChanged(3)"><MudIcon Icon="@Icons.Material.Filled.Warehouse" /><span>اجناس من</span></button>
+                                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 4 ? "active" : "")" @onclick="() => OnTabChanged(4)"><MudIcon Icon="@Icons.Material.Filled.PeopleAlt" /><span>مشتریان</span></button>
+                            </div>
+                        </nav>
+                        <div class="lazy-tab-content animate-fade-in-up" @key="_activePanelIndex">
+                            @if (_activePanelIndex == 0)
+                            {
+                                <div class="gex-home-market-desktop"><MarketPriceDeck /></div>
+                                <HomeOperations />
+                            }
+                            else if (_activePanelIndex == 5) { <HomeStatistics /> }
+                            else if (_activePanelIndex == 1) { <Calculator HideTabs="true" Class="mt-2" ContainerClass="mt-2" Elevation="2" /> }
+                            else if (_activePanelIndex == 2) { <RecentInvoicesOverview /> }
+                            else if (_activePanelIndex == 3) { <RecentInventoryOverview /> }
+                            else if (_activePanelIndex == 4) { <CustomersInsightOverview /> }
+                        </div>
                     </div>
-                    <div class="gex-home-quick-actions">
-                        <a href="@ClientRoutes.Invoices.Create" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Size="Size.Small" /><span>ثبت فاکتور جدید</span></a>
-                        <a href="@($"{ClientRoutes.Calculator.Index}?tab=smart-tray")" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Warning" Size="Size.Small" /><span>سینی هوشمند</span></a>
-                        <a href="@ClientRoutes.PriceBoard.Index" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Info" Size="Size.Small" /><span>تابلو قیمت‌ها</span></a>
-                        <a href="@ClientRoutes.Finances.CustomerTransfers" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Color="Color.Primary" Size="Size.Small" /><span>حواله مشتریان</span></a>
-                        <a href="@ClientRoutes.InventoryStocks.List" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Warning" Size="Size.Small" /><span>موجودی انبار</span></a>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <div class="gex-home-mobile-price-board">
+                        <PriceBoard Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" />
                     </div>
-                </section>
-                <nav class="gex-home-tabs" aria-label="بخش‌های صفحه اصلی">
-                    <div class="goldex-segmented-container">
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 0 ? "active" : "")" @onclick="() => OnTabChanged(0)"><MudIcon Icon="@Icons.Material.Filled.Dashboard" /><span>پیشخوان</span></button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 5 ? "active" : "")" @onclick="() => OnTabChanged(5)"><MudIcon Icon="@Icons.Material.Filled.BarChart" /><span>آمار</span></button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 1 ? "active" : "")" @onclick="() => OnTabChanged(1)"><MudIcon Icon="@Icons.Material.Outlined.Calculate" /><span>محاسبه‌گر</span></button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 2 ? "active" : "")" @onclick="() => OnTabChanged(2)"><MudIcon Icon="@Icons.Material.Filled.LibraryBooks" /><span>فاکتورها</span></button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 3 ? "active" : "")" @onclick="() => OnTabChanged(3)"><MudIcon Icon="@Icons.Material.Filled.Warehouse" /><span>اجناس من</span></button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 4 ? "active" : "")" @onclick="() => OnTabChanged(4)"><MudIcon Icon="@Icons.Material.Filled.PeopleAlt" /><span>مشتریان</span></button>
-                    </div>
-                </nav>
-                <div class="lazy-tab-content animate-fade-in-up" @key="_activePanelIndex">
-                    @if (_activePanelIndex == 0)
-                    {
-                        <div class="gex-home-market-desktop"><MarketPriceDeck /></div>
-                        <div class="gex-home-market-mobile"><PriceBoard Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" /></div>
-                        <HomeOperations />
-                    }
-                    else if (_activePanelIndex == 5) { <HomeStatistics /> }
-                    else if (_activePanelIndex == 1) { <Calculator HideTabs="true" Class="mt-2" ContainerClass="mt-2" Elevation="2" /> }
-                    else if (_activePanelIndex == 2) { <RecentInvoicesOverview /> }
-                    else if (_activePanelIndex == 3) { <RecentInventoryOverview /> }
-                    else if (_activePanelIndex == 4) { <CustomersInsightOverview /> }
-                </div>
+                </MudHidden>
             </Authorized>
             <NotAuthorized>
                 <div class="goldex-glass-card pa-4 mb-4 d-flex flex-wrap align-center justify-space-between gap-3">

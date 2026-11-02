@@ -8,8 +8,16 @@
 .gex-home-quick-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-start; gap:8px; }
 .gex-home-quick-actions .quick-action-pill { display:inline-flex; align-items:center; gap:7px; font-size:.82rem; font-weight:400; white-space:nowrap; text-decoration:none; }
 .gex-home-market-desktop { display:block; margin-bottom:20px; }
-.gex-home-market-mobile { display:none; margin-bottom:16px; }
 .gex-home-container .segmented-tab-btn { font-weight:400; }
 .gex-home-container .segmented-tab-btn.active { font-weight:500; }
 @media(max-width:959px) { .gex-home-launcher { padding:15px; gap:12px; } }
-@media(max-width:599px) { .gex-home-market-desktop { display:none; } .gex-home-market-mobile { display:block; } .gex-home-launcher { padding:14px; } .gex-home-quick-actions { flex-wrap:nowrap; max-width:100%; overflow-x:auto; padding:3px 0 8px; } .gex-home-launcher-heading h1 { font-size:1rem; } }
+/* In the mobile shell the home page returns to its original price-board-only layout. */
+.gex-home-mobile-price-board { display:none; }
+@media (max-width:959px) {
+    .gex-home-desktop-shell,
+    .gex-home-breadcrumb { display:none !important; }
+    .gex-home-mobile-price-board { display:block; }
+}
+@media (min-width:960px) {
+    .gex-home-mobile-price-board { display:none !important; }
+}
