@@ -3,6 +3,8 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    grep \
     fontconfig \
     libgdiplus \
     fonts-dejavu-core \
@@ -40,7 +42,8 @@ ARG APP_VERSION=development
 ARG APP_REVISION=unknown
 LABEL org.opencontainers.image.version=$APP_VERSION \
       org.opencontainers.image.revision=$APP_REVISION \
-      ir.goldex.build.version=$APP_VERSION
+      ir.goldex.build.version=$APP_VERSION \
+      ir.goldex.health.ready=true
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY ./fonts /usr/local/share/fonts/custom/

@@ -1,4 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends curl grep \
+    && rm -rf /var/lib/apt/lists/*
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -36,7 +39,8 @@ ARG APP_VERSION=development
 ARG APP_REVISION=unknown
 LABEL org.opencontainers.image.version=$APP_VERSION \
       org.opencontainers.image.revision=$APP_REVISION \
-      ir.goldex.build.version=$APP_VERSION
+      ir.goldex.build.version=$APP_VERSION \
+      ir.goldex.health.ready=true
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "GoldEx.Calculator.Server.dll"]
