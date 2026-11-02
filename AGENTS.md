@@ -1131,3 +1131,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 - CustomersList.OnViewInvoices is read-only navigation: await responsive session result but never call RefreshAsync() after closing. Refresh after customer create/edit/delete must remain.
 - Shared .gex-modal-panel uses 20px radius and overflow:hidden for desktop rounded footers; mobile retains 20px 20px 12px 12px radius. Popover/snackbar providers remain outside animated panel.
 - Regression: scripts/tests/customer-invoice-dialog-close.test.mjs.
+
+## Calculator server-rendered responsive dialog dependency (2026-11-02)
+- `GoldEx.Calculator.Client` reuses `GoldEx.Client.Components.Layouts.BaseLayout`, which always renders `ResponsiveDialogHost`. That host injects scoped `ResponsiveDialogService` during server prerendering, before WebAssembly starts.
+- Calculator WASM already registers that service through `AddClientComponents()`. Calculator **server** must independently register `services.AddScoped<ResponsiveDialogService>()` in `src/Calculator/Server/GoldEx.Calculator.Server/DependencyInjection.cs` `AddComponents()`. Do not assume browser DI satisfies SSR injection.
+- CI regression contract: `scripts/tests/calculator-responsive-dialog-di.test.mjs`. Verify Calculator.Server Release build whenever changing shared layout injection or Calculator server services. This is a Calculator-only hotfix; do not add enterprise `releases.json` entries.
