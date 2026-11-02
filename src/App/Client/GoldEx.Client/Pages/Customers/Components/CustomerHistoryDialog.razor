@@ -1,0 +1,48 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Client.Components.Services
+@using GoldEx.Client.Pages.Transactions.Components
+@using GoldEx.Client.Pages.Invoices.Components
+@using Microsoft.AspNetCore.Components
+
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-customer-history">
+            <header class="gex-customer-history-context">
+                <span class="gex-customer-history-avatar">
+                    <MudIcon Icon="@(ShowInvoices ? Icons.Material.Outlined.ReceiptLong : Icons.Material.Outlined.AccountBalanceWallet)" />
+                </span>
+                <div>
+                    <span class="gex-customer-history-caption">@(ShowInvoices ? "فاکتورهای ثبت‌شده" : "گردش حساب و تراکنش‌ها")</span>
+                    <h2>@CustomerName</h2>
+                    <p>@(ShowInvoices ? "فاکتورهای این مشتری را جستجو، بررسی و مدیریت کنید." : "ورودی و خروجی حساب مشتری را با امکان جستجو و فیلتر بررسی کنید.")</p>
+                </div>
+            </header>
+            <div class="gex-customer-history-content">
+                @if (ShowInvoices)
+                {
+                    <InvoicesList CustomerId="@CustomerId" />
+                }
+                else
+                {
+                    <TransactionList CustomerId="@CustomerId"
+                                     ShowReversed="false"
+                                     Descending="true"
+                                     ContainerClass="gex-customer-transactions-table" />
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   OnClick="Close">بستن</MudButton>
+    </DialogActions>
+</EditorDialogFrame>
+
+@code {
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public string CustomerName { get; set; } = string.Empty;
+    [Parameter] public bool ShowInvoices { get; set; }
+    private void Close() => Session?.Cancel();
+}

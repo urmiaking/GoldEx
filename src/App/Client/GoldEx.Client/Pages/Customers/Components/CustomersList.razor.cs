@@ -1,8 +1,6 @@
 using GoldEx.Client.Components.Components.Dialogs;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
-using GoldEx.Client.Pages.Invoices.Components;
-using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
@@ -219,38 +217,35 @@ public partial class CustomersList
 
     private async Task OnViewTransaction(CustomerVm customerVm)
     {
-        var parameters = new DialogParameters<TransactionList>
-        {
-            { x => x.CustomerId, customerVm.Id },
-            { x => x.ShowReversed, false },
-            { x => x.Descending, true },
-            { x => x.ContainerClass, "responsive-table-toolbar" }
-        };
-        var dialog = await DialogService.ShowAsync<TransactionList>($"تراکنش های {customerVm.FullName}",
-            parameters,
-            _dialogOptions with
+        if (!customerVm.Id.HasValue) return;
+
+        var dialog = ResponsiveDialogs.Show<CustomerHistoryDialog>(
+            $"گردش حساب {customerVm.FullName}",
+            new Dictionary<string, object>
             {
-                MaxWidth = MaxWidth.ExtraLarge
-            });
-        var result = await dialog.Result;
-        if (result is { Canceled: false })
-        {
-            await RefreshAsync();
-        }
+                [nameof(CustomerHistoryDialog.CustomerId)] = customerVm.Id,
+                [nameof(CustomerHistoryDialog.CustomerName)] = customerVm.FullName,
+                [nameof(CustomerHistoryDialog.ShowInvoices)] = false
+            },
+            wide: true);
+        await dialog.Result;
     }
 
     private async Task OnViewInvoices(CustomerVm customerVm)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoicesList.CustomerId), customerVm.Id }
-        };
-        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.ExtraLarge });
-        var result = await dialog.Result;
-        if (result is { Canceled: false })
-        {
-            await RefreshAsync();
-        }
+        if (!customerVm.Id.HasValue) return;
+
+        var dialog = ResponsiveDialogs.Show<CustomerHistoryDialog>(
+            $"فاکتورهای {customerVm.FullName}",
+            new Dictionary<string, object>
+            {
+                [nameof(CustomerHistoryDialog.CustomerId)] = customerVm.Id,
+                [nameof(CustomerHistoryDialog.CustomerName)] = customerVm.FullName,
+                [nameof(CustomerHistoryDialog.ShowInvoices)] = true
+            },
+            wide: true);
+        await dialog.Result;
+        await RefreshAsync();
     }
 
     private async Task RefreshAsync()

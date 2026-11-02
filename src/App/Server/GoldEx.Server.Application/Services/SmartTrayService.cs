@@ -39,16 +39,17 @@ public class SmartTrayService(
     public async Task<SmartTrayDto> CreateTrayAsync(CreateSmartTrayRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (string.IsNullOrWhiteSpace(request.Title))
-            throw new InvalidOperationException("عنوان سینی نمی‌تواند خالی باشد.");
-
         var trayNumber = request.TrayNumber.HasValue && request.TrayNumber.Value > 0
             ? request.TrayNumber.Value
             : await repository.GetNextTrayNumberAsync(cancellationToken);
 
+        var title = string.IsNullOrWhiteSpace(request.Title)
+            ? $"سینی شماره {trayNumber}"
+            : request.Title.Trim();
+
         var tray = SmartTray.Create(
             trayNumber,
-            request.Title,
+            title,
             null,
             request.ClerkName ?? string.Empty);
 
