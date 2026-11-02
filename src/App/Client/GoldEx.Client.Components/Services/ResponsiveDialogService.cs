@@ -8,14 +8,15 @@ public sealed class ResponsiveDialogSession
 {
     private readonly ResponsiveDialogService _owner;
     private readonly TaskCompletionSource<ResponsiveDialogResult> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    internal ResponsiveDialogSession(ResponsiveDialogService owner, Type component, string title, Dictionary<string, object> parameters, bool wide)
-        => (_owner, Component, Title, Parameters, Wide) = (owner, component, title, parameters, wide);
+    internal ResponsiveDialogSession(ResponsiveDialogService owner, Type component, string title, Dictionary<string, object> parameters, bool wide, bool extraWide)
+        => (_owner, Component, Title, Parameters, Wide, ExtraWide) = (owner, component, title, parameters, wide, extraWide);
 
     public Type Component { get; }
     public string Key { get; } = Guid.NewGuid().ToString("N");
     public string Title { get; }
     public IDictionary<string, object> Parameters { get; }
     public bool Wide { get; }
+    public bool ExtraWide { get; }
     public bool IsBusy { get; private set; }
     public bool IsClosed => _completion.Task.IsCompleted;
     public Task<ResponsiveDialogResult> Result => _completion.Task;
@@ -36,10 +37,10 @@ public sealed class ResponsiveDialogService
     public IReadOnlyList<ResponsiveDialogSession> Sessions => _sessions.AsReadOnly();
     public event Action? Changed;
 
-    public ResponsiveDialogSession Show<TComponent>(string title, Dictionary<string, object>? parameters = null, bool wide = false)
+    public ResponsiveDialogSession Show<TComponent>(string title, Dictionary<string, object>? parameters = null, bool wide = false, bool extraWide = false)
         where TComponent : IComponent
     {
-        var session = new ResponsiveDialogSession(this, typeof(TComponent), title, new(parameters ?? []), wide);
+        var session = new ResponsiveDialogSession(this, typeof(TComponent), title, new(parameters ?? []), wide, extraWide);
         _sessions.Add(session);
         NotifyChanged();
         return session;

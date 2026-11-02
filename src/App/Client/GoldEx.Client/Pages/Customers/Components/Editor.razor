@@ -3,7 +3,13 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_customerValidator.ValidateValue)" ValidationDelay="0">
     <EditorDialogFrame>
         <DialogContent>
-            <MudGrid Spacing="4">
+            <div class="gex-customer-editor">
+                <div class="gex-customer-editor-intro">
+                    <span class="gex-customer-editor-icon"><MudIcon Icon="@Icons.Material.Outlined.PersonAddAlt1" /></span>
+                    <div><h3>@(Model.Id.HasValue ? "ویرایش مشخصات طرف حساب" : "مشخصات طرف حساب")</h3>
+                    <p>اطلاعات اصلی را تکمیل کنید؛ سایر اطلاعات در صورت نیاز قابل ویرایش هستند.</p></div>
+                </div>
+            <MudGrid Spacing="2" Class="gex-customer-editor-grid">
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect T="CustomerType"
                                @bind-Value="Model.CustomerType"
@@ -108,15 +114,16 @@
                     </MudItem>
                 }
             </MudGrid>
+            </div>
         </DialogContent>
         <DialogActions>
-            <MudButton Color="Color.Error"
+            <MudButton Color="Color.Default"
                        Disabled="_processing"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
 
-            <MudButton Class="m-2"
+            <MudButton Class="gex-customer-save"
                        Color="Color.Primary"
                        Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"

@@ -8,7 +8,7 @@
     {
         <div class="gex-modal-backdrop" aria-hidden="true"></div>
     }
-    <section class="gex-modal-panel @(Wide ? "gex-modal-wide" : null)" hidden="@(!Open)" dir="rtl">
+    <section class="gex-modal-panel @(Wide ? "gex-modal-wide" : null) @(ExtraWide ? "gex-modal-extra-wide" : null)" hidden="@(!Open)" dir="rtl">
         <header class="gex-modal-header">
             <h2 id="@_titleId">@Title</h2>
             <button type="button" class="gex-modal-close" disabled="@Busy" aria-label="بستن پنجره" @onclick="Close"><ShellIcon Name="close" /></button>
@@ -22,6 +22,7 @@
     [Parameter] public bool Open { get; set; }
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public bool Wide { get; set; }
+    [Parameter] public bool ExtraWide { get; set; }
     [Parameter] public bool Busy { get; set; }
     [Parameter] public string? SessionKey { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }

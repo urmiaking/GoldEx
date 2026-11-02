@@ -38,6 +38,7 @@ public partial class SmartTrayPage
     private bool _isProcessingBarcode;
     private bool _showCameraScanner;
     private bool _isLoading = true;
+    private bool _isCreatingTray;
 
     private readonly HashSet<string> _selectedItemBarcodes = [];
     private string _elapsedTimeString = "00:00:00";
@@ -419,21 +420,27 @@ public partial class SmartTrayPage
             });
     }
 
-    private async Task OpenCreateTrayDialogAsync()
+    private async Task CreateTrayAsync()
     {
-        var dialog = await DialogService.ShowAsync<CreateSmartTrayDialog>("ایجاد سینی جدید");
-        var result = await dialog.Result;
+        // A single click creates a numbered tray. The server owns the default
+        // title and number so there is no extra form or client-side collision.
+        if (_isCreatingTray) return;
 
-        if (result is { Canceled: false, Data: CreateSmartTrayRequest req })
+        _isCreatingTray = true;
+        try
         {
             await SendRequestAsync<ISmartTrayService, SmartTrayDto>(
-                action: (s, ct) => s.CreateTrayAsync(req, ct),
-                afterSend: async newTray =>
+                action: (service, ct) => service.CreateTrayAsync(new CreateSmartTrayRequest(), ct),
+                afterSend: async tray =>
                 {
-                    AddSuccessToast($"سینی #{newTray.TrayNumber} با موفقیت ایجاد شد.");
+                    AddSuccessToast($"سینی شماره {tray.TrayNumber} ایجاد شد. می‌توانید اسکن را شروع کنید.");
                     await LoadActiveTraysAsync();
-                    await LoadSelectedTrayAsync(newTray.Id);
+                    await LoadSelectedTrayAsync(tray.Id);
                 });
+        }
+        finally
+        {
+            _isCreatingTray = false;
         }
     }
 

@@ -1099,3 +1099,35 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Docker runtime images install curl and label ir.goldex.health.ready=true. scripts/deploy-affected.py supplies a temporary healthcheck override for every selected Compose service and verifies container health and exact image IDs before Nginx test/reload. Failed rollout restores saved immutable Docker image IDs across all selected tenants/apps; previously uninstalled services are stopped; unselected apps and volumes remain untouched.
 - Legacy images lacking this route are verified for running state on rollback; DB schema and data migrations are never reversed. Promotion of latest follows verified readiness; GitHub's successful-deployment state is recorded last. Post-deployment registry-alias or state-recording failures are not automatically rolled back.
 - See docs/ai/DEPLOYMENT.md and .matemcp/skills/deployment-health-rollback/SKILL.md. Regression: python scripts/test_deploy_affected.py, scripts/test_affected_apps.py, scripts/test_docker_version.py; build both server projects. Current task is local Dev-only, with NO VERSION BUMP OR PUSH.
+## Smart tray one-click creation and customer history dialogs (2026-11-02)
+- SmartTrayService.CreateTrayAsync accepts empty Title; the default is "سینی شماره {trayNumber}" using the allocated tray number. Explicit old-client titles still work. SmartTrayPage calls the service directly using a blank CreateSmartTrayRequest, guards repeated clicks, and selects the new tray. Old CreateSmartTrayDialog removed.
+- Customer list transaction and invoice actions open CustomerHistoryDialog through ResponsiveDialogService (wide desktop modal/mobile bottom sheet). Wrapper retains TransactionList and InvoicesList customer-specific filters/pagination and uses EditorDialogFrame and ResponsiveDialogSession.
+- Typography uses 400/500 and rounded controls; scoped style ::deep selectors apply to Mud components. Focused regression test scripts/tests/smart-tray-customer-dialog-ux.test.mjs.
+
+## Mobile responsive dialog motion (2026-11-02)
+- GoldEx responsive modals use a persistent native top-layer dialog to preserve popover/snackbar provider DOM. MeetFlow's MfDialog is the reference for motion: a short translateY(18px)/scale(.97) fade, not full translateY(100%) from offscreen.
+- In ResponsiveDialog.razor.css use a short entrance for mobile and avoid animated backdrop blur there; keep opacity scrim and native modality. Honor prefers-reduced-motion.
+- In responsive-dialog.js keep visualViewport resize handling for keyboard geometry but do not listen to visualViewport scroll for modal repositioning. Cache height and offset to avoid redundant writes. Preserve Escape blocking, scroll lock, nested sessions, provider DOM, focus restoration and non-dismissable backdrop.
+- Behavioral coverage lives in scripts/tests/responsive-dialog.test.mjs. Browser visual/performance checks require an authenticated mobile session.
+
+## Customer history dialogs (2026-11-02)
+- Invoice EditorForm creates and edits customers with ResponsiveDialogs.Show<Customers.Components.Editor>, not legacy DialogService.ShowAsync. Preserve ReturnModel and ShowFinancialAccounts.
+- CustomerHistoryDialog directly hosts a flex-height modal view with a top header, scrolling contents and close footer. Invoice results display compact cards inside the modal. InvoicesList skips its page-level sticky observer for CustomerId-specific views.
+- CustomerLedgerDirectory renders transactions as a semantic desktop table or small-screen cards. Preserve customer filtering, server-side search, date and unit filters and pagination.
+- Customer editor uses consistent rounded RTL UI. Run customer-ledger-modal-redesign.test.mjs after changes.
+
+## Customer invoice dialog and ledger timeline (2026-11-02)
+- CustomerHistoryDialog uses InvoicesList with its original semantic invoice table at desktop viewport widths >=960px, even inside a modal. Do not force invoice-mobile-list visible on desktop. Keep invoice-mobile-list visible only below 960px, using the original invoice cards and correct success-text color for the paid pill. Avoid broad span text color overrides.
+- CustomerLedgerDirectory uses a full customer accounting timeline modeled on InvoiceDetails invoice-event-timeline. Fetch all matching ITransactionService results in bounded 100-event batches. Do not reintroduce manual next/previous page UI. Preserve CustomerId, search, unit/date filters, descending posting date and failure handling; replace the entire collection only after every batch succeeds.
+- Standard GoldEx typography uses 400/500 font weights. Keep the responsive native dialog and its scrolling header/footer intact.
+- Regression: scripts/tests/customer-ledger-modal-redesign.test.mjs; run all JS tests, structural Release build if C# changes. Authenticated responsive browser review is separate.
+
+## Customer invoices extra-wide desktop dialog (2026-11-02)
+- Shared ResponsiveDialogService.Show exposes optional extraWide=false, passed through session, host, and ResponsiveDialog. The CSS extra-wide class has a 1280px maximum width, ordinary wide stays 920px, and standard stays 610px.
+- Only CustomersList.OnViewInvoices requests extraWide:true alongside wide:true. Customer ledger and other dialogs remain unchanged. This accommodates the invoice directory table within dialog padding on spacious desktop screens; mobile remains unchanged.
+- Test scripts/tests/customer-invoice-dialog-width.test.mjs before changing the width contract. Do not globally widen all responsive dialogs.
+
+## Customer invoice viewer close and desktop modal corners (2026-11-02)
+- CustomersList.OnViewInvoices is read-only navigation: await responsive session result but never call RefreshAsync() after closing. Refresh after customer create/edit/delete must remain.
+- Shared .gex-modal-panel uses 20px radius and overflow:hidden for desktop rounded footers; mobile retains 20px 20px 12px 12px radius. Popover/snackbar providers remain outside animated panel.
+- Regression: scripts/tests/customer-invoice-dialog-close.test.mjs.

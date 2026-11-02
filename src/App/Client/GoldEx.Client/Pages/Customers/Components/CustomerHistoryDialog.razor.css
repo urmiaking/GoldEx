@@ -1,0 +1,47 @@
+.gex-customer-history { display:flex; flex-direction:column; flex:1 1 auto; height:100%; min-height:0; min-width:0; width:100%; overflow:hidden; direction:rtl; }
+.gex-customer-history-context { flex:none; display:flex; align-items:center; gap:12px; padding:16px 20px; margin:0; background:var(--mud-palette-background-gray); border-bottom:1px solid var(--mud-palette-lines-default); }
+.gex-customer-history-avatar { flex:none; display:grid; place-items:center; width:46px; height:46px; border-radius:14px; background:color-mix(in srgb,var(--mud-palette-primary) 10%,transparent); color:var(--mud-palette-primary); }
+.gex-customer-history-heading { min-width:0; }
+.gex-customer-history-heading h2 { margin:2px 0; font-size:1.04rem; font-weight:500; }
+.gex-customer-history-caption { color:var(--mud-palette-primary); font-size:.73rem; font-weight:500; }
+.gex-customer-history-heading p { margin:0; color:var(--mud-palette-text-secondary); font-size:.76rem; font-weight:400; }
+.gex-customer-history-content { display:block; flex:1 1 auto; min-width:0; min-height:0; padding:15px 19px; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
+.gex-customer-history-actions { flex:none; display:flex; justify-content:flex-end; padding:12px 19px; background:var(--mud-palette-surface); border-top:1px solid var(--mud-palette-lines-default); }
+.gex-customer-history-actions ::deep .mud-button-root { border-radius:999px; min-height:40px; }
+
+/* Reuse the actual invoice directory presentation; do not force mobile cards
+   at desktop viewport widths just because the parent is a modal. */
+.gex-customer-history-content ::deep .invoice-directory { min-width:0; width:100%; margin:0; padding:0; }
+.gex-customer-history-content ::deep .invoice-directory .directory-heading { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .directory-filters { position:relative !important; top:auto !important; isolation:auto !important; z-index:auto !important; padding:0; margin:0 0 12px; background:transparent; }
+.gex-customer-history-content ::deep .invoice-directory .directory-filters::before { display:none; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-results { min-width:0; }
+.gex-customer-history-content ::deep .invoice-directory .invoice-pagination { padding:12px 0 0; }
+
+@media(min-width:960px) {
+ .gex-customer-history-content ::deep .invoice-directory .invoice-desktop-table { display:block; overflow-x:auto; max-width:100%; border-radius:16px; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-table { width:100%; min-width:900px; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-table th { position:static; top:auto; z-index:auto; font-weight:500; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-mobile-list { display:none; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-placeholder-desktop { display:block; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-placeholder-mobile { display:none; }
+ .gex-customer-history-content ::deep .invoice-directory .directory-toolbar { grid-template-columns:minmax(160px,1fr) auto minmax(145px,185px) 44px; }
+}
+
+/* Let the original InvoicesList mobile CSS own all card colors and badges.
+   In particular, do not override .invoice-paid with generic span labels. */
+@media(max-width:959.98px) {
+ .gex-customer-history-content ::deep .invoice-directory .invoice-desktop-table { display:none; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-mobile-list { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
+ .gex-customer-history-content ::deep .invoice-directory .directory-toolbar { grid-template-columns:minmax(0,1fr) 44px; }
+ .gex-customer-history-content ::deep .invoice-directory .invoice-card-amounts .invoice-paid { color:var(--mud-palette-success-text,#fff); background:var(--mud-palette-success); border-color:var(--mud-palette-success); font-size:.75rem; font-weight:500; }
+}
+@media(max-width:700px) {
+ .gex-customer-history-context { padding:12px 14px; gap:10px; }
+ .gex-customer-history-avatar { width:38px; height:38px; border-radius:11px; }
+ .gex-customer-history-heading h2 { font-size:.92rem; }
+ .gex-customer-history-heading p { font-size:.69rem; }
+ .gex-customer-history-content { padding:12px; }
+ .gex-customer-history-actions { padding:10px 12px; }
+ .gex-customer-history-content ::deep .invoice-directory .directory-toolbar { padding:9px; }
+}

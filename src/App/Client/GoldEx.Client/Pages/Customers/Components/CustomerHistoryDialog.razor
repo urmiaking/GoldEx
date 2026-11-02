@@ -1,0 +1,37 @@
+@using GoldEx.Client.Components.Services
+@using GoldEx.Client.Pages.Invoices.Components
+@using Microsoft.AspNetCore.Components
+
+<div class="gex-customer-history" dir="rtl">
+    <header class="gex-customer-history-context">
+        <span class="gex-customer-history-avatar" aria-hidden="true">
+            <MudIcon Icon="@(ShowInvoices ? Icons.Material.Outlined.ReceiptLong : Icons.Material.Outlined.AccountBalanceWallet)" />
+        </span>
+        <div class="gex-customer-history-heading">
+            <span class="gex-customer-history-caption">@(ShowInvoices ? "فاکتورهای مشتری" : "گردش حساب مشتری")</span>
+            <h2>@CustomerName</h2>
+            <p>@(ShowInvoices ? "فهرست فاکتورها و جزئیات پرداخت" : "تراکنش‌های حساب با امکان جستجو و فیلتر")</p>
+        </div>
+    </header>
+    <main class="gex-customer-history-content">
+        @if (ShowInvoices)
+        {
+            <InvoicesList CustomerId="@CustomerId" Class="gex-customer-invoice-list" />
+        }
+        else if (CustomerId.HasValue)
+        {
+            <CustomerLedgerDirectory CustomerId="@CustomerId.Value" />
+        }
+    </main>
+    <footer class="gex-customer-history-actions">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Close" OnClick="Close">بستن</MudButton>
+    </footer>
+</div>
+
+@code {
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public string CustomerName { get; set; } = string.Empty;
+    [Parameter] public bool ShowInvoices { get; set; }
+    private void Close() => Session?.Cancel();
+}
