@@ -416,6 +416,7 @@ internal static class ServiceCollectionExtensions
         internal IServiceCollection AddClientServices()
         {
             services.AddScoped<HelpContext>();
+            services.AddScoped<ResponsiveDialogService>();
             services.AddScoped<LicenseState>();
             services.AddScoped<WebAuthnService>();
 

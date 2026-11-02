@@ -40,7 +40,7 @@ public static class WebHostingExtensions
             builder.Services
                 .AddClientServerServices()
                 .AddServer(configuration)
-                .AddApplication().AddHostedServices()
+                .AddApplication().AddHostedServices(builder.Environment)
                 .AddInfrastructure(configuration);
 
             builder.Services.AddScoped<IPriceNotificationPublisher, SignalRPriceNotificationPublisher>();
@@ -292,6 +292,9 @@ public static class WebHostingExtensions
 
         public async Task InitializeLicenseAsync()
         {
+            if (app.Environment.IsDevelopment())
+                return;
+
             using var scope = app.Services.CreateScope();
 
             var licenseStore = scope.ServiceProvider.GetRequiredService<ILicenseStore>();

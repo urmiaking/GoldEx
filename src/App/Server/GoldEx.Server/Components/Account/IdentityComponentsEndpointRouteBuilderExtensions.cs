@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Components.Account;
 
@@ -36,8 +37,12 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
         accountGroup.MapGet($"/{ApiRoutes.Account.Logout}", async (
             SignInManager<AppUser> signInManager,
+            HttpContext context,
+            INotificationPushRepository subscriptions,
             [FromQuery] string? returnUrl = null) =>
         {
+            if (Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                await subscriptions.RevokeUserAsync(userId, context.RequestAborted);
             await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl ?? ""}");
         }).DisableAntiforgery();

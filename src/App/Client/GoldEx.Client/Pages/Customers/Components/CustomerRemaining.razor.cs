@@ -18,6 +18,7 @@ public partial class CustomerRemaining
     [Parameter] public string? ItemClass { get; set; }
     [Parameter] public decimal? AddedValue { get; set; }
     [Parameter] public bool EnableManualSlide { get; set; }
+    [Parameter] public bool ShowStatus { get; set; }
     [Parameter] public DateTime? UntilDate { get; set; }
     [Parameter] public Guid? InvoiceId { get; set; }
 
@@ -146,7 +147,10 @@ public partial class CustomerRemaining
             calculationAmount += AddedValue!.Value;
 
         var absoluteAmount = Math.Abs(calculationAmount);
-        return absoluteAmount.ToCurrencyFormat(remaining.PriceUnit);
+        var formatted = absoluteAmount.ToCurrencyFormat(remaining.PriceUnit);
+        if (!ShowStatus) return formatted;
+        var status = calculationAmount switch { > 0 => "بدهکار", < 0 => "بستانکار", _ => "تسویه" };
+        return $"{status}: {formatted}";
     }
 
 

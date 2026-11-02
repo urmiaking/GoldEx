@@ -1,36 +1,22 @@
-@using GoldEx.Shared.Routings
-
-@inherits GoldExComponentBase
-
-@code {
-    [Parameter] public string? Class { get; set; }
-}
-
-<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@($"mobile-navigation-bar {Class}")">
-    <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
-        <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">
-            خانه
-        </MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
-            محاسبه گر
-        </MudNavLink>
-        <AuthorizeView>
-            <Authorized>
-                <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Success">
-                    فاکتورها
-                </MudNavLink>
-                <MudNavLink Href="@ClientRoutes.InventoryStocks.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Error">
-                    اجناس من
-                </MudNavLink>
-                <MudNavLink Href="@ClientRoutes.Customers.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Tertiary">
-                    مشتریان
-                </MudNavLink>
-            </Authorized>
-            <NotAuthorized>
-                <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
-                    درباره ما
-                </MudNavLink>
-            </NotAuthorized>
-        </AuthorizeView>
-    </MudNavMenu>
-</MudAppBar>
+<AuthorizeView>
+    <Authorized>
+        <nav class="gex-bottom-nav" aria-label="ناوبری موبایل">
+            <NavLink href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"><ShellIcon Name="home" /><span>خانه</span></NavLink>
+            <NavLink href="@ClientRoutes.Calculator.Index"><ShellIcon Name="calculator" /><span>محاسبه‌گر</span></NavLink>
+            <AuthorizeView Roles="@($"{BuiltinRoles.Administrators},{BuiltinRoles.Owners}")" Context="createAccess">
+                <Authorized><QuickCreateMenu /></Authorized>
+                <NotAuthorized><a href="@ClientRoutes.UserAccounts.Index" class="gex-bottom-create"><span class="gex-create-circle"><ShellIcon Name="user" /></span><span>حساب من</span></a></NotAuthorized>
+            </AuthorizeView>
+            <NavLink href="@ClientRoutes.Customers.Index"><ShellIcon Name="users" /><span>مشتریان</span></NavLink>
+            <NavLink href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"><ShellIcon Name="file" /><span>فاکتورها</span></NavLink>
+        </nav>
+    </Authorized>
+    <NotAuthorized>
+        <nav class="gex-bottom-nav gex-bottom-nav--guest" aria-label="ناوبری موبایل">
+            <NavLink href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"><ShellIcon Name="home" /><span>خانه</span></NavLink>
+            <NavLink href="@ClientRoutes.Calculator.Index"><ShellIcon Name="calculator" /><span>محاسبه‌گر</span></NavLink>
+            <a href="@ClientRoutes.Accounts.Login"><ShellIcon Name="user" /><span>ورود</span></a>
+            <NavLink href="@ClientRoutes.About.Index"><ShellIcon Name="info" /><span>دربارهٔ ما</span></NavLink>
+        </nav>
+    </NotAuthorized>
+</AuthorizeView>

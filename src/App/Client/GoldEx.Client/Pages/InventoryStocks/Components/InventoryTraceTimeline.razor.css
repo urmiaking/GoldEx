@@ -1,0 +1,37 @@
+
+/* Single compact visual row for event, amount, time and linked document. */
+.stock-history { padding:10px 12px; border:1px solid var(--mud-palette-lines-default); border-radius:13px; background:var(--mud-palette-surface); }
+.stock-history-title { display:flex; align-items:center; gap:7px; margin:0 0 8px; font-size:.875rem; font-weight:500; color:var(--mud-palette-text-primary); }
+.stock-history-title .gex-shell-icon { width:17px; height:17px; color:var(--mud-palette-primary); }
+.stock-history-list { display:grid; gap:6px; padding:0; margin:0; list-style:none; }
+.stock-history-entry { display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:10px; border:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-background); }
+.stock-history-marker { display:grid; place-items:center; flex:none; width:27px; height:27px; border-radius:9px; background:color-mix(in srgb,var(--mud-palette-success) 13%,var(--mud-palette-surface)); color:var(--mud-palette-success); }
+.stock-history-entry.is-out .stock-history-marker { background:color-mix(in srgb,var(--mud-palette-error) 12%,var(--mud-palette-surface)); color:var(--mud-palette-error); }
+.stock-history-marker .gex-shell-icon { width:15px; height:15px; }
+.stock-history-entry-main { flex:1; min-width:0; display:grid; gap:3px; }
+.stock-history-line { display:flex; align-items:center; flex-wrap:wrap; gap:5px 11px; min-width:0; }
+.stock-history-action { font-size:.75rem; font-weight:500; color:var(--mud-palette-success); }
+.stock-history-entry.is-out .stock-history-action { color:var(--mud-palette-error); }
+.stock-history-line strong { font-size:.8125rem; font-weight:600; color:var(--mud-palette-text-primary); }
+.stock-history-line time { margin-inline-start:auto; color:var(--mud-palette-text-secondary); font-size:.75rem; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.stock-history-entry-main p { margin:0; color:var(--mud-palette-text-secondary); line-height:1.6; font-size:.75rem; }
+.stock-history-source { display:inline-flex; flex:none; align-items:center; justify-content:center; gap:5px; min-height:28px; padding:4px 7px; border:1px solid color-mix(in srgb,var(--mud-palette-info) 27%,var(--mud-palette-lines-default)); border-radius:8px; background:color-mix(in srgb,var(--mud-palette-info) 9%,var(--mud-palette-surface)); color:var(--mud-palette-info); font:inherit; font-size:.75rem; font-weight:500; line-height:1.1; cursor:pointer; transition:background .16s ease,border-color .16s ease; }
+.stock-history-source:hover { background:color-mix(in srgb,var(--mud-palette-info) 16%,var(--mud-palette-surface)); border-color:var(--mud-palette-info); }
+.stock-history-source:focus-visible { outline:2px solid var(--mud-palette-info); outline-offset:2px; }
+.stock-history-source .gex-shell-icon { width:14px; height:14px; }
+.stock-history-pagination { display:flex; justify-content:center; align-items:center; gap:12px; padding:7px; font-size:.8125rem; }
+.stock-history-pagination button,.stock-history-message button { border:1px solid var(--mud-palette-lines-default); border-radius:8px; padding:5px 10px; background:var(--mud-palette-surface); color:var(--mud-palette-primary); cursor:pointer; }
+.stock-history-pagination button:disabled { opacity:.4; cursor:default; }
+.stock-history-message { padding:14px; color:var(--mud-palette-text-secondary); font-size:.8125rem; }
+.stock-history-loading { display:grid; gap:9px; padding:12px; }
+
+.stock-history-loading .stock-skeleton {
+    display:block; height:12px; border-radius:8px; width:74%;
+    background:linear-gradient(95deg,var(--mud-palette-background) 20%,var(--mud-palette-lines-default) 45%,var(--mud-palette-background) 70%);
+    background-size:200% 100%; animation:stock-history-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes stock-history-shimmer { to { background-position-x:-200%; } }
+@media(max-width:959.98px) { .stock-history { margin:7px; padding:9px; } .stock-history-entry { padding:7px; gap:7px; } .stock-history-line { gap:5px 8px; } }
+@media(prefers-reduced-motion:reduce) { .stock-history-loading .stock-skeleton { animation:none; } }
+
+@media(prefers-reduced-motion:reduce) { .stock-history-source { transition:none; } }

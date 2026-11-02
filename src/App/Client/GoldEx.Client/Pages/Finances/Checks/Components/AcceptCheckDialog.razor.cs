@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.DTOs.CheckPayments;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Prices;
@@ -12,6 +13,7 @@ namespace GoldEx.Client.Pages.Finances.Checks.Components;
 public partial class AcceptCheckDialog
 {
     [Parameter, EditorRequired] public GetCheckPaymentListResponse Check { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Inject] public IPriceService PriceService { get; set; } = default!;
 
@@ -238,7 +240,7 @@ public partial class AcceptCheckDialog
         _selectedAccount = account;
     }
 
-    private void Close() => Dialog.Cancel();
+    private void Close() { if (Session is not null) Session.Cancel(); else Dialog.Cancel(); }
 
     private async Task Submit()
     {
@@ -263,7 +265,7 @@ public partial class AcceptCheckDialog
 
         await SendRequestAsync<ICheckPaymentService>(
             action: (s, ct) => s.AcceptAsync(Check.Id, request, ct),
-            afterSend: () => { Dialog.Close(DialogResult.Ok(true)); return Task.CompletedTask; },
+            afterSend: () => { if (Session is not null) Session.Close(true); else Dialog.Close(DialogResult.Ok(true)); return Task.CompletedTask; },
             onFailure: () => {
                 _processing = false;
                 StateHasChanged();

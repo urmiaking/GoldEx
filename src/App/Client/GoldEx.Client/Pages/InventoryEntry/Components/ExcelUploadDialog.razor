@@ -1,6 +1,7 @@
-﻿@inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
 
-<MudDialog>
+<EditorDialogFrame>
     <DialogContent>
         @if (_processing)
         {
@@ -128,12 +129,12 @@
     <DialogActions>
         @if (_response is null)
         {
-            <MudButton Color="Color.Error"
+            <MudButton Color="Color.Default"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
 
-            <MudButton Class="m-2"
+            <MudButton
                        Color="Color.Primary"
                        Disabled="@(!_fileReady || _processing)"
                        StartIcon="@Icons.Material.Filled.Save"
@@ -151,11 +152,4 @@
             </MudButton>
         }
     </DialogActions>
-</MudDialog>
-
-<style>
-    .mud-dialog-content {
-        display: flex;
-        flex-direction: column;
-    }
-</style>
+</EditorDialogFrame>

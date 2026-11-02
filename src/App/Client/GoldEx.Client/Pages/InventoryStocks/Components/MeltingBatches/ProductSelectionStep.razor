@@ -1,4 +1,4 @@
-﻿<div class="d-flex justify-start pr-2 py-3">
+<div class="melting-step-help">
     <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
     <MudText Class="me-2" Typo="Typo.body2">
         در اولین قدم از فرایند ذوب، ابتدا باید اجناس مستعمل خریداری شده از مشتریان را جهت وارد کردن به چرخه ذوب انتخاب کنید و سپس آن ها را به آزمایشگاه جهت ری گیری ارسال کنید.
@@ -13,14 +13,13 @@
                     SelectableTypes="[ItemType.UsedProduct]"
                     SelectedItemsChanged="OnSelectedItemsChanged" />
 
-<MudPaper Elevation="0" Class="d-flex justify-content-between align-center flex-wrap mt-4 p-2">
-    <MudText Class="m-2">تعداد اقلام انتخابی: @Model.Products.Count</MudText>
-    <MudText Class="m-2">وزن کل: @(Model.TotalWeight?.ToWeightFormat(Model.WeightUnitType) ?? "0")</MudText>
+<MudPaper Elevation="0" Class="melting-step-footer">
+    <div class="melting-step-stats"><span>تعداد انتخابی: <strong>@Model.Products.Count</strong></span><span>وزن کل: <strong>@(Model.TotalWeight?.ToWeightFormat(Model.WeightUnitType) ?? "0")</strong></span></div>
     <MudButton Variant="Variant.Filled"
                Color="Color.Success"
                OnClick="OnMeltingProducts"
                Disabled="@(!Model.Products.Any() || Processing)"
-               EndIcon="@Icons.Material.Filled.ArrowBack">
+               StartIcon="@Icons.Material.Filled.Check">
         @if (Processing)
         {
             <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />

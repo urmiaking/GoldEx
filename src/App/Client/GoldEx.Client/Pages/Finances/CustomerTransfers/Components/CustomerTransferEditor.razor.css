@@ -1,0 +1,29 @@
+.transfer-editor-form { min-width:0; color:var(--mud-palette-text-primary); }
+.transfer-editor-form ::deep .mud-input-control { min-width:0; }
+.transfer-editor-form ::deep .transfer-editor-preview { border:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-background); border-radius:16px; margin-bottom:7px; }
+.transfer-editor-form ::deep .transfer-editor-preview > .mud-grid { align-items:stretch; }
+.transfer-editor-form ::deep .transfer-editor-account { height:100%; min-width:0; border:1px solid var(--mud-palette-lines-default); border-radius:13px; background:var(--mud-palette-surface); text-align:start; }
+.transfer-editor-form ::deep .transfer-editor-account--source { border-inline-start:3px solid var(--mud-palette-error); }
+.transfer-editor-form ::deep .transfer-editor-account--destination { border-inline-start:3px solid var(--mud-palette-success); }
+.transfer-editor-form ::deep .transfer-editor-account .mud-typography-subtitle2 { font-weight:600 !important; line-height:1.7; overflow-wrap:anywhere; }
+.transfer-editor-form ::deep .transfer-editor-account .mud-typography-caption { line-height:1.65; overflow-wrap:anywhere; }
+.transfer-editor-form ::deep .transfer-editor-account .rounded { background:var(--mud-palette-background) !important; padding:8px !important; border-radius:10px !important; }
+.transfer-editor-form ::deep .transfer-editor-account .d-flex.justify-space-between { gap:8px; flex-wrap:wrap; }
+.transfer-editor-form ::deep .transfer-editor-date .mud-input-root { direction:rtl; }
+.transfer-editor-form ::deep .transfer-editor-date .mud-input-adornment { order:-1; margin-inline-start:0; margin-inline-end:8px; }
+.transfer-editor-form ::deep .mud-autocomplete { min-width:0; flex:1 1 auto; }
+.transfer-editor-form ::deep .mud-grid-item > .d-flex.align-center { min-width:0; }
+.transfer-editor-form ::deep .mud-grid-item > .d-flex.align-center .mud-input-control { min-width:0; flex:1 1 auto; }
+.transfer-editor-form ::deep .mud-grid-item > .d-flex.align-center > .mud-icon-button { flex:none; }
+@media(max-width:699px) {
+ .transfer-editor-form ::deep .transfer-editor-preview { padding:12px !important; }
+ .transfer-editor-form ::deep .transfer-editor-account { padding:10px !important; }
+ .transfer-editor-form ::deep .transfer-editor-preview .mud-stack { flex-direction:row; gap:7px; }
+ .transfer-editor-form ::deep .transfer-editor-preview .mud-typography-subtitle2 { font-size:.875rem; }
+ .transfer-editor-form ::deep .transfer-editor-preview .mud-typography-caption { font-size:.75rem; }
+}
+.transfer-editor-section { display:flex; align-items:center; gap:8px; margin:7px 0 0; padding-bottom:8px; border-bottom:1px solid var(--mud-palette-lines-default); color:var(--mud-palette-text-primary); font-size:.9rem; font-weight:600; }
+.transfer-editor-section ::deep .mud-icon-root { color:var(--mud-palette-primary); }
+@media(max-width:699px) {
+ .transfer-editor-form ::deep .transfer-editor-preview .mud-grid-item:nth-child(2) .mud-icon-root { transform:rotate(-90deg); }
+}

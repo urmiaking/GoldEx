@@ -6,6 +6,7 @@ namespace GoldEx.Client.Pages.UserAccounts;
 
 public partial class Index
 {
+    private bool _showSystemDetails;
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),

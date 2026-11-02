@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.Components;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Finances.CustomerTransfers.Validators;
@@ -18,7 +19,9 @@ namespace GoldEx.Client.Pages.Finances.CustomerTransfers.Components;
 
 public partial class CustomerTransferEditor
 {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public CustomerTransferVoucherVm Model { get; set; } = new();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
@@ -315,12 +318,14 @@ public partial class CustomerTransferEditor
 
     private async Task OnAddCustomer(string title)
     {
-        var parameters = new DialogParameters<Editor>
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.Model, new CustomerVm() }
+            [nameof(Editor.Model)] = new CustomerVm(),
+            [nameof(Editor.ReturnModel)] = true,
+            [nameof(Editor.ShowFinancialAccounts)] = false
         };
 
-        var dialog = await DialogService.ShowAsync<Editor>($"ثبت {title} جدید", parameters);
+        var dialog = ResponsiveDialogs.Show<Editor>($"ثبت {title} جدید", parameters, wide: true);
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CustomerVm newCustomer })
@@ -403,7 +408,7 @@ public partial class CustomerTransferEditor
                 afterSend: () =>
                 {
                     AddSuccessToast("سند حواله با موفقیت ثبت شد.");
-                    MudDialog.Close(DialogResult.Ok(true));
+                    Complete();
                     return Task.CompletedTask;
                 });
         }
@@ -428,7 +433,7 @@ public partial class CustomerTransferEditor
                 afterSend: () =>
                 {
                     AddSuccessToast("سند حواله با موفقیت به روزرسانی شد.");
-                    MudDialog.Close(DialogResult.Ok(true));
+                    Complete();
                     return Task.CompletedTask;
                 });
         }
@@ -436,7 +441,18 @@ public partial class CustomerTransferEditor
         _processing = false;
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Complete()
+    {
+        if (Session is not null) Session.Close(true);
+        else MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        if (_processing) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
 }
 
 public static class CustomerTransferVoucherVmExtensions

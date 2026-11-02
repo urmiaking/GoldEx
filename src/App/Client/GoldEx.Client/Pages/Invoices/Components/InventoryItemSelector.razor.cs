@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
@@ -23,6 +24,8 @@ public partial class InventoryItemSelector
     [Parameter] public ItemType[] SelectableTypes { get; set; } = [];
     [Parameter, EditorRequired] public GetPriceUnitTitleResponse PriceUnit { get; set; } = null!;
     [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    private bool _submitting;
 
     private List<ProductVm>? _products;
     private List<CoinInstanceVm>? _coins;
@@ -36,7 +39,11 @@ public partial class InventoryItemSelector
             return;
 
         _selectedItems = items.ToList();
+        _products = null;
+        _coins = null;
+        _currencies = null;
 
+        if (items.Count == 0) return;
         if (items.All(x => x.Product is not null))
         {
             _products = items.Select(x => x.Product!).ToList();
@@ -53,6 +60,10 @@ public partial class InventoryItemSelector
 
     public async Task OnSubmit()
     {
+        if (_submitting || _selectedItems is not { Count: > 0 }) return;
+        _submitting = true;
+        try
+        {
         if (_products is not null)
         {
             var productItemTasks = _products.Select(async product =>
@@ -80,7 +91,7 @@ public partial class InventoryItemSelector
 
             var productItems = (await Task.WhenAll(productItemTasks)).ToList();
 
-            Dialog.Close(productItems);
+            Complete(productItems);
         }
 
         else if (_coins is not null)
@@ -99,7 +110,7 @@ public partial class InventoryItemSelector
 
             var coinItems = (await Task.WhenAll(coinItemTasks)).ToList();
 
-            Dialog.Close(coinItems);
+            Complete(coinItems);
         }
 
         else if (_currencies is not null)
@@ -127,11 +138,13 @@ public partial class InventoryItemSelector
 
             var currencyItems = (await Task.WhenAll(currencyItemTasks)).ToList();
 
-            Dialog.Close(currencyItems);
+            Complete(currencyItems);
         }
 
         else
             Close();
+        }
+        finally { _submitting = false; }
     }
 
     private async Task<GetFinancialAccountTitleResponse?> GetCurrencyFinancialAccountAsync(Guid currencyId)
@@ -184,5 +197,6 @@ public partial class InventoryItemSelector
         return coinPrice;
     }
 
-    private void Close() => Dialog.Close();
+    private void Complete<T>(T data) { if (Session is not null) Session.Close(data); else Dialog.Close(data); }
+    private void Close() { if (Session is not null) Session.Cancel(); else Dialog.Close(); }
 }

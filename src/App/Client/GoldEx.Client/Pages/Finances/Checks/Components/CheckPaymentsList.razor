@@ -1,146 +1,108 @@
+@using GoldEx.Shared.DTOs.CheckPayments
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
-
-<MudTable T="GetCheckPaymentListResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
-          Dense="true" ServerData="LoadChecksAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation"
-          RowClassFunc="GetRowClass">
-    <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Icon="@Icons.Material.Filled.Tune"
-                           Color="Color.Success"
-                           Variant="Variant.Filled"
-                           Class="mr-3"
-                           Size="Size.Small"
-                           OnClick="OpenMobileFilters" />
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
-            <MudSpacer />
-            
-            <!-- Date range picker -->
-            <MudDateRangePicker DateRange="@_filterDateRange"
-                                DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense"
-                                Variant="Variant.Outlined"
-                                Class="ml-3"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Rounded="true"
-                                ShowToolbar="false"
-                                Style="max-width: 320px;"
-                                PlaceholderStart="از"
-                                PlaceholderEnd="تا"
-                                Elevation="24"
-                                RelativeWidth="DropdownWidth.Adaptive"
-                                Label="تاریخ سررسید"
-                                Clearable="true"/>
-
-            <!-- Status dropdown -->
-            <MudButtonGroup Size="Size.Small" Color="@PaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@PaymentStatusIcon">
-                    @(_paymentStatus == null ? "وضعیت چک" : _paymentStatus.GetDisplayName())
-                </MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Pending)">@CheckPaymentStatus.Pending.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Accepted)">@CheckPaymentStatus.Accepted.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Error" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Returned)">@CheckPaymentStatus.Returned.GetDisplayName()</MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-        </MudHidden>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="IssuerFullName" T="GetCheckPaymentListResponse">صادرکننده</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Number" T="GetCheckPaymentListResponse">شماره چک</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="SayadiCode" T="GetCheckPaymentListResponse">شناسه صیادی</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="IssuerFinancialAccountName" T="GetCheckPaymentListResponse">حساب بانکی صادرکننده</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="DueDate" T="GetCheckPaymentListResponse">تاریخ سررسید</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Amount" T="GetCheckPaymentListResponse">مبلغ چک</MudTableSortLabel></MudTh>
-        <MudTh>شماره فاکتور</MudTh>
-        <MudTh>وضعیت</MudTh>
-        <MudTh>عملیات</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="صادرکننده">
-            <div class="d-flex flex-column">
-                <MudText Typo="Typo.body2">@context.IssuerFullName</MudText>
-                @if (!string.IsNullOrEmpty(context.IssuerPhoneNumber))
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.IssuerPhoneNumber</MudText>
-                }
-            </div>
-        </MudTd>
-        <MudTd DataLabel="شماره چک">@context.Number</MudTd>
-        <MudTd DataLabel="شناسه صیادی">@context.SayadiCode</MudTd>
-        <MudTd DataLabel="حساب بانکی صادرکننده">@context.IssuerFinancialAccountName</MudTd>
-        <MudTd DataLabel="تاریخ سررسید">@context.DueDate.ToShortDateString()</MudTd>
-        <MudTd DataLabel="مبلغ چک">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
-        <MudTd DataLabel="شماره فاکتور">
-            <div class="d-flex align-center gap-1">
-                <MudText Typo="Typo.body2">@context.InvoiceNumber</MudText>
-                <MudText Typo="Typo.caption" Color="@(context.InvoiceType == InvoiceType.Purchase ? Color.Success : Color.Error)">
-                    (@context.InvoiceType.GetDisplayName())
-                </MudText>
-            </div>
-        </MudTd>
-        <MudTd DataLabel="وضعیت">
-            <MudChip Size="Size.Small" T="string" Color="@GetStatusColor(context.CurrentStatus)" Variant="Variant.Filled">
-                @context.CurrentStatus.GetDisplayName()
-            </MudChip>
-        </MudTd>
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-1">
-                <MudTooltip Text="مشاهده جزئیات">
-                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Info" OnClick="() => OnViewCheck(context)" />
-                </MudTooltip>
-                @if (context.CurrentStatus == CheckPaymentStatus.Pending)
-                {
-                    <MudTooltip Text="وصول چک">
-                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Success" OnClick="() => OnAcceptCheck(context)" />
-                    </MudTooltip>
-                    <MudTooltip Text="برگشت چک">
-                        <MudIconButton Icon="@Icons.Material.Filled.Block" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Error" OnClick="() => OnReturnCheck(context)" />
-                    </MudTooltip>
-                }
-            </div>
-        </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText>هیچ چکی یافت نشد</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>در حال بارگیری</MudText>
-    </LoadingContent>
-    <PagerContent>
-        @{
-            var totalItems = _table.GetFilteredItemsCount();
-            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+<section class="finance-directory" aria-label="مدیریت چک‌ها">
+ <header class="finance-heading">
+  <div><h1>مدیریت چک‌ها <span class="finance-count">@(_loading ? "…" : $"{_total:N0} چک")</span></h1>
+   <p>پیگیری سررسید، وصول و برگشت چک‌های بانکی</p></div>
+ </header>
+ <div class="finance-filters"><div class="finance-toolbar">
+  <MudTextField T="string" Value="_searchString" ValueChanged="OnSearch" Immediate="true" DebounceInterval="450" Clearable="true"
+                Label="جستجوی چک" Placeholder="شماره چک، شناسه صیادی یا نام صادرکننده"
+                Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search" Variant="Variant.Outlined" Margin="Margin.Dense" />
+  <MudButton Variant="Variant.Outlined" Class="finance-filter-button" StartIcon="@Icons.Material.Outlined.Tune"
+             Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)" OnClick="OpenMobileFilters" aria-label="فیلتر چک‌ها">
+   <span class="finance-filter-label">فیلترها</span>
+   @if(ActiveFilterCount > 0){<span class="finance-filter-count">@ActiveFilterCount</span>}
+  </MudButton>
+  <MudSelect T="string" Class="finance-sort" Label="مرتب‌سازی بر اساس" Value="_sortLabel"
+             Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" ValueChanged="OnSortChanged">
+   <MudSelectItem Value="@("DueDate")">تاریخ سررسید</MudSelectItem>
+   <MudSelectItem Value="@("Amount")">مبلغ چک</MudSelectItem>
+   <MudSelectItem Value="@("IssuerFullName")">صادرکننده</MudSelectItem>
+   <MudSelectItem Value="@("Number")">شماره چک</MudSelectItem>
+  </MudSelect>
+  <div class="finance-sort-direction"><MudIconButton Icon="@(_sortDescending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                   OnClick="ToggleSortDirection" aria-label="تغییر جهت مرتب‌سازی" /></div>
+ </div></div>
+ <div class="finance-results" aria-busy="@_loading">
+  @if(_loading)
+  {
+   <div class="finance-skeleton" role="status" aria-label="در حال بارگذاری">@for(var i=0;i<5;i++){<span></span>}</div>
+  }
+  else if(_loadFailed || _items.Count == 0)
+  {
+   <div class="finance-empty">
+    <MudIcon Icon="@(_loadFailed ? Icons.Material.Outlined.ErrorOutline : Icons.Material.Outlined.Receipt)" />
+    <strong>@(_loadFailed ? "دریافت چک‌ها انجام نشد" : "چکی با این مشخصات یافت نشد")</strong>
+    <p>@(_loadFailed ? "اتصال را بررسی کنید." : "جستجو یا فیلتر را تغییر دهید.")</p>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(_loadFailed ? LoadAsync : ResetFilters)">
+     @(_loadFailed ? "تلاش دوباره" : "پاک کردن فیلترها")
+    </MudButton>
+   </div>
+  }
+  else
+  {
+   <div class="finance-desktop"><table class="finance-table">
+    <thead><tr><th>صادرکننده</th><th>شماره چک</th><th>صیادی</th><th>سررسید</th><th>مبلغ</th><th>فاکتور</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+    <tbody>
+     @foreach(var item in _items)
+     {
+      <tr @key="item.Id" class="@(IsOverdue(item) ? "finance-overdue" : "")">
+       <td><div class="finance-person"><strong>@item.IssuerFullName</strong><small>@item.IssuerPhoneNumber</small></div></td>
+       <td><span class="finance-number">@item.Number</span></td>
+       <td>@item.SayadiCode</td>
+       <td>@item.DueDate.ToShortDateString()</td>
+       <td><strong class="finance-money">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong></td>
+       <td>@item.InvoiceNumber <small>@item.InvoiceType.GetDisplayName()</small></td>
+       <td><span class="finance-status @StatusClass(item.CurrentStatus)">@item.CurrentStatus.GetDisplayName()</span></td>
+       <td><div class="finance-actions">
+        <button type="button" title="جزئیات چک" aria-label="جزئیات چک" @onclick="() => OnViewCheck(item)"><ShellIcon Name="eye" /></button>
+        @if(item.CurrentStatus == CheckPaymentStatus.Pending)
+        {
+         <button type="button" class="is-success" title="وصول چک" aria-label="وصول چک" @onclick="() => OnAcceptCheck(item)"><ShellIcon Name="check" /></button>
+         <button type="button" class="is-danger" title="برگشت چک" aria-label="برگشت چک" @onclick="() => OnReturnCheck(item)"><ShellIcon Name="close" /></button>
         }
-
-        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-4" style="gap: 1rem;">
-            <div class="mud-table-pagination-caption">
-                @infoText
-            </div>
-            <MudPagination SelectedChanged="PageChanged"
-                           Selected="@(_table.CurrentPage + 1)"
-                           Color="Color.Primary"
-                           Count="@pageCount"
-                           Class="justify-center"
-                           BoundaryCount="1"
-                           MiddleCount="3" />
-
-            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                @infoText
-            </div>
-        </div>
-    </PagerContent>
-</MudTable>
+       </div></td>
+      </tr>
+     }
+    </tbody>
+   </table></div>
+   <div class="finance-mobile">
+    @foreach(var item in _items)
+    {
+     <article class="finance-card @(IsOverdue(item) ? "finance-overdue" : "")" @key="item.Id">
+      <header><span class="finance-number">چک @item.Number</span><time>سررسید @item.DueDate.ToShortDateString()</time>
+       <span class="finance-status @StatusClass(item.CurrentStatus)">@item.CurrentStatus.GetDisplayName()</span></header>
+      <div class="finance-card-main">
+       <div class="finance-person"><small>صادرکننده</small><strong>@item.IssuerFullName</strong></div>
+       <strong class="finance-money">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong>
+      </div>
+      <div class="finance-card-meta">
+       <span>صیادی: @item.SayadiCode</span>
+       @if(item.InvoiceNumber > 0){ <span>فاکتور @item.InvoiceNumber</span> }
+      </div>
+      <footer><span>@item.IssuerFinancialAccountName</span><div class="finance-actions">
+       <button type="button" title="جزئیات چک" aria-label="جزئیات چک" @onclick="() => OnViewCheck(item)"><ShellIcon Name="eye" /></button>
+       @if(item.CurrentStatus == CheckPaymentStatus.Pending)
+       {
+        <button type="button" class="is-success" title="وصول چک" aria-label="وصول چک" @onclick="() => OnAcceptCheck(item)"><ShellIcon Name="check" /></button>
+        <button type="button" class="is-danger" title="برگشت چک" aria-label="برگشت چک" @onclick="() => OnReturnCheck(item)"><ShellIcon Name="close" /></button>
+       }
+      </div></footer>
+     </article>
+    }
+   </div>
+  }
+ </div>
+ <footer class="finance-pagination">
+  <label>تعداد ردیف<select value="@_pageSize" @onchange="ChangePageSize" aria-label="تعداد چک در صفحه">
+   <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+  </select></label>
+  <nav><button type="button" disabled="@(_loading || _pageIndex == 0)" @onclick="() => ChangePage(-1)">قبلی</button>
+   <span>@(_pageIndex + 1) از @PageCount</span>
+   <button type="button" disabled="@(_loading || _pageIndex + 1 >= PageCount)" @onclick="() => ChangePage(1)">بعدی</button>
+  </nav>
+ </footer>
+</section>

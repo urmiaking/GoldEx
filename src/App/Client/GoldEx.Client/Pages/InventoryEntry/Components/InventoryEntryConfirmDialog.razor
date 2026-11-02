@@ -1,0 +1,17 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-delete-confirm">
+            <MudIcon Icon="@Icons.Material.Outlined.WarningAmber" Color="@(Destructive ? Color.Error : Color.Warning)" Size="Size.Large" />
+            <h3>@(Destructive ? "تأیید حذف" : "تأیید عملیات")</h3>
+            <p>@Message</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Color="@(Destructive ? Color.Error : Color.Primary)" Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Check" OnClick="() => Session?.Close(true)">@ActionLabel</MudButton>
+    </DialogActions>
+</EditorDialogFrame>

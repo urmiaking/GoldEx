@@ -2,9 +2,5 @@
 
 @if (_hasHelp)
 {
-    <MudTooltip Text="راهنما" Arrow="true" Color="Color.Info">
-        <MudIconButton OnClick="@(OpenDialog)"
-                       Icon="@Icons.Material.Filled.Help"
-                       Color="@Color.Inherit" />
-    </MudTooltip>
+    <button type="button" class="gex-icon-button" aria-label="راهنمای این صفحه" title="راهنما" @onclick="OpenDialog"><ShellIcon Name="help" /></button>
 }

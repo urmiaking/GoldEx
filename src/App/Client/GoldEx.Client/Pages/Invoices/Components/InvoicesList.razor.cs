@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
@@ -7,6 +8,7 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
 
@@ -20,6 +22,7 @@ public partial class InvoicesList
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     [Parameter] public bool PersistState { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "page")] public int? PageQuery { get; set; }
@@ -29,67 +32,71 @@ public partial class InvoicesList
     [Parameter, SupplyParameterFromQuery(Name = "scale")] public string? ScaleQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "createdStart")] public string? CreatedStartQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "createdEnd")] public string? CreatedEndQuery { get; set; }
 
-    private bool _isFirstLoad = true;
-    private int _initialPage = 0;
+    private ElementReference _invoiceDirectory;
+    private ElementReference _invoiceFilters;
+    private IJSObjectReference? _stickyModule;
+    private IJSObjectReference? _stickyTracker;
 
-    public string? InvoiceTypeIcon => _invoiceType switch
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
-        InvoiceType.Purchase => Icons.Material.Filled.ArrowUpward,
-        null => Icons.Material.Filled.CompareArrows,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender) return;
 
-    public Color InvoiceTypeColor => _invoiceType switch
-    {
-        InvoiceType.Purchase => Color.Success,
-        InvoiceType.Sell => Color.Error,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        _stickyModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/invoice-sticky-header.js");
+        _stickyTracker = await _stickyModule.InvokeAsync<IJSObjectReference>(
+            "trackFilterHeight", _invoiceDirectory, _invoiceFilters);
+    }
 
-    public string? TradeScaleIcon => _tradeScale switch
+    public override async ValueTask DisposeAsync()
     {
-        TradeScale.Wholesale => Icons.Material.Filled.Apps,
-        TradeScale.Retail => Icons.Material.Filled.Square,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color TradeScaleColor => _tradeScale switch
-    {
-        TradeScale.Wholesale => Color.Primary,
-        TradeScale.Retail => Color.Success,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public string? InvoicePaymentStatusIcon => _invoicePaymentStatus switch
-    {
-        InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
-        InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
-        InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
-    public Color InvoicePaymentStatusColor => _invoicePaymentStatus switch
-    {
-        InvoicePaymentStatus.Paid => Color.Success,
-        InvoicePaymentStatus.HasDebt => Color.Primary,
-        InvoicePaymentStatus.Overdue => Color.Error,
-        null => Color.Info,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        try
+        {
+            if (_stickyTracker is not null)
+            {
+                await _stickyTracker.InvokeVoidAsync("dispose");
+                await _stickyTracker.DisposeAsync();
+            }
+            if (_stickyModule is not null)
+                await _stickyModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        finally { await base.DisposeAsync(); }
+    }
+    private bool _initialized, _loading, _loadFailed;
+    private int _pageIndex, _pageSize = 10, _totalItems;
+    private string _sortLabel = "CreatedAt";
+    private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
+    private List<InvoiceListVm> _invoices = [];
 
     private InvoicePaymentStatus? _invoicePaymentStatus;
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private string? _searchString;
-    private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
+    private DateRange _filterCreatedDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+    [Parameter, SupplyParameterFromQuery(Name = "size")] public int? SizeQuery { get; set; }
+
+    private int PageCount => Math.Max(1, (_totalItems + _pageSize - 1) / _pageSize);
+    private int ActiveFilterCount => (_invoicePaymentStatus.HasValue ? 1 : 0) +
+        (_invoiceType.HasValue ? 1 : 0) + (_tradeScale.HasValue ? 1 : 0) +
+        (_filterDateRange.Start.HasValue || _filterDateRange.End.HasValue ? 1 : 0) +
+        (_filterCreatedDateRange.Start.HasValue || _filterCreatedDateRange.End.HasValue ? 1 : 0);
+    private bool CanPrevious => !_loading && _pageIndex > 0;
+    private bool CanNext => !_loading && _pageIndex + 1 < PageCount;
+    private string FilterButtonLabel => ActiveFilterCount == 0 ? "فیلتر فاکتورها" : $"فیلتر فاکتورها، {ActiveFilterCount} فیلتر فعال";
+
+    private string UnpaidClass(InvoiceListVm invoice)
+    {
+        if (invoice.PaymentStatus == InvoicePaymentStatus.Paid) return "is-paid";
+        if (invoice.PaymentStatus == InvoicePaymentStatus.Overdue) return "is-overdue";
+        var color = GetUnpaidAmountColor(invoice.TotalUnpaidAmount, invoice.InvoiceType);
+        return color == Color.Success ? "is-credit" : color == Color.Error ? "is-debit" : "";
+    }
 
     private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? totalUnpaidSecondaryAmount, string? secondaryUnit)
     {
@@ -113,67 +120,124 @@ public partial class InvoicesList
         };
     }
 
-    private async Task<TableData<InvoiceListVm>> LoadInvoicesAsync(TableState state, CancellationToken cancellationToken = default)
+    private async Task LoadInvoicesAsync()
     {
-        var result = new TableData<InvoiceListVm>();
+        _loading = true;
+        _loadFailed = false;
+        // Let the skeleton render before awaiting the server request; otherwise
+        // quick navigation can keep the previous page looking frozen.
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
 
-        if (_isFirstLoad && PersistState)
+        try
         {
-            _isFirstLoad = false;
-            state.Page = _initialPage;
-        }
-
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-            state.SortDirection switch
-            {
-                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                _ => throw new ArgumentOutOfRangeException()
-            });
-
-        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale, _filterDateRange.Start, _filterDateRange.End);
-
-        await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
-            afterSend: response =>
-            {
-                var items = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
-                result = new TableData<InvoiceListVm>
+            var filter = new RequestFilter(_pageIndex * _pageSize, _pageSize, _searchString,
+                _sortLabel, _sortDirection);
+            var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale,
+                _filterDateRange.Start, _filterDateRange.End,
+                _filterCreatedDateRange.Start, _filterCreatedDateRange.End);
+            await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
+                action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
+                afterSend: response =>
                 {
-                    TotalItems = response.Total,
-                    Items = items
-                };
-            },
-            createScope: true,
-            cancelPrevious: true
-        );
-
-        if (PersistState)
-        {
-            UpdateUrl(state.Page);
+                    _invoices = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
+                    _totalItems = response.Total;
+                },
+                onFailure: () => { _loadFailed = true; },
+                createScope: true,
+                cancelPrevious: true);
+            if (!_loadFailed && _pageIndex >= PageCount)
+            {
+                _pageIndex = PageCount - 1;
+                await LoadInvoicesAsync();
+                return;
+            }
+            if (!_loadFailed && PersistState) UpdateUrl(_pageIndex);
         }
-
-        return result;
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task OnSearch(string text)
     {
+        if (_searchString == text) return;
         _searchString = text;
-
-        if (_table.CurrentPage != 0)
-            _table.NavigateTo(0);
-
-        else
-            await _table.ReloadServerData();
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
 
-    private void PageChanged(int i)
+    private string SortIndicator(string label)
     {
-        if (i <= 0)
-            return;
+        if (_sortLabel != label) return "↕";
+        return _sortDirection == Sdk.Common.Definitions.SortDirection.Ascending ? "↑" : "↓";
+    }
 
-        _table.NavigateTo(i - 1);
+    private async Task ClearAllSearchAndFilters()
+    {
+        _searchString = string.Empty;
+        _invoiceType = null;
+        _tradeScale = null;
+        _invoicePaymentStatus = null;
+        _filterDateRange = new DateRange();
+        _filterCreatedDateRange = new DateRange();
+        await RefreshAsync();
+    }
+    private async Task ChangePage(int delta)
+    {
+        var nextPage = _pageIndex + delta;
+        if (_loading || nextPage < 0 || nextPage >= PageCount || nextPage == _pageIndex) return;
+        _pageIndex = nextPage;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ChangePageSize(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var size) || size is not (10 or 25 or 50) || size == _pageSize) return;
+        _pageSize = size;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ChangeSort(string label)
+    {
+        if (_sortLabel == label)
+            _sortDirection = _sortDirection == Sdk.Common.Definitions.SortDirection.Descending
+                ? Sdk.Common.Definitions.SortDirection.Ascending
+                : Sdk.Common.Definitions.SortDirection.Descending;
+        else
+            _sortLabel = label;
+
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task OnSortChanged(string label)
+    {
+        if (string.IsNullOrEmpty(label) || _sortLabel == label) return;
+        _sortLabel = label;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ToggleSortDirection()
+    {
+        _sortDirection = _sortDirection == Sdk.Common.Definitions.SortDirection.Descending
+            ? Sdk.Common.Definitions.SortDirection.Ascending
+            : Sdk.Common.Definitions.SortDirection.Descending;
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        _invoiceType = null;
+        _tradeScale = null;
+        _invoicePaymentStatus = null;
+        _filterDateRange = new DateRange();
+        await RefreshAsync();
     }
 
     public void OnCreateInvoice(TradeScale tradeScale)
@@ -189,14 +253,14 @@ public partial class InvoicesList
             { x => x.InvoiceNumber, model.InvoiceNumber }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف فاکتور", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Remove>("حذف فاکتور", new Dictionary<string, object> { [nameof(Remove.Id)] = model.Id, [nameof(Remove.InvoiceNumber)] = model.InvoiceNumber });
 
         var result = await dialog.Result;
 
         if (result is { Canceled: false })
         {
             AddSuccessToast("فاکتور با موفقیت حذف شد.");
-            await RefreshAsync();
+            await ReloadAsync();
         }
     }
 
@@ -240,9 +304,11 @@ public partial class InvoicesList
 
     private async Task RefreshAsync()
     {
-        await _table.ReloadServerData();
-        StateHasChanged();
+        _pageIndex = 0;
+        await LoadInvoicesAsync();
     }
+
+    private Task ReloadAsync() => LoadInvoicesAsync();
 
     private static DateTime GetInvoicePostingDate(InvoiceListVm context)
     {
@@ -256,42 +322,40 @@ public partial class InvoicesList
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
     }
 
-    private void ShowDetails(TableRowClickEventArgs<InvoiceListVm> args)
+    private void ToggleDetails(InvoiceListVm invoice)
     {
-        var invoice = _table.FilteredItems.FirstOrDefault(b => b.Id == args.Item?.Id);
-        if (invoice is not null)
-        {
-            invoice.ShowDetails = !invoice.ShowDetails;
-        }
+        invoice.ShowDetails = !invoice.ShowDetails;
     }
 
     #region Mobile filters
 
     public record InvoicesMobileFiltersResult(
             DateRange DateRange,
+            DateRange CreatedDateRange,
             InvoiceType? InvoiceType,
             TradeScale? TradeScale,
-            InvoicePaymentStatus? PaymentStatus
+            InvoicePaymentStatus? PaymentStatus,
+            string SortLabel,
+            bool SortDescending
     );
 
     private async Task OpenMobileFilters()
     {
-        var parameters = new DialogParameters<InvoiceFiltersDialog>
+        // Match the customer editor's responsive native dialog, preserving
+        // mobile sorting and the independent desktop toolbar state.
+        var parameters = new Dictionary<string, object>
         {
-            { x => x.DateRange, _filterDateRange },
-            { x => x.InvoiceTypeParam, _invoiceType },
-            { x => x.TradeScaleParam, _tradeScale },
-            { x => x.PaymentStatus, _invoicePaymentStatus }
+            { nameof(InvoiceFiltersDialog.DateRange), _filterDateRange },
+            { nameof(InvoiceFiltersDialog.CreatedDateRange), _filterCreatedDateRange },
+            { nameof(InvoiceFiltersDialog.InvoiceTypeParam), _invoiceType! },
+            { nameof(InvoiceFiltersDialog.TradeScaleParam), _tradeScale! },
+            { nameof(InvoiceFiltersDialog.PaymentStatus), _invoicePaymentStatus! },
+            { nameof(InvoiceFiltersDialog.SortLabel), _sortLabel },
+            { nameof(InvoiceFiltersDialog.SortDescending),
+              _sortDirection == Sdk.Common.Definitions.SortDirection.Descending }
         };
 
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.Small
-        };
-
-        var dialog = await DialogService.ShowAsync<InvoiceFiltersDialog>("فیلترها", parameters, options);
+        var dialog = ResponsiveDialogs.Show<InvoiceFiltersDialog>("فیلتر فاکتورها", parameters);
         var result = await dialog.Result;
 
         if (result is { Canceled: false } && result.Data is InvoicesMobileFiltersResult filterResult)
@@ -303,9 +367,14 @@ public partial class InvoicesList
     private async Task ApplyMobileFilters(InvoicesMobileFiltersResult result)
     {
         _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+        _filterCreatedDateRange = new DateRange(result.CreatedDateRange.Start, result.CreatedDateRange.End);
         _invoiceType = result.InvoiceType;
         _tradeScale = result.TradeScale;
         _invoicePaymentStatus = result.PaymentStatus;
+        _sortLabel = result.SortLabel;
+        _sortDirection = result.SortDescending
+            ? Sdk.Common.Definitions.SortDirection.Descending
+            : Sdk.Common.Definitions.SortDirection.Ascending;
 
         await RefreshAsync();
     }
@@ -363,73 +432,41 @@ public partial class InvoicesList
                 newEnd = parsedEnd;
             }
 
-            bool changed = false;
+            DateTime? newCreatedStart = null;
+            if (!string.IsNullOrWhiteSpace(CreatedStartQuery) &&
+                DateTime.TryParseExact(CreatedStartQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedCreatedStart))
+                newCreatedStart = parsedCreatedStart;
 
-            if (_searchString != newSearch)
+            DateTime? newCreatedEnd = null;
+            if (!string.IsNullOrWhiteSpace(CreatedEndQuery) &&
+                DateTime.TryParseExact(CreatedEndQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedCreatedEnd))
+                newCreatedEnd = parsedCreatedEnd;
+
+            var newSize = SizeQuery is 10 or 25 or 50 ? SizeQuery.Value : 10;
+            var changed = _searchString != newSearch || _invoicePaymentStatus != newStatus ||
+                _invoiceType != newType || _tradeScale != newScale ||
+                _filterDateRange.Start != newStart || _filterDateRange.End != newEnd ||
+                _filterCreatedDateRange.Start != newCreatedStart || _filterCreatedDateRange.End != newCreatedEnd ||
+                _pageSize != newSize || _pageIndex != newPage;
+            if (!_initialized || changed)
             {
                 _searchString = newSearch;
-                changed = true;
-            }
-
-            if (_invoicePaymentStatus != newStatus)
-            {
                 _invoicePaymentStatus = newStatus;
-                changed = true;
-            }
-
-            if (_invoiceType != newType)
-            {
                 _invoiceType = newType;
-                changed = true;
-            }
-
-            if (_tradeScale != newScale)
-            {
                 _tradeScale = newScale;
-                changed = true;
-            }
-
-            if (_filterDateRange?.Start != newStart || _filterDateRange?.End != newEnd)
-            {
                 _filterDateRange = new DateRange(newStart, newEnd);
-                changed = true;
-            }
-
-            if (_isFirstLoad)
-            {
-                _initialPage = newPage;
-            }
-            else if (_table != null && _table.CurrentPage != newPage)
-            {
-                _table.NavigateTo(newPage);
-            }
-            else if (changed && _table != null)
-            {
-                if (_table.CurrentPage != 0)
-                {
-                    _table.NavigateTo(0);
-                }
-                else
-                {
-                    await _table.ReloadServerData();
-                }
+                _filterCreatedDateRange = new DateRange(newCreatedStart, newCreatedEnd);
+                _pageSize = newSize;
+                _pageIndex = newPage;
+                if (_initialized) await LoadInvoicesAsync();
             }
         }
-    }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && PersistState && _initialPage > 0)
+        if (!_initialized)
         {
-            if (_table != null)
-            {
-#pragma warning disable BL0005
-                _table.CurrentPage = _initialPage;
-#pragma warning restore BL0005
-                StateHasChanged();
-            }
+            _initialized = true;
+            await LoadInvoicesAsync();
         }
-        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void UpdateUrl(int pageIndex)
@@ -441,6 +478,9 @@ public partial class InvoicesList
 
         if (pageIndex > 0)
             parameters.Add("page", pageIndex + 1);
+
+        if (_pageSize != 10)
+            parameters.Add("size", _pageSize);
 
         if (!string.IsNullOrWhiteSpace(_searchString))
             parameters.Add("search", _searchString);
@@ -459,6 +499,12 @@ public partial class InvoicesList
 
         if (_filterDateRange?.End.HasValue == true)
             parameters.Add("end", _filterDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterCreatedDateRange.Start.HasValue)
+            parameters.Add("createdStart", _filterCreatedDateRange.Start.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterCreatedDateRange.End.HasValue)
+            parameters.Add("createdEnd", _filterCreatedDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var baseUrl = NavigationManager.Uri.Split('?')[0];
         var newUrl = baseUrl.AppendQueryString(parameters);

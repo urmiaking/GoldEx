@@ -1,0 +1,19 @@
+<NavLink href="@Href" Match="NavLinkMatch.All" class="gex-settings-link" @onclick="OnNavigate">
+    <span class="gex-settings-link-icon"><ShellIcon Name="@Icon" /></span>
+    <span class="gex-settings-link-copy">
+        <strong>@Title</strong>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <small>@Description</small>
+        }
+    </span>
+    <ShellIcon Name="next" />
+</NavLink>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Icon { get; set; } = "settings";
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public EventCallback OnNavigate { get; set; }
+}

@@ -1,0 +1,167 @@
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Helpers
+@using Microsoft.AspNetCore.Components.Web
+@inherits GoldExComponentBase
+<HomeInsights />
+<section class="gex-home-stats goldex-glass-card">
+    <header class="gex-home-section-heading">
+        <div><h2>آمار خرید و فروش</h2><p>مقایسه روزانه مبادلات ۳۰ روز اخیر، بر اساس معادل وزنی ۱۸ عیار</p></div><span class="gex-home-chart-unit">واحد: گرم</span>
+    </header>
+    @if (!_loaded) { <MudSkeleton Height="270px" Width="100%" /> }
+    else if (_points.Count == 0 || _points.All(p => p.SellWeight == 0 && p.PurchaseWeight == 0)) { <div class="gex-home-empty">در این دوره خرید یا فروشی برای نمایش در نمودار ثبت نشده است.</div> }
+    else
+    {
+        <div class="gex-home-chart-legend"><span><i class="gex-home-legend-purchase"></i> خرید</span><span><i class="gex-home-legend-sell"></i> فروش</span></div>
+        <p class="gex-home-chart-help">برای دیدن جزئیات هر روز، نشانگر را روی ستون ببرید یا آن را انتخاب کنید.</p>
+        <div class="gex-home-chart-scroll" dir="ltr" aria-label="نمودار میله‌ای روزانه خرید و فروش سی روز اخیر">
+            <div class="gex-home-chart-canvas">
+                <div class="gex-home-chart-plot">
+                    <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" class="gex-home-bars" preserveAspectRatio="none" aria-label="نمودار خرید و فروش روزانه">
+                    @for (var line = 0; line <= 4; line++)
+                    {
+                        var lineY = 22 + line * 46;
+                        <line x1="9" y1="@lineY" x2="891" y2="@lineY" class="gex-home-chart-grid" />
+                    }
+                    @for (int i = 0; i < _points.Count; i++)
+                    {
+                        var index = i;
+                        var point = _points[index];
+                        var baseX = 18 + index * 29;
+                        var purchaseHeight = GetBarHeight(point.PurchaseWeight);
+                        var sellHeight = GetBarHeight(point.SellWeight);
+                        var isActive = ActiveDayIndex == index;
+                        <g class="gex-home-chart-day @(isActive ? "is-active" : "") @(_pinnedDayIndex == index ? "is-pinned" : "")"
+                           role="button" tabindex="0"
+                           aria-label="@GetDayLabel(point)" aria-pressed="@(_pinnedDayIndex == index)"
+                           @onmouseenter="() => SetHoveredDay(index)"
+                           @onmouseleave="() => ClearHoveredDay(index)"
+                           @onfocus="() => SetHoveredDay(index)"
+                           @onblur="() => ClearHoveredDay(index)"
+                           @onclick="() => TogglePinnedDay(index)"
+                           @onkeydown="(KeyboardEventArgs e) => HandleDayKeyDown(e, index)">
+                            <title>@GetDayLabel(point)</title>
+                            <rect x="@(baseX - 4)" y="12" width="29" height="200" class="gex-home-chart-hit-area" />
+                            @if (isActive)
+                            {
+                                <rect x="@(baseX - 4)" y="15" width="29" height="192" rx="5" class="gex-home-chart-day-highlight" />
+                            }
+                            <rect x="@baseX" y="@(206 - purchaseHeight)" width="10" height="@purchaseHeight" rx="2.5" class="gex-home-chart-purchase" />
+                            <rect x="@(baseX + 11)" y="@(206 - sellHeight)" width="10" height="@sellHeight" rx="2.5" class="gex-home-chart-sell" />
+                        </g>
+                    }
+                </svg>
+                @if (ActiveDayIndex is int selectedIndex)
+                {
+                    var selected = _points[selectedIndex];
+                    <div @key="selectedIndex"
+                         class="gex-home-chart-tooltip @(selectedIndex >= 20 ? "is-before" : "is-after")"
+                         style="@GetTooltipStyle(selectedIndex)"
+                         dir="rtl" role="status" aria-live="polite">
+                        <div class="gex-home-tooltip-date">
+                            <span>@FormatDate(selected.Date)</span>
+                            @if (_pinnedDayIndex == selectedIndex)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.PushPin" Size="Size.Small" />
+                            }
+                        </div>
+                        <div class="gex-home-tooltip-row">
+                            <span><i class="gex-home-legend-purchase"></i> خرید</span>
+                            <span>@selected.PurchaseWeight.ToCurrencyFormat() گرم</span>
+                        </div>
+                        <div class="gex-home-tooltip-row">
+                            <span><i class="gex-home-legend-sell"></i> فروش</span>
+                            <span>@selected.SellWeight.ToCurrencyFormat() گرم</span>
+                        </div>
+                        <div class="gex-home-tooltip-difference">
+                            <span>اختلاف فروش و خرید</span>
+                            <span>@((selected.SellWeight - selected.PurchaseWeight).ToCurrencyFormat()) گرم</span>
+                        </div>
+                    </div>
+                }
+                </div>
+                <div class="gex-home-chart-axis" aria-hidden="true">
+                    @for (int i = 0; i < _points.Count; i++)
+                    {
+                        if (i % 5 == 0 || i == _points.Count - 1)
+                        {
+                            <span style="@GetAxisTickStyle(i)">@FormatDay(_points[i].Date)</span>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="gex-home-stat-totals">
+            <div><span>خرید ۳۰ روز اخیر</span><strong>@(_points.Sum(x => x.PurchaseWeight).ToCurrencyFormat()) گرم</strong></div>
+            <div><span>فروش ۳۰ روز اخیر</span><strong>@(_points.Sum(x => x.SellWeight).ToCurrencyFormat()) گرم</strong></div>
+        </div>
+    }
+</section>
+<HomeCategorySales />
+@code {
+    private List<TradeTrendPointDto> _points = [];
+    private bool _loaded;
+    private decimal _maxValue = 1;
+    private int? _hoveredDayIndex;
+    private int? _pinnedDayIndex;
+    private int? ActiveDayIndex => _hoveredDayIndex ?? _pinnedDayIndex;
+    private readonly System.Globalization.PersianCalendar _calendar = new();
+    private string FormatDay(DateOnly date) => _calendar.GetDayOfMonth(date.ToDateTime(TimeOnly.MinValue)).ToString("00");
+    private string FormatDate(DateOnly date)
+    {
+        var d = date.ToDateTime(TimeOnly.MinValue);
+        return $"{_calendar.GetYear(d)}/{_calendar.GetMonth(d):00}/{_calendar.GetDayOfMonth(d):00}";
+    }
+    private string GetDayLabel(TradeTrendPointDto p) =>
+        $"{FormatDate(p.Date)}، خرید {p.PurchaseWeight.ToCurrencyFormat()} گرم، فروش {p.SellWeight.ToCurrencyFormat()} گرم";
+
+    private static string GetAxisTickStyle(int index)
+    {
+        var centerPercent = (18d + index * 29d + 10.5d) / 900d * 100d;
+        return FormattableString.Invariant($"left:{centerPercent:0.###}%;");
+    }
+
+    private string GetTooltipStyle(int index)
+    {
+        // SVG geometry scales with its container. Position the detail in the same coordinate system.
+        var anchorX = 18 + index * 29 + (index >= 20 ? -8 : 29);
+        var leftPercent = anchorX / 900d * 100d;
+        var topPercent = GetTooltipTop(index) / 250d * 100d;
+        return FormattableString.Invariant($"left:{leftPercent:0.###}%;top:{topPercent:0.###}%;");
+    }
+
+    private double GetTooltipTop(int index)
+    {
+        var p = _points[index];
+        var tallest = Math.Max(GetBarHeight(p.PurchaseWeight), GetBarHeight(p.SellWeight));
+        return Math.Clamp(206 - tallest - 18, 8, 106);
+    }
+    private void SetHoveredDay(int index) => _hoveredDayIndex = index;
+    private void ClearHoveredDay(int index)
+    {
+        if (_hoveredDayIndex == index)
+            _hoveredDayIndex = null;
+    }
+    private void TogglePinnedDay(int index) => _pinnedDayIndex = _pinnedDayIndex == index ? null : index;
+    private void HandleDayKeyDown(KeyboardEventArgs args, int index)
+    {
+        if (args.Key is "Enter" or " " or "Space")
+            TogglePinnedDay(index);
+    }
+
+    private double GetBarHeight(decimal value) => value <= 0 ? 0 : (double)(value / _maxValue) * 174d;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await SendRequestAsync<IDashboardService, List<TradeTrendPointDto>>(
+                (service, ct) => service.GetTradeTrend30DaysAsync(ct),
+                afterSend: points =>
+                {
+                    _points = points.OrderBy(p => p.Date).ToList();
+                    _maxValue = Math.Max(1, _points.SelectMany(p => new[] { p.SellWeight, p.PurchaseWeight }).DefaultIfEmpty(0).Max());
+                }, createScope: true);
+        }
+        finally { _loaded = true; }
+    }
+}

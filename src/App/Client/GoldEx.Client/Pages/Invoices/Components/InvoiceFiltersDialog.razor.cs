@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
@@ -7,14 +8,20 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class InvoiceFiltersDialog
 {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     [Parameter] public DateRange DateRange { get; set; } = new();
+    [Parameter] public DateRange CreatedDateRange { get; set; } = new();
     [Parameter] public InvoiceType? InvoiceTypeParam { get; set; }
     [Parameter] public TradeScale? TradeScaleParam { get; set; }
     [Parameter] public InvoicePaymentStatus? PaymentStatus { get; set; }
+    [Parameter] public string SortLabel { get; set; } = "CreatedAt";
+    [Parameter] public bool SortDescending { get; set; } = true;
 
+    private string _sortLabel = "CreatedAt";
+    private bool _sortDescending = true;
     private DateRange? _dateRange;
+    private DateRange? _createdDateRange;
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private InvoicePaymentStatus? _paymentStatus;
@@ -22,9 +29,12 @@ public partial class InvoiceFiltersDialog
     protected override void OnParametersSet()
     {
         _dateRange = new DateRange(DateRange.Start, DateRange.End);
+        _createdDateRange = new DateRange(CreatedDateRange.Start, CreatedDateRange.End);
         _invoiceType = InvoiceTypeParam;
         _tradeScale = TradeScaleParam;
         _paymentStatus = PaymentStatus;
+        _sortLabel = SortLabel;
+        _sortDescending = SortDescending;
     }
 
     private string GetInvoiceTypeIcon(InvoiceType? type) => type switch
@@ -81,22 +91,26 @@ public partial class InvoiceFiltersDialog
     {
         var result = new InvoicesList.InvoicesMobileFiltersResult(
             new DateRange(_dateRange?.Start, _dateRange?.End),
+            new DateRange(_createdDateRange?.Start, _createdDateRange?.End),
             _invoiceType,
             _tradeScale,
-            _paymentStatus
+            _paymentStatus,
+            _sortLabel,
+            _sortDescending
         );
 
-        MudDialog.Close(DialogResult.Ok(result));
+        Session?.Close(result);
     }
 
     private void Clear()
     {
         _dateRange = new DateRange();
+        _createdDateRange = new DateRange();
         _invoiceType = null;
         _tradeScale = null;
         _paymentStatus = null;
         Apply();
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => Session?.Cancel();
 }

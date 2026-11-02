@@ -1,9 +1,10 @@
-﻿@inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
 
 <EditForm Model="Model" OnValidSubmit="Submit">
     <DataAnnotationsValidator />
 
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
             <MudGrid>
                 <MudItem xs="6">
@@ -50,5 +51,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </EditForm>

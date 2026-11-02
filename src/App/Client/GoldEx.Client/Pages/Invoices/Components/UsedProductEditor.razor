@@ -1,8 +1,10 @@
-﻿@inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_usedProductValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-item-editor">
             @if (!PriceUnit.IsGoldBased)
             {
                 <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
@@ -108,12 +110,13 @@
                                  Label="@Model.GetDisplayName(() => Model.IsBroken)" />
                 </MudItem>
             </MudGrid>
+                    </div>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
@@ -136,5 +139,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

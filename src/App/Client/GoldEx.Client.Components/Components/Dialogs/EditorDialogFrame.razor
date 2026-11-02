@@ -1,0 +1,20 @@
+@using GoldEx.Client.Components.Services
+
+@if (Session is null)
+{
+    <MudDialog>
+        <DialogContent>@DialogContent</DialogContent>
+        <DialogActions>@DialogActions</DialogActions>
+    </MudDialog>
+}
+else
+{
+    <div class="gex-editor-body">@DialogContent</div>
+    <footer class="gex-editor-actions">@DialogActions</footer>
+}
+
+@code {
+    [CascadingParameter] public ResponsiveDialogSession? Session { get; set; }
+    [Parameter] public RenderFragment? DialogContent { get; set; }
+    [Parameter] public RenderFragment? DialogActions { get; set; }
+}

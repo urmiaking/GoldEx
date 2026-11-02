@@ -1,83 +1,120 @@
 @using GoldEx.Sdk.Common
 @using GoldEx.Shared.Routings
+@using Microsoft.JSInterop
 
 @inherits GoldExComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
-<MudIconButton OnClick="@(() => _drawerOpen = true)"
-               Icon="@Icons.Material.Filled.Settings"
-               Color="@Color.Inherit" />
+<button type="button" class="gex-icon-button gex-mobile-settings-trigger"
+        aria-label="تنظیمات برنامه" title="تنظیمات" aria-haspopup="dialog"
+        aria-controls="gex-settings-sheet" @onclick="OpenAsync">
+    <ShellIcon Name="settings" />
+</button>
 
-<MudDrawer @bind-Open="_drawerOpen"
-           Anchor="Anchor.Bottom"
-           Variant="DrawerVariant.Temporary"
-           Overlay="true"
-           OverlayAutoClose="true"
-           Elevation="8">
-    <MudToolBar Dense="true" Gutters="false">
-        <MudIcon Class="mr-4" Icon="@Icons.Material.Filled.Settings" />
-        <MudText Typo="Typo.h6" Class="mr-2">تنظیمات</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Close"
-                       Color="Color.Inherit"
-                       Class="ml-1"
-                       OnClick="@(() => _drawerOpen = false)" />
-    </MudToolBar>
-    <MudDivider />
+<dialog id="gex-settings-sheet" @ref="_panel" class="gex-settings-sheet"
+        aria-labelledby="gex-settings-title" aria-describedby="gex-settings-description" dir="rtl">
+    <div class="gex-settings-handle" aria-hidden="true"></div>
+    <header class="gex-settings-sheet-header">
+        <span class="gex-settings-sheet-symbol"><ShellIcon Name="settings" /></span>
+        <div class="gex-settings-sheet-heading">
+            <h2 id="gex-settings-title">تنظیمات برنامه</h2>
+            <p id="gex-settings-description">بخش موردنظر برای مدیریت فروشگاه را انتخاب کنید.</p>
+        </div>
+        <button type="button" class="gex-icon-button gex-settings-sheet-close"
+                aria-label="بستن تنظیمات" data-settings-close autofocus>
+            <ShellIcon Name="close" />
+        </button>
+    </header>
 
-    <MudContainer Class="pb-20">
-        <MudList T="string?" Dense SelectionMode="SelectionMode.ToggleSelection">
-            <MudDivider />
-            <MudListItem T="string?" Text="اطلاعات پایه" OnClick="() => NavigateTo(ClientRoutes.Settings.Index)" Icon="@Icons.Material.Filled.DisplaySettings"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="اتصال به هوش مصنوعی (MCP)" OnClick="() => NavigateTo(ClientRoutes.Settings.PersonalAccessTokens)" Icon="@Icons.Material.Filled.SmartToy"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="دسته بندی اجناس" OnClick="() => NavigateTo(ClientRoutes.ProductCategories.Index)" Icon="@Icons.Material.Filled.Category"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="ویژگی‌های توصیفی کالاها" OnClick="() => NavigateTo(ClientRoutes.Settings.ProductAttributes)" Icon="@Icons.Material.Filled.Tune"></MudListItem>
-            <AuthorizeView Roles="@BuiltinRoles.Administrators">
-                <MudDivider />
-                <MudListItem T="string?" Text="مدیریت نمادها" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceSettings)" Icon="@Icons.Material.Filled.EuroSymbol"></MudListItem>
-                <MudDivider />
-            <MudListItem T="string?" Text="مدیریت واحدهای ارزی" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceUnits)" Icon="@Icons.Material.Filled.CurrencyExchange"></MudListItem>
-            </AuthorizeView>
-            <MudDivider />
-            <MudListItem T="string?" Text="مدیریت سکه ها" OnClick="() => NavigateTo(ClientRoutes.Settings.Coins)" Icon="@Icons.Material.Filled.MonetizationOn"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="مدیریت حساب های مالی" OnClick="() => NavigateTo(ClientRoutes.Settings.FinancialAccounts)" Icon="@Icons.Material.Filled.Payments"></MudListItem>
-            <MudDivider />
-            <AuthorizeView Roles="@BuiltinRoles.Administrators">
-                <Authorized>
-                    <MudDivider />
-                    <MudListItem T="string?" Text="مدیریت فروشگاه‌ها" OnClick="() => NavigateTo(ClientRoutes.Settings.Stores)" Icon="@Icons.Material.Filled.Store"></MudListItem>
-                    <MudDivider />
-                    <MudListItem T="string?" Text="مدیریت سرفصل های حسابداری" OnClick="() => NavigateTo(ClientRoutes.Settings.LedgerAccounts)" Icon="@Icons.Material.Filled.DashboardCustomize"></MudListItem>
-                </Authorized>
-            </AuthorizeView>
-            <MudDivider />
-            <MudListItem T="string?" Text="طراحی گزارش ها" OnClick="() => NavigateTo(ClientRoutes.Settings.ReportsList)" Icon="@Icons.Material.Filled.DesignServices"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="طراحی بارکد محصولات" OnClick="() => NavigateTo(ClientRoutes.Settings.BarcodeBuilder)" Icon="@Icons.Material.Filled.QrCode2"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="مدیریت قالب های پیامکی" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsTemplates)" Icon="@Icons.Material.Filled.Sms"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="تاریخچه پیامک ها" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsLogs)" Icon="@Icons.Material.Filled.ManageHistory"></MudListItem>
-            <AuthorizeView Roles="@BuiltinRoles.Administrators">
-                <MudDivider />
-                <MudListItem T="string?" Text="پشتیبان گیری و بازنشانی" OnClick="() => NavigateTo(ClientRoutes.Settings.BackupRestore)" Icon="@Icons.Material.Filled.Restore"></MudListItem>
-                <MudDivider />
-                <MudListItem T="string?" Text="درخواست های تمدید و ارتقاء نرم افزار" OnClick="() => NavigateTo(ClientRoutes.Settings.LicenseRequests)" Icon="@Icons.Material.Filled.ListAlt"></MudListItem>
-            </AuthorizeView>
-        </MudList>
-    </MudContainer>
-</MudDrawer>
+    <nav class="gex-settings-sheet-scroll" aria-label="بخش‌های تنظیمات">
+        <section class="gex-settings-section" aria-labelledby="gex-settings-general">
+            <h3 id="gex-settings-general">عمومی و کالاها</h3>
+            <div class="gex-settings-links">
+                <SettingsSheetLink Href="@ClientRoutes.Settings.Index" Icon="display" Title="اطلاعات پایه" Description="تنظیمات اصلی برنامه" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.PersonalAccessTokens" Icon="spark" Title="اتصال به هوش مصنوعی (MCP)" Description="کلیدهای دسترسی و اتصال" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.ProductCategories.Index" Icon="grid" Title="دسته‌بندی اجناس" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.ProductAttributes" Icon="list" Title="ویژگی‌های توصیفی کالاها" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.StoneTypes" Icon="gem" Title="مدیریت سنگ‌ها" OnNavigate="CloseAsync" />
+            </div>
+        </section>
+        <section class="gex-settings-section" aria-labelledby="gex-settings-prices">
+            <h3 id="gex-settings-prices">قیمت‌ها و حسابداری</h3>
+            <div class="gex-settings-links">
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.PriceSettings" Icon="chart-bar" Title="مدیریت نمادها" OnNavigate="CloseAsync" />
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.PriceUnits" Icon="wallet" Title="مدیریت واحدهای ارزی" OnNavigate="CloseAsync" />
+                </AuthorizeView>
+                <SettingsSheetLink Href="@ClientRoutes.Settings.Coins" Icon="gem" Title="مدیریت سکه‌ها" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.FinancialAccounts" Icon="wallet" Title="مدیریت حساب‌های مالی" OnNavigate="CloseAsync" />
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.LedgerAccounts" Icon="grid" Title="مدیریت سرفصل‌های حسابداری" OnNavigate="CloseAsync" />
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.Stores" Icon="store" Title="مدیریت فروشگاه‌ها" OnNavigate="CloseAsync" />
+                </AuthorizeView>
+            </div>
+        </section>
+        <section class="gex-settings-section" aria-labelledby="gex-settings-tools">
+            <h3 id="gex-settings-tools">ابزارها و خدمات</h3>
+            <div class="gex-settings-links">
+                <SettingsSheetLink Href="@ClientRoutes.Settings.ReportsList" Icon="file" Title="طراحی گزارش‌ها" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.BarcodeBuilder" Icon="package" Title="طراحی بارکد محصولات" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.SmsTemplates" Icon="mail" Title="مدیریت قالب‌های پیامکی" OnNavigate="CloseAsync" />
+                <SettingsSheetLink Href="@ClientRoutes.Settings.SmsLogs" Icon="history" Title="تاریخچه پیامک‌ها" OnNavigate="CloseAsync" />
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.BackupRestore" Icon="refresh" Title="پشتیبان‌گیری و بازنشانی" OnNavigate="CloseAsync" />
+                    <SettingsSheetLink Href="@ClientRoutes.Settings.LicenseRequests" Icon="file" Title="درخواست‌های تمدید و ارتقاء" OnNavigate="CloseAsync" />
+                </AuthorizeView>
+            </div>
+        </section>
+    </nav>
+</dialog>
 
-@code
-{
-    private bool _drawerOpen;
+@code {
+    private ElementReference _panel;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _binding;
 
-    private void NavigateTo(string url)
+    protected override void OnInitialized()
     {
-        _drawerOpen = false;
-        Navigation.NavigateTo(url);
+        base.OnInitialized();
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender) return;
+
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/GoldEx.Client.Components/js/settings-sheet.js");
+        _binding = await _module.InvokeAsync<IJSObjectReference>("bind", _panel);
+    }
+
+    private async Task OpenAsync()
+    {
+        if (_binding is not null) await _binding.InvokeVoidAsync("open");
+    }
+
+    private async Task CloseAsync()
+    {
+        if (_binding is not null) await _binding.InvokeVoidAsync("close");
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+        => _ = InvokeAsync(CloseAsync);
+
+    public override async ValueTask DisposeAsync()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+        try
+        {
+            if (_binding is not null)
+            {
+                await _binding.InvokeVoidAsync("dispose");
+                await _binding.DisposeAsync();
+            }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        finally { await base.DisposeAsync(); }
     }
 }

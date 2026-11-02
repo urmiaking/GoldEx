@@ -1,0 +1,115 @@
+@inherits GoldExComponentBase
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Client.Pages.Settings.ViewModels
+
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-directory-filter-form">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="ItemType" Label="نوع جنس" Variant="Variant.Outlined"
+                               Value="_itemType" ValueChanged="OnItemTypeChanged"
+                               Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                               AdornmentIcon="@GetItemTypeIcon(_itemType)" Class="w-100">
+                        @foreach (var type in Enum.GetValues<ItemType>())
+                        {
+                            <MudSelectItem Value="@type">@type.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="ItemStatus" Label="وضعیت موجودی" Variant="Variant.Outlined"
+                               Value="_itemStatus" ValueChanged="@(v => _itemStatus = v)"
+                               Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.Warehouse" Class="w-100">
+                        <MudSelectItem Value="@ItemStatus.Available">@ItemStatus.Available.GetDisplayName()</MudSelectItem>
+                        @if (_itemType is not ItemType.UsedProduct)
+                        {
+                            <MudSelectItem Value="@ItemStatus.Sold">@ItemStatus.Sold.GetDisplayName()</MudSelectItem>
+                        }
+                        @if (_itemType is ItemType.UsedProduct)
+                        {
+                            <MudSelectItem Value="@ItemStatus.Melted">@ItemStatus.Melted.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (_itemType is ItemType.Product)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ProductCategoryVm" Label="دسته‌بندی" Variant="Variant.Outlined"
+                                   Value="_categoryFilter" ValueChanged="@(v => _categoryFilter = v)"
+                                   Dense="true" Margin="Margin.Dense" Clearable="true"
+                                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Category" Class="w-100">
+                            <MudSelectItem Value="@(null as ProductCategoryVm)">همه دسته‌بندی‌ها</MudSelectItem>
+                            @foreach (var category in Categories)
+                            {
+                                <MudSelectItem Value="@category">@category.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                @if (_itemType is ItemType.Product)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="bool?" Label="وضعیت ویترین" Variant="Variant.Outlined"
+                                   Value="_vitrineFilter" ValueChanged="@(v => _vitrineFilter = v)"
+                                   Dense="true" Margin="Margin.Dense" Adornment="Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.Storefront" Class="w-100">
+                            <MudSelectItem T="bool?" Value="@(null as bool?)">همه اجناس</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)true)">داخل ویترین</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)false)">خارج از ویترین</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="6">
+                    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="@(r => _dateRange = r)"
+                                        Label="@DateRangeLabel" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                        MaxMonthColumns="1" DisplayMonths="1" Rounded="true" ShowToolbar="false"
+                                        AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                        RelativeWidth="DropdownWidth.Adaptive" Clearable="true"
+                                        Adornment="Adornment.Start" Class="w-100 gex-filter-date-range" />
+                </MudItem>
+                <MudItem xs="12" Class="gex-filter-mobile-sort">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel"
+                                       ValueChanged="@(v => _sortLabel = v)"
+                                       Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                                <MudSelectItem Value="@("CurrentQuantity")">موجودی فعلی</MudSelectItem>
+                                <MudSelectItem Value="@("SoldQuantity")">مقدار فروخته‌شده</MudSelectItem>
+                                @if (_itemType is ItemType.Product or ItemType.MoltenGold or ItemType.UsedProduct)
+                                {
+                                    <MudSelectItem Value="@("Product.Barcode")">بارکد</MudSelectItem>
+                                    <MudSelectItem Value="@("Product.Name")">نام جنس</MudSelectItem>
+                                }
+                                else if (_itemType is ItemType.Coin)
+                                {
+                                    <MudSelectItem Value="@("Coin.Barcode")">بارکد سکه</MudSelectItem>
+                                }
+                                else if (_itemType is ItemType.Currency)
+                                {
+                                    <MudSelectItem Value="@("Currency.Title")">عنوان ارز</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_sortDescending"
+                                       Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                                <MudSelectItem T="bool" Value="true">نزولی</MudSelectItem>
+                                <MudSelectItem T="bool" Value="false">صعودی</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
+                   OnClick="Clear">بازنشانی</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="Cancel">انصراف</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="Apply">اعمال فیلترها</MudButton>
+    </DialogActions>
+</EditorDialogFrame>

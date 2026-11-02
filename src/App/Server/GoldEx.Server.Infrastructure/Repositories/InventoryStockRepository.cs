@@ -164,6 +164,7 @@ internal class InventoryStockRepository(
                 ItemType = null,
                 ActionType = null,
                 CategoryId = null,
+                ShowInVitrine = null,
                 InventoryEntryId = null,
                 InventoryExitId = null
             };
@@ -219,6 +220,10 @@ internal class InventoryStockRepository(
                         var catId = new ProductCategoryId(inventoryFilter.CategoryId.Value);
                         query = query.Where(x => x.Product!.ProductCategoryId == catId);
                     }
+
+                    // Match vitrine visibility before grouping, Count and paging.
+                    if (inventoryFilter.ItemType == ItemType.Product && inventoryFilter.ShowInVitrine.HasValue)
+                        query = query.Where(x => x.Product!.ShowInVitrine == inventoryFilter.ShowInVitrine.Value);
 
                     if (!string.IsNullOrEmpty(filter.Search))
                     {

@@ -1,0 +1,178 @@
+/*
+ * GoldEx invoice viewer responsive chrome. Loaded AFTER DevExpress's theme CSS.
+ * Do not style .dxrd-report-preview / bricks: the invoice/PDF stays untouched.
+ */
+.gex-report-mobile-hint { display: none; }
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport {
+    color: var(--gex-report-ink);
+}
+
+/* Toolbar icons: native DevExpress actions, custom official SVG templates. */
+.gex-report-viewer .gex-report-glyph {
+    width: 21px;
+    height: 21px;
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--gex-report-ink);
+    stroke: currentColor;
+    fill: none;
+    pointer-events: none;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item:not(.dx-state-disabled) .dxrd-toolbar-item-image,
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item:not(.dx-state-disabled) .dx-icon {
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item:hover .gex-report-glyph {
+    color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item.dx-state-disabled .gex-report-glyph {
+    opacity: .42;
+}
+
+/* Fix the actual dark-mode regression: Zoom and Page controls were white
+   while retaining a nearly white value/placeholder. Force legible native
+   text colors in every embedded DevExtreme input and dropdown state. */
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar :is(
+    .dx-texteditor, .dx-selectbox, .dx-numberbox, .dx-dropdowneditor,
+    .dx-texteditor-container, .dx-texteditor-input-container
+) {
+    background-color: var(--gex-report-surface);
+    color: var(--gex-report-ink);
+    border-color: var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar :is(
+    .dx-texteditor-input, .dx-texteditor-input-container input,
+    .dx-texteditor-input-container .dx-texteditor-input, .dx-placeholder
+) {
+    background-color: transparent;
+    color: var(--gex-report-ink) !important;
+    -webkit-text-fill-color: var(--gex-report-ink);
+    opacity: 1;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar :is(
+    .dx-dropdowneditor-icon, .dx-dropdowneditor-button .dx-icon
+) {
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar .dx-dropdowneditor-button {
+    background-color: color-mix(in srgb, var(--gex-report-accent) 9%, var(--gex-report-surface));
+    border-radius: 0 9px 9px 0;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar :is(
+    .dx-texteditor.dx-state-disabled, .dx-texteditor.dx-state-readonly
+) {
+    opacity: .65;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar .dx-texteditor.dx-state-focused {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gex-report-accent) 24%, transparent);
+    border-color: var(--gex-report-accent);
+}
+
+/* Native right rail: legible icons and selected state in dark and light. */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport :is(
+    .dxrd-right-panel, .dxrd-tab-panel, .dxrd-tab-panel-right,
+    .dxrd-action-items-container, .dxd-side-panel-tabs-back-color
+) {
+    background-color: var(--gex-report-surface);
+    color: var(--gex-report-ink);
+    border-color: var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-action-items-container
+    .dxrd-action-item:not(.dx-state-disabled) {
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-action-items-container
+    .dxrd-action-item:is(.dx-state-active, .dxd-state-active, .dxrd-action-item-selected) {
+    background-color: color-mix(in srgb, var(--gex-report-accent) 16%, var(--gex-report-surface));
+    color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-action-items-container
+    .dxrd-action-item:hover {
+    background-color: color-mix(in srgb, var(--gex-report-accent) 12%, var(--gex-report-surface));
+}
+
+/* Zoom and page popovers may be portalled outside the viewer by DevExtreme.
+   Their own DevExpress color scheme remains intact; no global overrides. */
+
+@media (max-width: 959.98px) {
+    /* The native toolbar wrapper ships with overflow:hidden. Make it a
+       real swipeable horizontal strip; no action becomes unreachable. */
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+        .dxrd-toolbar-wrapper,
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+        .dxrdp-toolbar-scrollable.dxrd-toolbar-wrapper {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100%;
+        justify-content: flex-start !important;
+        align-items: center;
+        direction: ltr;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gex-report-accent) transparent;
+        scroll-behavior: auto;
+    }
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+        .dxrd-toolbar-wrapper .dxrd-toolbar {
+        flex: none !important;
+        width: max-content !important;
+        min-width: max-content !important;
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        white-space: nowrap !important;
+        padding-inline: 7px 18px;
+    }
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview .dxrd-toolbar .dxrd-toolbar-item {
+        border-radius: 9px;
+    }
+    .gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-texteditor,
+    .gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-dropdowneditor {
+        min-width: 76px;
+    }
+    .gex-report-mobile-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--mud-palette-text-secondary);
+        font-size: .75rem;
+        font-weight: 400;
+        padding: 4px 10px 7px;
+        text-align: center;
+    }
+    .gex-report-mobile-hint span {
+        color: var(--mud-palette-primary);
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    /* The preview itself must use the available narrow viewport; the
+       document is fitted with onBeforeRender zoom = -1 (Page Width). */
+    .gex-report-viewer,
+    .gex-report-viewer .dx-blazor-reporting,
+    .gex-report-viewer .dxrd-preview.dxrd-designer-wrapper,
+    .gex-report-viewer .dxrd-preview-surface,
+    .gex-report-viewer .dxrd-preview-wrapper {
+        max-width: 100%;
+        min-width: 0 !important;
+        box-sizing: border-box;
+    }
+    .gex-report-viewer .dx-blazor-reporting {
+        height: calc(100dvh - 198px) !important;
+        min-height: 430px;
+    }
+    .gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper
+        .dxrd-preview-wrapper .dxrd-preview-surface .dxrd-report-preview-holder {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-report-viewer .dx-blazor-reporting .dxrd-toolbar-wrapper { scroll-behavior: auto; }
+}

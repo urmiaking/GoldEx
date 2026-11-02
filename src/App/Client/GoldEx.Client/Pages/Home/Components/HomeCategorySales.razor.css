@@ -1,0 +1,29 @@
+.gex-home-categories { margin-top:18px; padding:20px; border-radius:19px; }
+.gex-home-categories-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+.gex-home-categories h3 { font-size:.97rem; font-weight:500; margin:0 0 5px; }
+.gex-home-categories p { font-size:.79rem; font-weight:400; color:var(--mud-palette-text-secondary); margin:0; }
+.gex-home-categories-toggle { display:flex; align-items:center; gap:5px; background:var(--mud-palette-action-default-hover); border:1px solid var(--mud-palette-lines-default); border-radius:12px; padding:8px 11px; color:var(--mud-palette-text-primary); font-size:.81rem; font-weight:400; cursor:pointer; }
+.gex-home-category-list { display:grid; gap:16px; padding-top:22px; padding-bottom:4px; }
+.gex-home-category-info { display:flex; justify-content:space-between; gap:12px; font-size:.83rem; font-weight:400; margin-bottom:7px; }
+.gex-home-category-bar { width:100%; height:9px; border-radius:20px; background:var(--mud-palette-action-default-hover); overflow:hidden; }
+.gex-home-category-bar>div { height:100%; background:var(--mud-palette-primary); border-radius:20px; transition:width .25s ease; }
+.gex-home-categories .gex-home-empty { text-align:center; padding:35px 0; color:var(--mud-palette-text-secondary); font-size:.83rem; }
+@media(max-width:599px){ .gex-home-categories { padding:14px; } }
+@media(prefers-reduced-motion:reduce){ .gex-home-category-bar>div { transition:none; } }
+/* Keep the accordion body mounted after the first fetch so the close transition can run. */
+.gex-home-categories-collapse {
+    display:grid; grid-template-rows:0fr; opacity:0; visibility:hidden;
+    transition:grid-template-rows .34s cubic-bezier(.22,.61,.36,1), opacity .24s ease, visibility 0s linear .34s;
+}
+.gex-home-categories-collapse.is-open {
+    grid-template-rows:1fr; opacity:1; visibility:visible;
+    transition:grid-template-rows .34s cubic-bezier(.22,.61,.36,1), opacity .24s ease, visibility 0s;
+}
+.gex-home-categories-inner { min-height:0; overflow:hidden; }
+.gex-home-categories-body { padding-top:16px; }
+.gex-home-categories-toggle ::deep .mud-icon-root { transition:transform .32s ease; }
+.gex-home-categories-toggle.is-open ::deep .mud-icon-root { transform:rotate(180deg); }
+@media(prefers-reduced-motion:reduce) {
+    .gex-home-categories-collapse, .gex-home-categories-collapse.is-open,
+    .gex-home-categories-toggle ::deep .mud-icon-root { transition:none; }
+}

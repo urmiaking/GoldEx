@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Shared.DTOs.FinancialAccounts;
@@ -18,6 +19,9 @@ public partial class MeltingBatchForm
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public Guid? Id { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
+
+    private string CurrentStepTitle => _activeIndex switch { 0 => "انتخاب اجناس", 1 => "ارسال به آزمایشگاه", _ => "ثبت آبشده نهایی" };
 
     private MeltingBatchVm _model = new();
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
@@ -98,11 +102,7 @@ public partial class MeltingBatchForm
     private async Task HandleMeltingProducts()
     {
         if (_stepper is null) return;
-        var result = await DialogService.ShowMessageBoxAsync(
-            "تأیید عملیات",
-            "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام انتخاب شده از انبار خارج و وارد فرایند ذوب خواهند شد",
-            yesText: "بله",
-            noText: "خیر");
+        var result = await ConfirmTransitionAsync("خروج اجناس از موجودی", "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام انتخاب شده از انبار خارج و وارد فرایند ذوب خواهند شد", "ثبت و آغاز ذوب");
 
         if (result == true)
         {
@@ -130,11 +130,7 @@ public partial class MeltingBatchForm
         if (_stepper is null)
             return;
 
-        var result = await DialogService.ShowMessageBoxAsync(
-            "تأیید عملیات",
-            "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام ذوب شده برای آزمایشگاه ارسال خواهند شد",
-            yesText: "بله",
-            noText: "خیر");
+        var result = await ConfirmTransitionAsync("ارسال به آزمایشگاه", "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام ذوب شده برای آزمایشگاه ارسال خواهند شد", "تأیید ارسال");
 
         if (result == true && _id.HasValue)
         {
@@ -160,11 +156,7 @@ public partial class MeltingBatchForm
     {
         if (_stepper is null) return;
 
-        var result = await DialogService.ShowMessageBoxAsync(
-            "تأیید عملیات",
-            "آیا از اتمام فرایند اطمینان دارید؟ با انجام این عملیات، فرایند ذوب به پایان خواهد رسید و اطلاعات مربوط به طلای آبشده در انبار ثبت خواهد شد.",
-            yesText: "بله",
-            noText: "خیر");
+        var result = await ConfirmTransitionAsync("ثبت آبشده در انبار", "آیا از اتمام فرایند اطمینان دارید؟ با انجام این عملیات، فرایند ذوب به پایان خواهد رسید و اطلاعات مربوط به طلای آبشده در انبار ثبت خواهد شد.", "اتمام فرایند");
 
         if (result == true && _id.HasValue)
         {
@@ -185,6 +177,17 @@ public partial class MeltingBatchForm
                     return Task.CompletedTask;
                 });
         }
+    }
+
+    private async Task<bool> ConfirmTransitionAsync(string title, string message, string action)
+    {
+        var dialog = ResponsiveDialogs.Show<MeltingBatchConfirmDialog>(title,
+            new Dictionary<string, object>
+            {
+                [nameof(MeltingBatchConfirmDialog.Message)] = message,
+                [nameof(MeltingBatchConfirmDialog.ActionLabel)] = action
+            });
+        return await dialog.Result is { Canceled: false, Data: true };
     }
 
     private void OnIndexChanged(int index)
@@ -216,23 +219,13 @@ public partial class MeltingBatchForm
 
     private async Task OnAddFinancialAccount()
     {
-        DialogOptions dialogOptions = new()
-        {
-            CloseButton = true,
-            FullWidth = true,
-            FullScreen = false,
-            MaxWidth = MaxWidth.Small
-        };
-
-        var parameters = new DialogParameters<FinancialAccountEditor>
-        {
-            { x => x.PriceUnits, _priceUnits },
-            { x => x.IsSystemAccount, true },
-            { x => x.SubmitIndependently, true }
-        };
-
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
-            parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(FinancialAccountEditor.PriceUnits)] = _priceUnits,
+                [nameof(FinancialAccountEditor.IsSystemAccount)] = true,
+                [nameof(FinancialAccountEditor.SubmitIndependently)] = true
+            }, wide: true);
 
         var result = await dialog.Result;
 

@@ -1,3 +1,4 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Client.Pages.FinancialAccounts.ViewModels
 @using GoldEx.Shared.DTOs.Coins
 @using GoldEx.Shared.DTOs.FinancialAccounts
@@ -5,10 +6,23 @@
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_paymentValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-payment-editor">
 
-            <div class="d-flex flex-wrap justify-center gap-3 my-3">
+            @if (LockPaymentSide)
+            {
+                <div class="invoice-payment-direction-banner @(Model.PaymentSide == PaymentSide.Receive ? "is-receive" : "is-pay")">
+                    <MudIcon Icon="@(Model.PaymentSide == PaymentSide.Receive ? Icons.Material.Outlined.SouthWest : Icons.Material.Outlined.NorthEast)" Size="Size.Medium" />
+                    <div>
+                        <strong>@(Model.PaymentSide == PaymentSide.Receive ? "دریافت از طرف‌حساب" : "پرداخت به طرف‌حساب")</strong>
+                        <small>جهت تسویه در مرحله اول انتخاب شده است.</small>
+                    </div>
+                </div>
+            }
+            else
+            {
+            <div class="invoice-payment-side-options">
                 <MudChipSet T="PaymentSide"
                             Class="align-center d-flex"
                             SelectionMode="SelectionMode.SingleSelection"
@@ -26,6 +40,8 @@
                              Variant="@(Model.PaymentSide == PaymentSide.Pay ? Variant.Text : Variant.Outlined)">@PaymentSide.Pay.GetDisplayName()</MudChip>
                 </MudChipSet>
             </div>
+
+            }
 
             @if (Model.PaymentType is PaymentType.Coin && Model.CoinInstance is not null)
             {
@@ -462,7 +478,7 @@
                                                     Palette="@_colorPalette"
                                                     Variant="Variant.Outlined"
                                                     Margin="Margin.Dense"
-                                                    Elevation="24" />
+                                                    Elevation="0" />
 
                                     @if (!string.IsNullOrEmpty(Model.CoinInstance.CoinPackage.CardColor))
                                     {
@@ -494,7 +510,9 @@
                     <MudDatePicker @bind-Date="Model.PaymentDate"
                                    Color="Color.Secondary"
                                    Editable="true"
-                                   dir="ltr"
+                                   dir="rtl"
+                                   Adornment="Adornment.Start"
+                                   Class="invoice-payment-date"
                                    Disabled="Model.Disabled"
                                    AnchorOrigin="Origin.TopCenter"
                                    TransformOrigin="Origin.BottomCenter"
@@ -581,11 +599,12 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
+                    </div>
         </DialogContent>
         <DialogActions>
             <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
                 <div class="d-flex gap-2 mr-md-4">
-                    @if (Model.PriceUnit?.Id == BasePriceUnit.Id)
+                    @if (Model.PriceUnit?.Id == BasePriceUnit.Id && CanApplyTotalRemaining)
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Primary" OnClick="ApplyTotalRemaining" Variant="Variant.Outlined" />
                     }
@@ -595,11 +614,11 @@
                 </div>
 
                 <div class="button-group">
-                    <MudButton Color="Color.Error"
+                    <MudButton Color="Color.Default"
                                OnClick="Close"
                                StartIcon="@Icons.Material.Filled.Close"
-                               Variant="Variant.Filled">انصراف</MudButton>
-                    <MudButton Class="m-2"
+                               Variant="Variant.Outlined">انصراف</MudButton>
+                    <MudButton
                                Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.Save"
                                OnClick="Submit"
@@ -607,7 +626,7 @@
                 </div>
             </div>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>
 
 <script>

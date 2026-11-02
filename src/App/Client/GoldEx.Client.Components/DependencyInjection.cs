@@ -22,6 +22,7 @@ public static class DependencyInjection
         public IServiceCollection AddClientComponents()
         {
             services.AddScoped<HelpContext>();
+            services.AddScoped<ResponsiveDialogService>();
             services.AddScoped<LicenseState>();
             services.AddScoped<WebAuthnService>();
             services.AddScoped<ClientStoreContext>();

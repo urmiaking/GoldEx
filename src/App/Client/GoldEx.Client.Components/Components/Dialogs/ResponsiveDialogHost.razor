@@ -1,0 +1,42 @@
+@using GoldEx.Client.Components.Services
+@implements IDisposable
+@inject ResponsiveDialogService Dialogs
+@inject NavigationManager Navigation
+
+<ResponsiveDialog Open="@(Top is not null)" Title="@(Top?.Title ?? "")" Wide="@(Top?.Wide == true)"
+                  Busy="@(Top?.IsBusy == true)" SessionKey="@Top?.Key" OnClose="CancelTop">
+    <ChildContent>
+        @foreach (var session in Dialogs.Sessions.ToArray())
+        {
+            <div @key="session" class="gex-modal-session" data-dialog-session="@session.Key"
+                 hidden="@(!ReferenceEquals(session, Top))" inert="@(!ReferenceEquals(session, Top))">
+                <CascadingValue TValue="ResponsiveDialogSession" Value="@session" IsFixed="true">
+                    <DynamicComponent Type="session.Component" Parameters="session.Parameters" />
+                </CascadingValue>
+            </div>
+        }
+    </ChildContent>
+    <Overlays>
+        @* Keep provider DOM/instances stable: MudBlazor tracks popovers by DOM identity. *@
+        <MudPopoverProvider />
+        <MudSnackbarProvider />
+    </Overlays>
+</ResponsiveDialog>
+
+@code {
+    private ResponsiveDialogSession? Top => Dialogs.Sessions.LastOrDefault();
+    private void CancelTop() => Top?.Cancel();
+    protected override void OnInitialized()
+    {
+        Dialogs.Changed += Refresh;
+        Navigation.LocationChanged += Navigated;
+    }
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    private void Navigated(object? sender, LocationChangedEventArgs args) => Dialogs.CancelAll();
+    public void Dispose()
+    {
+        Dialogs.Changed -= Refresh;
+        Navigation.LocationChanged -= Navigated;
+        Dialogs.CancelAll();
+    }
+}

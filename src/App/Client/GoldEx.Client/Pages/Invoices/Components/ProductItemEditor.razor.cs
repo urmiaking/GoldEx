@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -24,7 +25,10 @@ public partial class ProductItemEditor
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public TradeScale TradeScale { get; set; }
+    [Parameter] public Func<ProductItemVm, Task<bool>>? PrepareAndAddAsync { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private readonly ProductItemValidator _productItemValidator = new();
 
@@ -75,14 +79,9 @@ public partial class ProductItemEditor
 
         OnWageTypeChanged(Model.Product.WageType);
 
-        if (TradeScale is TradeScale.Wholesale)
-        {
-            if (!Model.Id.HasValue)
-            {
-                Model.ProfitPercent = 0;
-                Model.TaxPercent = 0;
-            }
-        }
+        // Profit/tax are initialized only when a new item is created in EditorForm.
+        // Never reset these user-entered values during parameter updates or reopening
+        // an unsaved wholesale item: its Id remains null until invoice persistence.
 
         base.OnParametersSet();
     }
@@ -129,20 +128,35 @@ public partial class ProductItemEditor
 
     private async Task Submit()
     {
-        _isProcessing = true;
-        await _form.ValidateAsync();
+        if (_isProcessing) return;
 
-        if (!_form.IsValid)
+        _isProcessing = true;
+        Session?.SetBusy(true);
+        try
+        {
+            await _form.ValidateAsync();
+            if (!_form.IsValid) return;
+
+            // Prepare (including barcode reservation) and add to the invoice before
+            // dismissing the editor, so the item is already in the list on close.
+            if (PrepareAndAddAsync is not null && !await PrepareAndAddAsync(Model))
+                return;
+
+            if (Session is not null) Session.Close(Model);
+            else MudDialog.Close(DialogResult.Ok(Model));
+        }
+        catch (Exception)
+        {
+            AddErrorToast("افزودن قلم انجام نشد. دوباره تلاش کنید.");
+        }
+        finally
         {
             _isProcessing = false;
-            return;
+            Session?.SetBusy(false);
         }
-
-        _isProcessing = false;
-        MudDialog.Close(DialogResult.Ok(Model));
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close() { if (_isProcessing) return; if (Session is not null) Session.Cancel(); else MudDialog.Cancel(); }
 
     private void OnProductTypeChanged(ProductType productType)
     {
@@ -292,7 +306,7 @@ public partial class ProductItemEditor
     {
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن دسته بندی جدید", dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Editor>("افزودن دسته بندی جدید", wide: true);
 
         var result = await dialog.Result;
 
@@ -405,7 +419,12 @@ public partial class ProductItemEditor
             { x => x.CustomerType, CustomerType.AssayingLab }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن آزمایشگاه جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن آزمایشگاه جدید",
+            new Dictionary<string, object> {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.CustomerType)] = CustomerType.AssayingLab,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
 
         var result = await dialog.Result;
 

@@ -1,147 +1,113 @@
-﻿@inherits GoldExComponentBase
-
-@if (ShowTitle)
-{
-    <div class="d-flex justify-content-center">
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">اسناد پرداخت</MudText>
-    </div>
-    <MudDivider />
-}
-
-<MudTable T="PaymentVoucherListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
-          Dense="true" ServerData="LoadPaymentVouchersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
-    <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange"
-                                DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense"
-                                Variant="Variant.Outlined"
-                                Class="ml-3"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Rounded="true"
-                                ShowToolbar="false"
-                                Style="max-width: 320px;"
-                                PlaceholderStart="از"
-                                PlaceholderEnd="تا" 
-                                Label="تاریخ پرداخت"
-                                Clearable="true" />
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButtonGroup Size="Size.Small" Color="VoucherTypeColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@VoucherTypeIcon">@(_voucherType?.GetDisplayName() ?? "همه")</MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Info"
-                                 OnClick="() => SetVoucherTypeFilterText(null)">
-                        همه
-                    </MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success"
-                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.PrepaymentToSupplier)">
-                        @PaymentVoucherType.PrepaymentToSupplier.GetDisplayName()
-                    </MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.PriceCheck" IconColor="Color.Primary"
-                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.RefundToCustomer)">
-                        @PaymentVoucherType.RefundToCustomer.GetDisplayName()
-                    </MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
-                ثبت سند جدید
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+<section class="finance-directory" aria-label="اسناد پرداخت">
+    <header class="finance-heading">
+        <div><h1>اسناد پرداخت <span class="finance-count">@(_loading ? "…" : $"{_total:N0} سند")</span></h1>
+            <p>مدیریت پرداخت‌ها و بازپرداخت‌های مشتریان</p></div>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="OnCreate" Class="finance-create">سند جدید</MudButton>
+    </header>
+    <div class="finance-filters">
+        <div class="finance-toolbar">
+            <MudTextField T="string" Value="SearchQuery" ValueChanged="OnSearch" Immediate="true" DebounceInterval="450"
+                          Clearable="true" Label="جستجوی سند" Placeholder="شماره سند، نام طرف حساب"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+            <MudButton Variant="Variant.Outlined" Class="finance-filter-button" StartIcon="@Icons.Material.Outlined.Tune" OnClick="OpenFilters"
+                       Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)" aria-label="فیلتر اسناد پرداخت">
+                <span class="finance-filter-label">فیلترها</span>
+                @if (ActiveFilterCount > 0) { <span class="finance-filter-count">@ActiveFilterCount</span> }
             </MudButton>
-        </MudHidden>
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
-                           OnClick="@(_ => OnCreate())" Size="@Size.Small"
-                           Class="mr-3"
-                           Variant="@Variant.Filled"></MudIconButton>
-        </MudHidden>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="PaymentVoucherListVm">شماره سند</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="VoucherType" T="PaymentVoucherListVm">نوع سند</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="PaymentVoucherListVm">طرف حساب</MudTableSortLabel></MudTh>
-        <MudTh>شماره تماس</MudTh>
-        <MudTh>ارزش کل</MudTh>
-        <MudTh><MudTableSortLabel SortLabel="PaymentDate" T="PaymentVoucherListVm">تاریخ پرداخت</MudTableSortLabel></MudTh>
-        <MudTh>پرداخت از حساب</MudTh>
-        <MudTh>عملیات</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="شماره سند">@context.VoucherNumber</MudTd>
-        <MudTd DataLabel="نوع سند">@context.VoucherType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="طرف حساب">@context.SupplierName</MudTd>
-        <MudTd DataLabel="شماره تماس">@context.SupplierPhoneNumber</MudTd>
-        <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
-        <MudTd DataLabel="تاریخ پرداخت">
-            <MudTooltip Text="@($"تاریخ ایجاد: {context.CreatedAt}")" Placement="Placement.Top" Arrow="true">
-                @context.PaymentDate.ToShortDateString()
-            </MudTooltip>
-        </MudTd>
-        <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
-       
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
-                @if (context.InvoiceId.HasValue)
-                {
-                    <MudTooltip Text="مشاهده فاکتور">
-                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Info" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
-                    </MudTooltip>
-                }
-                else
-                {
-                    <MudTooltip Text="ویرایش سند">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Primary" OnClick="() => OnEdit(context)"></MudIconButton>
-                    </MudTooltip>
-                    <MudTooltip Text="حذف سند">
-                        <MudIconButton OnClick="@(() => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                       Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                    </MudTooltip>
-                }
-            </div>
-        </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText>هیچ سندی یافت نشد</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>در حال بارگیری</MudText>
-    </LoadingContent>
-    <PagerContent>
-        @{
-            var totalItems = _table.GetFilteredItemsCount();
-            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
-        }
-
-        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
-            <div class="mud-table-pagination-caption">
-                @infoText
-            </div>
-            <MudPagination SelectedChanged="PageChanged"
-                           Selected="@(_table.CurrentPage + 1)"
-                           Color="Color.Primary"
-                           Count="@pageCount"
-                           Class="justify-center"
-                           BoundaryCount="1"
-                           MiddleCount="3" />
-
-            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                @infoText
-            </div>
+            <MudSelect T="string" Class="finance-sort" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                <MudSelectItem Value="@("PaymentDate")">تاریخ پرداخت</MudSelectItem>
+                <MudSelectItem Value="@("VoucherNumber")">شماره سند</MudSelectItem>
+                <MudSelectItem Value="@("VoucherType")">نوع سند</MudSelectItem>
+                <MudSelectItem Value="@("Customer.FullName")">طرف حساب</MudSelectItem>
+            </MudSelect>
+            <div class="finance-sort-direction"><MudIconButton Icon="@(_sortDescending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                             OnClick="ToggleSortDirection" aria-label="تغییر جهت مرتب‌سازی" /></div>
         </div>
-    </PagerContent>
-</MudTable>
+    </div>
+    <div class="finance-results" aria-busy="@_loading">
+        @if (_loading)
+        {
+            <div class="finance-skeleton" role="status" aria-label="در حال بارگذاری">
+                @for(var i=0;i<5;i++){ <span></span> }
+            </div>
+        }
+        else if (_loadFailed || _items.Count == 0)
+        {
+            <div class="finance-empty">
+                <MudIcon Icon="@(_loadFailed ? Icons.Material.Outlined.ErrorOutline : Icons.Material.Outlined.ReceiptLong)" />
+                <strong>@(_loadFailed ? "دریافت اسناد پرداخت انجام نشد" : "سند پرداختی پیدا نشد")</strong>
+                <p>@(_loadFailed ? "اتصال را بررسی کنید." : "جستجو یا فیلترها را تغییر دهید.")</p>
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(_loadFailed ? LoadAsync : ResetFilters)">
+                    @(_loadFailed ? "تلاش دوباره" : "پاک کردن فیلترها")
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <div class="finance-desktop">
+                <table class="finance-table">
+                    <thead><tr><th>سند</th><th>تاریخ</th><th>طرف حساب</th><th>مبلغ</th><th>نوع پرداخت</th><th>حساب</th><th>عملیات</th></tr></thead>
+                    <tbody>
+                    @foreach(var item in _items)
+                    {
+                        <tr @key="item.Id">
+                            <td><span class="finance-number">#@item.VoucherNumber</span></td>
+                            <td>@item.PaymentDate.ToShortDateString()</td>
+                            <td><div class="finance-person"><strong>@item.SupplierName</strong><small>@item.SupplierPhoneNumber</small></div></td>
+                            <td><span class="finance-money">@item.Amount.ToCurrencyFormat(item.PriceUnit)</span></td>
+                            <td>@item.VoucherType.GetDisplayName()</td>
+                            <td>@item.FinancialAccountType.GetDisplayName()</td>
+                            <td><div class="finance-actions">
+                                @if(item.InvoiceId.HasValue)
+                                { <button type="button" title="مشاهده فاکتور" aria-label="مشاهده فاکتور" @onclick="() => OnViewInvoice(item)"><ShellIcon Name="eye" /></button> }
+                                else
+                                {
+                                    <button type="button" title="ویرایش سند" aria-label="ویرایش سند" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                    <button type="button" class="is-danger" title="حذف سند" aria-label="حذف سند" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
+                                }
+                            </div></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <div class="finance-mobile">
+                @foreach(var item in _items)
+                {
+                    <article class="finance-card" @key="item.Id">
+                        <header><span class="finance-number">#@item.VoucherNumber</span><time>@item.PaymentDate.ToShortDateString()</time><span class="finance-kind">@item.VoucherType.GetDisplayName()</span></header>
+                        <div class="finance-card-main">
+                            <div class="finance-person"><small>طرف حساب</small><strong>@item.SupplierName</strong></div>
+                            <strong class="finance-money">@item.Amount.ToCurrencyFormat(item.PriceUnit)</strong>
+                        </div>
+                        <div class="finance-card-meta"><span>@item.FinancialAccountType.GetDisplayName()</span>
+                            @if(!string.IsNullOrWhiteSpace(item.SupplierPhoneNumber)){ <span>@item.SupplierPhoneNumber</span> }
+                        </div>
+                        <footer><span>سند پرداخت</span><div class="finance-actions">
+                            @if(item.InvoiceId.HasValue)
+                            { <button type="button" title="مشاهده فاکتور" aria-label="مشاهده فاکتور" @onclick="() => OnViewInvoice(item)"><ShellIcon Name="eye" /></button> }
+                            else
+                            {
+                                <button type="button" title="ویرایش سند" aria-label="ویرایش سند" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                <button type="button" class="is-danger" title="حذف سند" aria-label="حذف سند" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
+                            }
+                        </div></footer>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+    <footer class="finance-pagination">
+        <label>تعداد ردیف<select value="@_pageSize" @onchange="ChangePageSize" aria-label="تعداد سند در صفحه">
+            <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+        </select></label>
+        <nav><button type="button" disabled="@(_loading || _pageIndex == 0)" @onclick="() => ChangePage(-1)">قبلی</button>
+            <span>@(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(_loading || _pageIndex + 1 >= PageCount)" @onclick="() => ChangePage(1)">بعدی</button>
+        </nav>
+    </footer>
+</section>

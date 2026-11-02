@@ -1,16 +1,10 @@
-﻿@attribute [Route(ClientRoutes.Reporting.CustomerTransactions)]
+@attribute [Route(ClientRoutes.Reporting.CustomerTransactions)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits CustomerTransactionsPageBase
 
 <PageTitle>گردش حساب مشتری</PageTitle>
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
-
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="gex-report-page">
     <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
         <CustomerTransactionFilters Model="@Filters" />
     </ReportFiltersBase>

@@ -1,0 +1,141 @@
+.invoice-payment-dialog{min-width:0;color:var(--mud-palette-text-primary)}
+.invoice-payment-hint{font-size:.82rem;color:var(--mud-palette-text-secondary);margin:0 0 10px}
+.invoice-payment-add-actions{display:flex;flex-wrap:wrap;gap:7px;padding-bottom:14px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.invoice-payment-add-actions ::deep .mud-button-root{min-height:39px;border-radius:10px;padding:6px 11px;font-weight:500;font-size:.79rem}
+.invoice-payment-desktop{margin-top:12px;border:1px solid var(--mud-palette-lines-default);border-radius:12px;overflow:auto}
+.invoice-payment-table{width:100%;min-width:860px;table-layout:fixed;border-collapse:collapse;text-align:start;font-size:.81rem}
+.invoice-payment-col-type{width:15%}
+.invoice-payment-col-amount{width:21%}
+.invoice-payment-col-date{width:13%}
+.invoice-payment-col-description{width:38%}
+.invoice-payment-col-actions{width:13%}
+.invoice-payment-table th{text-align:start;padding:10px;color:var(--mud-palette-text-secondary);font-weight:500;background:var(--mud-palette-background);border-bottom:1px solid var(--mud-palette-lines-default)}
+.invoice-payment-table td{padding:10px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.invoice-payment-table tr:last-child td{border:0}
+.invoice-payment-table td strong{font-weight:600;white-space:nowrap}
+.invoice-payment-description{display:block;max-width:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.7;text-align:start}
+.invoice-payment-row-actions{display:flex;align-items:center;gap:6px}
+.invoice-payment-row-actions button{height:33px;width:33px;display:grid;place-items:center;border:1px solid var(--mud-palette-lines-default);border-radius:9px;background:var(--mud-palette-surface);color:var(--mud-palette-primary);cursor:pointer}
+.invoice-payment-row-actions button.is-danger{color:var(--mud-palette-error)}
+.invoice-payment-row-actions ::deep .gex-shell-icon{width:17px;height:17px}
+.invoice-payment-mobile{display:none}
+.invoice-payment-totals{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.invoice-payment-totals>div{flex:1 1 180px;display:flex;justify-content:space-between;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;background:var(--mud-palette-background)}
+.invoice-payment-totals span{font-size:.77rem;color:var(--mud-palette-text-secondary)}
+.invoice-payment-totals strong{font-size:.85rem;font-weight:600;overflow-wrap:anywhere;text-align:end}
+.invoice-payment-totals .is-receipt{color:var(--mud-palette-success)}
+.invoice-payment-totals .is-payment{color:var(--mud-palette-error)}
+.invoice-payment-empty{min-height:150px;display:grid;align-content:center;justify-items:center;gap:7px;color:var(--mud-palette-text-secondary);text-align:center}
+.invoice-payment-empty strong{font-size:.9rem;font-weight:500;color:var(--mud-palette-text-primary)}
+.invoice-payment-empty span{font-size:.78rem}
+@media(max-width:699px){
+.invoice-payment-add-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.invoice-payment-add-actions ::deep .mud-button-root{padding:5px 4px;min-width:0;min-height:41px;font-size:.7rem}
+.invoice-payment-add-actions ::deep .mud-button-icon-start{margin-inline-end:3px}
+.invoice-payment-desktop{display:none}
+.invoice-payment-mobile{display:grid;gap:8px;margin-top:11px}
+.invoice-payment-card{padding:10px 11px;border-radius:12px;border:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-surface)}
+.invoice-payment-card-primary{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.invoice-payment-card-primary strong{font-size:.82rem;font-weight:600;text-align:end;overflow-wrap:anywhere}
+.invoice-payment-card-type{display:grid;gap:3px;min-width:0}
+.invoice-payment-card-type span{font-size:.81rem;font-weight:500}
+.invoice-payment-card-type small{font-size:.7rem;color:var(--mud-palette-text-secondary)}
+.invoice-payment-card p{font-size:.74rem;color:var(--mud-palette-text-secondary);margin:6px 0 0;overflow-wrap:anywhere}
+.invoice-payment-card .invoice-payment-row-actions{justify-content:flex-end;margin-top:7px}
+.invoice-payment-totals{gap:6px}
+.invoice-payment-totals>div{flex-basis:100%;padding:8px 10px}
+}
+/* Settlement wizard: direction -> method -> review. */
+.invoice-settlement{min-width:0;color:var(--mud-palette-text-primary)}
+.invoice-settlement-progress{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 2px 15px;margin-bottom:17px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.invoice-settlement-progress>span:not(.invoice-settlement-progress-line){flex:none;color:var(--mud-palette-text-secondary);font-size:.75rem;font-weight:400;white-space:nowrap}
+.invoice-settlement-progress>span.is-current{color:var(--mud-palette-primary);font-weight:600}
+.invoice-settlement-progress>span.is-complete{color:var(--mud-palette-success)}
+.invoice-settlement-progress-line{height:1px;flex:1;min-width:8px;background:var(--mud-palette-lines-default)}
+.invoice-settlement-intro{margin-bottom:16px}
+.invoice-settlement-eyebrow{display:block;margin-bottom:5px;color:var(--mud-palette-primary);font-size:.73rem;font-weight:500}
+.invoice-settlement-intro h3,.invoice-settlement-review-heading h3{font-size:1.08rem;font-weight:600;line-height:1.65;margin:0}
+.invoice-settlement-intro p,.invoice-settlement-review-heading p{font-size:.82rem;line-height:1.8;color:var(--mud-palette-text-secondary);margin:5px 0 0}
+.invoice-settlement-directions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.invoice-settlement-direction{display:flex;align-items:flex-start;text-align:start;gap:13px;padding:20px 17px;min-width:0;min-height:170px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:18px;color:var(--mud-palette-text-primary);font:inherit;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.invoice-settlement-direction:hover,.invoice-settlement-direction:focus-visible{border-color:var(--mud-palette-primary);background:rgba(var(--mud-palette-primary-rgb),.045);box-shadow:0 8px 24px rgba(0,0,0,.065);transform:translateY(-2px)}
+.invoice-settlement-direction:focus-visible,.invoice-settlement-method:focus-visible{outline:2px solid var(--mud-palette-primary);outline-offset:3px}
+.invoice-settlement-direction-icon{flex:0 0 54px;display:grid;place-items:center;width:54px;height:54px;border-radius:15px}
+.invoice-settlement-direction.is-receive .invoice-settlement-direction-icon{background:rgba(var(--mud-palette-success-rgb),.11);color:var(--mud-palette-success)}
+.invoice-settlement-direction.is-pay .invoice-settlement-direction-icon{background:rgba(var(--mud-palette-primary-rgb),.1);color:var(--mud-palette-primary)}
+.invoice-settlement-direction-icon ::deep .mud-icon-root{font-size:29px}
+.invoice-settlement-direction-info{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:9px}
+.invoice-settlement-direction-info strong{font-weight:600;font-size:1rem}
+.invoice-settlement-direction-info small{font-size:.8rem;color:var(--mud-palette-text-secondary);line-height:1.8;font-weight:400}
+.invoice-settlement-direction-info>span{display:flex;align-items:center;gap:6px;margin-top:5px;color:var(--mud-palette-primary);font-size:.79rem;font-weight:500}
+.invoice-settlement-review-link{display:flex;align-items:center;gap:9px;width:100%;margin-top:14px;padding:12px 14px;border:1px dashed var(--mud-palette-lines-default);border-radius:12px;background:var(--mud-palette-background);font:inherit;color:var(--mud-palette-primary);font-size:.82rem;cursor:pointer}
+.invoice-settlement-review-link ::deep .mud-icon-root:last-child{margin-inline-start:auto}
+.invoice-settlement-method-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.invoice-settlement-back{display:flex;align-items:center;gap:5px;padding:8px 10px;background:none;border:1px solid var(--mud-palette-lines-default);border-radius:10px;color:var(--mud-palette-text-primary);font:inherit;font-size:.8rem;cursor:pointer}
+.invoice-settlement-selected-side{display:flex;align-items:center;gap:7px;border-radius:10px;padding:8px 11px;background:var(--mud-palette-background);color:var(--mud-palette-primary);font-size:.79rem}
+.invoice-settlement-selected-side.is-receive{color:var(--mud-palette-success)}
+.invoice-settlement-methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.invoice-settlement-method{display:flex;align-items:flex-start;flex-direction:column;gap:7px;text-align:start;min-height:142px;padding:15px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:14px;color:var(--mud-palette-text-primary);font:inherit;cursor:pointer;transition:background .17s ease,border-color .17s ease,transform .17s ease}
+.invoice-settlement-method:hover,.invoice-settlement-method:focus-visible{background:rgba(var(--mud-palette-primary-rgb),.045);border-color:var(--mud-palette-primary);transform:translateY(-2px)}
+.invoice-settlement-method-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:rgba(var(--mud-palette-primary-rgb),.08);color:var(--mud-palette-primary)}
+.invoice-settlement-method strong{font-size:.84rem;font-weight:500}
+.invoice-settlement-method small{font-size:.72rem;line-height:1.7;font-weight:400;color:var(--mud-palette-text-secondary)}
+.invoice-settlement-review-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:15px}
+.invoice-settlement-add-more{display:inline-flex;flex:none;align-items:center;gap:5px;padding:9px 12px;border-radius:10px;background:rgba(var(--mud-palette-primary-rgb),.075);border:1px solid var(--mud-palette-primary);color:var(--mud-palette-primary);font:inherit;font-size:.8rem;cursor:pointer}
+@media(max-width:699px){
+.invoice-settlement-progress{gap:5px;margin-bottom:12px}
+.invoice-settlement-progress>span:not(.invoice-settlement-progress-line){font-size:.64rem}
+.invoice-settlement-intro h3,.invoice-settlement-review-heading h3{font-size:.92rem}
+.invoice-settlement-intro p,.invoice-settlement-review-heading p{font-size:.75rem}
+.invoice-settlement-directions{grid-template-columns:1fr;gap:9px}
+.invoice-settlement-direction{min-height:119px;padding:14px 12px;gap:11px;border-radius:14px}
+.invoice-settlement-direction-icon{width:44px;height:44px;flex-basis:44px;border-radius:11px}
+.invoice-settlement-direction-icon ::deep .mud-icon-root{font-size:24px}
+.invoice-settlement-direction-info{gap:5px}
+.invoice-settlement-direction-info strong{font-size:.9rem}
+.invoice-settlement-direction-info small{font-size:.74rem}
+.invoice-settlement-methods{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.invoice-settlement-method{min-height:130px;padding:11px;border-radius:12px}
+.invoice-settlement-method small{font-size:.7rem}
+.invoice-settlement-selected-side{font-size:.72rem}
+.invoice-settlement-review-heading{align-items:flex-start}
+.invoice-settlement-add-more{font-size:.73rem;padding:8px}
+}
+@media(max-width:370px){.invoice-settlement-methods{grid-template-columns:1fr}.invoice-settlement-method{min-height:95px}}
+@media(prefers-reduced-motion:reduce){.invoice-settlement-direction,.invoice-settlement-method{transition:none}}
+.invoice-settlement-balance{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px 14px;border-radius:12px;background:var(--mud-palette-background);font-size:.8rem}
+.invoice-settlement-balance span{color:var(--mud-palette-text-secondary)}
+.invoice-settlement-balance strong{font-size:.9rem;font-weight:600;color:var(--mud-palette-primary);text-align:end;overflow-wrap:anywhere}
+.invoice-settlement-review-balance{margin-top:9px}
+@media(max-width:699px){.invoice-settlement-balance{flex-wrap:wrap;gap:5px;padding:10px}.invoice-settlement-balance strong{font-size:.83rem}}
+/* Method icon and heading share one row; the description remains below. */
+.invoice-settlement-method-top{display:flex;align-items:center;gap:10px;min-width:0;width:100%}
+.invoice-settlement-method-top .invoice-settlement-method-icon{flex:0 0 38px;width:38px;height:38px}
+.invoice-settlement-method-top strong{font-size:.85rem;font-weight:500;line-height:1.55;min-width:0;overflow-wrap:anywhere}
+.invoice-settlement-method{min-height:115px;gap:9px;justify-content:flex-start}
+.invoice-settlement-method small{padding-inline-start:48px;font-size:.72rem;line-height:1.65}
+.invoice-settlement-direction-info strong{font-weight:500}
+.invoice-settlement-intro h3,.invoice-settlement-review-heading h3{font-weight:500}
+.invoice-settlement-progress>span.is-current{font-weight:500}
+.invoice-settlement-balance strong,.invoice-payment-table td strong,
+.invoice-payment-totals strong,.invoice-payment-card-primary strong{font-weight:500}
+.invoice-settlement-stage{min-width:0;animation:invoice-settlement-enter .24s cubic-bezier(.2,.78,.25,1) both}
+.invoice-settlement-stage.is-leaving{pointer-events:none;animation:invoice-settlement-leave .14s ease-in both}
+@keyframes invoice-settlement-enter{
+ from{opacity:0;transform:translate3d(12px,5px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes invoice-settlement-leave{
+ from{opacity:1;transform:translate3d(0,0,0)}
+ to{opacity:0;transform:translate3d(-9px,-2px,0)}
+}
+@media(max-width:699px){
+.invoice-settlement-method{min-height:106px;gap:7px}
+.invoice-settlement-method-top{gap:7px}
+.invoice-settlement-method-top .invoice-settlement-method-icon{flex-basis:33px;width:33px;height:33px}
+.invoice-settlement-method-top strong{font-size:.79rem;font-weight:500}
+.invoice-settlement-method small{padding-inline-start:40px;font-size:.7rem;line-height:1.55}
+}
+@media(prefers-reduced-motion:reduce){
+.invoice-settlement-stage,.invoice-settlement-stage.is-leaving{animation:none!important;transform:none!important;opacity:1!important}
+}

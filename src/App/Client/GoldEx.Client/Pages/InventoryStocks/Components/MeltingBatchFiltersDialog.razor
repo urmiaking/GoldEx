@@ -1,0 +1,47 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="gex-directory-filter-form">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="MeltingBatchStatus?" Label="وضعیت درخواست" Value="_status" ValueChanged="@(s => _status = s)"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Class="w-100" Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.Whatshot">
+                        <MudSelectItem T="MeltingBatchStatus?" Value="@(null as MeltingBatchStatus?)">همه درخواست‌ها</MudSelectItem>
+                        <MudSelectItem T="MeltingBatchStatus?" Value="@((MeltingBatchStatus?)MeltingBatchStatus.Melting)">@MeltingBatchStatus.Melting.GetDisplayName()</MudSelectItem>
+                        <MudSelectItem T="MeltingBatchStatus?" Value="@((MeltingBatchStatus?)MeltingBatchStatus.SentToLab)">@MeltingBatchStatus.SentToLab.GetDisplayName()</MudSelectItem>
+                        <MudSelectItem T="MeltingBatchStatus?" Value="@((MeltingBatchStatus?)MeltingBatchStatus.Completed)">@MeltingBatchStatus.Completed.GetDisplayName()</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="@(r => _dateRange = r)"
+                        Label="تاریخ ثبت" Variant="Variant.Outlined" Margin="Margin.Dense"
+                        DisplayMonths="1" MaxMonthColumns="1" ShowToolbar="false" Clearable="true"
+                        Adornment="Adornment.Start" Class="w-100 gex-filter-date-range" />
+                </MudItem>
+                <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort">
+                    <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sort" ValueChanged="@(s => _sort = s)"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Class="w-100">
+                        <MudSelectItem Value="@("BatchNumber")">شماره درخواست</MudSelectItem>
+                        <MudSelectItem Value="@("Weight")">وزن برآوردی</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort">
+                    <MudSelect T="bool" Label="ترتیب نمایش" @bind-Value="_descending" Variant="Variant.Outlined" Margin="Margin.Dense" Class="w-100">
+                        <MudSelectItem T="bool" Value="true">نزولی</MudSelectItem>
+                        <MudSelectItem T="bool" Value="false">صعودی</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Delete" OnClick="Clear">بازنشانی</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check" OnClick="Apply">اعمال فیلترها</MudButton>
+    </DialogActions>
+</EditorDialogFrame>

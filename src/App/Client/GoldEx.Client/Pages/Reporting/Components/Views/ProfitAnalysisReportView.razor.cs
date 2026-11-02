@@ -11,8 +11,19 @@ public partial class ProfitAnalysisReportView
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public EventCallback OnPrintReport { get; set; }
     private ProfitAnalysisRow? _expandedItem;
+    private ProfitAnalysisRpResponse? _lastReport;
+    private List<ProfitAnalysisRow> _allItems = [];
+    private ICollection<ProfitAnalysisRow> AllItems => _allItems;
     private bool ShowExchangeRate => Report?.Summaries.Any(x => x.ExchangeRateEffect != 0) == true;
-    protected override void OnParametersSet() => _expandedItem = null;
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(Report, _lastReport))
+        {
+            _lastReport = Report;
+            _allItems = Report?.Items.ToList() ?? [];
+            _expandedItem = null;
+        }
+    }
     private void ToggleDetails(ProfitAnalysisRow item) => _expandedItem = ReferenceEquals(item, _expandedItem) ? null : item;
     private static string Money(decimal? amount, string unit) => amount?.ToCurrencyFormat(unit) ?? "—";
     private static string InvoiceUrl(long number, InvoiceType type) => $"/invoices/viewer/{number}/{type}";

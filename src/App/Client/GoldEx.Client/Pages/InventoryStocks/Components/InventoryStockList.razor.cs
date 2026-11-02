@@ -162,6 +162,8 @@ public partial class InventoryStockList
     {
         await base.OnParametersSetAsync();
 
+        if (Selectable) return; // Selection owns its independent filters, pagination and loading.
+
         if (ItemType == default) 
             ItemType = SelectableTypes.First();
 
@@ -266,6 +268,11 @@ public partial class InventoryStockList
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (Selectable)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+            return;
+        }
         if (firstRender)
         {
             await LoadCategoriesAsync();

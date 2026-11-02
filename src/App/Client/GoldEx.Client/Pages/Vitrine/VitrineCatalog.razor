@@ -12,6 +12,7 @@
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
 @inject IStoreContext StoreContext
+@inject IJSRuntime JsRuntime
 
 <PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
 
@@ -162,35 +163,6 @@
                 </button>
             </div>
         }
-    </div>
-
-    <!-- Mobile Off-Canvas Filter Drawer -->
-    <div class="catalog-drawer-backdrop @(_isFilterDrawerOpen ? "open" : "")" @onclick="CloseFilterDrawer"></div>
-
-    <div class="catalog-filter-drawer @(_isFilterDrawerOpen ? "open" : "")" aria-hidden="@(!_isFilterDrawerOpen)">
-        <div class="catalog-drawer-header">
-            <div class="d-flex align-items-center gap-2">
-                <i class="fa-solid fa-sliders" style="color: var(--accent-color); font-size: 1.1rem;"></i>
-                <span class="catalog-drawer-title">فیلترها و دسته‌بندی‌ها</span>
-                @if (ActiveFiltersCount > 0)
-                {
-                    <span class="active-filter-badge">@ActiveFiltersCount</span>
-                }
-            </div>
-            <button type="button" class="catalog-drawer-close" @onclick="CloseFilterDrawer" aria-label="بستن فیلترها">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div class="catalog-drawer-body">
-            @FilterWidgetsContent
-        </div>
-
-        <div class="catalog-drawer-footer">
-            <button type="button" class="btn-gisu btn-gisu-primary" style="width: 100%; justify-content: center; font-size: 0.92rem; padding: 12px;" @onclick="CloseFilterDrawer">
-                <span>مشاهده محصولات (@FilteredProducts.Count کالا)</span>
-            </button>
-        </div>
     </div>
 
     <!-- Main Shop Layout: Sidebar Right, Products Left -->
@@ -384,6 +356,35 @@
         </section>
 
     </main>
+</div>
+
+<!-- Mobile Off-Canvas Filter Drawer -->
+<div class="catalog-drawer-backdrop @(_isFilterDrawerOpen ? "open" : "")" @onclick="CloseFilterDrawer"></div>
+
+<div class="catalog-filter-drawer @(_isFilterDrawerOpen ? "open" : "")" aria-hidden="@(!_isFilterDrawerOpen)">
+    <div class="catalog-drawer-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-sliders" style="color: var(--accent-color); font-size: 1.1rem;"></i>
+            <span class="catalog-drawer-title">فیلترها و دسته‌بندی‌ها</span>
+            @if (ActiveFiltersCount > 0)
+            {
+                <span class="active-filter-badge">@ActiveFiltersCount</span>
+            }
+        </div>
+        <button type="button" class="catalog-drawer-close" @onclick="CloseFilterDrawer" aria-label="بستن فیلترها">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="catalog-drawer-body">
+        @FilterWidgetsContent
+    </div>
+
+    <div class="catalog-drawer-footer">
+        <button type="button" class="btn-gisu btn-gisu-primary" style="width: 100%; justify-content: center; font-size: 0.92rem; padding: 12px;" @onclick="CloseFilterDrawer">
+            <span>مشاهده محصولات (@FilteredProducts.Count کالا)</span>
+        </button>
+    </div>
 </div>
 
 @code {
@@ -797,6 +798,15 @@
     public void Dispose()
     {
         _persistingSubscription.Dispose();
+        if (_isFilterDrawerOpen)
+        {
+            _isFilterDrawerOpen = false;
+            try
+            {
+                _ = JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", false);
+            }
+            catch { }
+        }
     }
 
     private void ResetVisibleCount()
@@ -816,14 +826,24 @@
         StateHasChanged();
     }
 
-    private void OpenFilterDrawer()
+    private async Task OpenFilterDrawer()
     {
         _isFilterDrawerOpen = true;
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", true);
+        }
+        catch { }
     }
 
-    private void CloseFilterDrawer()
+    private async Task CloseFilterDrawer()
     {
         _isFilterDrawerOpen = false;
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", false);
+        }
+        catch { }
     }
 
     private void ToggleOnlyAvailable()

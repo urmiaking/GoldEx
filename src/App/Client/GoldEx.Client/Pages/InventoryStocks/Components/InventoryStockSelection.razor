@@ -1,0 +1,98 @@
+@using GoldEx.Client.Pages.InventoryStocks.ViewModels
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+
+<section class="stock-selector" aria-label="انتخاب کالا از انبار">
+    <div class="stock-selector-toolbar">
+        <MudTextField T="string" Value="@_search" ValueChanged="OnSearch" Immediate="true" DebounceInterval="450"
+                      Clearable="true" Label="جست‌وجوی کالا" Placeholder="نام جنس، بارکد یا شماره انگ"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                      Margin="Margin.Dense" Variant="Variant.Outlined" />
+        <MudButton Class="stock-selector-filter-button" Variant="Variant.Outlined"
+                   Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)"
+                   StartIcon="@Icons.Material.Outlined.Tune" OnClick="OpenFilters"
+                   aria-label="فیلتر انتخاب کالا">
+            فیلترها
+            @if (ActiveFilterCount > 0) { <span class="stock-selector-filter-count">@ActiveFilterCount</span> }
+        </MudButton>
+    </div>
+    <div class="stock-selector-current">
+        <span>@_type.GetDisplayName()</span>
+        @if (ShowItemStatus) { <span>@_status.GetDisplayName()</span> }
+    </div>
+    <div class="stock-selector-selection">
+        <span>@_selected.Count قلم انتخاب‌شده</span>
+        @if (_selected.Count > 0)
+        { <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" OnClick="ClearSelection">لغو انتخاب‌ها</MudButton> }
+    </div>
+    <div class="stock-selector-results" aria-busy="@_loading">
+        @if (_loading)
+        {
+            <div class="stock-selector-loading" role="status">
+                @for(var i=0;i<5;i++){ <div><span></span><span></span><span></span></div> }
+            </div>
+        }
+        else if (_loadFailed)
+        {
+            <div class="stock-selector-empty" role="alert">
+                دریافت موجودی انجام نشد.
+                <MudButton Variant="Variant.Outlined" OnClick="LoadAsync">تلاش دوباره</MudButton>
+            </div>
+        }
+        else if (_items.Count == 0)
+        {
+            <div class="stock-selector-empty">کالایی با این مشخصات پیدا نشد.</div>
+        }
+        else
+        {
+            <div class="stock-selector-desktop">
+                <table>
+                    <thead><tr><th scope="col">انتخاب</th><th scope="col">کالا / بارکد</th><th scope="col">مشخصات</th><th scope="col">موجودی</th><th scope="col">فروخته‌شده</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in _items)
+                        {
+                            var key = ItemKey(item);
+                            <tr @key="key" class="@(_selected.ContainsKey(key) ? "is-selected" : "")">
+                                <td><MudCheckBox T="bool" Value="@_selected.ContainsKey(key)" ValueChanged="@(value => ToggleItem(item,value))" aria-label="@($"انتخاب {ItemTitle(item)}")" /></td>
+                                <td><strong>@ItemTitle(item)</strong><small>@ItemBarcode(item)</small></td>
+                                <td>@ItemDescription(item)</td>
+                                <td class="stock-selector-amount">@FormatAmount(item, item.CurrentAmount)</td>
+                                <td>@FormatAmount(item, item.SoldAmount)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="stock-selector-mobile">
+                @foreach (var item in _items)
+                {
+                    var key = ItemKey(item);
+                    <article @key="key" class="stock-selector-card @(_selected.ContainsKey(key) ? "is-selected" : "")">
+                        <MudCheckBox T="bool" Value="@_selected.ContainsKey(key)" ValueChanged="@(value => ToggleItem(item,value))" aria-label="@($"انتخاب {ItemTitle(item)}")" />
+                        <div class="stock-selector-card-body">
+                            <div class="stock-selector-card-heading"><strong>@ItemTitle(item)</strong><small>@ItemBarcode(item)</small></div>
+                            <span class="stock-selector-card-description">@ItemDescription(item)</span>
+                            <div class="stock-selector-card-numbers">
+                                <span>موجود: <strong>@FormatAmount(item,item.CurrentAmount)</strong></span>
+                                <span>فروخته: @FormatAmount(item,item.SoldAmount)</span>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+    <footer class="stock-selector-pagination">
+        <label>تعداد ردیف
+            <select aria-label="تعداد ردیف" value="@_pageSize" @onchange="OnPageSizeChanged" disabled="@_loading">
+                <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+            </select>
+        </label>
+        <nav aria-label="صفحه‌بندی انتخاب کالا">
+            <button type="button" disabled="@(_loading || _pageIndex == 0)" @onclick="() => ChangePage(-1)">قبلی</button>
+            <span>@(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(_loading || _pageIndex + 1 >= PageCount)" @onclick="() => ChangePage(1)">بعدی</button>
+        </nav>
+    </footer>
+</section>

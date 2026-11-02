@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -20,6 +21,8 @@ public partial class CurrencyItemEditor
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     public string FinancialAccountLabel => InvoiceType is InvoiceType.Purchase ? "واریز به حساب" : "واریز از حساب";
 
     private List<GetPriceUnitTitleResponse> _currencies = [];
@@ -75,7 +78,7 @@ public partial class CurrencyItemEditor
             });
     }
 
-    public void Close() => MudDialog.Close();
+    public void Close() { if (Session is not null) Session.Cancel(); else MudDialog.Close(); }
 
     private async Task Submit()
     {
@@ -89,7 +92,7 @@ public partial class CurrencyItemEditor
         }
 
         _isProcessing = false;
-        MudDialog.Close(DialogResult.Ok(Model));
+        if (Session is not null) Session.Close(Model); else MudDialog.Close(DialogResult.Ok(Model));
     }
 
     private async Task OnCurrencyChanged(GetPriceUnitTitleResponse? currency)
@@ -158,8 +161,14 @@ public partial class CurrencyItemEditor
             { x => x.SubmitIndependently, true }
         };
 
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
-            parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            new Dictionary<string, object> {
+                [nameof(FinancialAccountEditor.PriceUnits)] = _currencies,
+                [nameof(FinancialAccountEditor.PriceUnit)] = Model.Currency!,
+                [nameof(FinancialAccountEditor.AccountType)] = FinancialAccountType.InternationalBankAccount,
+                [nameof(FinancialAccountEditor.IsSystemAccount)] = true,
+                [nameof(FinancialAccountEditor.SubmitIndependently)] = true
+            }, wide: true);
 
         var result = await dialog.Result;
 

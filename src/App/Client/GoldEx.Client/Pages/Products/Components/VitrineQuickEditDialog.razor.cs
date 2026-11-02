@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -17,6 +18,7 @@ namespace GoldEx.Client.Pages.Products.Components;
 public partial class VitrineQuickEditDialog
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [Parameter] public ProductVm Model { get; set; } = new();
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -97,9 +99,10 @@ public partial class VitrineQuickEditDialog
 
     private async Task UploadImageAsync(IBrowserFile file)
     {
-        if (file == null) return;
+        if (file == null || _isUploading || _isSaving) return;
 
         _isUploading = true;
+        Session?.SetBusy(true);
         try
         {
             using var content = new MultipartFormDataContent();
@@ -131,11 +134,14 @@ public partial class VitrineQuickEditDialog
         finally
         {
             _isUploading = false;
+            Session?.SetBusy(false);
         }
     }
 
     private async Task SaveAsync()
     {
+        if (_isSaving || _isUploading) return;
+
         // Validate required attributes
         var missingRequired = _categoryAttributes.FirstOrDefault(x => x.IsRequired && string.IsNullOrWhiteSpace(x.Value));
         if (missingRequired != null)
@@ -150,11 +156,12 @@ public partial class VitrineQuickEditDialog
 
         if (!Model.Id.HasValue)
         {
-            MudDialog.Close(DialogResult.Ok(Model));
+            Complete(Model);
             return;
         }
 
         _isSaving = true;
+        Session?.SetBusy(true);
         try
         {
             var attrDtos = Model.AttributeValues.Select(x => x.ToDto()).ToList();
@@ -171,17 +178,29 @@ public partial class VitrineQuickEditDialog
                 afterSend: () =>
                 {
                     AddSuccessToast("تنظیمات ویترین با موفقیت ذخیره شد.");
-                    MudDialog.Close(DialogResult.Ok(Model));
+                    Complete(Model);
                     return Task.CompletedTask;
                 });
         }
         finally
         {
             _isSaving = false;
+            Session?.SetBusy(false);
         }
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Complete(ProductVm model)
+    {
+        if (Session is not null) Session.Close(model);
+        else MudDialog.Close(DialogResult.Ok(model));
+    }
+
+    private void Cancel()
+    {
+        if (_isSaving || _isUploading) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
 
     private record UploadImageResponse(string Url);
 }

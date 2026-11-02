@@ -1,16 +1,13 @@
-﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
-
 @inherits GoldExComponentBase
 
 @if (Items is null || IsLoading)
 {
-    if (IsLoading)
+    @if (IsLoading)
     {
-        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
-            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
-        </div>
+        <ReportTableSkeleton />
     }
     else
     {
@@ -19,99 +16,67 @@
 }
 else
 {
-    <MudTable Items="@Items"
-              Virtualize="true"
-              Dense="true"
-              Hover="true"
-              Bordered="true"
-              Striped="true"
-              FixedHeader="true"
-              Breakpoint="Breakpoint.Sm"
-              SortLabel="مرتب ‌سازی"
-              ContainerClass="responsive-table-toolbar"
-              Elevation="24">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">گزارش مانده مشتریان</MudText>
-            <MudSpacer />
-            <MudHidden Breakpoint="Breakpoint.MdAndDown">
-                <MudButton StartIcon="@Icons.Material.Filled.Print"
-                           Class="ml-2"
-                           Color="Color.Success"
-                           Variant="Variant.Filled"
-                           OnClick="@(() => OnPrintReport.InvokeAsync())">
-                    پرینت
-                </MudButton>
-            </MudHidden>
-            <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                <MudIconButton Icon="@Icons.Material.Filled.Print"
-                               Color="Color.Success"
-                               Variant="Variant.Filled"
-                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
-            </MudHidden>
-        </ToolBarContent>
+    <section class="balance-report">
+        <header class="balance-report-heading">
+            <div><h2>گزارش مانده مشتریان</h2><span>@Items.Count ردیف</span></div>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Outlined.Print" OnClick="() => OnPrintReport.InvokeAsync()">
+                چاپ گزارش
+            </MudButton>
+        </header>
+        @if (Items.Count == 0)
+        {
+            <div class="balance-report-empty">برای فیلتر انتخاب‌شده موردی پیدا نشد.</div>
+        }
+        else
+        {
+            <div class="balance-report-desktop">
+                <table>
+                    <thead>
+                    <tr>
+                        <th><button type="button" @onclick='() => SetSort("name")'>طرف حساب @SortIndicator("name")</button></th>
+                        <th>شماره تماس</th>
+                        <th><button type="button" @onclick='() => SetSort("payable")'>حساب پرداختنی @SortIndicator("payable")</button></th>
+                        <th><button type="button" @onclick='() => SetSort("receivable")'>حساب دریافتنی @SortIndicator("receivable")</button></th>
+                        <th><button type="button" @onclick='() => SetSort("net")'>خالص @SortIndicator("net")</button></th>
+                        <th>عملیات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <Virtualize Items="@OrderedItems" Context="row" ItemSize="54" SpacerElement="tr">
+                        <tr @key="row">
+                            <td><strong>@row.CustomerName</strong><small>کد @row.CustomerCode</small></td>
+                            <td>@row.CustomerPhoneNumber</td>
+                            <td><span class="@AmountClass(row.PayableAmount)">@GetAmount(row.PayableAmount,row.PriceUnitTitle)</span></td>
+                            <td><span class="@AmountClass(row.ReceivableAmount)">@GetAmount(row.ReceivableAmount,row.PriceUnitTitle)</span></td>
+                            <td><span class="@NetClass(row)">@GetNetAmount(row)</span></td>
+                            <td><button type="button" class="balance-report-details" @onclick="() => OnViewSource(row)">
+                                <ShellIcon Name="eye" /> ریز تراکنش‌ها
+                            </button></td>
+                        </tr>
+                    </Virtualize>
+                    </tbody>
+                </table>
+            </div>
+            <div class="balance-report-mobile">
+                <Virtualize Items="@OrderedItems" Context="row" ItemSize="160">
+                    <article class="balance-report-card" @key="row">
+                        <header><div><strong>@row.CustomerName</strong><small>کد @row.CustomerCode</small></div>
+                            <span class="@NetClass(row)">@GetNetAmount(row)</span></header>
+                        @if (!string.IsNullOrWhiteSpace(row.CustomerPhoneNumber))
+                        { <small class="balance-report-phone">@row.CustomerPhoneNumber</small> }
+                        <div class="balance-report-values">
+                            <div><small>پرداختنی</small><span class="@AmountClass(row.PayableAmount)">@GetAmount(row.PayableAmount,row.PriceUnitTitle)</span></div>
+                            <div><small>دریافتنی</small><span class="@AmountClass(row.ReceivableAmount)">@GetAmount(row.ReceivableAmount,row.PriceUnitTitle)</span></div>
+                        </div>
+                        <button type="button" class="balance-report-details" @onclick="() => OnViewSource(row)">
+                            <ShellIcon Name="eye" /> ریز تراکنش‌ها
+                        </button>
+                    </article>
+                </Virtualize>
+            </div>
 
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.CustomerName)">
-                    طرف حساب
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                شماره تماس
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.PayableAmount)">
-                    حساب پرداختنی
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.ReceivableAmount)">
-                    حساب دریافتنی
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => (x.PayableAmount + x.ReceivableAmount))">
-                    خالص
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>عملیات</MudTh>
-        </HeaderContent>
-
-        <RowTemplate>
-            <MudTd DataLabel="طرف حساب">@($"{context.CustomerName} ({context.CustomerCode})")</MudTd>
-            <MudTd DataLabel="شماره تماس">@context.CustomerPhoneNumber</MudTd>
-            <MudTd DataLabel="حساب پرداختنی">
-                <MudText Typo="Typo.body2" Color="@GetAmountColor(context.PayableAmount)">
-                    @GetAmount(context.PayableAmount, context.PriceUnitTitle)
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="حساب دریافتنی">
-                <MudText Typo="Typo.body2" Color="@GetAmountColor(context.ReceivableAmount)">
-                    @GetAmount(context.ReceivableAmount, context.PriceUnitTitle)
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="خالص">
-                <MudText Typo="Typo.body2" Color="@GetNetColor(context)">
-                    @GetNetAmount(context)
-                </MudText>
-            </MudTd>
-            <MudTd DataLabel="عملیات">
-                <div class="d-flex gap-2">
-                    <MudButton Size="@Size.Small"
-                               Variant="@Variant.Filled"
-                               EndIcon="@Icons.Material.Filled.ArrowBack"
-                               OnClick="() => OnViewSource(context)"
-                               Color="Color.Info">
-                        ریز تراکنش ها
-                    </MudButton>
-                </div>
-            </MudTd>
-        </RowTemplate>
-
-        <NoRecordsContent>
-            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
-        </NoRecordsContent>
-    </MudTable>
-
+        }
+    </section>
     <CustomerBalanceSummary Summary="@_summary" />
 }

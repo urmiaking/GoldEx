@@ -1,36 +1,28 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @inherits GoldExComponentBase
-
-<MudDialog Class="inventory-item-selector-dialog"
-           ContentClass="inventory-item-selector-content">
+<EditorDialogFrame>
     <DialogContent>
-        <style>
-            .inventory-item-selector-dialog .mud-dialog-content,
-            .inventory-item-selector-content {
-                max-height: 70vh !important;
-                overflow-y: auto !important;
-                overflow-x: auto !important;
-            }
-        </style>
-        <InventoryStockList ItemStatus="ItemStatus" 
-                            Elevation="0"
-                            SelectableTypes="SelectableTypes"
-                            ShowItemStatus="false"
-                            Selectable="true" 
-                            SelectedItemsChanged="OnSelectedItemsChanged">
-        </InventoryStockList>
+        <div class="invoice-stock-picker">
+            <div class="invoice-stock-picker-intro">
+                <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Size="Size.Small" />
+                <div><strong>انتخاب جنس از موجودی</strong><span>اجناس مورد نظر را علامت بزنید؛ سپس انتخاب را تأیید کنید.</span></div>
+            </div>
+            <div class="invoice-stock-picker-list">
+                <InventoryStockList ItemStatus="ItemStatus"
+                                    Elevation="0"
+                                    SelectableTypes="SelectableTypes"
+                                    ShowItemStatus="false"
+                                    Selectable="true"
+                                    SelectedItemsChanged="OnSelectedItemsChanged" />
+            </div>
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Error"
-                   OnClick="Close"
-                   StartIcon="@Icons.Material.Filled.Close"
-                   Variant="Variant.Filled">انصراف</MudButton>
-
-        <MudButton Class="m-2"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Save"
-                   OnClick="OnSubmit"
-                   Variant="Variant.Filled">
-            <MudText>ثبت</MudText>
-        </MudButton>
+        <span class="invoice-stock-picker-selected">@(_selectedItems?.Count ?? 0) قلم انتخاب شده</span>
+        <MudSpacer />
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" Disabled="@_submitting" OnClick="Close">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Check"
+                   Disabled="@(_submitting || _selectedItems is not { Count: > 0 })"
+                   OnClick="OnSubmit">@(_submitting ? "در حال پردازش…" : "افزودن به فاکتور")</MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

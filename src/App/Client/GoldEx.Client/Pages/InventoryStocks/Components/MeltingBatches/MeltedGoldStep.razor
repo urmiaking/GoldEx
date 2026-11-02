@@ -1,10 +1,10 @@
-﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+@using GoldEx.Shared.DTOs.FinancialAccounts
 
 @inherits GoldExComponentBase
 
-<MudPaper Elevation="0">
+<MudPaper Elevation="0" Class="melting-complete-step">
     @* Informational Text *@
-    <div class="d-flex justify-start pr-2 py-3">
+    <div class="melting-step-help">
         <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
         <MudText Class="me-2" Typo="Typo.body2">
             در مرحله آخر، اطلاعات مربوط به طلای آبشده دریافتی از آزمایشگاه را وارد کرده و نرخ آن را تعیین کنید. با اتمام این عملیات، موجودی طلای آبشده به انبار اضافه خواهد شد.
@@ -12,7 +12,7 @@
     </div>
 
     @* Form Fields *@
-    <MudGrid Spacing="6" Class="mt-0">
+    <MudGrid Spacing="3" Class="mt-0 melting-complete-grid">
         <MudItem xs="12" sm="6" md="3">
             <MudNumericField Adornment="Adornment.End"
                              AdornmentText="@Model.PriceUnit?.Title"
@@ -33,7 +33,7 @@
                              Variant="Variant.Outlined"
                              dir="ltr"
                              Format="G29"
-                             AutoFocus="true"
+                             AutoFocus="false"
                              HideSpinButtons="true"
                              DebounceInterval="1"
                              Adornment="Adornment.End"
@@ -59,7 +59,7 @@
                           Margin="Margin.Dense" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="melting-inline-input">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentText="@Model.FeePriceUnit?.Title"
                                  For="() => Model.FeeAmount"
@@ -148,7 +148,7 @@
     </MudGrid>
 
     @* Summary Info *@
-    <div class="d-flex justify-content-between align-center flex-wrap p-2 mt-4">
+    <div class="melting-complete-stats">
         <MudText>وزن کل اجناس ذوب شده: @Model.TotalWeight?.ToWeightFormat(Model.WeightUnitType)</MudText>
         <MudText>وزن کل طلای آبشده: @Model.MeltedGoldWeight?.ToWeightFormat(Model.WeightUnitType)</MudText>
         <MudText>کسری ذوب: @Model.WasteWeight?.ToWeightFormat(Model.WeightUnitType) (@Model.WastePercentage?.ToString("0.##")%)</MudText>
@@ -156,7 +156,7 @@
 
     @if (Model.TotalPrice.HasValue)
     {
-        <div class="d-flex justify-content-between align-center flex-wrap p-2">
+        <div class="melting-complete-stats melting-complete-stats--value">
             <MudText>هزینه ذوب/ری گیری: @Model.FeePrice?.ToCurrencyFormat(Model.PriceUnit?.Title)</MudText>
             <MudText>ارزش طلای آبشده: @Model.MeltedGoldPrice?.ToCurrencyFormat(Model.PriceUnit?.Title)</MudText>
             <MudText>ارزش کل: @Model.TotalPrice?.ToCurrencyFormat(Model.PriceUnit?.Title)</MudText>
@@ -164,11 +164,11 @@
     }
 
     @* Action Button *@
-    <div class="d-flex justify-content-end">
+    <div class="melting-complete-actions">
         <MudButton Variant="Variant.Filled" Color="Color.Success"
                    OnClick="OnCompleteProcess"
                    Disabled="@IsCompleteProcessDisabled"
-                   EndIcon="@Icons.Material.Filled.ArrowBack"
+                   StartIcon="@Icons.Material.Filled.Check"
                    Class="mt-4">
             @if (Processing)
             {

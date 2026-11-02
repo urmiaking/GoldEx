@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -16,6 +17,7 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
 public partial class ProductList
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     private decimal _gramPrice;
     private GetPriceUnitTitleResponse? _gramPriceUnit;
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
@@ -138,12 +140,14 @@ public partial class ProductList
 
     private async Task RemoveItem(ProductItemVm context)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            $"آیا برای حذف جنس {context.Product.Name} مطمئن هستید؟",
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is true)
+        var dialog = ResponsiveDialogs.Show<InventoryEntryConfirmDialog>("حذف از ورود انبار",
+            new Dictionary<string, object> {
+                [nameof(InventoryEntryConfirmDialog.Message)] = $"آیا «{context.Product.Name}» از لیست ورود انبار حذف شود؟",
+                [nameof(InventoryEntryConfirmDialog.ActionLabel)] = "حذف جنس",
+                [nameof(InventoryEntryConfirmDialog.Destructive)] = true
+            });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: true })
         {
             Model.ProductItems.Remove(context);
             await ReleaseReservedBarcode(context);
@@ -170,7 +174,7 @@ public partial class ProductList
             { x => x.PriceUnit, _gramPriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<ProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<ProductItemEditor>("افزودن جنس جدید", new Dictionary<string, object> { [nameof(ProductItemEditor.Model)] = model, [nameof(ProductItemEditor.PriceUnits)] = _priceUnits, [nameof(ProductItemEditor.PriceUnit)] = _gramPriceUnit! }, wide: true);
 
         var result = await dialog.Result;
 
@@ -188,7 +192,7 @@ public partial class ProductList
 
     private async Task UploadExcel()
     {
-        var dialog = await DialogService.ShowAsync<ExcelUploadDialog>("آپلود فایل اکسل", _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = ResponsiveDialogs.Show<ExcelUploadDialog>("ورود اجناس از اکسل", wide: true);
 
         var result = await dialog.Result;
 
@@ -249,7 +253,7 @@ public partial class ProductList
             { x => x.PriceUnit, _gramPriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<ProductItemEditor>("ویرایش جنس", new Dictionary<string, object> { [nameof(ProductItemEditor.Model)] = context, [nameof(ProductItemEditor.PriceUnits)] = _priceUnits, [nameof(ProductItemEditor.PriceUnit)] = _gramPriceUnit! }, wide: true);
 
         var result = await dialog.Result;
 

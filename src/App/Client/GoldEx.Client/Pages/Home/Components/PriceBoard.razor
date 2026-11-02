@@ -5,7 +5,7 @@
     @if (ShowTitle)
     {
         <div class="d-flex justify-content-center">
-            <MudText Typo="Typo.h5" GutterBottom="true">نرخ لحظه ای</MudText>
+            <MudText Typo="Typo.h5" GutterBottom="true" Style="font-weight:500;">نرخ لحظه ای</MudText>
         </div>
         <MudDivider/>
     }
@@ -35,7 +35,7 @@
         @foreach (var group in _items.GroupBy(x => x.Type.GetDisplayName()))
         {
             @* Group Header *@
-            <MudText Typo="Typo.h4" Class="mt-4 mb-2 ml-2 text-center">
+            <MudText Typo="Typo.h4" Class="mt-4 mb-2 ml-2 text-center" Style="font-weight:500;">
                 @group.Key
             </MudText>
             <MudDivider Class="mb-2" DividerType="DividerType.Middle"/>

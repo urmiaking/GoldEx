@@ -5,10 +5,7 @@
 {
     if (IsLoading)
     {
-        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
-            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
-        </div>
+        <ReportTableSkeleton />
     }
     else
     {
@@ -27,7 +24,7 @@ else
               Breakpoint="Breakpoint.Sm"
               SortLabel="مرتب ‌سازی"
               ContainerClass="responsive-table-toolbar"
-              Elevation="24">
+              Elevation="0">
         <ToolBarContent>
             <MudText Typo="Typo.h6">گزارش گردش حساب مشتری</MudText>
             <MudSpacer />

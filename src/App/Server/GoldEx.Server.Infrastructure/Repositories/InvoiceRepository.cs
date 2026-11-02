@@ -32,13 +32,16 @@ internal partial class InvoiceRepository(GoldExDbContext dbContext) : Repository
 
     public async Task<List<Invoice>> GetOverdueInvoicesAsync(CancellationToken cancellationToken = default)
     {
-        return await Query
+        var invoices = await Query
             .Include(x => x.PriceUnit)
             .Include(x => x.Customer)
+            .Include(x => x.InvoicePayments)
             .Where(x => x.DueDate < DateOnly.FromDateTime(DateTime.Now) &&
                         !x.Notifications!.Any())
             .AsNoTracking()
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
+        return invoices.Where(x => x.TotalUnpaidAmount > 0).ToList();
     }
 
     public async Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(

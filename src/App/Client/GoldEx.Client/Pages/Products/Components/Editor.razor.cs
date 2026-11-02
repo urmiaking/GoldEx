@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
@@ -17,6 +18,8 @@ public partial class Editor
 {
     [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private MudForm _form = default!;
     private readonly ProductValidator _productValidator = new();
@@ -79,13 +82,18 @@ public partial class Editor
 
     private async Task Submit()
     {
+        if (_processing || _isUploadingImage) return;
         await _form.ValidateAsync();
 
         if (!_form.IsValid)
             return;
 
+        if (_processing) return;
         _processing = true;
+        Session?.SetBusy(true);
 
+        try
+        {
         var request = ProductVm.ToRequest(Model);
 
         if (!Model.Id.HasValue)
@@ -104,14 +112,24 @@ public partial class Editor
             action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
             afterSend: () =>
             {
-                MudDialog.Close(DialogResult.Ok(true));
+                if (Session is not null) Session.Close(true);
+                else MudDialog.Close(DialogResult.Ok(true));
                 return Task.CompletedTask;
             });
-
-        _processing = false;
+        }
+        finally
+        {
+            _processing = false;
+            Session?.SetBusy(false);
+        }
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close()
+    {
+        if (_processing || _isUploadingImage) return;
+        if (Session is not null) Session.Cancel();
+        else MudDialog.Cancel();
+    }
 
     private void OnProductTypeChanged(ProductType productType)
     {
@@ -186,6 +204,18 @@ public partial class Editor
 
     private async Task OnAddCategory()
     {
+        if (Session is not null)
+        {
+            var nested = ResponsiveDialogs.Show<Settings.Components.Categories.Editor>("افزودن دسته‌بندی جدید");
+            var nestedResult = await nested.Result;
+            if (nestedResult is { Canceled: false, Data: true })
+            {
+                await LoadCategoriesAsync();
+                StateHasChanged();
+            }
+            return;
+        }
+
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
         var dialog = await DialogService.ShowAsync<Settings.Components.Categories.Editor>("افزودن دسته بندی جدید", dialogOptions);
@@ -258,9 +288,10 @@ public partial class Editor
 
     private async Task UploadEditorImageAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
     {
-        if (file == null) return;
+        if (file == null || _processing || _isUploadingImage) return;
 
         _isUploadingImage = true;
+        Session?.SetBusy(true);
         try
         {
             using var content = new MultipartFormDataContent();
@@ -292,6 +323,7 @@ public partial class Editor
         finally
         {
             _isUploadingImage = false;
+            Session?.SetBusy(false);
         }
     }
 

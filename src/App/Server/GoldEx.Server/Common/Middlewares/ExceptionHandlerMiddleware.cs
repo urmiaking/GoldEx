@@ -60,6 +60,9 @@ public class ExceptionHandlerMiddleware(ILogger<ExceptionHandlerMiddleware> logg
             errors.Add(errorGroup.Key, errorMessages);
         }
 
+        if (errors.Count == 0)
+            errors[string.Empty] = [exception.Message];
+
         var problemDetails = new ValidationProblemDetails(errors);
         return JsonSerializer.Serialize(problemDetails);
     }

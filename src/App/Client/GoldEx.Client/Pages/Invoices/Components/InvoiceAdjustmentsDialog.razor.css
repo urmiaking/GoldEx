@@ -1,0 +1,34 @@
+.invoice-adjustments-dialog{min-width:0}
+.invoice-adjustments-intro{display:flex;align-items:flex-start;gap:12px;padding:4px 1px 16px;margin-bottom:12px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.invoice-adjustments-intro-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:rgba(var(--mud-palette-primary-rgb),.09);color:var(--mud-palette-primary);flex:none}
+.invoice-adjustments-intro h3{margin:0;font-size:1rem;font-weight:500;line-height:1.7}
+.invoice-adjustments-intro p{margin:4px 0 0;font-size:.79rem;font-weight:400;line-height:1.75;color:var(--mud-palette-text-secondary)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-list{display:grid;gap:12px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-toolbar>span{font-size:.81rem;color:var(--mud-palette-text-secondary)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-add{border-radius:999px!important;font-weight:500;min-height:38px;padding-inline:13px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-rows{display:grid;gap:10px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-row{padding:12px;border:1px solid var(--mud-palette-lines-default);border-radius:15px;background:var(--mud-palette-surface)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-row-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-row-head span{font-size:.78rem;font-weight:500;color:var(--mud-palette-text-secondary)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-delete{color:var(--mud-palette-error);border:1px solid var(--mud-palette-lines-default);border-radius:50%;width:35px;height:35px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-money{display:flex;align-items:center;min-width:0;gap:6px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-money>.mud-input-control{flex:1 1 auto;min-width:0}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-unit{flex:0 0 auto}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-unit .mud-icon-button{border-radius:50%;border:1px solid var(--mud-palette-lines-default)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-fields .mud-input-control{width:100%;min-width:0;margin:0}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-rate{grid-column:1/-1}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-summary{border-radius:13px;background:var(--mud-palette-background);padding:12px 13px;display:grid;gap:7px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-summary>div{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-summary span{font-size:.78rem;color:var(--mud-palette-text-secondary)}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-summary strong{font-size:.88rem;font-weight:500;overflow-wrap:anywhere}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-fill{justify-self:start;border-radius:999px!important;min-height:35px;font-size:.77rem;font-weight:500}
+@media(max-width:599px){
+.invoice-adjustments-intro{gap:9px}
+.invoice-adjustments-intro-icon{width:38px;height:38px;border-radius:12px}
+.invoice-adjustments-intro h3{font-size:.91rem}
+.invoice-adjustments-intro p{font-size:.74rem}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-row{padding:10px}
+.invoice-adjustments-dialog ::deep .invoice-adjustments-fields{grid-template-columns:minmax(0,1fr);gap:9px}
+}

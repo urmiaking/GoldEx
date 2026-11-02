@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
@@ -15,9 +15,41 @@ public partial class CustomerBalanceReportView
     [Parameter] public bool IsLoading { get; set; }
 
     private CustomerBalanceReportSummary? _summary;
+    private List<CustomerRemainingBalanceRpResponse>? _lastItems;
+    private List<CustomerRemainingBalanceRpResponse> _orderedItems = [];
+    private ICollection<CustomerRemainingBalanceRpResponse> OrderedItems => _orderedItems;
+    private string _sort = "name";
+    private bool _descending;
+    private void UpdateOrderedItems()
+    {
+        if (Items is null) { _orderedItems = []; return; }
+        IEnumerable<CustomerRemainingBalanceRpResponse> sorted = _sort switch
+        {
+            "payable" => _descending ? Items.OrderByDescending(x => x.PayableAmount) : Items.OrderBy(x => x.PayableAmount),
+            "receivable" => _descending ? Items.OrderByDescending(x => x.ReceivableAmount) : Items.OrderBy(x => x.ReceivableAmount),
+            "net" => _descending ? Items.OrderByDescending(GetNet) : Items.OrderBy(GetNet),
+            _ => _descending ? Items.OrderByDescending(x => x.CustomerName) : Items.OrderBy(x => x.CustomerName)
+        };
+        _orderedItems = sorted.ToList();
+    }
+    private string SortIndicator(string field) => field == _sort ? (_descending ? "↓" : "↑") : "";
+    private void SetSort(string field)
+    {
+        _descending = field == _sort ? !_descending : field != "name";
+        _sort = field;
+        UpdateOrderedItems();
+    }
+    private static string AmountClass(decimal amount) => amount > 0 ? "is-debit" : amount < 0 ? "is-credit" : "";
+    private string NetClass(CustomerRemainingBalanceRpResponse item) => GetNet(item) > 0 ? "is-debit" : GetNet(item) < 0 ? "is-credit" : "";
+
 
     protected override void OnParametersSet()
     {
+        if (!ReferenceEquals(Items, _lastItems))
+        {
+            _lastItems = Items;
+            UpdateOrderedItems();
+        }
         CalculateSummary();
         base.OnParametersSet();
     }

@@ -1,0 +1,18 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="transfer-delete-warning">
+            <MudIcon Icon="@Icons.Material.Outlined.WarningAmber" Color="Color.Error" Size="Size.Large" />
+            <h3>حذف حواله شماره @VoucherNumber</h3>
+            <p>آیا از حذف این حواله به مبلغ یا وزن <strong>@AmountDescription</strong> مطمئن هستید؟</p>
+            <p>حذف سند ممکن است مانده حساب مشتریان را تغییر دهد.</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete"
+                   OnClick="() => Session?.Close(true)">حذف حواله</MudButton>
+    </DialogActions>
+</EditorDialogFrame>

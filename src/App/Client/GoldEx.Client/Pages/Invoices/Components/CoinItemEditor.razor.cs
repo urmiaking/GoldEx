@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.Coins;
@@ -19,7 +20,10 @@ public partial class CoinItemEditor
     [Parameter] public CoinItemVm Model { get; set; } = new() { Quantity = 1 };
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
+    [Parameter] public Func<CoinItemVm, Task<bool>>? PrepareAndAddAsync { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private List<GetCoinResponse> _coins = [];
     private List<GetCustomerResponse> _customers = [];
@@ -74,21 +78,36 @@ public partial class CoinItemEditor
             afterSend: response => _maxAvailableAmount = (int)response.Amount);
     }
 
-    public void Close() => MudDialog.Close();
+    public void Close() { if (_isProcessing) return; if (Session is not null) Session.Cancel(); else MudDialog.Close(); }
 
     private async Task Submit()
     {
-        _isProcessing = true;
-        await _form.ValidateAsync();
+        if (_isProcessing) return;
 
-        if (!_form.IsValid)
+        _isProcessing = true;
+        Session?.SetBusy(true);
+        try
+        {
+            await _form.ValidateAsync();
+            if (!_form.IsValid) return;
+
+            // Prepare (including barcode reservation) and add to the invoice before
+            // dismissing the editor, so the item is already in the list on close.
+            if (PrepareAndAddAsync is not null && !await PrepareAndAddAsync(Model))
+                return;
+
+            if (Session is not null) Session.Close(Model);
+            else MudDialog.Close(DialogResult.Ok(Model));
+        }
+        catch (Exception)
+        {
+            AddErrorToast("افزودن قلم انجام نشد. دوباره تلاش کنید.");
+        }
+        finally
         {
             _isProcessing = false;
-            return;
+            Session?.SetBusy(false);
         }
-
-        _isProcessing = false;
-        MudDialog.Close(DialogResult.Ok(Model));
     }
 
     private async Task OnCoinChanged(GetCoinResponse? coin)
@@ -174,7 +193,12 @@ public partial class CoinItemEditor
             { x => x.ShowFinancialAccounts, false }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن کارگاه جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن کارگاه جدید",
+            new Dictionary<string, object> {
+                [nameof(Customers.Components.Editor.ReturnModel)] = true,
+                [nameof(Customers.Components.Editor.CustomerType)] = CustomerType.Workshop,
+                [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+            }, wide: true);
 
         var result = await dialog.Result;
 

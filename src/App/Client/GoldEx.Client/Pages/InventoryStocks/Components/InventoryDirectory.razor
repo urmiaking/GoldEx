@@ -1,0 +1,291 @@
+@inherits GoldExComponentBase
+@using GoldEx.Client.Pages.InventoryStocks.ViewModels
+@using GoldEx.Client.Pages.Settings.ViewModels
+
+<section @ref="_directory" class="stock-directory" aria-label="موجودی انبار">
+    <header class="directory-heading">
+        <div class="directory-title">
+            <h1 class="mud-typography-h5">موجودی انبار <span class="directory-count mud-typography-caption">@(_loading ? "…" : $"{_totalItems:N0} قلم")</span></h1>
+            <p class="mud-typography-body2">مدیریت اجناس، موجودی و گردش انبار</p>
+        </div>
+        <MudButton Href="@ClientRoutes.InventoryStocks.InventoryEntry.Index" Variant="Variant.Filled"
+                   Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   Class="directory-create">ورود جنس</MudButton>
+    </header>
+
+    <div @ref="_filterBar" class="directory-filters">
+        <div class="directory-toolbar">
+            <div class="directory-search">
+                <MudTextField T="string" Value="@SearchQuery" ValueChanged="OnSearch"
+                              Immediate="true" DebounceInterval="500" Clearable="true"
+                              Label="جستجوی انبار" Placeholder="نام جنس، بارکد یا شماره انگ"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </div>
+            <MudButton Variant="Variant.Outlined" Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)"
+                       Class="directory-filter" OnClick="OpenMobileFilters" StartIcon="@Icons.Material.Outlined.Tune"
+                       aria-label="فیلتر موجودی انبار">
+                <span class="directory-filter-text">فیلترها</span>
+                @if (ActiveFilterCount > 0)
+                {
+                    <span class="directory-filter-count">@ActiveFilterCount</span>
+                }
+            </MudButton>
+            <div class="directory-sort">
+                <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                           Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("CurrentQuantity")">موجودی فعلی</MudSelectItem>
+                    <MudSelectItem Value="@("SoldQuantity")">مقدار فروخته‌شده</MudSelectItem>
+                    @if (ItemType is ItemType.Product or ItemType.MoltenGold or ItemType.UsedProduct)
+                    {
+                        <MudSelectItem Value="@("Product.Barcode")">بارکد</MudSelectItem>
+                        <MudSelectItem Value="@("Product.Name")">نام جنس</MudSelectItem>
+                    }
+                    else if (ItemType is ItemType.Coin)
+                    {
+                        <MudSelectItem Value="@("Coin.Barcode")">بارکد سکه</MudSelectItem>
+                    }
+                    else if (ItemType is ItemType.Currency)
+                    {
+                        <MudSelectItem Value="@("Currency.Title")">عنوان ارز</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="directory-sort-toggle">
+                <MudTooltip Text="@(_sortDirection == GoldEx.Sdk.Common.Definitions.SortDirection.Descending ? "تغییر به صعودی" : "تغییر به نزولی")">
+                    <MudIconButton Icon="@(_sortDirection == GoldEx.Sdk.Common.Definitions.SortDirection.Descending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                                   OnClick="ToggleSortDirection" Class="directory-sort-direction"
+                                   aria-label="تغییر جهت مرتب‌سازی" />
+                </MudTooltip>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="stock-results" aria-busy="@(_loading ? "true" : "false")">
+        @if (_loading)
+        {
+            <div class="stock-placeholder" role="status" aria-label="در حال بارگذاری موجودی">
+                <div class="stock-placeholder-desktop">
+                    <table class="stock-skeleton-table" aria-hidden="true">
+                        <thead><tr><th>بارکد / عنوان</th><th>نوع جنس</th><th>مشخصات</th><th>موجودی فعلی</th><th>فروخته‌شده</th><th>عملیات</th></tr></thead>
+                        <tbody>
+                            @for (var i = 0; i < Math.Min(_pageSize, 10); i++)
+                            {
+                                <tr>
+                                    <td><span class="stock-skeleton is-medium"></span><span class="stock-skeleton is-short"></span></td>
+                                    <td><span class="stock-skeleton is-short"></span></td>
+                                    <td><span class="stock-skeleton is-medium"></span></td>
+                                    <td><span class="stock-skeleton is-medium"></span></td>
+                                    <td><span class="stock-skeleton is-short"></span></td>
+                                    <td><span class="stock-skeleton is-short"></span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stock-placeholder-mobile" aria-hidden="true">
+                    @for (var i = 0; i < Math.Min(_pageSize, 5); i++)
+                    {
+                        <div class="stock-skeleton-card">
+                            <span class="stock-skeleton is-short"></span>
+                            <span class="stock-skeleton is-medium"></span>
+                            <span class="stock-skeleton"></span>
+                        </div>
+                    }
+                </div>
+                <span class="stock-sr-only">در حال دریافت موجودی انبار…</span>
+            </div>
+        }
+        else if (_loadFailed)
+        {
+            <div class="stock-empty" role="alert">
+                <ShellIcon Name="warning" />
+                <strong>دریافت موجودی انجام نشد</strong>
+                <span>اتصال را بررسی کنید و دوباره تلاش کنید.</span>
+                <button type="button" @onclick="ReloadAsync">تلاش دوباره</button>
+            </div>
+        }
+        else if (_items.Count == 0)
+        {
+            <div class="stock-empty" role="status">
+                <ShellIcon Name="package" />
+                <strong>جنسی با این مشخصات پیدا نشد</strong>
+                <span>جستجو یا فیلترهای موجودی را تغییر دهید.</span>
+                <button type="button" @onclick="ResetAllFilters">نمایش موجودی</button>
+            </div>
+        }
+        else
+        {
+            <div class="stock-desktop-table">
+                <table class="stock-table mud-typography-body2">
+                    <thead>
+                        <tr>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort(ItemType == ItemType.Coin ? "Coin.Barcode" : ItemType == ItemType.Currency ? "Currency.Title" : "Product.Barcode")'>بارکد / عنوان <span>@SortIndicator(ItemType == ItemType.Coin ? "Coin.Barcode" : ItemType == ItemType.Currency ? "Currency.Title" : "Product.Barcode")</span></button></th>
+                            <th scope="col">نوع / دسته</th>
+                            <th scope="col">مشخصات</th>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("CurrentQuantity")'>موجودی فعلی <span>@SortIndicator("CurrentQuantity")</span></button></th>
+                            <th scope="col"><button type="button" @onclick='() => ChangeSort("SoldQuantity")'>فروخته‌شده <span>@SortIndicator("SoldQuantity")</span></button></th>
+                            <th scope="col">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _items)
+                        {
+                            <tr @key="GetItemId(item)" class="stock-data-row @QuantityStatus(item) @(item.ShowDetails ? "is-expanded" : "")">
+                                <td>
+                                    <div class="stock-item-id">
+                                        <button type="button" class="stock-expand" aria-expanded="@(item.ShowDetails ? "true" : "false")"
+                                                aria-label="@(item.ShowDetails ? "بستن گردش انبار" : "نمایش گردش انبار")"
+                                                @onclick="() => ToggleDetails(item)"><ShellIcon Name="expand" /></button>
+                                        <div><strong>@ItemTitle(item)</strong>
+                                            @if (!string.IsNullOrEmpty(ItemBarcode(item))) { <small>@ItemBarcode(item)</small> }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="stock-item-type"><span class="stock-type-badge">@ItemType.GetDisplayName()</span>
+                                    @if (!string.IsNullOrWhiteSpace(ItemSubTitle(item))) { <small>@ItemSubTitle(item)</small> }
+                                </div></td>
+                                <td>
+                                    <div class="stock-specs">
+                                        @if (item.Product is not null)
+                                        {
+                                            <span>عیار @item.Product.Fineness.ToString("G29")</span>
+                                            @if (ItemType is ItemType.MoltenGold)
+                                            {
+                                                <small>انگ: @(item.Product.MoltenGold?.AssayNumber ?? "—")</small>
+                                                <small>آزمایشگاه: @(item.Product.MoltenGold?.Assayer?.FullName ?? "—")</small>
+                                                <small>تاریخ ری‌گیری: @(item.Product.MoltenGold?.AssayDate?.ToString("yyyy/MM/dd") ?? "—")</small>
+                                            }
+                                            else { <small>@GetWageDisplay(item)</small> }
+                                        }
+                                        else if (item.Coin is not null)
+                                        {
+                                            <span>عیار @item.Coin.Fineness.ToString("G29")</span>
+                                            <small>سال ضرب: @GetCoinMintYear(item.Coin)</small>
+                                        }
+                                        else { <span>ارز</span> }
+                                    </div>
+                                </td>
+                                <td><span class="stock-amount @QuantityStatus(item)">@FormattedAmount(item.CurrentAmount, item)</span></td>
+                                <td><span class="stock-sold">@FormattedAmount(item.SoldAmount, item)</span></td>
+                                <td>
+                                    <div class="stock-actions">
+                                        @if (CanManageProduct(item))
+                                        {
+                                            @if (CanShowVitrine(item))
+                                            {
+                                                <button type="button" class="is-store" title="مدیریت ویترین" aria-label="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
+                                                @if (item.Product?.ShowInVitrine == true)
+                                                {
+                                                    <button type="button" class="is-link" title="کپی لینک ویترین" aria-label="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
+                                                }
+                                            }
+                                            <button type="button" class="is-print" title="چاپ بارکد" aria-label="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
+                                            <button type="button" class="is-edit" title="ویرایش جنس" aria-label="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
+                                            @if (item.SoldAmount == 0)
+                                            {
+                                                <button type="button" class="is-danger" title="حذف جنس" aria-label="حذف جنس" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
+                                            }
+                                        }
+                                        else if (ItemType == ItemType.Coin)
+                                        {
+                                            <button type="button" class="is-print" title="چاپ بارکد سکه" aria-label="چاپ بارکد سکه" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
+                                        }
+                                        else { <span class="stock-muted">—</span> }
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (item.ShowDetails)
+                            {
+                                <tr @key="@($"history-{GetItemId(item)}")" class="stock-expanded-row">
+                                    <td colspan="6"><InventoryTraceTimeline ItemId="@GetItemId(item)" ItemType="@GetItemType(item)" /></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="stock-mobile-list">
+                @foreach (var item in _items)
+                {
+                    <article @key="GetItemId(item)" class="stock-card @QuantityStatus(item) @(item.ShowDetails ? "is-expanded" : "")">
+                        <header class="stock-card-head">
+                            <div class="stock-card-name">
+                                <strong>@ItemTitle(item)</strong>
+                                <div class="stock-card-identifiers">
+                                    @if (!string.IsNullOrWhiteSpace(ItemBarcode(item))) { <small>@ItemBarcode(item)</small> }
+                                    @if (item.Product is not null) { <span>عیار @item.Product.Fineness.ToString("G29")</span> }
+                                    @if (item.Coin is not null) { <span>عیار @item.Coin.Fineness.ToString("G29")</span> }
+                                    @if (!string.IsNullOrWhiteSpace(ItemSubTitle(item))) { <span>@ItemSubTitle(item)</span> }
+                                </div>
+                            </div>
+                            <span class="stock-type-badge">@ItemType.GetDisplayName()</span>
+                        </header>
+                        @if (ItemType == ItemType.MoltenGold && item.Product is not null)
+                        {
+                            <div class="stock-card-meta">
+                                <span>انگ: @(item.Product.MoltenGold?.AssayNumber ?? "—")</span>
+                                <span>تاریخ ری‌گیری: @(item.Product.MoltenGold?.AssayDate?.ToString("yyyy/MM/dd") ?? "—")</span>
+                            </div>
+                        }
+                        else if (item.Coin is not null)
+                        {
+                            <div class="stock-card-meta"><span>سال ضرب @GetCoinMintYear(item.Coin)</span></div>
+                        }
+                        <div class="stock-card-amounts">
+                            <div><span>موجودی فعلی</span><strong class="@QuantityStatus(item)">@FormattedAmount(item.CurrentAmount, item)</strong></div>
+                            <div><span>فروخته‌شده</span><strong>@FormattedAmount(item.SoldAmount, item)</strong></div>
+                        </div>
+                        <footer class="stock-card-footer">
+                            <button type="button" class="stock-card-expand" aria-expanded="@(item.ShowDetails ? "true" : "false")"
+                                    @onclick="() => ToggleDetails(item)"><ShellIcon Name="expand" /> @(item.ShowDetails ? "بستن گردش" : "گردش انبار")</button>
+                            <div class="stock-actions">
+                                @if (CanManageProduct(item))
+                                {
+                                    @if (CanShowVitrine(item))
+                                    {
+                                        <button type="button" class="is-store" aria-label="ویترین" title="مدیریت ویترین" @onclick="() => OnOpenVitrineDialog(item)"><ShellIcon Name="store" /></button>
+                                        @if (item.Product?.ShowInVitrine == true)
+                                        {
+                                            <button type="button" class="is-link" aria-label="کپی لینک ویترین" title="کپی لینک ویترین" @onclick="() => OnCopyProductVitrineUrl(item)"><ShellIcon Name="link" /></button>
+                                        }
+                                    }
+                                    <button type="button" class="is-print" aria-label="چاپ بارکد" title="چاپ بارکد" @onclick="() => OnPrintProductBarcode(item)"><ShellIcon Name="print" /></button>
+                                    <button type="button" class="is-edit" aria-label="ویرایش جنس" title="ویرایش جنس" @onclick="() => OnEditProduct(item)"><ShellIcon Name="edit" /></button>
+                                    @if (item.SoldAmount == 0)
+                                    {
+                                        <button type="button" class="is-danger" aria-label="حذف جنس" title="حذف جنس" @onclick="() => OnRemove(item)"><ShellIcon Name="trash" /></button>
+                                    }
+                                }
+                                else if (ItemType == ItemType.Coin)
+                                {
+                                    <button type="button" class="is-print" aria-label="چاپ سکه" title="چاپ بارکد" @onclick="() => OnPrintCoinBarcode(item)"><ShellIcon Name="print" /></button>
+                                }
+                            </div>
+                        </footer>
+                        @if (item.ShowDetails)
+                        {
+                            <InventoryTraceTimeline ItemId="@GetItemId(item)" ItemType="@GetItemType(item)" />
+                        }
+                    </article>
+                }
+            </div>
+        }
+    </div>
+
+    <footer class="stock-pagination" aria-label="صفحه‌بندی موجودی انبار">
+        <label class="stock-page-size">تعداد ردیف
+            <select value="@_pageSize" @onchange="ChangePageSize" disabled="@_loading" aria-label="تعداد جنس در هر صفحه">
+                <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+            </select>
+        </label>
+        <nav class="stock-pagination-actions" aria-label="جابجایی بین صفحه‌های موجودی">
+            <button type="button" disabled="@(!CanPrevious)" @onclick="() => ChangePage(-1)"><ShellIcon Name="previous" /> قبلی</button>
+            <span class="stock-pagination-current" role="status">@(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(!CanNext)" @onclick="() => ChangePage(1)">بعدی <ShellIcon Name="next" /></button>
+        </nav>
+    </footer>
+</section>
+<script src="@Assets["js/libs/jsbarcode.all.min.js"]"></script>
+<script src="@Assets["js/print.js"]"></script>

@@ -1,12 +1,21 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Client.Pages.Settings.ViewModels
 @using GoldEx.Shared.DTOs.PriceUnits
 
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_productValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
-            <MudGrid Spacing="4">
+            <div class="gex-product-editor">
+                <div class="gex-product-editor-intro">
+                    <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Color="Color.Primary" Size="Size.Medium" />
+                    <div>
+                        <MudText Typo="Typo.body1">مشخصات و اطلاعات جنس</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">اطلاعات را بررسی و تغییرات را ذخیره کنید.</MudText>
+                    </div>
+                </div>
+            <MudGrid Spacing="3" Class="gex-product-edit-fields">
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => Model.ProductType"
                                Label="@Model.GetDisplayName(() => Model.ProductType)"
@@ -302,10 +311,9 @@
                 @if (Model.ProductType is ProductType.Gold or ProductType.Jewelry)
                 {
                     <MudItem xs="12">
-                        <MudDivider Class="my-2" />
-                        <div class="d-flex align-center gap-2 mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Warning" />
-                            <MudText Typo="Typo.subtitle1" Color="Color.Warning"><b>ویترین آنلاین و معرفی کالا</b></MudText>
+                        <div class="gex-product-editor-section-title">
+                            <MudIcon Icon="@Icons.Material.Outlined.Storefront" Color="Color.Primary" Size="Size.Small" />
+                            <MudText Typo="Typo.body1">ویترین آنلاین و معرفی کالا</MudText>
                         </div>
                     </MudItem>
                     <MudItem xs="12" sm="6">
@@ -331,15 +339,19 @@
                                       Placeholder="توضیحات درباره زیبایی، مدل، تراش و درخشش قطعه..." />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudText Typo="Typo.caption" Class="d-block mb-2">تصاویر ویترین:</MudText>
-                        <div class="d-flex flex-wrap gap-2 align-center">
+                        <MudText Typo="Typo.body2" Class="d-block mb-2">تصاویر ویترین</MudText>
+                        <div class="gex-product-edit-gallery">
                             @foreach (var img in Model.Images)
                             {
-                                <div style="position: relative; width: 70px; height: 70px; border-radius: 8px; overflow: hidden; border: 1px solid var(--mud-palette-lines-default); background: #000;">
-                                    <img src="@img.Url" style="width: 100%; height: 100%; object-fit: cover;" />
+                                <div class="gex-product-edit-photo" @key="img.Url">
+                                    <img src="@img.Url" alt="@Model.Name" loading="lazy" />
+                                    @if (img.IsMain)
+                                    {
+                                        <span class="gex-product-photo-badge">شاخص</span>
+                                    }
                                     <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                    Size="Size.Small"
-                                                   Style="position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.6);"
+                                                   Class="gex-product-photo-remove"
                                                    Color="Color.Error"
                                                    OnClick="() => RemoveImage(img)" />
                                 </div>
@@ -367,20 +379,20 @@
                     </MudItem>
                 }
             </MudGrid>
-            <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Start" Class="mt-4">
-                توجه: ویرایش جنس برای ویرایش اطلاعات کلی جنس از جمله عنوان و دسته بندی می باشد و از این قابلیت صرفا باید برای ویرایش اجناسی که در هنگام ثبت موجودی اولیه اضافه شده اند استفاده شود.
-                به منظور عدم منفی شدن موجودی برای ویرایش اطلاعاتی نظیر وزن باید به فاکتور مربوطه آن مراجعه کنید
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" ContentAlignment="HorizontalAlignment.Start" Class="gex-product-editor-note mt-4">
+                این فرم برای ویرایش اطلاعات کلی جنس‌های ثبت‌شده در موجودی اولیه است. برای اصلاح وزن یا اطلاعات مؤثر بر موجودی، فاکتور مربوطه را ویرایش کنید.
             </MudAlert>
+            </div>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
+                       Disabled="@(_processing || _isUploadingImage)"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Filled">انصراف</MudButton>
 
-            <MudButton Class="m-2"
-                       Color="Color.Primary"
-                       Disabled="@_processing"
+            <MudButton Color="Color.Primary"
+                       Disabled="@(_processing || _isUploadingImage)"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
@@ -399,5 +411,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

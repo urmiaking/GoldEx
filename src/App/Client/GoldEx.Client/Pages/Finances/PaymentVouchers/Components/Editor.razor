@@ -1,11 +1,13 @@
-﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="_model" @ref="@_form" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.SpaceBetween" Spacing="2">
+        <div class="payment-editor-content">
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.SpaceBetween" Spacing="2" Class="payment-editor-top">
                 <MudSelect T="GetPriceUnitTitleResponse?"
                            Value="_model.PriceUnit"
                            ValueChanged="OnPriceUnitChanged"
@@ -45,7 +47,7 @@
                 }
             </MudStack>
 
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4">
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4 payment-editor-customer">
                 <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
                     طرف حساب
                     @if (_model.Customer != null)
@@ -66,7 +68,7 @@
                                  AdornmentIcon="@Icons.Material.Filled.Search"
                                  Variant="Variant.Outlined"
                                  SearchFunc="@SearchSuppliers"
-                                 AutoFocus="true"
+                                 AutoFocus="false"
                                  ResetValueOnEmptyText="true"
                                  DebounceInterval="0"
                                  ShowProgressIndicator="false" />
@@ -103,7 +105,7 @@
                 </MudGrid>
             }
             <MudStack Row AlignItems="AlignItems.End" Class="mt-2">
-                <MudText Typo="Typo.h6">اطلاعات رسید پرداخت</MudText>
+                <MudText Typo="Typo.subtitle1">اطلاعات رسید پرداخت</MudText>
             </MudStack>
             <MudDivider />
             <MudGrid Class="mt-0" Spacing="2">
@@ -218,12 +220,13 @@
                 </MudItem>
 
             </MudGrid>
+                </div>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">انصراف</MudButton>
+                       Variant="Variant.Outlined">انصراف</MudButton>
             <MudButton Class="m-2"
                        Color="Color.Primary"
                        Disabled="@_processing"
@@ -245,5 +248,5 @@
                 }
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

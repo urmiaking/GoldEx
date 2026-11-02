@@ -1,10 +1,12 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @using GoldEx.Client.Pages.Settings.ViewModels
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_productItemValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
+            <div class="invoice-item-editor">
             <div class="d-flex flex-wrap justify-center align-center gap-md-3 mb-1">
                 @if (!PriceUnit.IsGoldBased)
                 {
@@ -14,7 +16,7 @@
                                      dir="ltr"
                                      For="@(() => Model.GramPrice)"
                                      Format="#,##0.##"
-                                     DebounceInterval="1"
+                                     Immediate="false"
                                      HideSpinButtons="true"
                                      Label="@($"نرخ هر {Model.Product.GoldUnitType.GetDisplayName()} طلا")"
                                      Margin="Margin.Dense"
@@ -137,7 +139,7 @@
                                          For="() => Model.TotalWeight"
                                          dir="ltr"
                                          Format="G29"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          HideSpinButtons="true"
                                          Margin="Margin.Dense"
                                          Label="@(Model.GetDisplayName(() => Model.TotalWeight))"
@@ -168,7 +170,7 @@
                 <MudItem xs="12" sm="6" md="4">
                     <MudNumericField For="@(() => Model.Product.Fineness)"
                                      Format="G29"
-                                     DebounceInterval="1"
+                                     Immediate="false"
                                      dir="ltr"
                                      Label="@Model.GetDisplayName(() => Model.Product.Fineness)"
                                      Margin="Margin.Dense"
@@ -221,7 +223,7 @@
                                                  Format="#,##0.##"
                                                  dir="ltr"
                                                  HideSpinButtons="true"
-                                                 DebounceInterval="1"
+                                                 Immediate="false"
                                                  Margin="Margin.Dense"
                                                  Variant="Variant.Outlined"
                                                  Class="flex-grow-1"
@@ -239,7 +241,7 @@
                                                  Format="#,##0.##"
                                                  dir="ltr"
                                                  HideSpinButtons="true"
-                                                 DebounceInterval="1"
+                                                 Immediate="false"
                                                  Margin="Margin.Dense"
                                                  Label="@(Model.GetDisplayName(() => Model.Product.Wage))"
                                                  T="decimal?"
@@ -297,7 +299,7 @@
                         <MudNumericField For="@(() => Model.WageExchangeRate)"
                                          Format="#,##0.########"
                                          dir="ltr"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Label="@WageExchangeRateLabel"
                                          Margin="Margin.Dense"
                                          T="decimal?"
@@ -315,7 +317,7 @@
                         <MudNumericField For="@(() => Model.ProfitPercent)"
                                          Format="G29"
                                          dir="ltr"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
                                          Margin="Margin.Dense"
                                          T="decimal"
@@ -329,7 +331,7 @@
                         <MudNumericField For="@(() => Model.TaxPercent)"
                                          Format="G29"
                                          dir="ltr"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Label="@Model.GetDisplayName(() => Model.TaxPercent)"
                                          Margin="Margin.Dense"
                                          T="decimal"
@@ -349,7 +351,7 @@
                                          Format="#,##0.##"
                                          dir="ltr"
                                          HideSpinButtons="true"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Margin="Margin.Dense"
                                          Label="@(Model.GetDisplayName(() => Model.CostPrice))"
                                          T="decimal?"
@@ -389,7 +391,7 @@
                         <MudNumericField For="@(() => Model.CostPriceExchangeRate)"
                                          Format="#,##0.########"
                                          dir="ltr"
-                                         DebounceInterval="1"
+                                         Immediate="false"
                                          Label="@CostExchangeRateLabel"
                                          Margin="Margin.Dense"
                                          T="decimal?"
@@ -481,7 +483,7 @@
                             <MudNumericField For="@(() => Model.StonePriceUnitExchangeRate)"
                                              Format="#,##0.########"
                                              dir="ltr"
-                                             DebounceInterval="1"
+                                             Immediate="false"
                                              Label="@StonePriceExchangeRateLabel"
                                              Margin="Margin.Dense"
                                              T="decimal?"
@@ -556,7 +558,7 @@
                                                  Margin="Margin.Dense"
                                                  T="decimal"
                                                  dir="ltr"
-                                                 DebounceInterval="1"
+                                                 Immediate="false"
                                                  Format="#,##0.##"
                                                  HideSpinButtons="true"
                                                  Adornment="Adornment.End"
@@ -576,6 +578,7 @@
                     </MudItem>
                 }
             </MudGrid>
+                    </div>
         </DialogContent>
         <DialogActions>
             <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
@@ -585,12 +588,12 @@
 
                 <div class="button-group">
                     <MudButton Color="Color.Error"
-                               OnClick="Close"
+                               Disabled="@_isProcessing"
+                       OnClick="Close"
                                StartIcon="@Icons.Material.Filled.Close"
-                               Variant="Variant.Filled">انصراف</MudButton>
+                               Variant="Variant.Outlined">انصراف</MudButton>
 
-                    <MudButton Class="m-2"
-                               Color="Color.Primary"
+                    <MudButton                                Color="Color.Primary"
                                Disabled="@_isProcessing"
                                StartIcon="@Icons.Material.Filled.Save"
                                OnClick="@(async () => await Submit())"
@@ -610,5 +613,5 @@
                 </div>
             </div>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

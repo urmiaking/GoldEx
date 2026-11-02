@@ -8,7 +8,20 @@
     <MudDivider />
 }
 
-<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+@if (Selectable)
+{
+    <InventoryStockSelection ItemType="ItemType"
+                             ItemStatus="ItemStatus"
+                             ShowItemStatus="ShowItemStatus"
+                             SelectableTypes="SelectableTypes"
+                             SearchQuery="@SearchQuery"
+                             InventoryEntryId="InventoryEntryId"
+                             InventoryExitId="InventoryExitId"
+                             SelectedItemsChanged="SelectedItemsChanged" />
+}
+else
+{
+<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="@(Selectable ? 10 : 14)" Hover="true" @ref="_table" FixedHeader="true"
           OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
@@ -360,6 +373,8 @@
         </div>
     </PagerContent>
 </MudTable>
+}
+
 
 <script src="@Assets["js/libs/jsbarcode.all.min.js"]"></script>
 <script src="@Assets["js/print.js"]"></script>

@@ -1,201 +1,152 @@
 @using GoldEx.Shared.DTOs.CustomerTransfers
 @using GoldEx.Shared.Helpers
-@using GoldEx.Shared.Routings
-@using GoldEx.Shared.Enums
 @inherits GoldExComponentBase
 
-@if (ShowTitle)
-{
-    <div class="d-flex justify-content-center">
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">حواله‌های بین مشتریان</MudText>
-    </div>
-    <MudDivider />
-}
-
-<MudTable T="GetCustomerTransferVoucherListResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
-          Dense="true" ServerData="LoadCustomerTransfersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
-    <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" Value="@SearchQuery" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
-        <MudSpacer />
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange"
-                                DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense"
-                                Variant="Variant.Outlined"
-                                Class="ml-3"
-                                MaxMonthColumns="1"
-                                DisplayMonths="1"
-                                Rounded="true"
-                                ShowToolbar="false"
-                                Style="max-width: 320px;"
-                                PlaceholderStart="از"
-                                PlaceholderEnd="تا"
-                                Label="تاریخ حواله"
-                                Clearable="true" />
-
-            @if (_priceUnits.Any())
-            {
-                <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="ml-3">
-                    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.MonetizationOn">
-                        @(_selectedPriceUnit?.Title ?? "همه ارزها/طلا")
-                    </MudButton>
-                    <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                        <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetPriceUnitFilter(null)">
-                            همه ارزها/طلا
-                        </MudMenuItem>
-                        @foreach (var unit in _priceUnits)
-                        {
-                            <MudMenuItem IconColor="Color.Success" OnClick="() => SetPriceUnitFilter(unit)">
-                                @unit.Title
-                            </MudMenuItem>
-                        }
-                    </MudMenu>
-                </MudButtonGroup>
-            }
-
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
-                ثبت حواله جدید
+<section @ref="_directory" class="transfer-directory" aria-label="حواله‌های بین مشتریان">
+    <header class="transfer-heading">
+        <div><h1>حواله‌های بین مشتریان <span class="transfer-count">@(_loading ? "…" : $"{_totalItems:N0} حواله")</span></h1>
+            <p>مدیریت حواله‌های وجه و طلا بین مشتریان</p></div>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="transfer-create"
+                   StartIcon="@Icons.Material.Filled.Add" OnClick="OnCreate">حواله جدید</MudButton>
+    </header>
+    <div @ref="_filterBar" class="transfer-filters">
+        <div class="transfer-toolbar">
+            <div class="transfer-search">
+                <MudTextField T="string" Value="SearchQuery" ValueChanged="OnSearch" Immediate="true"
+                              DebounceInterval="450" Clearable="true" Label="جستجوی حواله"
+                              Placeholder="شماره حواله، نام مشتری یا شرح"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </div>
+            <MudButton Class="transfer-filter-button" Variant="Variant.Outlined"
+                       Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)"
+                       StartIcon="@Icons.Material.Outlined.Tune" OnClick="OpenFilters"
+                       aria-label="فیلتر حواله‌ها">
+                <span class="transfer-filter-label">فیلترها</span>
+                @if (ActiveFilterCount > 0) { <span class="transfer-filter-count">@ActiveFilterCount</span> }
             </MudButton>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
-                           OnClick="@(_ => OnCreate())" Size="@Size.Small"
-                           Class="mr-3" Variant="@Variant.Filled" />
-        </MudHidden>
-    </ToolBarContent>
-
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="GetCustomerTransferVoucherListResponse">شماره حواله</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="TransferDate" T="GetCustomerTransferVoucherListResponse">تاریخ</MudTableSortLabel></MudTh>
-        <MudTh>فرستنده (حواله‌دهنده)</MudTh>
-        <MudTh>گیرنده (دریافت‌کننده)</MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Amount" T="GetCustomerTransferVoucherListResponse">مبلغ / وزن</MudTableSortLabel></MudTh>
-        <MudTh>فاکتورهای مربوطه</MudTh>
-        <MudTh>توضیحات</MudTh>
-        <MudTh Style="text-align: center;">عملیات</MudTh>
-    </HeaderContent>
-
-    <RowTemplate>
-        <MudTd DataLabel="شماره حواله">
-            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
-                #@context.VoucherNumber
-            </MudChip>
-        </MudTd>
-
-        <MudTd DataLabel="تاریخ">
-            <MudTooltip Text="@($"تاریخ ثبت: {context.CreatedAt:yyyy/MM/dd}")" Placement="Placement.Top" Arrow="true">
-                @context.TransferDate.ToShortDateString()
+            <div class="transfer-sort">
+                <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem Value="@("TransferDate")">تاریخ حواله</MudSelectItem>
+                    <MudSelectItem Value="@("VoucherNumber")">شماره حواله</MudSelectItem>
+                    <MudSelectItem Value="@("Amount")">مبلغ / وزن</MudSelectItem>
+                </MudSelect>
+            </div>
+            <MudTooltip Text="@(_sortDescending ? "مرتب‌سازی صعودی" : "مرتب‌سازی نزولی")">
+                <MudIconButton Icon="@(_sortDescending ? Icons.Material.Filled.South : Icons.Material.Filled.North)"
+                               Class="transfer-sort-direction" OnClick="ToggleSortDirection" aria-label="تغییر جهت مرتب‌سازی" />
             </MudTooltip>
-        </MudTd>
-
-        <MudTd DataLabel="فرستنده">
-            <div class="d-flex align-center gap-1">
-                <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Error" Size="Size.Small" />
-                <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.SourceCustomerName</MudText>
-            </div>
-        </MudTd>
-
-        <MudTd DataLabel="گیرنده">
-            <div class="d-flex align-center gap-1">
-                <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Success" Size="Size.Small" />
-                <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.DestinationCustomerName</MudText>
-            </div>
-        </MudTd>
-
-        <MudTd DataLabel="مبلغ / وزن">
-            <MudChip T="string"
-                     Color="@(context.PriceUnitIsGoldBased ? Color.Warning : Color.Info)"
-                     Variant="Variant.Filled"
-                     Size="Size.Small">
-                <MudAvatar Size="Size.Small" Class="mr-1">
-                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, context.PriceUnitId))" />
-                </MudAvatar>
-                @context.Amount.ToCurrencyFormat(context.PriceUnitTitle)
-            </MudChip>
-        </MudTd>
-
-        <MudTd DataLabel="فاکتورهای مربوطه">
-            <div class="d-flex gap-1 flex-wrap">
-                @if (context.SourceInvoiceNumber.HasValue)
-                {
-                    <MudTooltip Text="فاکتور مبدا فرستنده">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
-                            مبدا: #@context.SourceInvoiceNumber
-                        </MudChip>
-                    </MudTooltip>
-                }
-                @if (context.DestinationInvoiceNumber.HasValue)
-                {
-                    <MudTooltip Text="فاکتور مقصد گیرنده">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
-                            مقصد: #@context.DestinationInvoiceNumber
-                        </MudChip>
-                    </MudTooltip>
-                }
-                @if (!context.SourceInvoiceNumber.HasValue && !context.DestinationInvoiceNumber.HasValue)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">مستقیم (دفتری)</MudText>
-                }
-            </div>
-        </MudTd>
-
-        <MudTd DataLabel="توضیحات">
-            <MudText Typo="Typo.body2" Class="text-truncate" Style="max-width: 180px;">
-                @(string.IsNullOrWhiteSpace(context.Description) ? "-" : context.Description)
-            </MudText>
-        </MudTd>
-
-        <MudTd DataLabel="عملیات" Style="text-align: center;">
-            <div class="d-flex gap-2 justify-center">
-                <MudTooltip Text="ویرایش سند">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="() => OnEdit(context)" />
-                </MudTooltip>
-                <MudTooltip Text="حذف سند">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Error" OnClick="() => OnDelete(context)" />
-                </MudTooltip>
-            </div>
-        </MudTd>
-    </RowTemplate>
-
-    <NoRecordsContent>
-        <MudText>هیچ سند حواله‌ای یافت نشد</MudText>
-    </NoRecordsContent>
-
-    <LoadingContent>
-        <MudText>در حال بارگیری</MudText>
-    </LoadingContent>
-
-    <PagerContent>
-        @{
-            var totalItems = _table.GetFilteredItemsCount();
-            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
-        }
-
-        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
-            <div class="mud-table-pagination-caption">
-                @infoText
-            </div>
-            <MudPagination SelectedChanged="PageChanged"
-                           Selected="@(_table.CurrentPage + 1)"
-                           Color="Color.Primary"
-                           Count="@pageCount"
-                           Class="justify-center"
-                           BoundaryCount="1"
-                           MiddleCount="3" />
-
-            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                @infoText
-            </div>
         </div>
-    </PagerContent>
-</MudTable>
+    </div>
+    <div class="transfer-results" aria-busy="@(_loading ? "true" : "false")">
+        @if (_loading)
+        {
+            <div class="transfer-loading" role="status" aria-label="در حال بارگیری حواله‌ها">
+                @for (var i = 0; i < 5; i++)
+                { <div class="transfer-skeleton"><span></span><span></span><span></span><span></span></div> }
+            </div>
+        }
+        else if (_loadFailed)
+        {
+            <div class="transfer-empty" role="alert">
+                <MudIcon Icon="@Icons.Material.Outlined.ErrorOutline" Size="Size.Large" />
+                <strong>دریافت حواله‌ها انجام نشد</strong>
+                <p>اتصال را بررسی کنید و دوباره تلاش کنید.</p>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ReloadAsync">تلاش دوباره</MudButton>
+            </div>
+        }
+        else if (_items.Count == 0)
+        {
+            <div class="transfer-empty" role="status">
+                <MudIcon Icon="@Icons.Material.Outlined.SwapHoriz" Size="Size.Large" />
+                <strong>حواله‌ای با این مشخصات پیدا نشد</strong>
+                <p>جستجو یا فیلترها را تغییر دهید.</p>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ResetFilters">نمایش همه حواله‌ها</MudButton>
+            </div>
+        }
+        else
+        {
+            <div class="transfer-desktop">
+                <table class="transfer-table">
+                    <thead><tr>
+                        <th><button type="button" @onclick='() => ChangeSort("VoucherNumber")'>شماره <span>@SortIndicator("VoucherNumber")</span></button></th>
+                        <th><button type="button" @onclick='() => ChangeSort("TransferDate")'>تاریخ <span>@SortIndicator("TransferDate")</span></button></th>
+                        <th>فرستنده / گیرنده</th>
+                        <th><button type="button" @onclick='() => ChangeSort("Amount")'>مبلغ / وزن <span>@SortIndicator("Amount")</span></button></th>
+                        <th>فاکتورهای مرتبط</th>
+                        <th>شرح</th>
+                        <th>عملیات</th>
+                    </tr></thead>
+                    <tbody>
+                        @foreach (var item in _items)
+                        {
+                            <tr @key="item.Id">
+                                <td><span class="transfer-number">#@item.VoucherNumber</span></td>
+                                <td><time title="@($"تاریخ ثبت: {item.CreatedAt:yyyy/MM/dd}")">@item.TransferDate.ToShortDateString()</time></td>
+                                <td><div class="transfer-parties">
+                                    <div class="transfer-party is-source"><MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" /><span>@item.SourceCustomerName</span></div>
+                                    <div class="transfer-party is-destination"><MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" /><span>@item.DestinationCustomerName</span></div>
+                                </div></td>
+                                <td><strong class="transfer-amount">@item.Amount.ToCurrencyFormat(item.PriceUnitTitle)</strong></td>
+                                <td><div class="transfer-invoices">
+                                    @if (item.SourceInvoiceNumber.HasValue) { <span>مبدأ #@item.SourceInvoiceNumber</span> }
+                                    @if (item.DestinationInvoiceNumber.HasValue) { <span>مقصد #@item.DestinationInvoiceNumber</span> }
+                                    @if (!item.SourceInvoiceNumber.HasValue && !item.DestinationInvoiceNumber.HasValue) { <span>حواله مستقیم</span> }
+                                </div></td>
+                                <td><span class="transfer-description" title="@item.Description">@(string.IsNullOrWhiteSpace(item.Description) ? "—" : item.Description)</span></td>
+                                <td><div class="transfer-actions">
+                                    <button type="button" class="is-edit" title="ویرایش حواله" aria-label="ویرایش حواله" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                    <button type="button" class="is-delete" title="حذف حواله" aria-label="حذف حواله" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
+                                </div></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="transfer-mobile">
+                @foreach (var item in _items)
+                {
+                    <article class="transfer-card" @key="item.Id">
+                        <header class="transfer-card-top">
+                            <div class="transfer-card-identity"><span class="transfer-number">#@item.VoucherNumber</span><time>@item.TransferDate.ToShortDateString()</time></div>
+                            <strong class="transfer-card-money">@item.Amount.ToCurrencyFormat(item.PriceUnitTitle)</strong>
+                        </header>
+                        <div class="transfer-card-route" aria-label="فرستنده و گیرنده حواله">
+                            <div class="transfer-card-party"><small>از</small><span>@item.SourceCustomerName</span></div>
+                            <span class="transfer-card-route-divider" aria-hidden="true">/</span>
+                            <div class="transfer-card-party"><small>به</small><span>@item.DestinationCustomerName</span></div>
+                        </div>
+                        @if (item.SourceInvoiceNumber.HasValue || item.DestinationInvoiceNumber.HasValue)
+                        {
+                            <div class="transfer-card-related">
+                                @if (item.SourceInvoiceNumber.HasValue) { <span>فاکتور مبدأ #@item.SourceInvoiceNumber</span> }
+                                @if (item.DestinationInvoiceNumber.HasValue) { <span>فاکتور مقصد #@item.DestinationInvoiceNumber</span> }
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Description)) { <p class="transfer-card-note" title="@item.Description">@item.Description</p> }
+                        <footer class="transfer-card-bottom">
+                            <span>حواله بین مشتریان</span>
+                            <div class="transfer-actions">
+                                <button type="button" class="is-edit" title="ویرایش حواله" aria-label="ویرایش حواله" @onclick="() => OnEdit(item)"><ShellIcon Name="edit" /></button>
+                                <button type="button" class="is-delete" title="حذف حواله" aria-label="حذف حواله" @onclick="() => OnDelete(item)"><ShellIcon Name="trash" /></button>
+                            </div>
+                        </footer>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+    <footer class="transfer-pagination">
+        <label>تعداد ردیف
+            <select value="@_pageSize" @onchange="ChangePageSize" disabled="@_loading" aria-label="تعداد حواله در صفحه">
+                <option value="10">۱۰</option><option value="25">۲۵</option><option value="50">۵۰</option>
+            </select>
+        </label>
+        <nav aria-label="صفحه‌بندی حواله‌ها">
+            <button type="button" disabled="@(_loading || _pageIndex <= 0)" @onclick="() => ChangePage(-1)"><ShellIcon Name="previous" /> قبلی</button>
+            <span>@(_pageIndex + 1) از @PageCount</span>
+            <button type="button" disabled="@(_loading || _pageIndex + 1 >= PageCount)" @onclick="() => ChangePage(1)">بعدی <ShellIcon Name="next" /></button>
+        </nav>
+    </footer>
+</section>

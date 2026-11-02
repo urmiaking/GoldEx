@@ -1,31 +1,36 @@
-<MudCard Elevation="24">
-    <MudNavMenu>
-        <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DisplaySettings">اطلاعات پایه</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.PersonalAccessTokens" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SmartToy">اتصال به هوش مصنوعی (MCP)</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.ProductCategories.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Category">دسته بندی اجناس</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.ProductAttributes" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Tune">ویژگی‌های توصیفی کالاها</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.StoneTypes" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Diamond">مدیریت سنگ ها</MudNavLink>
+<nav class="gex-settings-navigation" aria-label="بخش‌های تنظیمات برنامه">
+    <section class="gex-settings-navigation-section" aria-label="عمومی و کالاها">
+        <h3>عمومی و کالاها</h3>
+        <NavLink href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.All"><ShellIcon Name="display" /><span>اطلاعات پایه</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.PersonalAccessTokens" Match="NavLinkMatch.All"><ShellIcon Name="spark" /><span>اتصال به هوش مصنوعی (MCP)</span></NavLink>
+        <NavLink href="@ClientRoutes.ProductCategories.Index" Match="NavLinkMatch.All"><ShellIcon Name="grid" /><span>دسته‌بندی اجناس</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.ProductAttributes" Match="NavLinkMatch.All"><ShellIcon Name="list" /><span>ویژگی‌های توصیفی کالاها</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.StoneTypes" Match="NavLinkMatch.All"><ShellIcon Name="gem" /><span>مدیریت سنگ‌ها</span></NavLink>
+    </section>
+
+    <section class="gex-settings-navigation-section" aria-label="قیمت‌ها و حسابداری">
+        <h3>قیمت‌ها و حسابداری</h3>
         <AuthorizeView Roles="@BuiltinRoles.Administrators">
-            <MudNavLink Href="@ClientRoutes.Settings.PriceSettings" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.EuroSymbol">مدیریت نمادها</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Settings.PriceUnits" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange">مدیریت واحدهای ارزی</MudNavLink>
+            <NavLink href="@ClientRoutes.Settings.PriceSettings" Match="NavLinkMatch.All"><ShellIcon Name="chart-bar" /><span>مدیریت نمادها</span></NavLink>
+            <NavLink href="@ClientRoutes.Settings.PriceUnits" Match="NavLinkMatch.All"><ShellIcon Name="wallet" /><span>مدیریت واحدهای ارزی</span></NavLink>
         </AuthorizeView>
-        <MudNavLink Href="@ClientRoutes.Settings.Coins" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.MonetizationOn">مدیریت سکه ها</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.FinancialAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Payments">مدیریت حساب های مالی</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.ReportsList" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DesignServices">طراحی گزارش ها</MudNavLink>
+        <NavLink href="@ClientRoutes.Settings.Coins" Match="NavLinkMatch.All"><ShellIcon Name="gem" /><span>مدیریت سکه‌ها</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.FinancialAccounts" Match="NavLinkMatch.All"><ShellIcon Name="wallet" /><span>مدیریت حساب‌های مالی</span></NavLink>
         <AuthorizeView Roles="@BuiltinRoles.Administrators">
-            <Authorized>
-                <MudNavLink Href="@ClientRoutes.Settings.LedgerAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DashboardCustomize">مدیریت سرفصل های حسابداری</MudNavLink>
-                <MudNavLink Href="@ClientRoutes.Settings.Stores" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Store">مدیریت فروشگاه‌ها</MudNavLink>
-            </Authorized>
+            <NavLink href="@ClientRoutes.Settings.LedgerAccounts" Match="NavLinkMatch.All"><ShellIcon Name="grid" /><span>مدیریت سرفصل‌های حسابداری</span></NavLink>
+            <NavLink href="@ClientRoutes.Settings.Stores" Match="NavLinkMatch.All"><ShellIcon Name="store" /><span>مدیریت فروشگاه‌ها</span></NavLink>
         </AuthorizeView>
-        <MudNavLink Href="@ClientRoutes.Settings.BarcodeBuilder" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.QrCode2">طراحی بارکد محصولات</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.SmsTemplates" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Sms">مدیریت قالب های پیامکی</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.SmsLogs" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ManageHistory">تاریخچه پیامک ها</MudNavLink>
+    </section>
+
+    <section class="gex-settings-navigation-section" aria-label="ابزارها و خدمات">
+        <h3>ابزارها و خدمات</h3>
+        <NavLink href="@ClientRoutes.Settings.ReportsList" Match="NavLinkMatch.All"><ShellIcon Name="file" /><span>طراحی گزارش‌ها</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.BarcodeBuilder" Match="NavLinkMatch.All"><ShellIcon Name="package" /><span>طراحی بارکد محصولات</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.SmsTemplates" Match="NavLinkMatch.All"><ShellIcon Name="mail" /><span>مدیریت قالب‌های پیامکی</span></NavLink>
+        <NavLink href="@ClientRoutes.Settings.SmsLogs" Match="NavLinkMatch.All"><ShellIcon Name="history" /><span>تاریخچه پیامک‌ها</span></NavLink>
         <AuthorizeView Roles="@BuiltinRoles.Administrators">
-            <MudNavLink Href="@ClientRoutes.Settings.BackupRestore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Restore">پشتیبان گیری و بازنشانی</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Settings.LicenseRequests" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ListAlt">
-                درخواست های تمدید و ارتقاء نرم افزار
-            </MudNavLink>
+            <NavLink href="@ClientRoutes.Settings.BackupRestore" Match="NavLinkMatch.All"><ShellIcon Name="refresh" /><span>پشتیبان‌گیری و بازنشانی</span></NavLink>
+            <NavLink href="@ClientRoutes.Settings.LicenseRequests" Match="NavLinkMatch.All"><ShellIcon Name="file" /><span>درخواست‌های تمدید و ارتقاء نرم‌افزار</span></NavLink>
         </AuthorizeView>
-    </MudNavMenu>
-</MudCard>
+    </section>
+</nav>

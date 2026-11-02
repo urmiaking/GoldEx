@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -8,6 +9,7 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
 public partial class InventoryEntryContainer
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     private readonly InventoryEntryVm _model = new();
     private GetPriceUnitResponse? _priceUnit;
     private decimal? _gramPrice;
@@ -69,12 +71,14 @@ public partial class InventoryEntryContainer
 
         var promptDescription = $"آیا از ثبت ورود موجودی {string.Join("، ", parts)} اطمینان دارید؟";
 
-        var result = await DialogService.ShowMessageBoxAsync(
-            "تأیید نهایی",
-            promptDescription,
-            yesText: "بله", cancelText: "لغو");
+        var dialog = ResponsiveDialogs.Show<InventoryEntryConfirmDialog>("تأیید ورود موجودی",
+            new Dictionary<string, object> {
+                [nameof(InventoryEntryConfirmDialog.Message)] = promptDescription,
+                [nameof(InventoryEntryConfirmDialog.ActionLabel)] = "ثبت ورود موجودی"
+            });
+        var result = await dialog.Result;
 
-        if (result is true)
+        if (result is { Canceled: false, Data: true })
         {
             _processing = true;
             _totalItems = _model.ProductItems.Count + _model.CoinItems.Count + _model.CurrencyItems.Count;

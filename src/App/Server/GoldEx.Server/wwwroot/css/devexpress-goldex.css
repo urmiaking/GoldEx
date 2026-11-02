@@ -1,0 +1,162 @@
+/*
+ * GoldEx Report Viewer — supported DevExpress color-scheme CSS customization.
+ * Scoped to invoice document viewer; do not skin/report-rendered pages themselves.
+ * DevExpress 24.2.7 Web Document Viewer (JS-based Blazor).
+ * Reference: https://docs.devexpress.com/XtraReports/400413
+ */
+.gex-report-viewer {
+    --gex-report-surface: var(--mud-palette-surface, #fff);
+    --gex-report-canvas: var(--mud-palette-background, #f5f3ef);
+    --gex-report-border: var(--mud-palette-lines-default, #dedad4);
+    --gex-report-ink: var(--mud-palette-text-primary, #222);
+    --gex-report-muted: var(--mud-palette-text-secondary, #656565);
+    --gex-report-accent: var(--mud-palette-primary, #a57912);
+    --gex-report-accent-ink: var(--mud-palette-primary-text, #fff);
+    --gex-report-radius: 16px;
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--gex-report-border);
+    border-radius: var(--gex-report-radius);
+    /* Keep document export popovers and fullscreen overlays unclipped. */
+    background: var(--gex-report-surface);
+    box-shadow: 0 10px 30px -23px rgba(0, 0, 0, .23);
+}
+
+/* Use DevExpress' documented dxd- palette classes, scoped so nothing in
+   GoldEx/MudBlazor or the document preview canvas acquires reporting styles. */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-back-primary,
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-back-primary2 {
+    background-color: var(--gex-report-surface);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-back-secondary {
+    background-color: var(--gex-report-canvas);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-border-primary,
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-border-secondary {
+    border-color: var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-text-primary,
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-text-info {
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-text-accented {
+    color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-border-accented {
+    border-color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-back-accented,
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-back-highlighted.dxd-state-active {
+    background-color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-state-active .dxd-text-primary {
+    color: var(--gex-report-accent-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-icon-fill {
+    fill: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-state-active .dxd-icon-fill {
+    fill: var(--gex-report-accent-ink);
+}
+
+/* Viewer chrome: rounded frosted toolbar, NOT the printed report. */
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper {
+    background: color-mix(in srgb, var(--gex-report-surface) 90%, transparent);
+    border-bottom: 1px solid var(--gex-report-border);
+    border-radius: 15px 15px 0 0;
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    backdrop-filter: blur(14px) saturate(125%);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar-wrapper .dxrd-toolbar {
+    font-family: Vazirmatn, IRANSans, Tahoma, sans-serif;
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar .dxrd-toolbar-item {
+    border-radius: 10px;
+    transition: background-color .18s ease;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar .dxrd-toolbar-item:not([hidden]):hover {
+    background: color-mix(in srgb, var(--gex-report-accent) 9%, var(--gex-report-surface));
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview.dxrd-designer-wrapper .dxrd-toolbar .dxrd-toolbar-item:focus-within {
+    outline: 2px solid var(--gex-report-accent);
+    outline-offset: -2px;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-button,
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-texteditor,
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-dropdowneditor {
+    border-radius: 10px;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-button.dx-state-hover,
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-button.dx-state-focused {
+    border-color: color-mix(in srgb, var(--gex-report-accent) 45%, var(--gex-report-border));
+    background-color: color-mix(in srgb, var(--gex-report-accent) 10%, var(--gex-report-surface));
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dx-separator {
+    background-color: var(--gex-report-border);
+}
+
+/* Right-hand search/parameters/export tabs. DevExpress documents the dxd-
+   side-panel-tabs-back-color hook; keep original position, width, and actions. */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxd-side-panel-tabs-back-color {
+    background: var(--gex-report-surface);
+    border-inline-start: 1px solid var(--gex-report-border);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-tab-panel,
+.gex-report-viewer .dx-blazor-reporting .dxrd-tab-panel-right,
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview-parameters-wrapper,
+.gex-report-viewer .dx-blazor-reporting .dxrd-preview-search-wrapper {
+    background-color: var(--gex-report-surface);
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-tab-panel .dxrd-action-item,
+.gex-report-viewer .dx-blazor-reporting .dxrd-action-items-container .dxrd-action-item {
+    border-radius: 10px;
+    margin-block: 2px;
+    transition: background-color .18s ease, color .18s ease;
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-tab-panel .dxrd-action-item:hover,
+.gex-report-viewer .dx-blazor-reporting .dxrd-action-items-container .dxrd-action-item:hover {
+    background: color-mix(in srgb, var(--gex-report-accent) 12%, var(--gex-report-surface));
+}
+.gex-report-viewer .dx-blazor-reporting .dxrd-action-item.dxd-state-active {
+    background: color-mix(in srgb, var(--gex-report-accent) 16%, var(--gex-report-surface));
+    color: var(--gex-report-accent);
+}
+
+/* DevExtreme widgets (search input, page picker, menus) used within the viewer. */
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport :is(.dx-texteditor, .dx-selectbox, .dx-numberbox) {
+    font-family: Vazirmatn, IRANSans, Tahoma, sans-serif;
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dx-texteditor.dx-editor-outlined,
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dx-dropdowneditor {
+    border-radius: 10px;
+    border-color: var(--gex-report-border);
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dx-texteditor.dx-state-focused {
+    border-color: var(--gex-report-accent);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dx-texteditor-input {
+    color: var(--gex-report-ink);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dx-menu-item.dx-state-hover {
+    background: color-mix(in srgb, var(--gex-report-accent) 10%, var(--gex-report-surface));
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-preview-surface {
+    background: var(--gex-report-canvas);
+}
+.gex-report-viewer .dx-blazor-reporting .dx-designer-viewport .dxrd-preview-wrapper {
+    background: var(--gex-report-canvas);
+}
+
+/* Printed report bricks/pages and export output intentionally unstyled. */
+@media (max-width: 959.98px) {
+    .gex-report-viewer { border-radius: 12px; }
+    .gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item { border-radius: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gex-report-viewer .dx-blazor-reporting .dxrd-toolbar .dxrd-toolbar-item,
+    .gex-report-viewer .dx-blazor-reporting .dxrd-tab-panel .dxrd-action-item,
+    .gex-report-viewer .dx-blazor-reporting .dxrd-action-items-container .dxrd-action-item { transition: none; }
+}

@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Invoices.Validators;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -15,6 +16,8 @@ public partial class UsedProductEditor
     [Parameter] public UsedProductVm Model { get; set; } = new();
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private readonly UsedProductValidator _usedProductValidator = new();
 
@@ -73,8 +76,8 @@ public partial class UsedProductEditor
         }
 
         _isProcessing = false;
-        MudDialog.Close(DialogResult.Ok(Model));
+        if (Session is not null) Session.Close(Model); else MudDialog.Close(DialogResult.Ok(Model));
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close() { if (Session is not null) Session.Cancel(); else MudDialog.Cancel(); }
 }

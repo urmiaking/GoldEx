@@ -244,6 +244,10 @@ public static class ApiRoutes
 
     public class Notifications
     {
+        public const string PushConfiguration = "push/configuration";
+        public const string PushSubscribe = "push/subscribe";
+        public const string PushRevoke = "push/revoke";
+        public const string PushTest = "push/test";
         public const string Base = "/api/notifications";
         public const string GetList = "";
         public const string Delete = "{id}";

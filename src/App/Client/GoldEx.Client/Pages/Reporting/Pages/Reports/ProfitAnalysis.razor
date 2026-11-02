@@ -4,11 +4,7 @@
 
 <PageTitle>گزارش تحلیل سود فروش</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
-        <SeparatorTemplate><MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" /></SeparatorTemplate>
-    </MudBreadcrumbs>
-
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="gex-report-page">
     <ReportFiltersBase Model="Filters" OnSubmit="OnSubmit">
         <ProfitAnalysisFilters Model="Filters" />
     </ReportFiltersBase>

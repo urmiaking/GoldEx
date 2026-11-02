@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Finances.PaymentVouchers.Validators;
 using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
@@ -17,6 +18,8 @@ namespace GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 public partial class Editor
 {
     [Parameter] public Guid? Id { get; set; }
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly PaymentVoucherValidator _validator = new();
@@ -79,7 +82,7 @@ public partial class Editor
             });
     }
 
-    private void Close() => MudDialog.Cancel();
+    private void Close() { if (_processing) return; if (Session is not null) Session.Cancel(); else MudDialog.Cancel(); }
 
     public async Task Submit()
     {
@@ -100,7 +103,8 @@ public partial class Editor
             afterSend: () =>
             {
                 _processing = false;
-                MudDialog.Close(DialogResult.Ok(true));
+                if (Session is not null) Session.Close(true);
+                else MudDialog.Close(DialogResult.Ok(true));
                 return Task.CompletedTask;
             });
 
@@ -117,7 +121,10 @@ public partial class Editor
             { x => x.ShowFinancialAccounts, false }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
+        var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن طرف حساب جدید", new Dictionary<string, object> {
+            [nameof(Customers.Components.Editor.ReturnModel)] = true,
+            [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
+        }, wide: true);
 
         var result = await dialog.Result;
 
@@ -157,7 +164,16 @@ public partial class Editor
             };
         }
 
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید", parameters, dialogOptions);
+        var nativeArgs = new Dictionary<string, object> {
+            [nameof(FinancialAccountEditor.SubmitIndependently)] = true,
+            [nameof(FinancialAccountEditor.PriceUnits)] = _priceUnits
+        };
+        if (!isSourceAccount && _model.Customer is not null)
+        {
+            nativeArgs[nameof(FinancialAccountEditor.CustomerId)] = _model.Customer.Id!;
+            nativeArgs[nameof(FinancialAccountEditor.AccountHolderName)] = _model.Customer.FullName;
+        }
+        var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>("افزودن حساب مالی جدید", nativeArgs, wide: true);
 
         var result = await dialog.Result;
 

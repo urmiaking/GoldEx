@@ -1,5 +1,7 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -7,21 +9,27 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class CustomerFiltersDialog
 {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private ResponsiveDialogSession? Session { get; set; }
 
     [Parameter] public DateRange DateRange { get; set; } = new();
     [Parameter] public CustomerType? CustomerTypeParam { get; set; }
     [Parameter] public TransactionType? TransactionTypeParam { get; set; }
+    [Parameter] public string SortLabel { get; set; } = nameof(CustomerVm.CreatedAt);
+    [Parameter] public bool SortDescending { get; set; } = true;
 
     private DateRange? _dateRange;
     private CustomerType? _customerType;
     private TransactionType? _transactionType;
+    private string _sortLabel = nameof(CustomerVm.CreatedAt);
+    private bool _sortDescending = true;
 
     protected override void OnParametersSet()
     {
         _dateRange = new DateRange(DateRange.Start, DateRange.End);
         _customerType = CustomerTypeParam;
         _transactionType = TransactionTypeParam;
+        _sortLabel = SortLabel;
+        _sortDescending = SortDescending;
     }
 
     private string? GetTransactionTypeIcon(TransactionType? type) => type switch
@@ -67,10 +75,12 @@ public partial class CustomerFiltersDialog
         var result = new CustomersList.CustomerMobileFiltersResult(
             new DateRange(_dateRange?.Start, _dateRange?.End),
             _customerType,
-            _transactionType
+            _transactionType,
+            _sortLabel,
+            _sortDescending
         );
 
-        MudDialog.Close(DialogResult.Ok(result));
+        Session?.Close(result);
     }
 
     private void Clear()
@@ -78,8 +88,15 @@ public partial class CustomerFiltersDialog
         _dateRange = new DateRange();
         _customerType = null;
         _transactionType = null;
+        // Reset only filters; keep sorting set by the desktop toolbar.
         Apply();
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void OnSortChanged(string label)
+    {
+        _sortLabel = label;
+        _sortDescending = label == nameof(CustomerVm.CreatedAt);
+    }
+
+    private void Cancel() => Session?.Cancel();
 }

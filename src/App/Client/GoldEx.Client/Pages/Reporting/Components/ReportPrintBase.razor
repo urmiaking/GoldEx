@@ -1,76 +1,181 @@
-<!-- ReportPrintBase.razor -->  
 @using GoldEx.Client.Pages.Reporting.ViewModels
-@inherits GoldExComponentBase  
-  
-<ReportBase Title="@ReportTitle" ShowInstitutionHeader="true">  
-    @if (IsLoading)  
-    {  
-        <div class="loading-message">در حال آماده‌سازی گزارش...</div>  
-    }  
-    else if (Data != null)  
-    {  
-        @if (ShowDateFilter && (FromDate.HasValue || ToDate.HasValue))  
-        {  
-            <div class="meta">  
-                @if (FromDate.HasValue)  
-                {  
-                    <span>از تاریخ: @FromDate?.ToString("yyyy/MM/dd")</span>  
-                }  
-                @if (ToDate.HasValue)  
-                {  
-                    <span>تا تاریخ: @ToDate?.ToString("yyyy/MM/dd")</span>  
-                }  
-            </div>  
-        }  
-  
-        @ChildContent
-          
-        @if (ShowSummary && Summary != null)  
-        {  
-            <ReportSummary Summary="@Summary" Title="خلاصه گزارش" />  
-        }  
-    }  
-</ReportBase>  
-  
-@code {  
-    [Parameter] public bool IsLoading { get; set; }  
+@using GoldEx.Shared.DTOs.Settings
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
 
-    [Parameter] public bool ShowDateFilter { get; set; } = true; 
+<link href="/css/reports/report-enterprise.css?v=2" rel="stylesheet" />
 
-    [Parameter] public bool ShowSummary { get; set; } = true; 
+@if (IsLoading || !_settingsLoaded)
+{
+    <div class="gex-print-loading">در حال آماده‌سازی نسخه چاپی گزارش…</div>
+}
+else if (Data is not null)
+{
+    <article class="gex-print-document @(Landscape ? "gex-print-landscape" : "gex-print-portrait")" dir="rtl">
+        <header class="gex-print-letterhead">
+            <div class="gex-print-store">
+                <div class="gex-print-store-identity">
+                    @if (_settings?.HasIcon == true)
+                    {
+                        <img class="gex-print-store-logo" src="@(ApiUrls.Icons.Get(IconType.App, Guid.Empty))"
+                             alt="نشان فروشگاه" />
+                    }
+                    <div class="gex-print-store-name">
+                        <strong>@(string.IsNullOrWhiteSpace(_settings?.InstitutionName) ? "فروشگاه طلا و جواهر" : _settings.InstitutionName)</strong>
+                        <span>گزارش رسمی امور مالی و موجودی</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_settings?.Address))
+                {
+                    <div class="gex-print-contact"><span>نشانی</span><span>@_settings.Address</span></div>
+                }
+                @if (!string.IsNullOrWhiteSpace(_settings?.PhoneNumber))
+                {
+                    <div class="gex-print-contact"><span>تلفن</span><bdi>@_settings.PhoneNumber</bdi></div>
+                }
+            </div>
+            <div class="gex-print-brand" aria-label="GoldEx">
+                <div class="gex-print-brand-mark" aria-hidden="true">◆</div>
+                <div class="gex-print-wordmark"><span>GOLD</span>Ex</div>
+                <small>JEWELRY ACCOUNTING SYSTEM</small>
+                <span class="gex-print-brand-caption">سامانه حسابداری طلا و جواهر</span>
+            </div>
+        </header>
 
-    [Parameter, SupplyParameterFromQuery(Name = "Start")]
-    public DateTime? FromDate { get; set; }
+        <section class="gex-print-report-intro">
+            <div class="gex-print-report-main">
+                <span class="gex-print-eyebrow">گزارش مدیریتی و مالی</span>
+                <h1>@ReportTitle</h1>
+                @if (ShowDateFilter && (FromDate.HasValue || ToDate.HasValue))
+                {
+                    <div class="gex-print-date-range">
+                        <span>دوره گزارش</span>
+                        <strong>@(FromDate?.ToString("yyyy/MM/dd") ?? "ابتدای دوره")</strong>
+                        <span>تا</span>
+                        <strong>@(ToDate?.ToString("yyyy/MM/dd") ?? "امروز")</strong>
+                    </div>
+                }
+            </div>
+            <div class="gex-print-report-meta">
+                <div><span>تاریخ تهیه</span><strong>@_generatedAt.ToShortDateString()</strong></div>
+                <div><span>ساعت تهیه</span><strong dir="ltr">@_generatedAt.ToString("HH:mm")</strong></div>
+                @if (RecordCount is not null)
+                {
+                    <div><span>تعداد ردیف</span><strong>@RecordCount.Value.ToString("N0")</strong></div>
+                }
+            </div>
+        </section>
 
-    [Parameter, SupplyParameterFromQuery(Name = "End")]
-    public DateTime? ToDate { get; set; }
+        @if (Summary?.Sections.FirstOrDefault(x => x.Items.Count > 0) is { } headline)
+        {
+            <section class="gex-print-highlights">
+                <div class="gex-print-section-heading">
+                    <h2>گزارش در یک نگاه</h2>
+                    <span>@headline.Title</span>
+                </div>
+                <div class="gex-print-kpi-grid">
+                    @foreach (var item in headline.Items.Take(4))
+                    {
+                        <div class="gex-print-kpi">
+                            <span class="gex-print-kpi-symbol" aria-hidden="true">◆</span>
+                            <span class="gex-print-kpi-label">@item.Label</span>
+                            <strong class="gex-print-kpi-value" dir="auto">@item.Value</strong>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+        else if (RecordCount is not null)
+        {
+            <section class="gex-print-highlights">
+                <div class="gex-print-section-heading"><h2>گزارش در یک نگاه</h2></div>
+                <div class="gex-print-kpi-grid">
+                    <div class="gex-print-kpi">
+                        <span class="gex-print-kpi-symbol" aria-hidden="true">◆</span>
+                        <span class="gex-print-kpi-label">تعداد ردیف‌های گزارش</span>
+                        <strong class="gex-print-kpi-value">@RecordCount.Value.ToString("N0")</strong>
+                    </div>
+                </div>
+            </section>
+        }
 
-    [Parameter] public object? Data { get; set; }  
+        <section class="gex-print-detail-section">
+            <div class="gex-print-section-heading">
+                <h2>جزئیات گزارش</h2>
+                <span>اطلاعات ثبت‌شده در بازه و شرایط انتخابی</span>
+            </div>
+            <div class="gex-print-table-wrap">
+                @ChildContent
+            </div>
+        </section>
 
-    [Parameter] public ReportSummaryVm? Summary { get; set; }  
+        @if (ShowSummary && Summary is { Sections.Count: > 0 })
+        {
+            <section class="gex-print-summary-section">
+                <ReportSummary Summary="@Summary" Title="جمع‌بندی و خلاصه گزارش" />
+            </section>
+        }
 
-    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+        <section class="gex-print-notes">
+            <h2>اطلاعات و توضیحات</h2>
+            <p>این نسخه براساس اطلاعات ثبت‌شده در سامانه و فیلترهای انتخاب‌شده هنگام تهیه گزارش ایجاد شده است.
+                مقادیر مالی و وزنی با واحد نمایش‌داده‌شده در هر بخش ارائه شده‌اند؛ مبالغ با واحدهای متفاوت با یکدیگر جمع نشده‌اند.</p>
+        </section>
+        <footer class="gex-print-document-footer">
+            <div>تهیه‌شده توسط سامانه حسابداری طلا و جواهر <strong>GoldEx</strong></div>
+            <div>گزارش تولیدشده در تاریخ @_generatedAt.ToShortDateString() ساعت @_generatedAt.ToString("HH:mm")</div>
+        </footer>
+    </article>
+}
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool ShowDateFilter { get; set; } = true;
+    [Parameter] public bool ShowSummary { get; set; } = true;
+    [Parameter, SupplyParameterFromQuery(Name = "Start")] public DateTime? FromDate { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "End")] public DateTime? ToDate { get; set; }
+    [Parameter] public object? Data { get; set; }
+    [Parameter] public ReportSummaryVm? Summary { get; set; }
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
     [Parameter] public string ReportTitle { get; set; } = "گزارش";
-      
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;  
+    [Parameter] public bool Landscape { get; set; }
 
-    private bool _printInvoked; 
-      
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+
+    private readonly DateTime _generatedAt = DateTime.Now;
+    private GetSettingResponse? _settings;
+    private bool _settingsLoaded;
+    private bool _printInvoked;
+    private int? RecordCount => Data is System.Collections.ICollection collection ? collection.Count : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await SendRequestAsync<ISettingService, GetSettingResponse?>(
+                action: (service, ct) => service.GetAsync(ct),
+                afterSend: data => _settings = data,
+                createScope: true);
+        }
+        finally
+        {
+            _settingsLoaded = true;
+        }
+        await base.OnInitializedAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!IsLoading && Data != null && !_printInvoked)
+        if (IsLoading || !_settingsLoaded || Data is null || _printInvoked)
+            return;
+
+        _printInvoked = true;
+        try
         {
-            _printInvoked = true;
-            try
-            {
-                await JsRuntime.InvokeVoidAsync("GoldEx.removeSplash");
-            }
-            catch
-            {
-                // ignore
-            }
-            await Task.Delay(500);
-            await JsRuntime.InvokeVoidAsync("printAndClose");
+            await JsRuntime.InvokeVoidAsync("GoldEx.removeSplash");
         }
+        catch (JSException) { /* The splash is optional on standalone print routes. */ }
+        await JsRuntime.InvokeVoidAsync("printAndClose");
     }
 }

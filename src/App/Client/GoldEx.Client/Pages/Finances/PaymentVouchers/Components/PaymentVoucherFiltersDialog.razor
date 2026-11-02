@@ -1,0 +1,31 @@
+@using GoldEx.Client.Components.Components.Dialogs
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@inherits GoldExComponentBase
+<EditorDialogFrame>
+ <DialogContent><div class="gex-directory-filter-form">
+  <MudGrid Spacing="3">
+   <MudItem xs="12" sm="6"><MudDateRangePicker DateRange="_range" DateRangeChanged="@(r => _range = r)" Label="تاریخ پرداخت"
+       Variant="Variant.Outlined" Margin="Margin.Dense" MaxMonthColumns="1" DisplayMonths="1" ShowToolbar="false"
+       Adornment="Adornment.Start" Clearable="true" Class="w-100 gex-filter-date-range" /></MudItem>
+   <MudItem xs="12" sm="6"><MudSelect T="PaymentVoucherType?" Label="نوع سند" @bind-Value="_type"
+       Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense" Class="w-100">
+       <MudSelectItem T="PaymentVoucherType?" Value="@(null as PaymentVoucherType?)">همه اسناد</MudSelectItem>
+       <MudSelectItem T="PaymentVoucherType?" Value="@((PaymentVoucherType?)PaymentVoucherType.PrepaymentToSupplier)">@PaymentVoucherType.PrepaymentToSupplier.GetDisplayName()</MudSelectItem>
+       <MudSelectItem T="PaymentVoucherType?" Value="@((PaymentVoucherType?)PaymentVoucherType.RefundToCustomer)">@PaymentVoucherType.RefundToCustomer.GetDisplayName()</MudSelectItem>
+   </MudSelect></MudItem>
+   <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort"><MudSelect T="string" Label="مرتب‌سازی بر اساس" @bind-Value="_sort"
+       Variant="Variant.Outlined" Margin="Margin.Dense">
+       <MudSelectItem Value="@("PaymentDate")">تاریخ پرداخت</MudSelectItem><MudSelectItem Value="@("VoucherNumber")">شماره سند</MudSelectItem>
+       <MudSelectItem Value="@("VoucherType")">نوع سند</MudSelectItem><MudSelectItem Value="@("Customer.FullName")">طرف حساب</MudSelectItem>
+   </MudSelect></MudItem>
+   <MudItem xs="12" sm="6" Class="gex-filter-mobile-sort"><MudSelect T="bool" Label="ترتیب" @bind-Value="_desc" Variant="Variant.Outlined" Margin="Margin.Dense">
+       <MudSelectItem T="bool" Value="true">نزولی</MudSelectItem><MudSelectItem T="bool" Value="false">صعودی</MudSelectItem>
+   </MudSelect></MudItem>
+  </MudGrid></div>
+ </DialogContent>
+ <DialogActions><MudButton Color="Color.Error" Variant="Variant.Text" OnClick="Clear" StartIcon="@Icons.Material.Filled.Delete">بازنشانی</MudButton>
+  <MudSpacer /><MudButton Variant="Variant.Outlined" OnClick="() => Session?.Cancel()">انصراف</MudButton>
+  <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Apply" StartIcon="@Icons.Material.Filled.Check">اعمال فیلترها</MudButton>
+ </DialogActions>
+</EditorDialogFrame>

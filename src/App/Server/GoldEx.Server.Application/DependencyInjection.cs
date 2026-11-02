@@ -13,6 +13,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace GoldEx.Server.Application;
 
@@ -28,6 +29,8 @@ public static class DependencyInjection
 
             services.AddScoped<StoreContext>();
             services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<StoreContext>());
+            services.AddHttpClient("GoldExWebPush", client => client.Timeout = TimeSpan.FromSeconds(20))
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
             services.TryAddScoped<IPriceNotificationPublisher, NullPriceNotificationPublisher>();
             services.TryAddScoped<ISmartTrayNotificationPublisher, NullSmartTrayNotificationPublisher>();
 
@@ -35,13 +38,14 @@ public static class DependencyInjection
             return services;
         }
 
-        public IServiceCollection AddHostedServices()
+        public IServiceCollection AddHostedServices(IHostEnvironment environment)
         {
             services.AddHostedService<PriceUpdaterBackgroundService>();
             services.AddHostedService<NotificationBackgroundService>();
             //services.AddHostedService<BlogDiskSyncManager>();
 
-            services.AddHostedService<LicenseUpdaterBackgroundService>();  
+            if (!environment.IsDevelopment())
+                services.AddHostedService<LicenseUpdaterBackgroundService>();
 
             return services;
         }

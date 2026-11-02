@@ -34,6 +34,7 @@ public partial class EditorForm
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
     [Inject] private HelpContext HelpContext { get; set; } = default!;
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
 
@@ -47,14 +48,36 @@ public partial class EditorForm
     private List<GetCustomerResponse> _customers = [];
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
     private GetLicenseResponse? _license;
-    private bool _discountMenuOpen;
-    private bool _extraCostsMenuOpen;
     private bool _processing;
     private bool _deleting;
-    private bool _totalUnpaidMenuOpen;
+    private bool _showFinancialDetails;
+    private int _activeInvoiceStep = 1;
     private bool _isLoadingInvoice;
-    private bool _applyCurrentInvoice = true;
-    private bool _paymentMenuOpen;
+    private int _activeItemTab;
+    private async Task ScrollToInvoiceSectionAsync(int step)
+    {
+        _activeInvoiceStep = step;
+        var sectionId = step switch
+        {
+            1 => "invoice-core",
+            2 => "invoice-customer",
+            3 => "invoice-lines",
+            4 => "invoice-finance",
+            _ => "invoice-core"
+        };
+        // Lazy import also works when this page is reached through Blazor enhanced navigation.
+        var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/invoice-workspace.js");
+        try
+        {
+            await module.InvokeVoidAsync("scrollToSection", sectionId);
+        }
+        finally
+        {
+            await module.DisposeAsync();
+        }
+    }
+
+    private int InvoiceItemCount => _model.ProductItems.Count + _model.CoinItems.Count + _model.CurrencyItems.Count + _model.UsedProducts.Count;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -106,11 +129,6 @@ public partial class EditorForm
         InvoiceType.Purchase => Color.Success,
         _ => Color.Default
     };
-
-    private string RemainingTooltipText =>
-        _applyCurrentInvoice
-            ? "اعمال مانده فاکتور جاری در مانده مشتری"
-            : "عدم اعمال مانده فاکتور جاری در مانده مشتری";
 
     private string InvoiceIcon => _model.InvoiceType switch
     {
@@ -433,7 +451,17 @@ public partial class EditorForm
             { x => x.ItemStatus, ItemStatus.Available }
         };
 
-        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب جنس از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
+        var dialog = ResponsiveDialogs.Show<InventoryItemSelector>("انتخاب جنس از انبار",
+            new Dictionary<string, object>
+            {
+                [nameof(InventoryItemSelector.GramPrice)] = gramPrice,
+                [nameof(InventoryItemSelector.TaxPercent)] = _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 10 : 0,
+                [nameof(InventoryItemSelector.GoldProfitPercent)] = _model.TradeScale is TradeScale.Retail ? _setting?.GoldProfitPercent ?? 7 : 0,
+                [nameof(InventoryItemSelector.JewelryProfitPercent)] = _model.TradeScale is TradeScale.Retail ? _setting?.JewelryProfitPercent ?? 20 : 0,
+                [nameof(InventoryItemSelector.SelectableTypes)] = new[] { ItemType.Product, ItemType.MoltenGold },
+                [nameof(InventoryItemSelector.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(InventoryItemSelector.ItemStatus)] = ItemStatus.Available
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -458,8 +486,11 @@ public partial class EditorForm
         decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
         model.GramPrice = gramPrice;
-        model.TaxPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.TaxPercent ?? 9 : 0;
-        model.ProfitPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.GoldProfitPercent ?? 7 : 0;
+        // Defaults belong to new item creation, never to dialog re-renders or edits.
+        // Wholesale (and purchase) starts at zero, but operators may override either field.
+        var isRetailSale = _model.InvoiceType is InvoiceType.Sell && _model.TradeScale is TradeScale.Retail;
+        model.TaxPercent = isRetailSale ? _setting?.TaxPercent ?? 9 : 0;
+        model.ProfitPercent = isRetailSale ? _setting?.GoldProfitPercent ?? 7 : 0;
         model.IsInstantProduct = _model.InvoiceType is InvoiceType.Sell;
         model.InvoiceType = _model.InvoiceType;
         model.CostPriceUnitId = _model.InvoicePriceUnit?.Id;
@@ -473,19 +504,34 @@ public partial class EditorForm
             { x => x.TradeScale, _model.TradeScale }
         };
 
-        var dialog = await DialogService.ShowAsync<ProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<ProductItemEditor>("افزودن جنس جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(ProductItemEditor.Model)] = model,
+                [nameof(ProductItemEditor.PriceUnits)] = _priceUnits,
+                [nameof(ProductItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(ProductItemEditor.TradeScale)] = _model.TradeScale,
+                [nameof(ProductItemEditor.PrepareAndAddAsync)] = (Func<ProductItemVm, Task<bool>>)PrepareAndAddProductItemAsync
+            }, wide: true);
 
-        var result = await dialog.Result;
+        // The editor keeps its spinner visible until barcode reservation and list
+        // insertion finish. Its success callback closes the dialog afterward.
+        await dialog.Result;
+    }
 
-        if (result is { Canceled: false, Data: ProductItemVm productItem })
+    private async Task<bool> PrepareAndAddProductItemAsync(ProductItemVm productItem)
+    {
+        await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
+        if (!productItem.Product.Id.HasValue && string.IsNullOrWhiteSpace(productItem.Product.Barcode))
         {
-            // Reserve and assign barcode for brand-new items
-            await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
-
-            productItem.RecalculateAmounts();
-            _model.AddProductItem(productItem);
-            StateHasChanged();
+            AddErrorToast("دریافت بارکد انجام نشد؛ لطفاً دوباره ذخیره کنید.");
+            return false;
         }
+
+        productItem.RecalculateAmounts();
+        _model.AddProductItem(productItem);
+        await InvokeAsync(StateHasChanged);
+        return true;
     }
 
     private async Task OnEditProductItem(ProductItemVm productItemVm)
@@ -498,7 +544,14 @@ public partial class EditorForm
             { x => x.TradeScale, _model.TradeScale }
         };
 
-        var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<ProductItemEditor>("ویرایش جنس",
+            new Dictionary<string, object>
+            {
+                [nameof(ProductItemEditor.Model)] = productItemVm,
+                [nameof(ProductItemEditor.PriceUnits)] = _priceUnits,
+                [nameof(ProductItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(ProductItemEditor.TradeScale)] = _model.TradeScale
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -513,14 +566,16 @@ public partial class EditorForm
         }
     }
 
+    private async Task<bool> ConfirmInvoiceItemRemovalAsync(string itemTitle)
+    {
+        var dialog = ResponsiveDialogs.Show<InvoiceItemDeleteDialog>("حذف قلم از فاکتور",
+            new Dictionary<string, object> { [nameof(InvoiceItemDeleteDialog.ItemTitle)] = itemTitle });
+        return await dialog.Result is { Canceled: false, Data: true };
+    }
+
     private async Task OnRemoveProductItem(ProductItemVm productItem)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {productItem.Product.Name} اطمینان دارید؟ <br> <br> "),
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is null)
+        if (!await ConfirmInvoiceItemRemovalAsync(productItem.Product.Name ?? "این قلم"))
             return;
 
         // Release reservation if this was a brand-new item with a reserved barcode
@@ -722,7 +777,14 @@ public partial class EditorForm
             { x => x.ItemStatus, ItemStatus.Available }
         };
 
-        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب سکه از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
+        var dialog = ResponsiveDialogs.Show<InventoryItemSelector>("انتخاب سکه از انبار",
+            new Dictionary<string, object>
+            {
+                [nameof(InventoryItemSelector.ItemType)] = ItemType.Coin,
+                [nameof(InventoryItemSelector.SelectableTypes)] = new[] { ItemType.Coin },
+                [nameof(InventoryItemSelector.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(InventoryItemSelector.ItemStatus)] = ItemStatus.Available
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -751,18 +813,31 @@ public partial class EditorForm
             { x => x.Model, model }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CoinItemEditor>("افزودن سکه جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(CoinItemEditor.Model)] = model,
+                [nameof(CoinItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(CoinItemEditor.InvoiceType)] = _model.InvoiceType,
+                [nameof(CoinItemEditor.PrepareAndAddAsync)] = (Func<CoinItemVm, Task<bool>>)PrepareAndAddCoinItemAsync
+            }, wide: true);
 
-        var result = await dialog.Result;
+        await dialog.Result;
+    }
 
-        if (result is { Canceled: false, Data: CoinItemVm coinItem })
+    private async Task<bool> PrepareAndAddCoinItemAsync(CoinItemVm coinItem)
+    {
+        await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
+        if (!coinItem.CoinInstance.Id.HasValue && string.IsNullOrWhiteSpace(coinItem.CoinInstance.Barcode))
         {
-            await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
-
-            coinItem.RecalculateAmounts();
-            _model.AddCoinItem(coinItem);
-            StateHasChanged();
+            AddErrorToast("دریافت بارکد انجام نشد؛ لطفاً دوباره ذخیره کنید.");
+            return false;
         }
+
+        coinItem.RecalculateAmounts();
+        _model.AddCoinItem(coinItem);
+        await InvokeAsync(StateHasChanged);
+        return true;
     }
 
     private async Task OnEditCoinItem(CoinItemVm coinItemVm)
@@ -774,7 +849,13 @@ public partial class EditorForm
             { x => x.InvoiceType, _model.InvoiceType }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CoinItemEditor>("ویرایش سکه",
+            new Dictionary<string, object>
+            {
+                [nameof(CoinItemEditor.Model)] = coinItemVm,
+                [nameof(CoinItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(CoinItemEditor.InvoiceType)] = _model.InvoiceType
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -788,12 +869,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCoinItem(CoinItemVm coinItem)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {coinItem.CoinInstance.Coin?.Title} اطمینان دارید؟ <br> <br> "),
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is null)
+        if (!await ConfirmInvoiceItemRemovalAsync(coinItem.CoinInstance.Coin?.Title ?? "این قلم"))
             return;
 
         await ReleaseReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
@@ -843,7 +919,14 @@ public partial class EditorForm
             { x => x.ItemStatus, ItemStatus.Available },
         };
 
-        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب ارز از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
+        var dialog = ResponsiveDialogs.Show<InventoryItemSelector>("انتخاب ارز از انبار",
+            new Dictionary<string, object>
+            {
+                [nameof(InventoryItemSelector.ItemType)] = ItemType.Currency,
+                [nameof(InventoryItemSelector.SelectableTypes)] = new[] { ItemType.Currency },
+                [nameof(InventoryItemSelector.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(InventoryItemSelector.ItemStatus)] = ItemStatus.Available
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -878,7 +961,12 @@ public partial class EditorForm
             { x => x.InvoiceType, _model.InvoiceType }
         };
 
-        var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("افزودن ارز جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CurrencyItemEditor>("افزودن ارز جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(CurrencyItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(CurrencyItemEditor.InvoiceType)] = _model.InvoiceType
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -898,7 +986,13 @@ public partial class EditorForm
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.InvoiceType, _model.InvoiceType }
         };
-        var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("ویرایش ارز", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CurrencyItemEditor>("ویرایش ارز",
+            new Dictionary<string, object>
+            {
+                [nameof(CurrencyItemEditor.Model)] = currencyItemVm,
+                [nameof(CurrencyItemEditor.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(CurrencyItemEditor.InvoiceType)] = _model.InvoiceType
+            }, wide: true);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: CurrencyItemVm resultItem })
         {
@@ -909,12 +1003,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCurrencyItem(CurrencyItemVm currencyItem)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency.Title} اطمینان دارید؟ <br> <br> "),
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is null)
+        if (!await ConfirmInvoiceItemRemovalAsync(currencyItem.Currency.Title ?? "این قلم"))
             return;
 
         _model.RemoveCurrencyItem(currencyItem);
@@ -932,7 +1021,12 @@ public partial class EditorForm
             { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<UsedProductEditor>("ویرایش جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = ResponsiveDialogs.Show<UsedProductEditor>("ویرایش جنس",
+            new Dictionary<string, object>
+            {
+                [nameof(UsedProductEditor.Model)] = usedProduct,
+                [nameof(UsedProductEditor.PriceUnit)] = _model.InvoicePriceUnit!
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -945,12 +1039,7 @@ public partial class EditorForm
 
     private async Task OnRemoveUsedProduct(UsedProductVm usedProduct)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {usedProduct.Description} اطمینان دارید؟ <br> <br> "),
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is null)
+        if (!await ConfirmInvoiceItemRemovalAsync(usedProduct.Description ?? "این قلم"))
             return;
 
         _model.RemoveUsedProduct(usedProduct);
@@ -979,7 +1068,12 @@ public partial class EditorForm
             { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<UsedProductEditor>("افزودن جنس جدید", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = ResponsiveDialogs.Show<UsedProductEditor>("افزودن جنس جدید",
+            new Dictionary<string, object>
+            {
+                [nameof(UsedProductEditor.Model)] = model,
+                [nameof(UsedProductEditor.PriceUnit)] = _model.InvoicePriceUnit!
+            }, wide: true);
 
         var result = await dialog.Result;
 
@@ -1422,110 +1516,110 @@ public partial class EditorForm
 
     #region MenuToggle
 
-    private void OnDiscountMenuToggled()
+    private async Task OpenDiscountsDialog()
     {
-        _paymentMenuOpen = false;
-        _discountMenuOpen = !_discountMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        // Always edit detached copies. Cancel must never mutate the invoice.
+        var drafts = _model.InvoiceDiscounts.Select(x => new InvoiceDiscountVm
+        {
+            Amount = x.Amount,
+            Description = x.Description,
+            PriceUnit = x.PriceUnit,
+            ExchangeRate = x.ExchangeRate,
+            ExchangeRateLabel = x.ExchangeRateLabel,
+            AmountAdornmentText = x.AmountAdornmentText
+        }).ToList();
+
+        var dialog = ResponsiveDialogs.Show<InvoiceAdjustmentsDialog>("تخفیف‌های فاکتور",
+            new Dictionary<string, object>
+            {
+                [nameof(InvoiceAdjustmentsDialog.IsDiscount)] = true,
+                [nameof(InvoiceAdjustmentsDialog.Discounts)] = drafts,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnit)] = _model.InvoicePriceUnit,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnits)] = _priceUnits,
+                [nameof(InvoiceAdjustmentsDialog.TotalRemainingAmount)] = _model.TotalUnpaidAmount
+            }, wide: true);
+
+        if (await dialog.Result is { Canceled: false, Data: List<InvoiceDiscountVm> updated })
+            _model.InvoiceDiscounts = updated;
     }
 
-    private void OnExtraCostsMenuToggled()
+    private async Task OpenExtraCostsDialog()
     {
-        _paymentMenuOpen = false;
-        _extraCostsMenuOpen = !_extraCostsMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        var drafts = _model.InvoiceExtraCosts.Select(x => new InvoiceExtraCostVm
+        {
+            Amount = x.Amount,
+            Description = x.Description,
+            PriceUnit = x.PriceUnit,
+            ExchangeRate = x.ExchangeRate,
+            ExchangeRateLabel = x.ExchangeRateLabel,
+            AmountAdornmentText = x.AmountAdornmentText
+        }).ToList();
+
+        var dialog = ResponsiveDialogs.Show<InvoiceAdjustmentsDialog>("مخارج جانبی فاکتور",
+            new Dictionary<string, object>
+            {
+                [nameof(InvoiceAdjustmentsDialog.IsDiscount)] = false,
+                [nameof(InvoiceAdjustmentsDialog.ExtraCosts)] = drafts,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnit)] = _model.InvoicePriceUnit,
+                [nameof(InvoiceAdjustmentsDialog.PriceUnits)] = _priceUnits
+            }, wide: true);
+
+        if (await dialog.Result is { Canceled: false, Data: List<InvoiceExtraCostVm> updated })
+            _model.InvoiceExtraCosts = updated;
     }
 
-    private void OnTotalUnpaidMenuToggled()
+    private void ToggleFinancialDetails() => _showFinancialDetails = !_showFinancialDetails;
+
+    private async Task OpenUnpaidUnitDialog()
     {
-        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
+        if (_model.InvoicePriceUnit is null) return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            [nameof(UnpaidBalanceUnitDialog.PriceUnits)] = _priceUnits,
+            [nameof(UnpaidBalanceUnitDialog.MainPriceUnit)] = _model.InvoicePriceUnit,
+            [nameof(UnpaidBalanceUnitDialog.TotalUnpaidAmount)] = Math.Abs(_model.TotalUnpaidAmount),
+            [nameof(UnpaidBalanceUnitDialog.TotalUnpaidSecondaryAmount)] = Math.Abs(_model.TotalUnpaidSecondaryAmount)
+        };
+        if (_model.UnpaidPriceUnit is { } currentUnit)
+            parameters[nameof(UnpaidBalanceUnitDialog.CurrentUnit)] = currentUnit;
+        if (_model.UnpaidExchangeRate is { } currentRate)
+            parameters[nameof(UnpaidBalanceUnitDialog.CurrentExchangeRate)] = currentRate;
+
+        var dialog = ResponsiveDialogs.Show<UnpaidBalanceUnitDialog>("تغییر واحد مانده", parameters);
+        if (await dialog.Result is { Canceled: false, Data: UnpaidBalanceUnitDialog.UnitSelection updated })
+        {
+            _model.UnpaidPriceUnit = updated.Unit;
+            _model.UnpaidExchangeRate = updated.ExchangeRate;
+        }
     }
 
     #endregion
 
     #region Payments
 
-    private async Task OpenPaymentsDialog()
+    private async Task OpenPaymentsDialog(bool reviewFirst = false)
     {
-        var parameters = new DialogParameters<PaymentDialog>
-        {
-            { x => x.Items, _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList() },
-            { x => x.PriceUnit, _model.InvoicePriceUnit },
-            { x => x.InvoiceType, _model.InvoiceType },
-            { x => x.CustomerId, _model.Customer?.Id },
-            { x => x.PriceUnits, _priceUnits },
-            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            CloseOnEscapeKey = true,
-            MaxWidth = MaxWidth.Large,
-            FullWidth = true
-        };
-
-        var dialog = await DialogService.ShowAsync<PaymentDialog>("جمع پرداختی", parameters, options);
+        var dialog = ResponsiveDialogs.Show<PaymentDialog>("تسویه فاکتور",
+            new Dictionary<string, object>
+            {
+                [nameof(PaymentDialog.Items)] = _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList(),
+                [nameof(PaymentDialog.PriceUnit)] = _model.InvoicePriceUnit!,
+                [nameof(PaymentDialog.InvoiceType)] = _model.InvoiceType,
+                [nameof(PaymentDialog.PriceUnits)] = _priceUnits,
+                [nameof(PaymentDialog.TotalRemaining)] = _model.TotalUnpaidAmount,
+                [nameof(PaymentDialog.StartWithReview)] = reviewFirst
+            }, wide: true);
 
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: List<InvoicePaymentVm> payments })
         {
             _model.InvoicePayments = payments;
-        }
-    }
-
-    private async Task OnAddPayment(PaymentType paymentType)
-    {
-        _paymentMenuOpen = false;
-
-        if (_license is null)
-            return;
-
-        if (paymentType is PaymentType.CustomerTransfer && _license.IsExpired)
-        {
-            AddErrorToast("قابلیت پرداخت حواله ای در نسخه Premium قابل استفاده است");
-            return;
-        }
-
-        var priceUnit = paymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory
-            ? _priceUnits.FirstOrDefault(pu => pu.IsGoldBased)
-            : _model.InvoicePriceUnit;
-
-        var adornmentText = priceUnit?.Title ?? string.Empty;
-
-        var fineness = paymentType switch
-        {
-            PaymentType.MoltenGoldInventory => 750m,
-            PaymentType.UsedGoldInventory => 750m - _setting?.UsedGoldFinenessDeductionRate,
-            _ => null
-        };
-
-        var parameters = new DialogParameters<PaymentEditor>
-        {
-            {
-                x => x.Model, new InvoicePaymentVm
-                {
-                    PaymentType = paymentType,
-                    PriceUnit = priceUnit,
-                    AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness,
-                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay,
-                    CoinInstance = paymentType is PaymentType.Coin ? new CoinInstanceVm() : null,
-                    CoinQuantity = paymentType is PaymentType.Coin ? 1 : null
-                }
-            },
-            { x => x.BasePriceUnit, _model.InvoicePriceUnit },
-            { x => x.PriceUnits, _priceUnits },
-            { x => x.InvoiceType, _model.InvoiceType },
-            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
-        };
-
-        var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
-        {
-            _model.InvoicePayments.Add(addedPayment);
         }
     }
 

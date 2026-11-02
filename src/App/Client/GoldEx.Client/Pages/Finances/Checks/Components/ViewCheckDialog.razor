@@ -1,11 +1,7 @@
+@using GoldEx.Client.Components.Components.Dialogs
 @inherits GoldExComponentBase
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Primary">
-            جزئیات چک بانکی
-        </MudText>
-    </TitleContent>
+<EditorDialogFrame>
     <DialogContent>
         <div class="check-dialog-content">
             <!-- Modern Virtual Check Layout -->
@@ -31,7 +27,7 @@
             <!-- Payee Row -->
             <div class="d-flex align-center mb-4">
                 <span class="text-muted" style="min-width: 80px;">به حواله‌کرد:</span>
-                <span class="font-weight-bold" style="font-size: 1.15rem; color: #1a202c;">@Check.IssuerFullName</span>
+                <span class="check-emphasis" style="font-size: 1.15rem; color: var(--mud-palette-text-primary);">@Check.IssuerFullName</span>
                 @if (!string.IsNullOrEmpty(Check.IssuerPhoneNumber))
                 {
                     <span class="text-muted ms-2" style="font-size: 0.85rem;">(@Check.IssuerPhoneNumber)</span>
@@ -43,7 +39,7 @@
             <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
                 <div class="d-flex align-center flex-grow-1">
                     <span class="text-muted" style="min-width: 80px;">مبلغ چک:</span>
-                    <span class="font-weight-bold" style="font-size: 1.1rem;">
+                    <span class="check-emphasis" style="font-size: 1.1rem;">
                         @Check.Amount.ToCurrencyFormat(Check.PriceUnit)
                     </span>
                     <div class="check-line"></div>
@@ -58,12 +54,12 @@
                 <div class="d-flex align-center">
                     <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Class="me-1 text-muted" />
                     <span class="text-muted me-1">تاریخ سررسید:</span>
-                    <span class="font-weight-bold text-dark">@Check.DueDate.ToShortDateString()</span>
+                    <span class="check-emphasis text-dark">@Check.DueDate.ToShortDateString()</span>
                 </div>
                 <div class="d-flex align-center">
                     <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" Class="me-1 text-muted" />
                     <span class="text-muted me-1">بانک صادرکننده:</span>
-                    <span class="font-weight-bold text-dark">@Check.IssuerFinancialAccountName</span>
+                    <span class="check-emphasis text-dark">@Check.IssuerFinancialAccountName</span>
                 </div>
                 <div>
                     @Check.IssuerFullName
@@ -90,7 +86,7 @@
                     <div class="d-flex flex-column">
                         <span class="text-muted" style="font-size: 0.8rem;">مربوط به فاکتور</span>
                         <div class="d-flex align-center gap-1 mt-1">
-                            <span class="font-weight-bold" style="font-size: 0.9rem;">#@Check.InvoiceNumber</span>
+                            <span class="check-emphasis" style="font-size: 0.9rem;">#@Check.InvoiceNumber</span>
                             <span class="text-muted" style="font-size: 0.8rem;">
                                 (@Check.InvoiceType.GetDisplayName())
                             </span>
@@ -103,7 +99,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Secondary" Size="Size.Medium" />
                     <div class="d-flex flex-column">
                         <span class="text-muted" style="font-size: 0.8rem;">آخرین تغییرات</span>
-                        <span class="font-weight-bold mt-1" style="font-size: 0.9rem;">
+                        <span class="check-emphasis mt-1" style="font-size: 0.9rem;">
                             @(Check.LastModifiedAt == DateTime.MinValue ? "-" : Check.LastModifiedAt.ToString("yyyy/MM/dd HH:mm"))
                         </span>
                     </div>
@@ -120,7 +116,7 @@
                 <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Success" Size="Size.Medium" />
                 <div class="d-flex flex-column">
                     <span class="text-muted" style="font-size: 0.8rem;">حساب مالی مقصد (وصول شده به)</span>
-                    <span class="font-weight-bold text-success mt-1" style="font-size: 0.95rem;">@Check.TargetFinancialAccountName</span>
+                    <span class="check-emphasis text-success mt-1" style="font-size: 0.95rem;">@Check.TargetFinancialAccountName</span>
                 </div>
             </MudPaper>
         }
@@ -134,7 +130,7 @@
                 <MudIcon Icon="@GetDescriptionIcon()" Color="@GetDescriptionColor()" Size="Size.Medium" Class="mt-1" />
                 <div class="d-flex flex-column">
                     <span class="text-muted" style="font-size: 0.8rem;">@GetDescriptionTitle()</span>
-                    <span class="text-dark mt-1" style="font-size: 0.9rem; line-height: 1.6;">@Check.Description</span>
+                    <span class="mt-1" style="font-size: 0.9rem; line-height: 1.6;">@Check.Description</span>
                 </div>
             </MudPaper>
         }
@@ -147,11 +143,11 @@
                     <CardHeaderContent>
                         <div class="d-flex align-center gap-2">
                             <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" Color="Color.Primary" />
-                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold">تصویر چک اسکن شده</MudText>
+                            <MudText Typo="Typo.subtitle2" >تصویر چک اسکن شده</MudText>
                         </div>
                     </CardHeaderContent>
                 </MudCardHeader>
-                <MudCardContent Class="d-flex justify-center bg-light pa-4" Style="max-height: 380px; overflow: hidden;">
+                <MudCardContent Class="d-flex justify-center pa-4" Style="max-height: 380px; overflow: hidden;">
                     <img src="@Check.ImageUrl" alt="تصویر چک" style="max-width: 100%; max-height: 340px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
                 </MudCardContent>
             </MudCard>
@@ -159,10 +155,9 @@
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Error"
+        <MudButton Color="Color.Default"
                    OnClick="Close"
-                   Class="m-2"
-                   StartIcon="@Icons.Material.Filled.Close"
+                                      StartIcon="@Icons.Material.Filled.Close"
                    Variant="Variant.Filled">بستن</MudButton>
     </DialogActions>
-</MudDialog>
+</EditorDialogFrame>

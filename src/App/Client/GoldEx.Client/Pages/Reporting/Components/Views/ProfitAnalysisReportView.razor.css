@@ -1,29 +1,46 @@
-::deep .profit-number {
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    color: var(--mud-palette-text-primary);
-}
-
-::deep .profit-margin {
-    font-weight: 600;
-}
-
-::deep .profit-meta {
-    color: var(--mud-palette-text-primary);
-}
-
-::deep .profit-actions-cell {
-    min-width: 88px;
-}
-
-.profit-row-actions {
-    flex-wrap: nowrap;
-}
-
-::deep .profit-row-actions .mud-icon-button {
-    flex-shrink: 0;
-}
-
-::deep .mud-table-cell {
-    vertical-align: middle;
+.profit-analysis-report{min-width:0;color:var(--mud-palette-text-primary)}
+.profit-analysis-results{background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:14px;overflow:hidden}
+.profit-analysis-heading{padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--mud-palette-lines-default)}
+.profit-analysis-heading>div{display:grid;gap:2px}
+.profit-analysis-heading h2{margin:0;font-size:.95rem;font-weight:500}
+.profit-analysis-heading span{font-size:.72rem;color:var(--mud-palette-text-secondary)}
+.profit-analysis-heading ::deep .mud-button-root{border-radius:10px;min-height:37px;font-weight:500;font-size:.8rem}
+.profit-analysis-desktop{overflow:auto;max-height:min(65vh,680px);max-width:100%}
+.profit-analysis-desktop table{border-collapse:collapse;width:100%;text-align:start;font-size:.77rem}
+.profit-analysis-desktop th{position:sticky;top:0;z-index:1;padding:10px 8px;text-align:start;font-size:.75rem;font-weight:500;color:var(--mud-palette-text-secondary);white-space:nowrap;background:var(--mud-palette-background);border-bottom:1px solid var(--mud-palette-lines-default)}
+.profit-analysis-desktop td{padding:10px 8px;border-bottom:1px solid var(--mud-palette-lines-default);vertical-align:middle;white-space:nowrap;font-size:.77rem;font-weight:400}
+.profit-analysis-desktop td strong{display:block;font-size:.78rem;font-weight:500}
+.profit-analysis-desktop td small{display:block;color:var(--mud-palette-text-secondary);font-size:.69rem;margin-top:3px}
+.profit-analysis-desktop tr:hover{background:rgba(var(--mud-palette-primary-rgb),.035)}
+.profit-trading-margin{font-weight:600!important}
+.profit-analysis-actions{display:flex;gap:6px}
+.profit-analysis-action{display:inline-flex;align-items:center;justify-content:center;gap:5px;color:var(--mud-palette-primary);border:1px solid var(--mud-palette-lines-default);border-radius:8px;padding:6px;background:transparent;font:inherit;font-size:.73rem;text-decoration:none;cursor:pointer}
+.profit-analysis-action ::deep .gex-shell-icon{width:17px;height:17px}
+.profit-analysis-detail td{white-space:normal;background:var(--mud-palette-background)}
+.profit-analysis-detail td{padding:12px 14px}
+.profit-analysis-detail td span{margin-inline-end:15px}
+.profit-analysis-detail td a{color:var(--mud-palette-primary)}
+.profit-analysis-mobile{display:none}
+.profit-analysis-empty{min-height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;color:var(--mud-palette-text-secondary);font-size:.8rem}
+@media(max-width:959.98px){
+.profit-analysis-results{border:0;background:transparent;overflow:visible}
+.profit-analysis-heading{border:1px solid var(--mud-palette-lines-default);border-radius:12px;background:var(--mud-palette-surface);padding:10px 12px;margin-bottom:9px}
+.profit-analysis-desktop{display:none}
+.profit-analysis-mobile{display:grid;gap:8px}
+.profit-analysis-card{padding:11px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:12px}
+.profit-analysis-card header{display:flex;justify-content:space-between;gap:9px;align-items:start}
+.profit-analysis-card header>div{display:grid;gap:4px}
+.profit-analysis-card header strong{font-size:.81rem;font-weight:500}
+.profit-analysis-card header small,.profit-analysis-product small{color:var(--mud-palette-text-secondary);font-size:.69rem}
+.profit-analysis-card header>span{font-size:.77rem;white-space:nowrap}
+.profit-analysis-product{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:9px 0}
+.profit-analysis-product strong{font-size:.79rem;font-weight:500}
+.profit-analysis-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.profit-analysis-metrics>div{padding:8px;border-radius:9px;background:var(--mud-palette-background);display:grid;gap:4px;min-width:0}
+.profit-analysis-metrics small{font-size:.7rem;color:var(--mud-palette-text-secondary)}
+.profit-analysis-metrics span,.profit-analysis-metrics strong{font-size:.77rem;font-weight:400;overflow-wrap:anywhere}
+.profit-analysis-metrics strong{font-weight:600}
+.profit-analysis-card footer{display:flex;justify-content:flex-end;gap:7px;padding-top:9px}
+.profit-analysis-card-details{display:grid;gap:6px;border-top:1px solid var(--mud-palette-lines-default);padding-top:9px;margin-top:9px;font-size:.75rem}
+.profit-analysis-card-details a{color:var(--mud-palette-primary)}
 }

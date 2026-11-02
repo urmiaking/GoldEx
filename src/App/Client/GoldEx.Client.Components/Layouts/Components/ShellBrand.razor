@@ -1,0 +1,8 @@
+<a class="gex-shell-brand @(Compact ? "gex-shell-brand--compact" : null)" href="@ClientRoutes.Home.Index" aria-label="GoldEx، صفحه اصلی">
+    <span class="gex-shell-brand-mark" aria-hidden="true"><img src="/apple-touch-icon-180x180.png" alt="" width="180" height="180" /></span>
+    <span class="gex-shell-brand-copy"><strong class="brand-text" lang="en" dir="ltr">GoldEx</strong>@if (!Compact) { <small>مدیریت طلا و جواهر</small> }</span>
+</a>
+
+@code {
+    [Parameter] public bool Compact { get; set; }
+}

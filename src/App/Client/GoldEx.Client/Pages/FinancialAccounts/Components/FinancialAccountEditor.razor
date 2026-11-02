@@ -1,9 +1,9 @@
-﻿@using GoldEx.Client.Components.Utilities
+@using GoldEx.Client.Components.Utilities
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_financialAccountValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
+    <EditorDialogFrame>
         <DialogContent>
             <MudGrid Spacing="4">
                 <MudItem xs="12">
@@ -174,10 +174,11 @@
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
+                       Disabled="_processing"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Filled">انصراف</MudButton>
-            <MudButton Class="m-2"
+            <MudButton Class="m-2" Disabled="_processing"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(() => Submit())"
@@ -185,5 +186,5 @@
                 <MudText>ذخیره</MudText>
             </MudButton>
         </DialogActions>
-    </MudDialog>
+    </EditorDialogFrame>
 </MudForm>

@@ -1,3 +1,4 @@
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -16,6 +17,7 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
 public partial class CoinList
 {
+    [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     [Parameter, EditorRequired] public GetPriceUnitResponse? PriceUnit { get; set; }
     [Parameter, EditorRequired] public InventoryEntryVm Model { get; set; } = default!;
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
@@ -75,12 +77,14 @@ public partial class CoinList
 
     private async Task RemoveItem(CoinItemVm context)
     {
-        var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار",
-            $"آیا برای حذف سکه {context.CoinInstance.Coin?.Title} مطمئن هستید؟",
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is true)
+        var dialog = ResponsiveDialogs.Show<InventoryEntryConfirmDialog>("حذف از ورود انبار",
+            new Dictionary<string, object> {
+                [nameof(InventoryEntryConfirmDialog.Message)] = $"آیا «{context.CoinInstance.Coin?.Title}» از لیست ورود انبار حذف شود؟",
+                [nameof(InventoryEntryConfirmDialog.ActionLabel)] = "حذف جنس",
+                [nameof(InventoryEntryConfirmDialog.Destructive)] = true
+            });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: true })
         {
             Model.CoinItems.Remove(context);
             await ReleaseReservedBarcode(context);
@@ -99,7 +103,7 @@ public partial class CoinList
             { x => x.PriceUnit, new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CoinItemEditor>("افزودن سکه جدید", new Dictionary<string, object> { [nameof(CoinItemEditor.InvoiceType)] = InvoiceType.Purchase, [nameof(CoinItemEditor.PriceUnit)] = new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }, wide: true);
 
         var result = await dialog.Result;
 
@@ -131,7 +135,7 @@ public partial class CoinList
             { x => x.PriceUnit, new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);
+        var dialog = ResponsiveDialogs.Show<CoinItemEditor>("ویرایش سکه", new Dictionary<string, object> { [nameof(CoinItemEditor.Model)] = context, [nameof(CoinItemEditor.PriceUnit)] = new GetPriceUnitTitleResponse(PriceUnit.Id, PriceUnit.Title, false, false, false) }, wide: true);
 
         var result = await dialog.Result;
 

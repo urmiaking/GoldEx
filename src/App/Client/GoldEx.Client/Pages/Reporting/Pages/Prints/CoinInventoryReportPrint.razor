@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Reporting.Print.CoinInventory)]
+@attribute [Route(ClientRoutes.Reporting.Print.CoinInventory)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @layout PrintLayout
@@ -10,7 +10,7 @@
 <link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
 <link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
 
-<ReportPrintBase IsLoading="@(_items == null)"
+<ReportPrintBase Landscape="true" IsLoading="@(_items == null)"
                  FromDate="@FromDate"
                  ToDate="@ToDate"
                  Data="@_items"

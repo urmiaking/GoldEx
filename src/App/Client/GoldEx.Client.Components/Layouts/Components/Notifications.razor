@@ -1,43 +1,45 @@
 @inherits GoldExComponentBase
 
-<MudDrawer @bind-Open="_drawerOpen"
-           Anchor="Anchor.End"
-           Variant="DrawerVariant.Temporary"
-           Overlay="true"
-           OverlayAutoClose="true"
-           Elevation="8"
-           Class="notification-drawer"
-           Width="100%">
-    <MudToolBar Dense="true" Gutters="false">
-        <MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Notifications" />
-        <MudText Typo="Typo.h6" Class="mr-2">اعلان ها</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Close"
-                       Color="Color.Inherit"
-                       OnClick="@(() => _drawerOpen = false)" />
-    </MudToolBar>
-    <MudDivider />
-    <NotificationList IsOpen="_drawerOpen"
-                      UnreadItems="_unreadNotifications"
-                      ReadItems="_readNotifications"
-                      OnDelete="HandleDelete"
-                      OnMarkAsRead="HandleMarkAsRead"
-                      OnMarkAllAsRead="HandleMarkAllAsRead"
-                      OnButtonAction="HandleButtonAction" />
-</MudDrawer>
+<dialog @ref="_panel" class="gex-notifications" aria-labelledby="gex-notification-title" dir="rtl">
+    <header class="gex-notification-heading">
+        <div class="gex-notification-heading-title">
+            <span class="gex-notification-symbol"><ShellIcon Name="bell" /></span>
+            <h2 id="gex-notification-title">اعلان‌ها</h2>
+            @if (_unreadCount > 0)
+            {
+                <span class="gex-notification-unread-count" aria-label="@($"{_unreadCount} اعلان خوانده‌نشده")">@_unreadCount</span>
+            }
+        </div>
+        <div class="gex-notification-heading-actions">
+            @if (_unreadCount > 0)
+            {
+                <button type="button" class="gex-notification-mark-all" disabled="@_working" @onclick="HandleMarkAllAsRead">
+                    خواندن همه
+                </button>
+            }
+            <button type="button" class="gex-icon-button" data-notification-close aria-label="بستن اعلان‌ها" autofocus>
+                <ShellIcon Name="close" />
+            </button>
+        </div>
+    </header>
 
-<div class="@(_unreadCount > 0 ? "pulse-icon" : "")">
-    <MudIconButton OnClick="@(() => _drawerOpen = true)"
-                   Icon="@(_unreadCount > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.Notifications)"
-                   Color="@(_unreadCount > 0 ? Color.Error : Color.Inherit)">
-        @if (_unreadCount > 0)
-        {
-            <MudBadge Content="@_unreadCount.ToString()"
-                      Color="Color.Error"
-                      Bordered="true"
-                      Dot="true"
-                      Overlap="true"
-                      Class="@(_unreadCount > 0 ? "notification-badge" : null)" />
-        }
-    </MudIconButton>
-</div>
+    @if (_pushState.Supported && _pushConfiguration.Enabled && !_pushState.Subscribed && _pushState.Permission != "denied")
+    {
+        <div class="gex-notification-enable">
+            <span>اعلان روی دستگاه</span>
+            <button type="button" class="gex-notification-enable-button" disabled="@_working" @onclick="EnablePushAsync">
+                فعال‌سازی
+            </button>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_pushFeedback) && !_pushState.Subscribed)
+    {
+        <p class="gex-notification-feedback" role="status">@_pushFeedback</p>
+    }
+
+    <NotificationList Items="_items" Busy="_working" OnOpen="HandleOpenNotificationAsync" />
+</dialog>
+@if (ShowTrigger)
+{
+    <button type="button" class="gex-icon-button" aria-label="اعلان‌ها" aria-haspopup="dialog" @onclick="OpenAsync"><ShellIcon Name="bell" /></button>
+}

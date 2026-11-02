@@ -2,9 +2,7 @@
 @using GoldEx.Client.Pages.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @inject IStoreContext StoreContext
-
 @inherits GoldExComponentBase
-
 @if (StoreContext.IsCustomDomain)
 {
     <VitrineHome />
@@ -12,168 +10,58 @@
 else
 {
     <PageTitle>صفحه اصلی</PageTitle>
-
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2">
-    <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
-        <MudBreadcrumbs Class="px-0 py-2 mb-0" Items="_breadcrumbs" MaxItems="2">
-            <SeparatorTemplate>
-                <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-            </SeparatorTemplate>
-        </MudBreadcrumbs>
-
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2 gex-home-container">
+        <div class="gex-home-breadcrumb mb-2">
+            <MudBreadcrumbs Class="px-0 py-2 mb-0" Items="_breadcrumbs" MaxItems="2">
+                <SeparatorTemplate><MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" /></SeparatorTemplate>
+            </MudBreadcrumbs>
+        </div>
         <AuthorizeView>
             <Authorized>
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           Size="Size.Small"
-                           StartIcon="@Icons.Material.Filled.RocketLaunch"
-                           OnClick="OpenReleaseNotesManuallyAsync"
-                           Class="rounded-pill px-3 py-1 font-bold release-notes-btn">
-                    تغییرات برنامه
-                </MudButton>
-            </Authorized>
-        </AuthorizeView>
-    </div>
-
-    <AuthorizeView>
-        <NotAuthorized>
-            <div class="row align-items-center mb-4">
-                <div class="col-12 col-md-8">
-                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        <MudText Typo="Typo.h4" Style="font-weight: 500" Class="mb-4">نرم افزار حسابداری طلا و جواهر گلدکس</MudText>
-                    </MudHidden>
-                    <div class="mb-4">
-                        لطفا برای استفاده از امکانات سامانه، وارد حساب کاربری خود شوید
+                <section class="goldex-glass-card gex-home-launcher">
+                    <div class="gex-home-launcher-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Medium" />
+                        <div><h1>پیشخوان مدیریت گلدکس</h1><p>دسترسی سریع به عملیات روزانه و نرخ‌های بازار</p></div>
                     </div>
-                </div>
-                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center justify-content-md-end mb-4">
-                    <MudButton Href="@ClientRoutes.Accounts.Login" Variant="Variant.Filled" Color="Color.Primary">
-                        ورود به حساب کاربری
-                    </MudButton>
-                </div>
-            </div>
-        </NotAuthorized>
-    </AuthorizeView>
-
-    @* Mobile View: PriceBoard *@
-    <PriceBoard Class="d-block d-sm-none" Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" />
-
-    @* Desktop Executive Workspace Hub *@
-    <div class="d-none d-sm-block">
-        @* Quick Action Bar Launcher *@
-        <AuthorizeView>
-            <Authorized>
-                <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-5 goldex-glass-card pa-4">
-                    <div class="d-flex align-center gap-3">
-                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Large" />
-                        <div>
-                            <MudText Typo="Typo.h6">پیش‌خوان مدیریت گلدکس</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">خلاصه وضعیت مالی، موجودی انبار و نرخ لحظه‌ای بازار</MudText>
-                        </div>
+                    <div class="gex-home-quick-actions">
+                        <a href="@ClientRoutes.Invoices.Create" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Size="Size.Small" /><span>ثبت فاکتور جدید</span></a>
+                        <a href="@($"{ClientRoutes.Calculator.Index}?tab=smart-tray")" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Warning" Size="Size.Small" /><span>سینی هوشمند</span></a>
+                        <a href="@ClientRoutes.PriceBoard.Index" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Info" Size="Size.Small" /><span>تابلو قیمت‌ها</span></a>
+                        <a href="@ClientRoutes.Finances.CustomerTransfers" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Color="Color.Primary" Size="Size.Small" /><span>حواله مشتریان</span></a>
+                        <a href="@ClientRoutes.InventoryStocks.List" class="quick-action-pill"><MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Warning" Size="Size.Small" /><span>موجودی انبار</span></a>
                     </div>
-
-                    <div class="d-flex flex-wrap align-center gap-2">
-                        <a href="@ClientRoutes.Invoices.Create" class="quick-action-pill">
-                            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Size="Size.Small" />
-                            <span>ثبت فاکتور جدید</span>
-                        </a>
-                        <a href="@($"{ClientRoutes.Calculator.Index}?tab=smart-tray")" class="quick-action-pill">
-                            <MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Warning" Size="Size.Small" />
-                            <span>سینی هوشمند</span>
-                        </a>
-                        <a href="@ClientRoutes.PriceBoard.Index" class="quick-action-pill">
-                            <MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Info" Size="Size.Small" />
-                            <span>تابلو قیمت‌ها</span>
-                        </a>
-                        <a href="@ClientRoutes.Finances.CustomerTransfers" class="quick-action-pill">
-                            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Color="Color.Primary" Size="Size.Small" />
-                            <span>حواله مشتریان</span>
-                        </a>
-                        <a href="@ClientRoutes.InventoryStocks.List" class="quick-action-pill">
-                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Warning" Size="Size.Small" />
-                            <span>موجودی انبار</span>
-                        </a>
+                </section>
+                <nav class="gex-home-tabs" aria-label="بخش‌های صفحه اصلی">
+                    <div class="goldex-segmented-container">
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 0 ? "active" : "")" @onclick="() => OnTabChanged(0)"><MudIcon Icon="@Icons.Material.Filled.Dashboard" /><span>پیشخوان</span></button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 5 ? "active" : "")" @onclick="() => OnTabChanged(5)"><MudIcon Icon="@Icons.Material.Filled.BarChart" /><span>آمار</span></button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 1 ? "active" : "")" @onclick="() => OnTabChanged(1)"><MudIcon Icon="@Icons.Material.Outlined.Calculate" /><span>محاسبه‌گر</span></button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 2 ? "active" : "")" @onclick="() => OnTabChanged(2)"><MudIcon Icon="@Icons.Material.Filled.LibraryBooks" /><span>فاکتورها</span></button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 3 ? "active" : "")" @onclick="() => OnTabChanged(3)"><MudIcon Icon="@Icons.Material.Filled.Warehouse" /><span>اجناس من</span></button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 4 ? "active" : "")" @onclick="() => OnTabChanged(4)"><MudIcon Icon="@Icons.Material.Filled.PeopleAlt" /><span>مشتریان</span></button>
                     </div>
+                </nav>
+                <div class="lazy-tab-content animate-fade-in-up" @key="_activePanelIndex">
+                    @if (_activePanelIndex == 0)
+                    {
+                        <div class="gex-home-market-desktop"><MarketPriceDeck /></div>
+                        <div class="gex-home-market-mobile"><PriceBoard Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" /></div>
+                        <HomeOperations />
+                    }
+                    else if (_activePanelIndex == 5) { <HomeStatistics /> }
+                    else if (_activePanelIndex == 1) { <Calculator HideTabs="true" Class="mt-2" ContainerClass="mt-2" Elevation="2" /> }
+                    else if (_activePanelIndex == 2) { <RecentInvoicesOverview /> }
+                    else if (_activePanelIndex == 3) { <RecentInventoryOverview /> }
+                    else if (_activePanelIndex == 4) { <CustomersInsightOverview /> }
                 </div>
             </Authorized>
-        </AuthorizeView>
-
-        @* Custom Segmented Tab Controller *@
-        <div class="d-flex justify-center mb-5">
-            <div class="goldex-segmented-container">
-                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 0 ? "active" : "")" @onclick="() => OnTabChanged(0)">
-                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" />
-                    <span>پیش‌خوان و آمار</span>
-                </button>
-                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 1 ? "active" : "")" @onclick="() => OnTabChanged(1)">
-                    <MudIcon Icon="@Icons.Material.Outlined.Calculate" />
-                    <span>محاسبه‌گر</span>
-                </button>
-                <AuthorizeView>
-                    <Authorized>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 2 ? "active" : "")" @onclick="() => OnTabChanged(2)">
-                            <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" />
-                            <span>فاکتورها</span>
-                        </button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 3 ? "active" : "")" @onclick="() => OnTabChanged(3)">
-                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" />
-                            <span>اجناس من</span>
-                        </button>
-                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 4 ? "active" : "")" @onclick="() => OnTabChanged(4)">
-                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
-                            <span>مشتریان</span>
-                        </button>
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </div>
-
-        @* Lazy Loaded Active View Container *@
-        <div class="lazy-tab-content animate-fade-in-up" @key="_activePanelIndex">
-            @if (_activePanelIndex == 0)
-            {
-                <div class="d-flex flex-column gap-4">
-                    @* Creative Live Market Price Ticker Deck *@
-                    <MarketPriceDeck />
-
-                    @* Executive Business Analytics Grid *@
-                    <AuthorizeView>
-                        <Authorized>
-                            <ExecutiveDashboard />
-                        </Authorized>
-                    </AuthorizeView>
+            <NotAuthorized>
+                <div class="goldex-glass-card pa-4 mb-4 d-flex flex-wrap align-center justify-space-between gap-3">
+                    <div><MudText Typo="Typo.h6">نرم‌افزار حسابداری طلا و جواهر گلدکس</MudText><MudText Typo="Typo.body2">برای استفاده از امکانات فروشگاه وارد شوید.</MudText></div>
+                    <MudButton Href="@ClientRoutes.Accounts.Login" Variant="Variant.Filled" Color="Color.Primary">ورود به حساب کاربری</MudButton>
                 </div>
-            }
-            else if (_activePanelIndex == 1)
-            {
-                <Calculator HideTabs="true" Class="mt-2" ContainerClass="mt-2" Elevation="2" />
-            }
-            else if (_activePanelIndex == 2)
-            {
-                <AuthorizeView>
-                    <Authorized>
-                        <RecentInvoicesOverview />
-                    </Authorized>
-                </AuthorizeView>
-            }
-            else if (_activePanelIndex == 3)
-            {
-                <AuthorizeView>
-                    <Authorized>
-                        <RecentInventoryOverview />
-                    </Authorized>
-                </AuthorizeView>
-            }
-            else if (_activePanelIndex == 4)
-            {
-                <AuthorizeView>
-                    <Authorized>
-                        <CustomersInsightOverview />
-                    </Authorized>
-                </AuthorizeView>
-            }
-        </div>
-    </div>
-</MudContainer>
+                <PriceBoard Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" />
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudContainer>
 }
-

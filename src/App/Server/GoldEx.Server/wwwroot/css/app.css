@@ -373,32 +373,32 @@ h1:focus {
 
 /* Custom */
 .responsive-table {
-    height: calc(100vh - 290px);
+    height: max(120px, calc(var(--gex-viewport-height, 100vh) - 290px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 960px) {
     .responsive-table {
-        height: calc(100vh - 225px);
+        height: max(120px, calc(var(--gex-viewport-height, 100vh) - 225px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
     }
 }
 
 .responsive-table-toolbar {
-    height: calc(100vh - 416px);
+    height: max(120px, calc(var(--gex-viewport-height, 100vh) - 416px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 960px) {
     .responsive-table-toolbar {
-        height: calc(100vh - 340px);
+        height: max(120px, calc(var(--gex-viewport-height, 100vh) - 340px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
     }
 }
 
 .responsive-table-card {
-    height: calc(100vh - 372px);
+    height: max(120px, calc(var(--gex-viewport-height, 100vh) - 372px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 960px) {
     .responsive-table-card {
-        height: calc(100vh - 340px);
+        height: max(120px, calc(var(--gex-viewport-height, 100vh) - 340px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
     }
 }
 
@@ -423,22 +423,22 @@ h1:focus {
 }
 
 .responsive-table-login {
-    height: calc(100vh - 390px);
+    height: max(120px, calc(var(--gex-viewport-height, 100vh) - 390px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 960px) {
     .responsive-table-login {
-        height: calc(100vh - 310px);
+        height: max(120px, calc(var(--gex-viewport-height, 100vh) - 310px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
     }
 }
 
 .responsive-table-import {
-    height: calc(100vh - 390px);
+    height: max(120px, calc(var(--gex-viewport-height, 100vh) - 390px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 960px) {
     .responsive-table-import {
-        height: calc(100vh - 428px);
+        height: max(120px, calc(var(--gex-viewport-height, 100vh) - 428px - var(--gex-table-layout-delta, 0px) - env(safe-area-inset-bottom, 0px)));
     }
 }
 
@@ -722,23 +722,6 @@ h1:focus {
 }
 
 /* Mobile Navbar */
-
-/* Notification drawer */
-
-.notification-drawer {
-    height: 100vh !important;
-    height: 100dvh !important;
-}
-
-@media (min-width: 960px) {
-    .notification-drawer {
-        height: 100% !important;
-        width: 400px !important;
-        max-width: 400px !important;
-    }
-}
-
-/* Notification drawer */
 
 /* Animation */
 
@@ -1228,7 +1211,7 @@ h1:focus {
 
 .market-card-price {
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--mud-palette-text-primary);
 }
 
