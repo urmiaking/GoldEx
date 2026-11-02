@@ -243,7 +243,8 @@ public partial class CustomersList
                 [nameof(CustomerHistoryDialog.CustomerName)] = customerVm.FullName,
                 [nameof(CustomerHistoryDialog.ShowInvoices)] = true
             },
-            wide: true);
+            wide: true,
+            extraWide: true);
         await dialog.Result;
         await RefreshAsync();
     }

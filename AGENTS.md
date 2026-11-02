@@ -1121,3 +1121,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 - CustomerLedgerDirectory uses a full customer accounting timeline modeled on InvoiceDetails invoice-event-timeline. Fetch all matching ITransactionService results in bounded 100-event batches. Do not reintroduce manual next/previous page UI. Preserve CustomerId, search, unit/date filters, descending posting date and failure handling; replace the entire collection only after every batch succeeds.
 - Standard GoldEx typography uses 400/500 font weights. Keep the responsive native dialog and its scrolling header/footer intact.
 - Regression: scripts/tests/customer-ledger-modal-redesign.test.mjs; run all JS tests, structural Release build if C# changes. Authenticated responsive browser review is separate.
+
+## Customer invoices extra-wide desktop dialog (2026-11-02)
+- Shared ResponsiveDialogService.Show exposes optional extraWide=false, passed through session, host, and ResponsiveDialog. The CSS extra-wide class has a 1280px maximum width, ordinary wide stays 920px, and standard stays 610px.
+- Only CustomersList.OnViewInvoices requests extraWide:true alongside wide:true. Customer ledger and other dialogs remain unchanged. This accommodates the invoice directory table within dialog padding on spacious desktop screens; mobile remains unchanged.
+- Test scripts/tests/customer-invoice-dialog-width.test.mjs before changing the width contract. Do not globally widen all responsive dialogs.

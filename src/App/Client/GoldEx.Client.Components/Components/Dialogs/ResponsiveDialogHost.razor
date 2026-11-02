@@ -3,7 +3,7 @@
 @inject ResponsiveDialogService Dialogs
 @inject NavigationManager Navigation
 
-<ResponsiveDialog Open="@(Top is not null)" Title="@(Top?.Title ?? "")" Wide="@(Top?.Wide == true)"
+<ResponsiveDialog Open="@(Top is not null)" Title="@(Top?.Title ?? "")" Wide="@(Top?.Wide == true)" ExtraWide="@(Top?.ExtraWide == true)"
                   Busy="@(Top?.IsBusy == true)" SessionKey="@Top?.Key" OnClose="CancelTop">
     <ChildContent>
         @foreach (var session in Dialogs.Sessions.ToArray())
