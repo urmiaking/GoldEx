@@ -46,15 +46,25 @@ export function activate(dialog) {
         const session = event.target.closest('[data-dialog-session]');
         if (session) focusedSessions.set(session.getAttribute('data-dialog-session'), event.target);
     };
+    // VisualViewport scroll can fire every frame while a user scrolls behind
+    // a sheet. Only geometry changes (e.g. keyboard resize) need a layout write.
+    let lastHeight, lastOffset;
     const resize = () => {
-        dialog.style.setProperty('--gex-modal-viewport-height', `${viewport?.height ?? window.innerHeight}px`);
-        dialog.style.setProperty('--gex-modal-viewport-offset', `${viewport?.offsetTop ?? 0}px`);
+        const height = `${Math.round(viewport?.height ?? window.innerHeight)}px`;
+        const offset = `${Math.round(viewport?.offsetTop ?? 0)}px`;
+        if (height !== lastHeight) {
+            dialog.style.setProperty('--gex-modal-viewport-height', height);
+            lastHeight = height;
+        }
+        if (offset !== lastOffset) {
+            dialog.style.setProperty('--gex-modal-viewport-offset', offset);
+            lastOffset = offset;
+        }
     };
     dialog.addEventListener('cancel', preventCancel);
     dialog.addEventListener('keydown', trap);
     dialog.addEventListener('focusin', rememberFocus);
     viewport?.addEventListener('resize', resize);
-    viewport?.addEventListener('scroll', resize);
     window.addEventListener('resize', resize);
     dialogs.set(dialog, { previous, preventCancel, trap, resize, viewport, rememberFocus, focusedSessions });
     if (dialogs.size === 1) {
@@ -76,7 +86,6 @@ export function deactivate(dialog, keepNonModal = false) {
     dialog.removeEventListener('keydown', state.trap);
     dialog.removeEventListener('focusin', state.rememberFocus);
     state.viewport?.removeEventListener('resize', state.resize);
-    state.viewport?.removeEventListener('scroll', state.resize);
     window.removeEventListener('resize', state.resize);
     if (dialog.open) dialog.close();
     dialogs.delete(dialog);

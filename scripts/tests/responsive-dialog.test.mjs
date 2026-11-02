@@ -110,3 +110,26 @@ test('returning from a child session restores the parent form control', () => {
     assert.equal(host.document.activeElement, original);
     host.deactivate(modal);
 });
+test('mobile dialog uses a short MeetFlow-style entrance instead of a full-height slide', () => {
+    const css = readFileSync(new URL('../../src/App/Client/GoldEx.Client.Components/Components/Dialogs/ResponsiveDialog.razor.css', import.meta.url), 'utf8');
+    const mobile = css.slice(css.indexOf('@media (max-width: 640px)'));
+    assert.match(mobile, /animation-name:\s*gex-modal-rise/);
+    assert.doesNotMatch(css, /translateY\(100%\)|gex-modal-sheet/);
+    assert.match(mobile, /\.gex-modal-backdrop\s*\{[^}]*backdrop-filter:\s*none/);
+    assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+test('visual viewport scroll does not trigger repeated modal positioning writes', () => {
+    const host = harness(), modal = host.dialog();
+    host.activate(modal);
+    const viewportEventKinds = [...host.viewportEvents.values()];
+    assert.ok(viewportEventKinds.includes('resize'));
+    assert.ok(!viewportEventKinds.includes('scroll'), 'mobile scroll must not reposition the open sheet every frame');
+    host.viewport.height = 410;
+    host.viewport.offsetTop = 25;
+    for (const fn of host.viewportEvents.keys()) fn();
+    assert.equal(modal.props.get('--gex-modal-viewport-height'), '410px');
+    assert.equal(modal.props.get('--gex-modal-viewport-offset'), '25px');
+    host.deactivate(modal);
+    assert.equal(host.viewportEvents.size, 0);
+});

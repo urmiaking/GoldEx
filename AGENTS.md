@@ -1103,3 +1103,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - SmartTrayService.CreateTrayAsync accepts empty Title; the default is "سینی شماره {trayNumber}" using the allocated tray number. Explicit old-client titles still work. SmartTrayPage calls the service directly using a blank CreateSmartTrayRequest, guards repeated clicks, and selects the new tray. Old CreateSmartTrayDialog removed.
 - Customer list transaction and invoice actions open CustomerHistoryDialog through ResponsiveDialogService (wide desktop modal/mobile bottom sheet). Wrapper retains TransactionList and InvoicesList customer-specific filters/pagination and uses EditorDialogFrame and ResponsiveDialogSession.
 - Typography uses 400/500 and rounded controls; scoped style ::deep selectors apply to Mud components. Focused regression test scripts/tests/smart-tray-customer-dialog-ux.test.mjs.
+
+## Mobile responsive dialog motion (2026-11-02)
+- GoldEx responsive modals use a persistent native top-layer dialog to preserve popover/snackbar provider DOM. MeetFlow's MfDialog is the reference for motion: a short translateY(18px)/scale(.97) fade, not full translateY(100%) from offscreen.
+- In ResponsiveDialog.razor.css use a short entrance for mobile and avoid animated backdrop blur there; keep opacity scrim and native modality. Honor prefers-reduced-motion.
+- In responsive-dialog.js keep visualViewport resize handling for keyboard geometry but do not listen to visualViewport scroll for modal repositioning. Cache height and offset to avoid redundant writes. Preserve Escape blocking, scroll lock, nested sessions, provider DOM, focus restoration and non-dismissable backdrop.
+- Behavioral coverage lives in scripts/tests/responsive-dialog.test.mjs. Browser visual/performance checks require an authenticated mobile session.
