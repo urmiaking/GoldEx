@@ -246,7 +246,6 @@ public partial class CustomersList
             wide: true,
             extraWide: true);
         await dialog.Result;
-        await RefreshAsync();
     }
 
     private async Task RefreshAsync()

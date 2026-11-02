@@ -1126,3 +1126,8 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Shared ResponsiveDialogService.Show exposes optional extraWide=false, passed through session, host, and ResponsiveDialog. The CSS extra-wide class has a 1280px maximum width, ordinary wide stays 920px, and standard stays 610px.
 - Only CustomersList.OnViewInvoices requests extraWide:true alongside wide:true. Customer ledger and other dialogs remain unchanged. This accommodates the invoice directory table within dialog padding on spacious desktop screens; mobile remains unchanged.
 - Test scripts/tests/customer-invoice-dialog-width.test.mjs before changing the width contract. Do not globally widen all responsive dialogs.
+
+## Customer invoice viewer close and desktop modal corners (2026-11-02)
+- CustomersList.OnViewInvoices is read-only navigation: await responsive session result but never call RefreshAsync() after closing. Refresh after customer create/edit/delete must remain.
+- Shared .gex-modal-panel uses 20px radius and overflow:hidden for desktop rounded footers; mobile retains 20px 20px 12px 12px radius. Popover/snackbar providers remain outside animated panel.
+- Regression: scripts/tests/customer-invoice-dialog-close.test.mjs.
