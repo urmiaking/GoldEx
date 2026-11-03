@@ -16,7 +16,7 @@ public partial class InventoryDirectoryFiltersDialog
     [Parameter] public bool? VitrineFilter { get; set; }
     [Parameter] public List<ProductCategoryVm> Categories { get; set; } = [];
     [Parameter] public DateRange DateRange { get; set; } = new();
-    [Parameter] public string SortLabel { get; set; } = "CurrentQuantity";
+    [Parameter] public string SortLabel { get; set; } = "CreatedAt";
     [Parameter] public bool SortDescending { get; set; } = true;
 
     private ItemType _itemType;
@@ -24,7 +24,7 @@ public partial class InventoryDirectoryFiltersDialog
     private ProductCategoryVm? _categoryFilter;
     private bool? _vitrineFilter;
     private DateRange _dateRange = new();
-    private string _sortLabel = "CurrentQuantity";
+    private string _sortLabel = "CreatedAt";
     private bool _sortDescending = true;
 
     private string DateRangeLabel => _itemStatus switch
@@ -52,7 +52,7 @@ public partial class InventoryDirectoryFiltersDialog
         _itemType = type;
         _categoryFilter = null;
         _vitrineFilter = null;
-        _sortLabel = "CurrentQuantity";
+        _sortLabel = "CreatedAt";
         if (type is ItemType.UsedProduct)
         {
             if (_itemStatus == ItemStatus.Sold) _itemStatus = ItemStatus.Available;
@@ -88,7 +88,7 @@ public partial class InventoryDirectoryFiltersDialog
         _categoryFilter = null;
         _vitrineFilter = null;
         _dateRange = new DateRange();
-        _sortLabel = "CurrentQuantity";
+        _sortLabel = "CreatedAt";
         _sortDescending = true;
         Apply();
     }

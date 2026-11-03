@@ -49,7 +49,7 @@ public partial class InventoryDirectory
     private bool _initialized, _loading, _loadFailed;
     private string? _lastQuerySignature;
     private int _pageIndex, _pageSize = 10, _totalItems;
-    private string _sortLabel = "CurrentQuantity";
+    private string _sortLabel = "CreatedAt";
     private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
@@ -215,8 +215,8 @@ public partial class InventoryDirectory
         DateTime? ParseDate(string? value) => DateTime.TryParseExact(value, "yyyy-MM-dd",
             CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
         _filterDateRange = new DateRange(ParseDate(StartQuery), ParseDate(EndQuery));
-        _sortLabel = SortQuery is "CurrentQuantity" or "SoldQuantity" or "Product.Barcode" or
-            "Product.Name" or "Coin.Barcode" or "Currency.Title" ? SortQuery : "CurrentQuantity";
+        _sortLabel = SortQuery is "CreatedAt" or "CurrentQuantity" or "SoldQuantity" or "Product.Barcode" or
+            "Product.Name" or "Coin.Barcode" or "Currency.Title" ? SortQuery : "CreatedAt";
         _sortDirection = AscendingQuery == true ? Sdk.Common.Definitions.SortDirection.Ascending
             : Sdk.Common.Definitions.SortDirection.Descending;
 
@@ -394,7 +394,7 @@ public partial class InventoryDirectory
         "Product.Barcode" or "Coin.Barcode" => "بارکد",
         "Product.Name" => "نام جنس",
         "Currency.Title" => "عنوان ارز",
-        _ => "موجودی فعلی"
+        _ => "تاریخ ایجاد"
     };
     private string FormattedAmount(decimal value, InventoryStockVm item) =>
         item.Product is not null ? value.ToWeightFormat(item.Product.GoldUnitType)
@@ -794,7 +794,7 @@ public partial class InventoryDirectory
             parameters.Add("page", pageIndex + 1);
         if (_pageSize != 10)
             parameters.Add("size", _pageSize);
-        if (_sortLabel != "CurrentQuantity")
+        if (_sortLabel != "CreatedAt")
             parameters.Add("sort", _sortLabel);
         if (_sortDirection == Sdk.Common.Definitions.SortDirection.Ascending)
             parameters.Add("asc", true);

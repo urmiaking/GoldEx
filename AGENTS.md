@@ -1154,3 +1154,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - placeDialogPopovers now measures the closest .mud-select / .mud-autocomplete getBoundingClientRect (not MudPopover's marker parent). Width equals anchor.width, clamped to panel inner width. The .gex-dialog-bound-popover CSS MUST set width:var(--gex-popup-width) !important as well as max-width.
 - Desktop lists open immediately below the control even when longer than available space, using their own scrollbar. Flip above desktop only when fewer than 112px fit below. Mobile prefers the side with more room. Keep footer and outer dialog bounds, focus and non-select popovers intact.
 - Regression: scripts/tests/responsive-dialog-popover-bounds.test.mjs. Real headless Chrome CSS geometry confirmed a 348px field and exactly 348px dropdown 4px below it, ending above footer. Chrome mobile probe was inconclusive; authenticated visual verification is still separate.
+
+## Inventory Directory
+
+- Inventory management defaults to creation date, newest first. Keep the page, filter dialog reset and URL default aligned on CreatedAt.

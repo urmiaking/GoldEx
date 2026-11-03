@@ -523,6 +523,7 @@ internal class InventoryStockRepository(
                                 ? flattenedQuery.OrderByDescending(x => x.CoinInstance.Coin!.Title)
                                 : flattenedQuery.OrderBy(x => x.CoinInstance.Coin!.Title),
 
+                        "CreatedAt" => isDesc ? flattenedQuery.OrderByDescending(x => x.CoinInstance.CreatedAt) : flattenedQuery.OrderBy(x => x.CoinInstance.CreatedAt),
                         "Coin.MintYear" =>
                             isDesc
                                 ? flattenedQuery.OrderByDescending(x => x.MintYear)
@@ -608,6 +609,7 @@ internal class InventoryStockRepository(
 
                     flattenedQuery = filter.SortLabel switch
                     {
+                        "CreatedAt" => isDesc ? flattenedQuery.OrderByDescending(x => x.Currency.CreatedAt) : flattenedQuery.OrderBy(x => x.Currency.CreatedAt),
                         "Currency.Title" => isDesc ? flattenedQuery.OrderByDescending(x => x.CurrencyTitle) : flattenedQuery.OrderBy(x => x.CurrencyTitle),
                         "CurrentAmount" => isDesc ? flattenedQuery.OrderByDescending(x => x.CurrentQuantity) : flattenedQuery.OrderBy(x => x.CurrentQuantity),
                         "SoldAmount" => isDesc ? flattenedQuery.OrderByDescending(x => x.SoldQuantity) : flattenedQuery.OrderBy(x => x.SoldQuantity),
