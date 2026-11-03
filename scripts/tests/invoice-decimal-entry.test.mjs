@@ -24,11 +24,11 @@ test('weight, profit and tax preserve multi-digit and fractional input until Ent
   assert.match(editor, /@bind-Value="Model.TaxPercent"/);
 });
 
-test('all decimal controls in the item dialog avoid premature 1ms reformatting', () => {
+test('fractional numeric fields retain their non-immediate behavior and have no 1ms debounce', () => {
   const fields = [...editor.matchAll(/<MudNumericField\b[\s\S]*?(?:\/>|<\/MudNumericField>)/g)]
     .map(m => m[0])
-    .filter(markup => markup.includes('T="decimal"') || markup.includes('T="decimal?"') || markup.includes('Model.GramPrice'));
-  assert.ok(fields.length >= 11, 'Expected all decimal product editor inputs');
+    .filter(markup => markup.includes('T="decimal"') || markup.includes('T="decimal?"'));
+  assert.ok(fields.length >= 11, 'Expected the decimal item editor controls');
   for (const field of fields) {
     assert.doesNotMatch(field, /DebounceInterval="1"/);
     assert.match(field, /Immediate="false"/);
@@ -36,21 +36,24 @@ test('all decimal controls in the item dialog avoid premature 1ms reformatting',
   assert.match(editor, /T="int"\s+@bind-Value="Model.Quantity"/);
 });
 
-test('gold live-rate input groups thousands during edits while keeping numeric model and validation', () => {
-  const field = editor.match(/<MudTextField T="string"[\s\S]*?\/>/)?.[0];
-  assert.ok(field, 'Expected live-formatted rate field');
-  assert.match(field, /Value="@_gramPriceText"/);
-  assert.match(field, /ValueChanged="OnGramPriceTextChanged"/);
-  assert.match(field, /Validation=".*ValidateGramPriceText/);
-  assert.match(field, /TextUpdateSuppression="false"/);
-  assert.match(field, /Immediate="true"/);
-  assert.match(field, /InputMode="InputMode.numeric"/);
-  assert.match(field, /OnBlur="OnGramPriceBlur"/);
-  assert.match(code, /private static string GroupGramPriceDigits\(string\? text\)/);
-  assert.match(code, /\(integer.Length - i\) % 3 == 0/);
-  assert.match(code, /private static bool TryParseGramPrice\(string\? text, out decimal price\)/);
-  assert.match(code, /Model\.GramPrice = price;/);
-  assert.match(code, /private static IEnumerable<string> ValidateGramPriceText\(string text\)/);
-  assert.match(code, /SyncGramPriceText\(\);/);
-  assert.doesNotMatch(field, /DebounceInterval="1"|MudNumericField/);
+test('gram price uses the same MudNumericField format and immediate behavior as calculator', () => {
+  const calculator = readFileSync(resolve(root,
+    'src/Calculator/Client/GoldEx.Calculator.Client/Components/TradeInCalculatorComponent.razor'), 'utf8');
+  const gram = [...editor.matchAll(/<MudNumericField\b[\s\S]*?\/>/g)]
+    .map(m => m[0])
+    .find(markup => markup.includes('@bind-Value="Model.GramPrice"'));
+  const calcRate = [...calculator.matchAll(/<MudNumericField\b[\s\S]*?\/>/g)]
+    .map(m => m[0])
+    .find(markup => markup.includes('@bind-Value="_model.NewGramPrice"'));
+  assert.ok(gram, 'Gram price must retain a numeric model binding');
+  assert.ok(calcRate, 'Calculator gold rate reference is missing');
+  for (const markup of [gram, calcRate]) {
+    assert.match(markup, /Format="#,##0\.##"/);
+    assert.match(markup, /Immediate="true"/);
+    assert.match(markup, /HideSpinButtons="true"/);
+  }
+  assert.doesNotMatch(gram, /DebounceInterval="1"/);
+  assert.doesNotMatch(editor, /_gramPriceText|GroupGramPriceDigits|OnGramPriceTextChanged/);
+  assert.doesNotMatch(code, /_gramPriceText|GroupGramPriceDigits|SyncGramPriceText/);
+  assert.match(editor, /For="@\(\(\) => Model\.GramPrice\)"/);
 });

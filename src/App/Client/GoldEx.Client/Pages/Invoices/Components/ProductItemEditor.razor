@@ -10,18 +10,14 @@
             <div class="d-flex flex-wrap justify-center align-center gap-md-3 mb-1">
                 @if (!PriceUnit.IsGoldBased)
                 {
-                    <MudTextField T="string"
-                                     Adornment="Adornment.End"
+                    <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@PriceUnit.Title"
-                                     Value="@_gramPriceText"
-                                     ValueChanged="OnGramPriceTextChanged"
-                                     For="@(() => _gramPriceText)"
-                                     Validation="@(new Func<string, IEnumerable<string>>(ValidateGramPriceText))"
-                                     OnBlur="OnGramPriceBlur"
+                                     @bind-Value="Model.GramPrice"
                                      dir="ltr"
-                                     TextUpdateSuppression="false"
-                                     InputMode="InputMode.numeric"
+                                     For="@(() => Model.GramPrice)"
+                                     Format="#,##0.##"
                                      Immediate="true"
+                                     HideSpinButtons="true"
                                      Label="@($"نرخ هر {Model.Product.GoldUnitType.GetDisplayName()} طلا")"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined" />
