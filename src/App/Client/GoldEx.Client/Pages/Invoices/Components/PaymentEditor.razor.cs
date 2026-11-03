@@ -269,9 +269,10 @@ public partial class PaymentEditor
         {
             await LoadFinancialAccountsAsync();
         }
-
-        // Return all accounts if search is empty, otherwise filter  
-        return (string.IsNullOrEmpty(value)
+        // Refocusing a selected account should display all choices, not just itself.
+        var isSelectedText = string.Equals(value, Model.FinancialAccount?.Title,
+            StringComparison.InvariantCultureIgnoreCase);
+        return (string.IsNullOrEmpty(value) || isSelectedText
             ? Model.FinancialAccounts
             : Model.FinancialAccounts?.Where(acc => acc.Title.Contains(value,
                 StringComparison.InvariantCultureIgnoreCase))) ?? [];
