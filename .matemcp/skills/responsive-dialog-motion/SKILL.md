@@ -12,3 +12,8 @@
 - Keep MudPopoverProvider in the native dialog top layer, outside clipped/animated .gex-modal-panel. The .gex-modal-overlays sibling should be z-index:5, pointer-transparent except popovers/snackbars, and display:contents when inactive.
 - Do not override .mud-popover to position:fixed: MudBlazor positions fixed or absolute according to the component (MudSelect default PopoverFixed=false). Respect built-in FlipAlways and bound the dropdown list height.
 - Regression: scripts/tests/responsive-dialog-popovers.test.mjs. Compile shared client components, calculator server, and enterprise server. Browser visual check is separate.
+
+## Bounded selects (2026-11-03)
+- Exception: only .gex-dialog-bound-popover inside active native dialogs uses fixed positioning with CSS variables computed by placeDialogPopovers. Do not alter global .mud-popover positioning.
+- Shared JS observes popovers and constrains select/autocomplete lists to panel header/footer and available width, flips above near bottom, and limits to max 340px scrolling. Stop handlers on close.
+- Test scripts/tests/responsive-dialog-popover-bounds.test.mjs and responsive-dialog lifecycle. Chrome geometry harness is ephemeral and should not be committed.

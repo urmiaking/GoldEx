@@ -45,6 +45,23 @@
     max-height: inherit;
     overflow-y: auto;
 }
+
+/* Select menus use the actual dialog body bounds, not browser bounds.
+   MudBlazor's inline placement remains in charge of other popovers. */
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .gex-dialog-bound-popover {
+    position: fixed !important;
+    top: var(--gex-popup-top) !important;
+    left: var(--gex-popup-left) !important;
+    max-width: var(--gex-popup-width) !important;
+    max-height: var(--gex-popup-height) !important;
+    overflow: hidden;
+}
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .gex-dialog-bound-popover .mud-list {
+    max-height: var(--gex-popup-height) !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
 @keyframes gex-modal-shade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes gex-modal-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
 @media (max-width: 640px) {

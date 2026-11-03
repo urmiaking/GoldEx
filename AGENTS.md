@@ -1142,3 +1142,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Active overlay is absolute inset:0 z-index:5 above panel z-index:1. The host uses pointer-events:none and the open popover/snackbar uses pointer-events:auto; inactive wrapper is display:contents.
 - Do not force .mud-popover position:fixed; MudSelect.PopoverFixed defaults false and MudBlazor OverflowBehavior defaults FlipAlways. Forced fixed can break dropdown geometry on mobile and desktop. Keep long lists scrollable and viewport-bounded.
 - Preserve native modal focus/scroll and round corners; tests: scripts/tests/responsive-dialog-popovers.test.mjs and responsive-dialog.test.mjs. Source checks and builds are not real authenticated visual verification.
+
+## Modal-bounded select/autocomplete menus (2026-11-03)
+- MudBlazor 9.8.0 positions select/autocomplete popovers against the viewport, not the inner responsive dialog body. Correct overlay z-index alone cannot stop a menu from covering fixed modal actions.
+- Shared responsive-dialog.js associates popovercontent-* with its popover-* anchor. For selects/autocompletes in the active modal it computes bounds between panel header and footer, flips up if necessary, caps lists at 340px and available space, and clamps to panel horizontal edges. Only these marked popovers (.gex-dialog-bound-popover) use fixed position with CSS variables and !important. Never globally force .mud-popover fixed or change datepickers/tooltips.
+- watchDialogPopovers observes async changes, panel resizing and dialog scroll; stop on deactivate. Visual viewport resize repositions options for keyboard. Preserve existing modal focus and action bar.
+- Tests: scripts/tests/responsive-dialog-popover-bounds.test.mjs and full node suite. Temporary headless Chrome geometry checks confirmed popup positions on mobile and desktop; authenticated user sessions still require visual review.
