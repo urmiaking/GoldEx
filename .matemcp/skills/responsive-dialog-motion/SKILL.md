@@ -7,3 +7,8 @@
 ## Calculator SSR registration requirement
 - `BaseLayout` hosts `ResponsiveDialogHost` for both enterprise GoldEx and Calculator. Calculator server prerender requires scoped `ResponsiveDialogService` registered in Calculator.Server `DependencyInjection.AddComponents`, while Calculator WASM gets it from `AddClientComponents()`. Missing server registration causes a fatal injection exception before interactive startup.
 - Run `scripts/tests/calculator-responsive-dialog-di.test.mjs` and Calculator.Server Release build when shared dialog host injection changes.
+
+## MudSelect/MudAutocomplete popup stacking
+- Keep MudPopoverProvider in the native dialog top layer, outside clipped/animated .gex-modal-panel. The .gex-modal-overlays sibling should be z-index:5, pointer-transparent except popovers/snackbars, and display:contents when inactive.
+- Do not override .mud-popover to position:fixed: MudBlazor positions fixed or absolute according to the component (MudSelect default PopoverFixed=false). Respect built-in FlipAlways and bound the dropdown list height.
+- Regression: scripts/tests/responsive-dialog-popovers.test.mjs. Compile shared client components, calculator server, and enterprise server. Browser visual check is separate.

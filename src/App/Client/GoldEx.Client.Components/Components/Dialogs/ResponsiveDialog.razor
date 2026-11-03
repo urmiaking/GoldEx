@@ -15,7 +15,11 @@
         </header>
         <div class="gex-modal-content">@ChildContent</div>
     </section>
-    @Overlays
+    @* Popovers must stay in the native dialog top layer, outside the clipped/animated panel.
+       A separate full-size overlay avoids panel clipping and stacking-context conflicts. *@
+    <div class="gex-modal-overlays">
+        @Overlays
+    </div>
 </dialog>
 
 @code {

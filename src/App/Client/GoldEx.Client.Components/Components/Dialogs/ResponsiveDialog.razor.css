@@ -1,5 +1,7 @@
 /* Native top-layer modal with short MeetFlow-style entrance and GoldEx theme tokens. */
 .gex-modal-layer:not(.is-active) { display: contents; }
+/* Preserve the original provider flow outside active modal sessions. */
+.gex-modal-layer:not(.is-active) .gex-modal-overlays { display: contents; }
 .gex-modal-panel[hidden] { display: none; }
 .gex-modal-layer.is-active[open] { position: fixed; inset: var(--gex-modal-viewport-offset, 0px) 0 auto; box-sizing: border-box; width: 100vw; max-width: none; height: var(--gex-modal-viewport-height, 100dvh); max-height: none; margin: 0; border: 0; border-radius: 0; outline: 0; padding: clamp(12px,3vw,28px); background: transparent; color: var(--mud-palette-text-primary); overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; font: inherit; }
 .gex-modal-layer::backdrop { background: transparent; }
@@ -20,8 +22,29 @@
 .gex-modal-content ::deep .gex-editor-actions { display: flex; flex: none; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 24px; border-top: 1px solid var(--mud-palette-lines-default); }
 .gex-modal-content ::deep .gex-editor-actions .mud-button { min-height: 44px; margin: 0 !important; }
 .gex-modal-content ::deep .gex-modal-session[hidden] { display: none; }
-/* Providers remain inside the native modal, but outside the animated panel. */
-.gex-modal-layer.is-active ::deep .mud-popover { position: fixed; }
+/* The provider is a sibling of the rounded/scroll-clipped panel and remains
+   inside the native <dialog> top layer. Avoid forcing fixed positioning:
+   MudBlazor chooses absolute/fixed per popover and computes matching offsets. */
+.gex-modal-layer.is-active .gex-modal-overlays {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .mud-popover-open,
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .mud-snackbar,
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .mud-snackbar-container {
+    pointer-events: auto;
+}
+/* Keep long option lists scrollable on small viewports, instead of letting
+   them overflow off-screen or disappear under the dialog action footer. */
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .mud-popover {
+    max-height: calc(var(--gex-modal-viewport-height, 100dvh) - 24px);
+}
+.gex-modal-layer.is-active .gex-modal-overlays ::deep .mud-popover .mud-list {
+    max-height: inherit;
+    overflow-y: auto;
+}
 @keyframes gex-modal-shade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes gex-modal-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
 @media (max-width: 640px) {
