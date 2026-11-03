@@ -52,6 +52,8 @@
     position: fixed !important;
     top: var(--gex-popup-top) !important;
     left: var(--gex-popup-left) !important;
+    width: var(--gex-popup-width) !important;
+    min-width: 0 !important;
     max-width: var(--gex-popup-width) !important;
     max-height: var(--gex-popup-height) !important;
     overflow: hidden;

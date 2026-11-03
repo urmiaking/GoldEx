@@ -117,16 +117,24 @@ function placeDialogPopovers(dialog) {
     for (const popup of overlay.querySelectorAll('.mud-popover-open[id^="popovercontent-"]')) {
         const marker = document.getElementById('popover-' + popup.id.slice(15));
         if (!marker || !panel.contains(marker)) continue;
-        const field = marker.parentElement, list = popup.querySelector('.mud-list');
-        if (!field || !list || !field.closest('.mud-select, .mud-autocomplete') ||
-            field.closest('[inert], [hidden]')) continue;
-        const anchor = field.getBoundingClientRect();
-        const width = Math.min(popup.getBoundingClientRect().width || anchor.width, rightMax - leftMin);
+        const container = marker.parentElement, list = popup.querySelector('.mud-list');
+        // The MudPopover marker can be wrapped in a full-width container.
+        // Measure the actual SELECT input, not the popup or its portal parent.
+        const control = container?.closest('.mud-select, .mud-autocomplete');
+        if (!control || !list || control.closest('[inert], [hidden]')) continue;
+        const anchor = control.getBoundingClientRect();
+        if (!anchor.width || !anchor.height) continue;
+        // Select menus should match their field, not expand to the whole dialog.
+        const width = Math.min(anchor.width, rightMax - leftMin);
         const below = Math.max(0, bottomMax - anchor.bottom - 4);
         const above = Math.max(0, anchor.top - topMin - 4);
         const natural = Math.max(48, list.scrollHeight || popup.scrollHeight || 180);
-        const up = natural > below && above > below;
-        const height = Math.max(0, Math.min(340, up ? above : below));
+        // Desktop menus stay below their input with an internal scrollbar.
+        // On a small screen, use the larger side when the full list will not fit.
+        const up = window.innerWidth <= 640
+            ? natural > below && above > below
+            : below < 112 && above > below;
+        const height = Math.max(0, Math.min(320, up ? above : below));
         const x = Math.max(leftMin, Math.min(anchor.right - width, rightMax - width));
         const y = up ? anchor.top - 4 - Math.min(natural, height) : anchor.bottom + 4;
         if (!popup.classList.contains('gex-dialog-bound-popover'))
@@ -134,7 +142,7 @@ function placeDialogPopovers(dialog) {
         popup.style.setProperty('--gex-popup-left', Math.round(x) + 'px');
         popup.style.setProperty('--gex-popup-top', Math.round(Math.max(topMin, y)) + 'px');
         popup.style.setProperty('--gex-popup-height', Math.round(height) + 'px');
-        popup.style.setProperty('--gex-popup-width', Math.round(rightMax - leftMin) + 'px');
+        popup.style.setProperty('--gex-popup-width', Math.round(width) + 'px');
     }
 }
 
