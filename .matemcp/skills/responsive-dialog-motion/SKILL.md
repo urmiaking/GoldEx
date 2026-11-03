@@ -21,3 +21,8 @@
 ## Field-width dropdown alignment (2026-11-03)
 - Only marked modal select/autocomplete popovers are custom positioned. Derive their exact width from their closest input's rect, not popup or panel width. Set explicit width and max-width CSS overrides; max-width alone is insufficient.
 - Desktop dropdown defaults below its field; long options scroll. Mobile may flip upward. Test scripts/tests/responsive-dialog-popover-bounds.test.mjs, keep other popovers unchanged.
+
+## Payment cash-account autocomplete on mobile (2026-11-04)
+- PaymentEditor.razor uses MudAutocomplete rather than MudSelect for the invoice cash-payment bank-account field. Keep OpenOnFocus=true so touching an already populated field opens its options.
+- SearchFinancialAccountsAsync returns all accounts for an empty query or the exact text of the currently selected account; typing a different query still filters. Otherwise focus can display only the already selected account.
+- Regression: scripts/tests/responsive-dialog-popovers.test.mjs plus existing bound-popover tests. Source tests do not replace authenticated mobile browser verification.

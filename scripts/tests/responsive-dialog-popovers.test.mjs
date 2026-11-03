@@ -39,3 +39,15 @@ test('select lists remain scrollable and viewport bounded on desktop and mobile'
     assert.match(markup, /<dialog\s+class="gex-modal-layer/);
     assert.match(markup, /<section\s+class="gex-modal-panel/);
 });
+
+test('invoice cash-account autocomplete opens on focus and offers all accounts when one is selected', () => {
+    const payment = readFileSync(new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/PaymentEditor.razor', import.meta.url), 'utf8');
+    const logic = readFileSync(new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/PaymentEditor.razor.cs', import.meta.url), 'utf8');
+    const accountField = payment.match(/<MudAutocomplete @bind-Value="@Model\.FinancialAccount"[\s\S]*?\/>/)?.[0];
+    assert.ok(accountField, 'cash payment financial-account field exists');
+    assert.match(accountField, /OpenOnFocus="true"/);
+    assert.match(accountField, /SearchFunc="SearchFinancialAccountsAsync"/);
+    assert.match(logic, /string\.Equals\(value, Model\.FinancialAccount\?\.Title,/);
+    assert.match(logic, /string\.IsNullOrEmpty\(value\) \|\| isSelectedText/);
+    assert.match(logic, /Model\.FinancialAccounts\?\.Where\(acc => acc\.Title\.Contains\(value,/);
+});

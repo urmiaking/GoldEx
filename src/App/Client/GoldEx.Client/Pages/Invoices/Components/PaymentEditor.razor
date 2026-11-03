@@ -166,6 +166,7 @@
                                                  Placeholder="جستجوی حساب مالی..."
                                                  MaxItems="100"
                                                  ToStringFunc="@(acc => acc?.Title)"
+                                                 OpenOnFocus="true"
                                                  SearchFunc="SearchFinancialAccountsAsync"
                                                  ResetValueOnEmptyText="true" />
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
