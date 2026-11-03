@@ -75,6 +75,7 @@
                             <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel"
                                        ValueChanged="@(v => _sortLabel = v)"
                                        Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                                <MudSelectItem Value="@("CreatedAt")">تاریخ ایجاد</MudSelectItem>
                                 <MudSelectItem Value="@("CurrentQuantity")">موجودی فعلی</MudSelectItem>
                                 <MudSelectItem Value="@("SoldQuantity")">مقدار فروخته‌شده</MudSelectItem>
                                 @if (_itemType is ItemType.Product or ItemType.MoltenGold or ItemType.UsedProduct)

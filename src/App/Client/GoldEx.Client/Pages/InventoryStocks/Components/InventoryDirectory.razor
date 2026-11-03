@@ -34,6 +34,7 @@
             <div class="directory-sort">
                 <MudSelect T="string" Label="مرتب‌سازی بر اساس" Value="_sortLabel" ValueChanged="OnSortChanged"
                            Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("CreatedAt")">تاریخ ایجاد</MudSelectItem>
                     <MudSelectItem Value="@("CurrentQuantity")">موجودی فعلی</MudSelectItem>
                     <MudSelectItem Value="@("SoldQuantity")">مقدار فروخته‌شده</MudSelectItem>
                     @if (ItemType is ItemType.Product or ItemType.MoltenGold or ItemType.UsedProduct)
