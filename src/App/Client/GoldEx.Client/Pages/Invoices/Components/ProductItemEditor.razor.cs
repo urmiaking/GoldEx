@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using Microsoft.AspNetCore.Components.Web;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
@@ -39,6 +42,11 @@ public partial class ProductItemEditor
     private GetSettingResponse? _settings;
     private List<GetStoneTypeResponse> _stoneTypes = [];
 
+    // Keep editable display text separate from the decimal model for reliable live grouping.
+    private string _gramPriceText = string.Empty;
+    private decimal _displayedGramPrice;
+    private bool _gramPriceTextInitialized;
+
     private bool _isProcessing;
     private List<GetCustomerResponse> _customers = [];
 
@@ -71,6 +79,8 @@ public partial class ProductItemEditor
 
     protected override void OnParametersSet()
     {
+        if (!_gramPriceTextInitialized || Model.GramPrice != _displayedGramPrice)
+            SyncGramPriceText();
         if (!Model.Product.WagePriceUnitId.HasValue && Model.Product.WageType is WageType.Fixed)
         {
             Model.Product.WagePriceUnitId = PriceUnits.FirstOrDefault(x => x.IsDefault)?.Id;
@@ -112,6 +122,90 @@ public partial class ProductItemEditor
             });
     }
 
+    private void SyncGramPriceText()
+    {
+        _displayedGramPrice = Model.GramPrice;
+        _gramPriceText = Model.GramPrice.ToString("#,##0.########################", CultureInfo.InvariantCulture);
+        _gramPriceTextInitialized = true;
+    }
+
+    private void OnGramPriceTextChanged(string text)
+    {
+        _gramPriceText = GroupGramPriceDigits(text);
+        if (TryParseGramPrice(text, out var price))
+        {
+            Model.GramPrice = price;
+            _displayedGramPrice = price;
+        }
+    }
+
+    private void OnGramPriceBlur(FocusEventArgs _)
+    {
+        if (TryParseGramPrice(_gramPriceText, out var price))
+        {
+            Model.GramPrice = price;
+            SyncGramPriceText();
+        }
+    }
+
+    private static IEnumerable<string> ValidateGramPriceText(string text)
+    {
+        if (!TryParseGramPrice(text, out var price) || price <= 0)
+            return ["نرخ گرم باید بزرگتر از صفر باشد"];
+        return [];
+    }
+
+    private static bool TryParseGramPrice(string? text, out decimal price)
+    {
+        var normalized = NormalizeGramPriceDigits(text).Replace(",", "", StringComparison.Ordinal);
+        return decimal.TryParse(normalized,
+            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+            CultureInfo.InvariantCulture, out price);
+    }
+
+    private static string GroupGramPriceDigits(string? text)
+    {
+        var raw = NormalizeGramPriceDigits(text);
+        var negative = raw.StartsWith("-", StringComparison.Ordinal);
+        var unsigned = negative ? raw[1..] : raw;
+        unsigned = unsigned.Replace(",", "", StringComparison.Ordinal);
+
+        var decimalIndex = unsigned.IndexOf('.');
+        var integer = decimalIndex >= 0 ? unsigned[..decimalIndex] : unsigned;
+        var fraction = decimalIndex >= 0 ? unsigned[(decimalIndex + 1)..] : null;
+
+        if (integer.Any(c => c is < '0' or > '9') ||
+            (fraction is not null && fraction.Any(c => c is < '0' or > '9')))
+            return text ?? string.Empty;
+
+        var builder = new StringBuilder();
+        if (negative) builder.Append('-');
+        if (integer.Length == 0 && fraction is not null)
+            builder.Append('0');
+
+        for (var i = 0; i < integer.Length; i++)
+        {
+            if (i > 0 && (integer.Length - i) % 3 == 0) builder.Append(',');
+            builder.Append(integer[i]);
+        }
+        if (fraction is not null) builder.Append('.').Append(fraction);
+        return builder.ToString();
+    }
+
+    private static string NormalizeGramPriceDigits(string? text)
+    {
+        var builder = new StringBuilder();
+        foreach (var ch in text ?? string.Empty)
+        {
+            if (ch is >= '۰' and <= '۹') builder.Append((char)('0' + ch - '۰'));
+            else if (ch is >= '٠' and <= '٩') builder.Append((char)('0' + ch - '٠'));
+            else if (ch == '٫') builder.Append('.');
+            else if (ch is '٬' or '،') builder.Append(',');
+            else builder.Append(ch);
+        }
+        return builder.ToString().Trim();
+    }
+
     private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
@@ -121,6 +215,7 @@ public partial class ProductItemEditor
                 decimal.TryParse(response?.Value, out var gramPriceValue);
 
                 Model.GramPrice = gramPriceValue;
+                SyncGramPriceText();
 
                 StateHasChanged();
             });

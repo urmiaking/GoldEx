@@ -28,10 +28,29 @@ test('all decimal controls in the item dialog avoid premature 1ms reformatting',
   const fields = [...editor.matchAll(/<MudNumericField\b[\s\S]*?(?:\/>|<\/MudNumericField>)/g)]
     .map(m => m[0])
     .filter(markup => markup.includes('T="decimal"') || markup.includes('T="decimal?"') || markup.includes('Model.GramPrice'));
-  assert.ok(fields.length >= 12, 'Expected all decimal product editor inputs');
+  assert.ok(fields.length >= 11, 'Expected all decimal product editor inputs');
   for (const field of fields) {
     assert.doesNotMatch(field, /DebounceInterval="1"/);
     assert.match(field, /Immediate="false"/);
   }
   assert.match(editor, /T="int"\s+@bind-Value="Model.Quantity"/);
+});
+
+test('gold live-rate input groups thousands during edits while keeping numeric model and validation', () => {
+  const field = editor.match(/<MudTextField T="string"[\s\S]*?\/>/)?.[0];
+  assert.ok(field, 'Expected live-formatted rate field');
+  assert.match(field, /Value="@_gramPriceText"/);
+  assert.match(field, /ValueChanged="OnGramPriceTextChanged"/);
+  assert.match(field, /Validation=".*ValidateGramPriceText/);
+  assert.match(field, /TextUpdateSuppression="false"/);
+  assert.match(field, /Immediate="true"/);
+  assert.match(field, /InputMode="InputMode.numeric"/);
+  assert.match(field, /OnBlur="OnGramPriceBlur"/);
+  assert.match(code, /private static string GroupGramPriceDigits\(string\? text\)/);
+  assert.match(code, /\(integer.Length - i\) % 3 == 0/);
+  assert.match(code, /private static bool TryParseGramPrice\(string\? text, out decimal price\)/);
+  assert.match(code, /Model\.GramPrice = price;/);
+  assert.match(code, /private static IEnumerable<string> ValidateGramPriceText\(string text\)/);
+  assert.match(code, /SyncGramPriceText\(\);/);
+  assert.doesNotMatch(field, /DebounceInterval="1"|MudNumericField/);
 });
