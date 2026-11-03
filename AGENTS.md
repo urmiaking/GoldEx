@@ -1158,3 +1158,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 ## Inventory Directory
 
 - Inventory management defaults to creation date, newest first. Keep the page, filter dialog reset and URL default aligned on CreatedAt.
+## Invoice product gram-price input matches the calculator (2026-11-03)
+
+- Actual regression root: in commit `ecdf54d9`, `ProductItemEditor.razor` gram price changed from 1ms debounce to `Immediate="false"` together with weight, profit and tax. The live gram-price number then lost the expected three-digit grouping after manual edits, even though its initial model value appeared grouped. This was unrelated to any MudBlazor version upgrade; enterprise remains on MudBlazor 9.5.0.
+- Compare against the known-working calculator, `src/Calculator/Client/GoldEx.Calculator.Client/Components/TradeInCalculatorComponent.razor`, whose new/used gram rate fields use `MudNumericField T="decimal"`, `Format="#,##0.##"`, and `Immediate="true"`. The enterprise gram-price field now reuses that simple numeric model binding, grouping format and immediate behavior. Keep all other decimal inputs (weight, profit, tax etc.) `Immediate="false"` to protect fractional input. Never reintroduce the earlier experimental `MudTextField<string>` plus custom grouping/parsing methods; those were unnecessary compared with the calculator's existing reliable pattern.
+- Regression test `scripts/tests/invoice-decimal-entry.test.mjs` compares enterprise gram price against the calculator source and checks other decimal inputs separately. Client build confirms Razor/C# compilation; signed-in mobile browser typing, caret position and separator visibility still require manual validation.
+- Commit locally; do not push/deploy unless asked.
