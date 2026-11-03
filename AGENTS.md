@@ -1136,3 +1136,21 @@ The user explicitly confirmed receiving a real device notification after enablin
 - `GoldEx.Calculator.Client` reuses `GoldEx.Client.Components.Layouts.BaseLayout`, which always renders `ResponsiveDialogHost`. That host injects scoped `ResponsiveDialogService` during server prerendering, before WebAssembly starts.
 - Calculator WASM already registers that service through `AddClientComponents()`. Calculator **server** must independently register `services.AddScoped<ResponsiveDialogService>()` in `src/Calculator/Server/GoldEx.Calculator.Server/DependencyInjection.cs` `AddComponents()`. Do not assume browser DI satisfies SSR injection.
 - CI regression contract: `scripts/tests/calculator-responsive-dialog-di.test.mjs`. Verify Calculator.Server Release build whenever changing shared layout injection or Calculator server services. This is a Calculator-only hotfix; do not add enterprise `releases.json` entries.
+
+## Shared dialog dropdown overlays (2026-11-03)
+- Native ResponsiveDialog renders persistent MudPopoverProvider and MudSnackbarProvider inside its top-layer <dialog>, but OUTSIDE the rounded and overflow-clipped .gex-modal-panel. Keep the @Overlays fragment in sibling .gex-modal-overlays AFTER the panel.
+- Active overlay is absolute inset:0 z-index:5 above panel z-index:1. The host uses pointer-events:none and the open popover/snackbar uses pointer-events:auto; inactive wrapper is display:contents.
+- Do not force .mud-popover position:fixed; MudSelect.PopoverFixed defaults false and MudBlazor OverflowBehavior defaults FlipAlways. Forced fixed can break dropdown geometry on mobile and desktop. Keep long lists scrollable and viewport-bounded.
+- Preserve native modal focus/scroll and round corners; tests: scripts/tests/responsive-dialog-popovers.test.mjs and responsive-dialog.test.mjs. Source checks and builds are not real authenticated visual verification.
+
+## Modal-bounded select/autocomplete menus (2026-11-03)
+- MudBlazor 9.8.0 positions select/autocomplete popovers against the viewport, not the inner responsive dialog body. Correct overlay z-index alone cannot stop a menu from covering fixed modal actions.
+- Shared responsive-dialog.js associates popovercontent-* with its popover-* anchor. For selects/autocompletes in the active modal it computes bounds between panel header and footer, flips up if necessary, caps lists at 340px and available space, and clamps to panel horizontal edges. Only these marked popovers (.gex-dialog-bound-popover) use fixed position with CSS variables and !important. Never globally force .mud-popover fixed or change datepickers/tooltips.
+- watchDialogPopovers observes async changes, panel resizing and dialog scroll; stop on deactivate. Visual viewport resize repositions options for keyboard. Preserve existing modal focus and action bar.
+- Tests: scripts/tests/responsive-dialog-popover-bounds.test.mjs and full node suite. Temporary headless Chrome geometry checks confirmed popup positions on mobile and desktop; authenticated user sessions still require visual review.
+
+## Exact select popup sizing inside responsive dialogs (2026-11-03)
+- The earlier bounded implementation used the popup's width and full panel width merely as max-width, letting desktop dropdowns stretch across the entire modal.
+- placeDialogPopovers now measures the closest .mud-select / .mud-autocomplete getBoundingClientRect (not MudPopover's marker parent). Width equals anchor.width, clamped to panel inner width. The .gex-dialog-bound-popover CSS MUST set width:var(--gex-popup-width) !important as well as max-width.
+- Desktop lists open immediately below the control even when longer than available space, using their own scrollbar. Flip above desktop only when fewer than 112px fit below. Mobile prefers the side with more room. Keep footer and outer dialog bounds, focus and non-select popovers intact.
+- Regression: scripts/tests/responsive-dialog-popover-bounds.test.mjs. Real headless Chrome CSS geometry confirmed a 348px field and exactly 348px dropdown 4px below it, ending above footer. Chrome mobile probe was inconclusive; authenticated visual verification is still separate.
