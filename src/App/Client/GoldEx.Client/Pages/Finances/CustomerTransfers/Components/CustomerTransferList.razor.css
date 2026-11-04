@@ -5,7 +5,7 @@
 .transfer-heading p { margin:3px 0 0; font-size:.875rem; color:var(--mud-palette-text-secondary); }
 .transfer-count { display:inline-flex; align-items:center; padding:4px 10px; font-size:.75rem; font-weight:500; border-radius:8px; white-space:nowrap; background:rgba(var(--mud-palette-primary-rgb),.1); }
 .transfer-heading ::deep .transfer-create { min-height:46px; flex:none; padding:8px 16px; }
-.transfer-filters { position:sticky; top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px); isolation:isolate; z-index:calc(var(--mud-zindex-drawer,1200) - 5); padding-bottom:12px; margin-bottom:8px; background:var(--mud-palette-background); }
+.transfer-filters { position:sticky; top: var(--gex-directory-sticky-top); isolation:isolate; z-index:calc(var(--mud-zindex-drawer,1200) - 5); padding-bottom:12px; margin-bottom:8px; background:var(--mud-palette-background); }
 .transfer-filters::before { content:""; position:absolute; inset:-8px 0 0; z-index:-1; background:inherit; pointer-events:none; }
 .transfer-toolbar { display:grid; grid-template-columns:minmax(160px,1fr) auto minmax(150px,200px) 44px; gap:12px; align-items:center; padding:14px 16px; border:1px solid var(--mud-palette-lines-default); border-radius:16px; background:var(--mud-palette-surface); box-shadow:0 4px 12px -8px rgba(0,0,0,.18); }
 .transfer-search,.transfer-sort { min-width:0; }
@@ -16,7 +16,7 @@
 .transfer-results { border:1px solid var(--mud-palette-lines-default); border-radius:18px; background:var(--mud-palette-surface); box-shadow:0 5px 22px rgba(10,30,40,.05); min-height:100px; }
 .transfer-desktop { width:100%; overflow:visible; }
 .transfer-table { width:100%; border-collapse:separate; border-spacing:0; text-align:start; }
-.transfer-table th { position:sticky; top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px + var(--invoice-filters-block-size,96px)); z-index:5; padding:13px 12px; text-align:start; white-space:nowrap; font-size:.8125rem; font-weight:500; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); border-bottom:1px solid var(--mud-palette-lines-default); }
+.transfer-table th { position:sticky; top: calc(var(--gex-directory-sticky-top) + var(--invoice-filters-block-size, 96px)); z-index:5; padding:13px 12px; text-align:start; white-space:nowrap; font-size:.8125rem; font-weight:500; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); border-bottom:1px solid var(--mud-palette-lines-default); }
 .transfer-table thead th:first-child { border-start-start-radius:16px; }
 .transfer-table thead th:last-child { border-start-end-radius:16px; }
 .transfer-table th button { display:inline-flex; align-items:center; gap:6px; font:inherit; color:inherit; border:0; padding:0; background:none; cursor:pointer; }

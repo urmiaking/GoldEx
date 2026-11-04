@@ -5,7 +5,7 @@
 .finance-heading p{margin:3px 0 0;color:var(--mud-palette-text-secondary);font-size:.82rem}
 .finance-count{padding:3px 8px;border-radius:8px;background:rgba(var(--mud-palette-primary-rgb),.1);font-size:.75rem;font-weight:400}
 .finance-heading ::deep .finance-create{min-height:44px;flex:none;padding:7px 13px}
-.finance-filters{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px);z-index:calc(var(--mud-zindex-drawer,1200) - 5);isolation:isolate;background:var(--mud-palette-background);padding-bottom:10px;margin-bottom:7px}
+.finance-filters{position:sticky;top: var(--gex-directory-sticky-top);z-index:calc(var(--mud-zindex-drawer,1200) - 5);isolation:isolate;background:var(--mud-palette-background);padding-bottom:10px;margin-bottom:7px}
 .finance-filters:before{content:"";position:absolute;inset:-8px 0 0;background:inherit;z-index:-1;pointer-events:none}
 .finance-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(145px,190px) 42px;align-items:center;gap:10px;padding:12px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:15px}
 .finance-toolbar ::deep .mud-input-control{margin:0;min-width:0}
@@ -14,7 +14,7 @@
 .finance-sort-direction{display:grid;place-items:center}
 .finance-results{background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:16px;min-height:120px;overflow:visible}
 .finance-table{width:100%;border-collapse:separate;border-spacing:0;text-align:start}
-.finance-table th{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px + var(--invoice-filters-block-size,96px));z-index:3;text-align:start;white-space:nowrap;background:var(--mud-palette-background-gray);color:var(--mud-palette-text-secondary);padding:12px 10px;border-bottom:1px solid var(--mud-palette-lines-default);font-size:.79rem;font-weight:400}
+.finance-table th{position:sticky;top: calc(var(--gex-directory-sticky-top) + var(--invoice-filters-block-size, 96px));z-index:3;text-align:start;white-space:nowrap;background:var(--mud-palette-background-gray);color:var(--mud-palette-text-secondary);padding:12px 10px;border-bottom:1px solid var(--mud-palette-lines-default);font-size:.79rem;font-weight:400}
 .finance-table td{padding:12px 10px;border-bottom:1px solid var(--mud-palette-lines-default);vertical-align:middle;font-size:.82rem}
 .finance-table tbody tr:last-child td{border-bottom:0}
 .finance-table tbody tr:hover{background:rgba(var(--mud-palette-primary-rgb),.04)}

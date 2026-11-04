@@ -1167,3 +1167,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 
 ## Invoice cash-payment account picker (2026-11-04)
 - PaymentEditor.razor uses MudAutocomplete for the financial account field. OpenOnFocus=true and search that returns the full account list when the selected account's title is refocused are required for mobile touch selection; preserve regular typed filtering. Shared modal popover bounds remain managed by responsive-dialog.js. See .matemcp/skills/responsive-dialog-motion/SKILL.md.
+## Mobile directory sticky filters with breadcrumbs (2026-11-04)
+- All seven enterprise directories (Customers, Invoices, InventoryDirectory, MeltingBatchesList, CustomerTransfers, PaymentVouchers, Checks) anchor their sticky filter toolbar with --gex-directory-sticky-top; desktop sticky table headings add --invoice-filters-block-size to that same anchor.
+- appearance.css defines the desktop baseline as AppBar + safe-area + 8px and overrides it at widths below 960px to add --gex-mobile-crumb-height (46px). The breadcrumb fixed position and content offset use that same crumb token. Never hardcode the old AppBar-only sticky top in a new list.
+- The customer invoice list inside a native dialog keeps top:0 and its local sticky header formula; it must not inherit the page-scrolling anchor. See .matemcp/skills/appbar-route-trail/SKILL.md and scripts/tests/mobile-directory-sticky-offset.test.mjs.

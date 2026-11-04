@@ -2,6 +2,8 @@
 :root {
     --gex-appbar-height: 82px;
     --gex-content-gap: 12px;
+    /* Shared anchor for sticky directory filters and desktop table headers. */
+    --gex-directory-sticky-top: calc(var(--gex-appbar-height) + env(safe-area-inset-top, 0px) + 8px);
     --gex-viewport-height: 100vh;
     --gex-table-layout-delta: 0px;
 }
@@ -1644,6 +1646,8 @@ html[data-gex-mode="dark"] .gex-liquid-dock .gex-dock-overflow-panel {
 @media (max-width: 959.98px) {
     .goldex-shell {
         --gex-mobile-crumb-height: 46px;
+        /* Filters sit 8px below the fixed AppBar + mobile breadcrumb row. */
+        --gex-directory-sticky-top: calc(var(--gex-appbar-height) + var(--gex-mobile-crumb-height) + env(safe-area-inset-top, 0px) + 8px);
         --gex-content-offset: calc(var(--gex-appbar-height) + var(--gex-mobile-crumb-height) + env(safe-area-inset-top, 0px) + var(--gex-content-gap));
         --gex-table-layout-delta: calc(var(--gex-content-offset) - 56px);
     }
