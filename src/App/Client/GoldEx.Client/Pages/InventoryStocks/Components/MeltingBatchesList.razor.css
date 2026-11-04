@@ -5,7 +5,7 @@
 .melting-heading p{margin:3px 0 0;color:var(--mud-palette-text-secondary);font-size:.85rem}
 .melting-count{padding:3px 9px;border-radius:8px;background:rgba(var(--mud-palette-primary-rgb),.09);font-size:.75rem;font-weight:400}
 .melting-heading ::deep .melting-create{min-height:44px;flex:none;border-radius:12px}
-.melting-filters{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px);z-index:calc(var(--mud-zindex-drawer,1200) - 5);background:var(--mud-palette-background);padding-bottom:10px;isolation:isolate;margin-bottom:8px}
+.melting-filters{position:sticky;top: var(--gex-directory-sticky-top);z-index:calc(var(--mud-zindex-drawer,1200) - 5);background:var(--mud-palette-background);padding-bottom:10px;isolation:isolate;margin-bottom:8px}
 .melting-filters:before{content:"";position:absolute;inset:-8px 0 0;background:inherit;z-index:-1;pointer-events:none}
 .melting-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(145px,190px) 44px;gap:10px;align-items:center;padding:12px;border:1px solid var(--mud-palette-lines-default);border-radius:15px;background:var(--mud-palette-surface)}
 .melting-toolbar ::deep .mud-input-control{margin:0;min-width:0}
@@ -13,7 +13,7 @@
 .melting-filter-count{font-size:.7rem;display:inline-grid;place-items:center;min-width:19px;height:19px;border-radius:6px;border:1px solid var(--mud-palette-primary);margin-inline-start:5px}
 .melting-results{border:1px solid var(--mud-palette-lines-default);border-radius:16px;background:var(--mud-palette-surface);min-height:100px}
 .melting-table{width:100%;border-collapse:separate;border-spacing:0;text-align:start}
-.melting-table th{position:sticky;top:calc(var(--gex-appbar-height,70px) + env(safe-area-inset-top,0px) + 8px + var(--invoice-filters-block-size,96px));z-index:3;background:var(--mud-palette-background-gray);color:var(--mud-palette-text-secondary);font-size:.78rem;font-weight:400;text-align:start;padding:12px 11px;white-space:nowrap;border-bottom:1px solid var(--mud-palette-lines-default)}
+.melting-table th{position:sticky;top: calc(var(--gex-directory-sticky-top) + var(--invoice-filters-block-size, 96px));z-index:3;background:var(--mud-palette-background-gray);color:var(--mud-palette-text-secondary);font-size:.78rem;font-weight:400;text-align:start;padding:12px 11px;white-space:nowrap;border-bottom:1px solid var(--mud-palette-lines-default)}
 .melting-table td{padding:11px;font-size:.83rem;border-bottom:1px solid var(--mud-palette-lines-default);vertical-align:middle}
 .melting-table tbody tr:last-child td{border-bottom:none}
 .melting-table tbody tr:not(.melting-detail-row):hover{background:rgba(var(--mud-palette-primary-rgb),.04)}

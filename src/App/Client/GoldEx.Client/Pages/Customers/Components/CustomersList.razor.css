@@ -5,7 +5,7 @@
 .directory-title p { margin: 3px 0 0; color: var(--mud-palette-text-secondary); font-size: .875rem; font-weight: 400; }
 .directory-heading ::deep .directory-create { flex-shrink: 0; min-height: 46px; padding: 8px 18px; }
 .directory-filters {
-    position: sticky; top: calc(var(--gex-appbar-height, 70px) + env(safe-area-inset-top, 0px) + 8px);
+    position: sticky; top: var(--gex-directory-sticky-top);
     z-index: calc(var(--mud-zindex-drawer, 1200) - 5); isolation: isolate;
     background: var(--mud-palette-background); padding-bottom: 12px; margin-bottom: 8px;
 }

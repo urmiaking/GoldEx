@@ -18,7 +18,7 @@ test('document-scrolling native invoice table has no clipping ancestor and stick
     assert.match(sheet, /\.invoice-desktop-table \{[^}]*overflow: visible/);
     assert.doesNotMatch(sheet, /\.invoice-desktop-table \{[^}]*overflow-x:\s*auto/);
     assert.match(sheet, /\.invoice-table th \{[^}]*position: sticky/);
-    assert.match(sheet, /top: calc\(var\(--gex-appbar-height[^;]*var\(--invoice-filters-block-size,\s*96px\)/);
+    assert.match(sheet, /top: calc\(var\(--gex-directory-sticky-top\) \+ var\(--invoice-filters-block-size,\s*96px\)\)/);
     assert.match(markup, /@ref="_invoiceDirectory"/);
     assert.match(markup, /@ref="_invoiceFilters"/);
     assert.match(code, /trackFilterHeight/);
