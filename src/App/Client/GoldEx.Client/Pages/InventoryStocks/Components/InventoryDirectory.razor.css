@@ -334,3 +334,13 @@
  .stock-card-head { padding-inline:9px; }
  .stock-card-footer { padding-inline:8px; }
 }
+
+/* Compact wage and vitrine state for mobile product cards. */
+@media (max-width:959.98px) {
+ .stock-card-product-meta { align-items:center; gap:6px 9px; padding-top:7px; }
+ .stock-card-product-meta .stock-card-wage { min-width:0; overflow-wrap:anywhere; color:var(--mud-palette-text-secondary); }
+ .stock-card-product-meta .stock-vitrine-chip { display:inline-flex; align-items:center; gap:5px; flex:none; max-width:100%; padding:3px 8px; border:1px solid var(--mud-palette-lines-default); border-radius:999px; background:var(--mud-palette-background); color:var(--mud-palette-text-secondary); font-size:.72rem; line-height:1.5; white-space:nowrap; }
+ .stock-vitrine-chip::before { content:""; width:6px; height:6px; flex:none; border-radius:50%; background:currentColor; opacity:.65; }
+ .stock-card-product-meta .stock-vitrine-chip.is-visible { border-color:color-mix(in srgb,var(--mud-palette-success) 30%,var(--mud-palette-lines-default)); background:color-mix(in srgb,var(--mud-palette-success) 8%,var(--mud-palette-surface)); color:var(--mud-palette-success); }
+ .stock-card-product-meta .stock-vitrine-chip.is-visible::before { opacity:1; }
+}
