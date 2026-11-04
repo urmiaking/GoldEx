@@ -230,6 +230,16 @@
                                 <span>تاریخ ری‌گیری: @(item.Product.MoltenGold?.AssayDate?.ToString("yyyy/MM/dd") ?? "—")</span>
                             </div>
                         }
+                        else if (item.Product is not null)
+                        {
+                            <div class="stock-card-meta stock-card-product-meta">
+                                <span class="stock-card-wage">@GetWageDisplay(item)</span>
+                                @if (CanShowVitrine(item))
+                                {
+                                    <span class="stock-vitrine-chip @(item.Product.ShowInVitrine ? "is-visible" : "is-hidden")">@(item.Product.ShowInVitrine ? "در ویترین" : "خارج از ویترین")</span>
+                                }
+                            </div>
+                        }
                         else if (item.Coin is not null)
                         {
                             <div class="stock-card-meta"><span>سال ضرب @GetCoinMintYear(item.Coin)</span></div>
