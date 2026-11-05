@@ -26,3 +26,8 @@
 - PaymentEditor.razor uses MudAutocomplete rather than MudSelect for the invoice cash-payment bank-account field. Keep OpenOnFocus=true so touching an already populated field opens its options.
 - SearchFinancialAccountsAsync returns all accounts for an empty query or the exact text of the currently selected account; typing a different query still filters. Otherwise focus can display only the already selected account.
 - Regression: scripts/tests/responsive-dialog-popovers.test.mjs plus existing bound-popover tests. Source tests do not replace authenticated mobile browser verification.
+## Autocomplete results behind mobile settlement dialog (2026-11-05)
+- MudAutocomplete search data in PaymentEditor is already loaded; popup visibility depends on placeDialogPopovers in the shared responsive-dialog.js.
+- A menu with a missing or out-of-wrapper MudPopover marker previously skipped positioning entirely. Resolve the marker's nearest .mud-select/.mud-autocomplete as usual, and for exactly one open popup fall back to the focused select/autocomplete inside the active modal panel, ignoring inert/hidden controls.
+- Position and constrain menus to the actual visualViewport (software keyboard) intersected with the modal header/footer bounds. Keep the MudPopoverProvider inside native dialog overlay; never move provider DOM outside the top layer.
+- Regression includes autocomplete-without-marker and keyboard-shrunken-viewport cases in scripts/tests/responsive-dialog-popover-bounds.test.mjs. Other popovers (e.g. date pickers) must remain unchanged. Confirm in an authenticated mobile browser after shipping.

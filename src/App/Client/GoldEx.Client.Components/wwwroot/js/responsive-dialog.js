@@ -112,22 +112,36 @@ function placeDialogPopovers(dialog) {
     const footer = panel.querySelector('.gex-editor-actions, .gex-customer-history-actions');
     const topMin = Math.max(box.top + 8, (header?.getBoundingClientRect().bottom ?? box.top) + 8);
     const bottomMax = Math.min(box.bottom - 8, (footer?.getBoundingClientRect().top ?? box.bottom) - 8);
-    const leftMin = Math.max(10, box.left + 8), rightMax = Math.min(window.innerWidth - 10, box.right - 8);
-    if (bottomMax - topMin < 36 || rightMax - leftMin < 40) return;
-    for (const popup of overlay.querySelectorAll('.mud-popover-open[id^="popovercontent-"]')) {
+    // The visual viewport shrinks when the phone keyboard is open.
+    // Keep suggestion lists clear of the keyboard as well as the dialog footer.
+    const visual = window.visualViewport;
+    const viewportLeft = visual?.offsetLeft ?? 0;
+    const viewportRight = viewportLeft + (visual?.width ?? window.innerWidth);
+    const viewportTop = visual?.offsetTop ?? 0;
+    const viewportBottom = viewportTop + (visual?.height ?? window.innerHeight);
+    const leftMin = Math.max(viewportLeft + 10, box.left + 8);
+    const rightMax = Math.min(viewportRight - 10, box.right - 8);
+    const usableTop = Math.max(topMin, viewportTop + 8);
+    const usableBottom = Math.min(bottomMax, viewportBottom - 8);
+    if (usableBottom - usableTop < 36 || rightMax - leftMin < 40) return;
+    const popovers = overlay.querySelectorAll('.mud-popover-open[id^="popovercontent-"]');
+    for (const popup of popovers) {
         const marker = document.getElementById('popover-' + popup.id.slice(15));
-        if (!marker || !panel.contains(marker)) continue;
-        const container = marker.parentElement, list = popup.querySelector('.mud-list');
-        // The MudPopover marker can be wrapped in a full-width container.
-        // Measure the actual SELECT input, not the popup or its portal parent.
-        const control = container?.closest('.mud-select, .mud-autocomplete');
-        if (!control || !list || control.closest('[inert], [hidden]')) continue;
+        const container = marker?.parentElement;
+        const list = popup.querySelector('.mud-list, [role="listbox"]');
+        // MudAutocomplete's marker may be outside the input wrapper.
+        // A single open menu can safely be attached to the focused field.
+        const control = container?.closest('.mud-select, .mud-autocomplete')
+            ?? marker?.closest?.('.mud-select, .mud-autocomplete')
+            ?? (popovers.length === 1 ? document.activeElement?.closest?.('.mud-autocomplete, .mud-select') : null);
+        if (!control || !panel.contains(control) || !list || control.closest('[inert], [hidden]')) continue;
+        if (marker && !panel.contains(marker) && popovers.length !== 1) continue;
         const anchor = control.getBoundingClientRect();
         if (!anchor.width || !anchor.height) continue;
         // Select menus should match their field, not expand to the whole dialog.
         const width = Math.min(anchor.width, rightMax - leftMin);
-        const below = Math.max(0, bottomMax - anchor.bottom - 4);
-        const above = Math.max(0, anchor.top - topMin - 4);
+        const below = Math.max(0, usableBottom - anchor.bottom - 4);
+        const above = Math.max(0, anchor.top - usableTop - 4);
         const natural = Math.max(48, list.scrollHeight || popup.scrollHeight || 180);
         // Desktop menus stay below their input with an internal scrollbar.
         // On a small screen, use the larger side when the full list will not fit.
@@ -140,7 +154,7 @@ function placeDialogPopovers(dialog) {
         if (!popup.classList.contains('gex-dialog-bound-popover'))
             popup.classList.add('gex-dialog-bound-popover');
         popup.style.setProperty('--gex-popup-left', Math.round(x) + 'px');
-        popup.style.setProperty('--gex-popup-top', Math.round(Math.max(topMin, y)) + 'px');
+        popup.style.setProperty('--gex-popup-top', Math.round(Math.max(usableTop, y)) + 'px');
         popup.style.setProperty('--gex-popup-height', Math.round(height) + 'px');
         popup.style.setProperty('--gex-popup-width', Math.round(width) + 'px');
     }
