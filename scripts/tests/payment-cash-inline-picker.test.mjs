@@ -9,14 +9,17 @@ const css = read('src/App/Client/GoldEx.Client/Pages/Invoices/Components/Payment
 const shared = read('src/App/Client/GoldEx.Client.Components/wwwroot/js/responsive-dialog.js');
 const cash = markup.slice(markup.indexOf('case PaymentType.InternalCash:'), markup.indexOf('case PaymentType.CustomerTransfer:'));
 
-test('cash account search results are in the dialog scroll flow rather than a portal', () => {
+test('cash account dropdown floats over the dialog without reserving layout space', () => {
   assert.match(cash, /<MudTextField T="string"/);
   assert.match(cash, /ValueChanged="OnCashAccountSearchChanged"/);
   assert.match(cash, /class="cash-account-options" role="listbox"/);
   assert.match(cash, /@onpointerdown="\(\) => ChooseCashAccount\(account\)"/);
   assert.doesNotMatch(cash, /<MudAutocomplete/);
+  assert.match(css, /\.cash-account-field-row \{[^}]*position:relative;[^}]*z-index:5/);
+  assert.match(css, /\.cash-account-picker \{[^}]*position:relative/);
+  assert.match(css, /\.cash-account-options \{[^}]*position:absolute;[^}]*top:calc\(100% \+ 4px\);[^}]*inset-inline:0/);
   assert.match(css, /\.cash-account-options \{[^}]*overflow-y:auto/);
-  assert.doesNotMatch(css, /\.cash-account-options[^}]*position:(?:fixed|absolute)/);
+  assert.doesNotMatch(css, /\.cash-account-options[^}]*position:fixed/);
 });
 test('typed account search filters and selection updates the financial account model', () => {
   assert.match(logic, /account\.Title\.Contains\(_cashAccountSearch, StringComparison\.InvariantCultureIgnoreCase\)/);

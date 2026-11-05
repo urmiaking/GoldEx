@@ -20,14 +20,15 @@
 .invoice-payment-direction-banner strong{font-size:.88rem;font-weight:500}
 .invoice-payment-direction-banner small{font-size:.74rem;color:var(--mud-palette-text-secondary);font-weight:400}
 
-/* In-flow cash account suggestions: the native modal owns clipping and scroll.
-   This does not use a MudPopover portal or fixed z-index overlays. */
-.cash-account-field-row { align-items:flex-start; min-width:0; }
+/* The cash account list is anchored to its field and overlays following inputs.
+   Absolute positioning avoids reflow without depending on a MudPopover portal. */
+.cash-account-field-row { position:relative; z-index:5; align-items:flex-start; min-width:0; }
 .cash-account-field-row ::deep .mud-icon-button { margin-block-start:4px; flex:none; }
-.cash-account-picker { min-width:0; flex:1 1 0; }
+.cash-account-picker { position:relative; z-index:1; min-width:0; flex:1 1 0; }
 .cash-account-picker ::deep .mud-input-control { width:100%; min-width:0; }
-.cash-account-options { display:flex; flex-direction:column; width:100%; max-height:min(220px, 34dvh);
-    overflow-y:auto; overscroll-behavior:contain; margin-block-start:6px; padding:5px;
+.cash-account-options { position:absolute; z-index:2; top:calc(100% + 4px); inset-inline:0;
+    box-sizing:border-box; display:flex; flex-direction:column; width:100%; max-height:min(220px, 34dvh);
+    overflow-y:auto; overscroll-behavior:contain; margin:0; padding:5px;
     border:1px solid var(--mud-palette-lines-default); border-radius:12px;
     background:var(--mud-palette-surface); box-shadow:0 5px 18px rgba(0,0,0,.10); }
 .cash-account-choice { flex:none; display:block; width:100%; min-height:40px; padding:9px 10px;

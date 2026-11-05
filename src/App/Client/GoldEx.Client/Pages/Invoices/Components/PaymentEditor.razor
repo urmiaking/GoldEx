@@ -154,7 +154,7 @@
                     case PaymentType.InternalCash:
                         <MudItem xs="12" md="6">
                             <div class="cash-account-field-row d-flex gap-2">
-                                @* A native in-flow list keeps results inside the dialog's scroll area. *@
+                                @* Cash account options overlay later fields without using the MudPopover portal. *@
                                 <div class="cash-account-picker" @onfocusin="OpenCashAccountOptions" @onfocusout="CloseCashAccountOptions" @onkeydown="OnCashAccountKeyDown">
                                     <MudTextField T="string"
                                                   Value="@_cashAccountSearch"
