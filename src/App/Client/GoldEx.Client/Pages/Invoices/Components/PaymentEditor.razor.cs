@@ -17,6 +17,7 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Utilities;
@@ -36,6 +37,63 @@ public partial class PaymentEditor
     [Inject] private ResponsiveDialogService ResponsiveDialogs { get; set; } = default!;
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
+    // Cash-account results live within the form scroll area, never in the popup portal.
+    private string _cashAccountSearch = string.Empty;
+    private bool _cashAccountOptionsOpen;
+    private bool _cashAccountInvalid;
+    private int _cashAccountHighlightIndex;
+
+    private IEnumerable<GetFinancialAccountTitleResponse> MatchingCashAccounts =>
+        (Model.FinancialAccounts ?? [])
+            .Where(account => string.IsNullOrWhiteSpace(_cashAccountSearch)
+                || string.Equals(_cashAccountSearch, Model.FinancialAccount?.Title,
+                    StringComparison.InvariantCultureIgnoreCase)
+                || account.Title.Contains(_cashAccountSearch, StringComparison.InvariantCultureIgnoreCase))
+            .Take(100);
+
+    private void OpenCashAccountOptions(FocusEventArgs _) => _cashAccountOptionsOpen = true;
+
+    private void CloseCashAccountOptions(FocusEventArgs _) => _cashAccountOptionsOpen = false;
+
+    private void OnCashAccountKeyDown(KeyboardEventArgs e)
+    {
+        if (!_cashAccountOptionsOpen) return;
+        var accounts = MatchingCashAccounts.ToArray();
+        switch (e.Key)
+        {
+            case "ArrowDown" when accounts.Length > 0:
+                _cashAccountHighlightIndex = (_cashAccountHighlightIndex + 1) % accounts.Length;
+                break;
+            case "ArrowUp" when accounts.Length > 0:
+                _cashAccountHighlightIndex = (_cashAccountHighlightIndex - 1 + accounts.Length) % accounts.Length;
+                break;
+            case "Enter" when accounts.Length > 0:
+                ChooseCashAccount(accounts[_cashAccountHighlightIndex % accounts.Length]);
+                break;
+            case "Escape":
+                _cashAccountOptionsOpen = false;
+                break;
+        }
+    }
+    private void OnCashAccountSearchChanged(string value)
+    {
+        _cashAccountSearch = value ?? string.Empty;
+        _cashAccountHighlightIndex = 0;
+        if (!string.Equals(_cashAccountSearch, Model.FinancialAccount?.Title,
+                StringComparison.InvariantCultureIgnoreCase))
+            Model.FinancialAccount = null;
+
+        _cashAccountOptionsOpen = true;
+        _cashAccountInvalid = false;
+    }
+
+    private void ChooseCashAccount(GetFinancialAccountTitleResponse account)
+    {
+        Model.FinancialAccount = account;
+        _cashAccountSearch = account.Title;
+        _cashAccountOptionsOpen = false;
+        _cashAccountInvalid = false;
+    }
     private List<GetCustomerResponse>? _customers;
     private List<GetTinyInvoiceResponse>? _invoices;
     private List<FinancialAccountVm> _customerFinancialAccounts = [];
@@ -143,6 +201,7 @@ public partial class PaymentEditor
             _checkImagePreviewUrl = Model.CheckImageUrl + $"?v={Random.Shared.Next()}";
         }
 
+        _cashAccountSearch = Model.FinancialAccount?.Title ?? string.Empty;
         if (Model.PaymentType is PaymentType.InternalCash && Model.FinancialAccounts == null)
             await LoadFinancialAccountsAsync();
 
@@ -178,8 +237,10 @@ public partial class PaymentEditor
     private async Task Submit()
     {
         await _form.ValidateAsync();
+        _cashAccountInvalid = Model.PaymentType is PaymentType.InternalCash
+            && !Model.VoucherId.HasValue && Model.FinancialAccount is null;
 
-        if (!_form.IsValid)
+        if (!_form.IsValid || _cashAccountInvalid)
             return;
 
         if (Model.CheckImageFile != null)
@@ -262,22 +323,6 @@ public partial class PaymentEditor
 
     #region FinancialAccounts
 
-    private async Task<IEnumerable<GetFinancialAccountTitleResponse?>> SearchFinancialAccountsAsync(string value, CancellationToken token)
-    {
-        // Ensure accounts are loaded  
-        if (Model.FinancialAccounts == null)
-        {
-            await LoadFinancialAccountsAsync();
-        }
-        // Refocusing a selected account should display all choices, not just itself.
-        var isSelectedText = string.Equals(value, Model.FinancialAccount?.Title,
-            StringComparison.InvariantCultureIgnoreCase);
-        return (string.IsNullOrEmpty(value) || isSelectedText
-            ? Model.FinancialAccounts
-            : Model.FinancialAccounts?.Where(acc => acc.Title.Contains(value,
-                StringComparison.InvariantCultureIgnoreCase))) ?? [];
-    }
-
     private async Task LoadFinancialAccountsAsync()
     {
         await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
@@ -308,6 +353,7 @@ public partial class PaymentEditor
         {
             await LoadFinancialAccountsAsync();
             Model.FinancialAccount = Model.FinancialAccounts?.FirstOrDefault(x => x.Id == financialAccount.Id);
+            _cashAccountSearch = Model.FinancialAccount?.Title ?? string.Empty;
             StateHasChanged();
         }
     }

@@ -40,17 +40,18 @@ test('select lists remain scrollable and viewport bounded on desktop and mobile'
     assert.match(markup, /<section\s+class="gex-modal-panel/);
 });
 
-test('invoice cash-account autocomplete opens on focus and offers all accounts when one is selected', () => {
+test('cash financial account suggestions are inline and do not require a MudPopover portal', () => {
     const payment = readFileSync(new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/PaymentEditor.razor', import.meta.url), 'utf8');
-    const logic = readFileSync(new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/PaymentEditor.razor.cs', import.meta.url), 'utf8');
-    const accountField = payment.match(/<MudAutocomplete @bind-Value="@Model\.FinancialAccount"[\s\S]*?\/>/)?.[0];
-    assert.ok(accountField, 'cash payment financial-account field exists');
-    assert.match(accountField, /OpenOnFocus="true"/);
-    assert.match(accountField, /SearchFunc="@SearchFinancialAccountsAsync"/);
-    assert.match(accountField, /Text="@Model\.FinancialAccount\?\.Title"/);
-    assert.match(accountField, /DebounceInterval="0"/);
-    assert.match(accountField, /ShowProgressIndicator="false"/);
-    assert.match(logic, /string\.Equals\(value, Model\.FinancialAccount\?\.Title,/);
-    assert.match(logic, /string\.IsNullOrEmpty\(value\) \|\| isSelectedText/);
-    assert.match(logic, /Model\.FinancialAccounts\?\.Where\(acc => acc\.Title\.Contains\(value,/);
+    const code = readFileSync(new URL('../../src/App/Client/GoldEx.Client/Pages/Invoices/Components/PaymentEditor.razor.cs', import.meta.url), 'utf8');
+    const section = payment.slice(payment.indexOf('case PaymentType.InternalCash:'), payment.indexOf('case PaymentType.CustomerTransfer:'));
+    assert.match(section, /<div class="cash-account-picker"/);
+    assert.match(section, /<MudTextField T="string"/);
+    assert.match(section, /Immediate="true"/);
+    assert.match(section, /<div class="cash-account-options" role="listbox"/);
+    assert.match(section, /@foreach \(var account in MatchingCashAccounts\)/);
+    assert.match(section, /@onpointerdown="\(\) => ChooseCashAccount\(account\)"/);
+    assert.match(section, /@onclick="\(\) => ChooseCashAccount\(account\)"/);
+    assert.doesNotMatch(section, /<MudAutocomplete/);
+    assert.match(code, /Model\.FinancialAccount = account/);
+    assert.match(code, /MatchingCashAccounts =>[\s\S]*?\.Where\(account =>/);
 });

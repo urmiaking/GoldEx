@@ -153,26 +153,48 @@
                 {
                     case PaymentType.InternalCash:
                         <MudItem xs="12" md="6">
-                            <div class="d-flex align-center gap-2">
-                                <MudAutocomplete @bind-Value="@Model.FinancialAccount"
-                                                 T="GetFinancialAccountTitleResponse ?"
-                                                 For="@(() => Model.FinancialAccount)"
-                                                 Label="@FinancialAccountLabelText"
-                                                 Margin="Margin.Dense"
-                                                 Disabled="Model.Disabled"
-                                                 InputClass="text-truncate"
-                                                 Variant="Variant.Outlined"
-                                                 DebounceInterval="0"
-                                                 Placeholder="جستجوی حساب مالی..."
-                                                 MaxItems="100"
-                                                 Text="@Model.FinancialAccount?.Title"
-                                                 ToStringFunc="@(acc => acc?.Title)"
-                                                 OpenOnFocus="true"
-                                                 Adornment="Adornment.Start"
-                                                 AdornmentIcon="@Icons.Material.Filled.Search"
-                                                 SearchFunc="@SearchFinancialAccountsAsync"
-                                                 ShowProgressIndicator="false"
-                                                 ResetValueOnEmptyText="true" />
+                            <div class="cash-account-field-row d-flex gap-2">
+                                @* A native in-flow list keeps results inside the dialog's scroll area. *@
+                                <div class="cash-account-picker" @onfocusin="OpenCashAccountOptions" @onfocusout="CloseCashAccountOptions" @onkeydown="OnCashAccountKeyDown">
+                                    <MudTextField T="string"
+                                                  Value="@_cashAccountSearch"
+                                                  ValueChanged="OnCashAccountSearchChanged"
+                                                  Label="@FinancialAccountLabelText"
+                                                  Margin="Margin.Dense"
+                                                  Disabled="Model.Disabled"
+                                                  Immediate="true"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                                  Variant="Variant.Outlined"
+                                                  Placeholder="جستجوی حساب مالی..." />
+                                    @if (_cashAccountOptionsOpen && !Model.Disabled)
+                                    {
+                                        <div class="cash-account-options" role="listbox" aria-label="حساب‌های مالی">
+                                            @if (MatchingCashAccounts.Any())
+                                            {
+                                                @foreach (var account in MatchingCashAccounts)
+                                                {
+                                                    <button type="button" class="cash-account-choice"
+                                                            role="option" aria-selected="@(Model.FinancialAccount?.Id == account.Id)"
+                                                            @onpointerdown="() => ChooseCashAccount(account)"
+                                                            @onpointerdown:preventDefault="true"
+                                                            @onmousedown:preventDefault="true"
+                                                            @onclick="() => ChooseCashAccount(account)">
+                                                        @account.Title
+                                                    </button>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="cash-account-empty">حسابی با این عبارت پیدا نشد.</div>
+                                            }
+                                        </div>
+                                    }
+                                    @if (_cashAccountInvalid)
+                                    {
+                                        <div class="cash-account-error" role="alert">وارد کردن حساب مالی الزامی است</div>
+                                    }
+                                </div>
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
                                                Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
                             </div>

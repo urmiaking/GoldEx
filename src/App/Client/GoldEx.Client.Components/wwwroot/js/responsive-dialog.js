@@ -1,4 +1,4 @@
-// Adapted from MeetFlow's native modal lifecycle. Browser modality owns inertness.
+﻿// Adapted from MeetFlow's native modal lifecycle. Browser modality owns inertness.
 const dialogs = new Map();
 let scrollStyles;
 
@@ -112,38 +112,22 @@ function placeDialogPopovers(dialog) {
     const footer = panel.querySelector('.gex-editor-actions, .gex-customer-history-actions');
     const topMin = Math.max(box.top + 8, (header?.getBoundingClientRect().bottom ?? box.top) + 8);
     const bottomMax = Math.min(box.bottom - 8, (footer?.getBoundingClientRect().top ?? box.bottom) - 8);
-    // The visual viewport shrinks when the phone keyboard is open.
-    // Keep suggestion lists clear of the keyboard as well as the dialog footer.
-    const visual = window.visualViewport;
-    const viewportLeft = visual?.offsetLeft ?? 0;
-    const viewportRight = viewportLeft + (visual?.width ?? window.innerWidth);
-    const viewportTop = visual?.offsetTop ?? 0;
-    const viewportBottom = viewportTop + (visual?.height ?? window.innerHeight);
-    const leftMin = Math.max(viewportLeft + 10, box.left + 8);
-    const rightMax = Math.min(viewportRight - 10, box.right - 8);
-    const usableTop = Math.max(topMin, viewportTop + 8);
-    const usableBottom = Math.min(bottomMax, viewportBottom - 8);
-    if (usableBottom - usableTop < 36 || rightMax - leftMin < 40) return;
-    // Link an open MudSelect/MudAutocomplete list to its visible active field.
-    // Autocomplete marker ids/wrappers differ from the Select markup.
-    const popovers = [...overlay.querySelectorAll('.mud-popover-open')];
-    const focused = document.activeElement?.closest?.('.mud-autocomplete, .mud-select');
-    for (const popup of popovers) {
-        const list = popup.querySelector('.mud-list, [role="listbox"]');
-        if (!list || popup.classList.contains('mud-tooltip')) continue;
-        const id = popup.id?.startsWith('popovercontent-') ? popup.id.slice(15) : null;
-        const marker = id ? document.getElementById('popover-' + id) : null;
-        const candidate = marker?.closest?.('.mud-autocomplete, .mud-select')
-            ?? marker?.parentElement?.closest?.('.mud-autocomplete, .mud-select');
-        const control = candidate && panel.contains(candidate) && !candidate.closest('[inert], [hidden]')
-            ? candidate : (focused && panel.contains(focused) && !focused.closest('[inert], [hidden]') ? focused : null);
-        if (!control) continue;
+    const leftMin = Math.max(10, box.left + 8), rightMax = Math.min(window.innerWidth - 10, box.right - 8);
+    if (bottomMax - topMin < 36 || rightMax - leftMin < 40) return;
+    for (const popup of overlay.querySelectorAll('.mud-popover-open[id^="popovercontent-"]')) {
+        const marker = document.getElementById('popover-' + popup.id.slice(15));
+        if (!marker || !panel.contains(marker)) continue;
+        const container = marker.parentElement, list = popup.querySelector('.mud-list');
+        // The MudPopover marker can be wrapped in a full-width container.
+        // Measure the actual SELECT input, not the popup or its portal parent.
+        const control = container?.closest('.mud-select, .mud-autocomplete');
+        if (!control || !list || control.closest('[inert], [hidden]')) continue;
         const anchor = control.getBoundingClientRect();
         if (!anchor.width || !anchor.height) continue;
         // Select menus should match their field, not expand to the whole dialog.
         const width = Math.min(anchor.width, rightMax - leftMin);
-        const below = Math.max(0, usableBottom - anchor.bottom - 4);
-        const above = Math.max(0, anchor.top - usableTop - 4);
+        const below = Math.max(0, bottomMax - anchor.bottom - 4);
+        const above = Math.max(0, anchor.top - topMin - 4);
         const natural = Math.max(48, list.scrollHeight || popup.scrollHeight || 180);
         // Desktop menus stay below their input with an internal scrollbar.
         // On a small screen, use the larger side when the full list will not fit.
@@ -155,20 +139,10 @@ function placeDialogPopovers(dialog) {
         const y = up ? anchor.top - 4 - Math.min(natural, height) : anchor.bottom + 4;
         if (!popup.classList.contains('gex-dialog-bound-popover'))
             popup.classList.add('gex-dialog-bound-popover');
-        const left = Math.round(x) + 'px', top = Math.round(Math.max(usableTop, y)) + 'px';
-        const maxHeight = Math.round(height) + 'px', popupWidth = Math.round(width) + 'px';
-        popup.style.setProperty('--gex-popup-left', left);
-        popup.style.setProperty('--gex-popup-top', top);
-        popup.style.setProperty('--gex-popup-height', maxHeight);
-        popup.style.setProperty('--gex-popup-width', popupWidth);
-        // Explicit inline placement overrides MudBlazor coordinates even if
-        // CSS isolation cannot reach the provider's dynamically rendered node.
-        for (const [name, value] of Object.entries({
-            position: 'fixed', top, left, width: popupWidth, 'min-width': '0',
-            'max-width': popupWidth, 'max-height': maxHeight, transform: 'none',
-        })) popup.style.setProperty(name, value, 'important');
-        list.style?.setProperty('max-height', maxHeight, 'important');
-        list.style?.setProperty('overflow-y', 'auto', 'important');
+        popup.style.setProperty('--gex-popup-left', Math.round(x) + 'px');
+        popup.style.setProperty('--gex-popup-top', Math.round(Math.max(topMin, y)) + 'px');
+        popup.style.setProperty('--gex-popup-height', Math.round(height) + 'px');
+        popup.style.setProperty('--gex-popup-width', Math.round(width) + 'px');
     }
 }
 
@@ -194,15 +168,5 @@ function watchDialogPopovers(dialog) {
         dialog.removeEventListener('scroll', schedule, true);
         ro?.disconnect();
         if (frame) window.cancelAnimationFrame(frame);
-        // MudPopoverProvider stays mounted even when the modal becomes inactive.
-        for (const popup of overlay.querySelectorAll('.gex-dialog-bound-popover')) {
-            popup.classList.remove('gex-dialog-bound-popover');
-            for (const prop of ['position', 'top', 'left', 'width', 'min-width', 'max-width', 'max-height',
-                'transform', '--gex-popup-left', '--gex-popup-top', '--gex-popup-height', '--gex-popup-width'])
-                popup.style.removeProperty(prop);
-            const list = popup.querySelector('.mud-list, [role="listbox"]');
-            list?.style?.removeProperty('max-height');
-            list?.style?.removeProperty('overflow-y');
-        }
     };
 }
