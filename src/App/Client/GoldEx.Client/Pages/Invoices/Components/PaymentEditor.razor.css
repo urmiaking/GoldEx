@@ -19,3 +19,27 @@
 .invoice-payment-direction-banner>div{display:grid;gap:4px}
 .invoice-payment-direction-banner strong{font-size:.88rem;font-weight:500}
 .invoice-payment-direction-banner small{font-size:.74rem;color:var(--mud-palette-text-secondary);font-weight:400}
+
+/* The cash account list is anchored to its field and overlays following inputs.
+   Absolute positioning avoids reflow without depending on a MudPopover portal. */
+.cash-account-field-row { position:relative; z-index:5; align-items:flex-start; min-width:0; }
+.cash-account-field-row ::deep .mud-icon-button { margin-block-start:4px; flex:none; }
+.cash-account-picker { position:relative; z-index:1; min-width:0; flex:1 1 0; }
+.cash-account-picker ::deep .mud-input-control { width:100%; min-width:0; }
+.cash-account-options { position:absolute; z-index:2; top:calc(100% + 4px); inset-inline:0;
+    box-sizing:border-box; display:flex; flex-direction:column; width:100%; max-height:min(220px, 34dvh);
+    overflow-y:auto; overscroll-behavior:contain; margin:0; padding:5px;
+    border:1px solid var(--mud-palette-lines-default); border-radius:12px;
+    background:var(--mud-palette-surface); box-shadow:0 5px 18px rgba(0,0,0,.10); }
+.cash-account-choice { flex:none; display:block; width:100%; min-height:40px; padding:9px 10px;
+    background:transparent; border:0; border-radius:8px; color:var(--mud-palette-text-primary);
+    font:inherit; font-size:.83rem; text-align:right; direction:rtl; overflow-wrap:anywhere;
+    cursor:pointer; }
+.cash-account-choice:hover, .cash-account-choice:focus-visible,
+.cash-account-choice[aria-selected="true"] { background:var(--mud-palette-action-default-hover); }
+.cash-account-choice:focus-visible { outline:2px solid var(--mud-palette-primary); outline-offset:-2px; }
+.cash-account-empty { padding:14px 8px; color:var(--mud-palette-text-secondary); font-size:.79rem; text-align:center; }
+.cash-account-error { padding:4px 10px 0; color:var(--mud-palette-error); font-size:.75rem; }
+@media (max-width:640px) {
+  .cash-account-options { max-height:min(200px, 30dvh); }
+}

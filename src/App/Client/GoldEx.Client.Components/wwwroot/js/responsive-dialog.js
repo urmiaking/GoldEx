@@ -1,4 +1,4 @@
-// Adapted from MeetFlow's native modal lifecycle. Browser modality owns inertness.
+﻿// Adapted from MeetFlow's native modal lifecycle. Browser modality owns inertness.
 const dialogs = new Map();
 let scrollStyles;
 
