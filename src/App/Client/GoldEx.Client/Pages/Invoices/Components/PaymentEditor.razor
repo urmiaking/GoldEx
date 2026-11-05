@@ -162,12 +162,16 @@
                                                  Disabled="Model.Disabled"
                                                  InputClass="text-truncate"
                                                  Variant="Variant.Outlined"
-                                                 DebounceInterval="500"
+                                                 DebounceInterval="0"
                                                  Placeholder="جستجوی حساب مالی..."
                                                  MaxItems="100"
+                                                 Text="@Model.FinancialAccount?.Title"
                                                  ToStringFunc="@(acc => acc?.Title)"
                                                  OpenOnFocus="true"
-                                                 SearchFunc="SearchFinancialAccountsAsync"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                                 SearchFunc="@SearchFinancialAccountsAsync"
+                                                 ShowProgressIndicator="false"
                                                  ResetValueOnEmptyText="true" />
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
                                                Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>

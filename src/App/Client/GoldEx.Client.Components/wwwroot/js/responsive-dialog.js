@@ -124,18 +124,20 @@ function placeDialogPopovers(dialog) {
     const usableTop = Math.max(topMin, viewportTop + 8);
     const usableBottom = Math.min(bottomMax, viewportBottom - 8);
     if (usableBottom - usableTop < 36 || rightMax - leftMin < 40) return;
-    const popovers = overlay.querySelectorAll('.mud-popover-open[id^="popovercontent-"]');
+    // Link an open MudSelect/MudAutocomplete list to its visible active field.
+    // Autocomplete marker ids/wrappers differ from the Select markup.
+    const popovers = [...overlay.querySelectorAll('.mud-popover-open')];
+    const focused = document.activeElement?.closest?.('.mud-autocomplete, .mud-select');
     for (const popup of popovers) {
-        const marker = document.getElementById('popover-' + popup.id.slice(15));
-        const container = marker?.parentElement;
         const list = popup.querySelector('.mud-list, [role="listbox"]');
-        // MudAutocomplete's marker may be outside the input wrapper.
-        // A single open menu can safely be attached to the focused field.
-        const control = container?.closest('.mud-select, .mud-autocomplete')
-            ?? marker?.closest?.('.mud-select, .mud-autocomplete')
-            ?? (popovers.length === 1 ? document.activeElement?.closest?.('.mud-autocomplete, .mud-select') : null);
-        if (!control || !panel.contains(control) || !list || control.closest('[inert], [hidden]')) continue;
-        if (marker && !panel.contains(marker) && popovers.length !== 1) continue;
+        if (!list || popup.classList.contains('mud-tooltip')) continue;
+        const id = popup.id?.startsWith('popovercontent-') ? popup.id.slice(15) : null;
+        const marker = id ? document.getElementById('popover-' + id) : null;
+        const candidate = marker?.closest?.('.mud-autocomplete, .mud-select')
+            ?? marker?.parentElement?.closest?.('.mud-autocomplete, .mud-select');
+        const control = candidate && panel.contains(candidate) && !candidate.closest('[inert], [hidden]')
+            ? candidate : (focused && panel.contains(focused) && !focused.closest('[inert], [hidden]') ? focused : null);
+        if (!control) continue;
         const anchor = control.getBoundingClientRect();
         if (!anchor.width || !anchor.height) continue;
         // Select menus should match their field, not expand to the whole dialog.
@@ -153,10 +155,20 @@ function placeDialogPopovers(dialog) {
         const y = up ? anchor.top - 4 - Math.min(natural, height) : anchor.bottom + 4;
         if (!popup.classList.contains('gex-dialog-bound-popover'))
             popup.classList.add('gex-dialog-bound-popover');
-        popup.style.setProperty('--gex-popup-left', Math.round(x) + 'px');
-        popup.style.setProperty('--gex-popup-top', Math.round(Math.max(usableTop, y)) + 'px');
-        popup.style.setProperty('--gex-popup-height', Math.round(height) + 'px');
-        popup.style.setProperty('--gex-popup-width', Math.round(width) + 'px');
+        const left = Math.round(x) + 'px', top = Math.round(Math.max(usableTop, y)) + 'px';
+        const maxHeight = Math.round(height) + 'px', popupWidth = Math.round(width) + 'px';
+        popup.style.setProperty('--gex-popup-left', left);
+        popup.style.setProperty('--gex-popup-top', top);
+        popup.style.setProperty('--gex-popup-height', maxHeight);
+        popup.style.setProperty('--gex-popup-width', popupWidth);
+        // Explicit inline placement overrides MudBlazor coordinates even if
+        // CSS isolation cannot reach the provider's dynamically rendered node.
+        for (const [name, value] of Object.entries({
+            position: 'fixed', top, left, width: popupWidth, 'min-width': '0',
+            'max-width': popupWidth, 'max-height': maxHeight, transform: 'none',
+        })) popup.style.setProperty(name, value, 'important');
+        list.style?.setProperty('max-height', maxHeight, 'important');
+        list.style?.setProperty('overflow-y', 'auto', 'important');
     }
 }
 
@@ -182,5 +194,15 @@ function watchDialogPopovers(dialog) {
         dialog.removeEventListener('scroll', schedule, true);
         ro?.disconnect();
         if (frame) window.cancelAnimationFrame(frame);
+        // MudPopoverProvider stays mounted even when the modal becomes inactive.
+        for (const popup of overlay.querySelectorAll('.gex-dialog-bound-popover')) {
+            popup.classList.remove('gex-dialog-bound-popover');
+            for (const prop of ['position', 'top', 'left', 'width', 'min-width', 'max-width', 'max-height',
+                'transform', '--gex-popup-left', '--gex-popup-top', '--gex-popup-height', '--gex-popup-width'])
+                popup.style.removeProperty(prop);
+            const list = popup.querySelector('.mud-list, [role="listbox"]');
+            list?.style?.removeProperty('max-height');
+            list?.style?.removeProperty('overflow-y');
+        }
     };
 }

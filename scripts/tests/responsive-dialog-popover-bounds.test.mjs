@@ -8,13 +8,13 @@ const js = readFileSync(new URL(root + 'wwwroot/js/responsive-dialog.js', import
 const css = readFileSync(new URL(root + 'Components/Dialogs/ResponsiveDialog.razor.css', import.meta.url), 'utf8');
 
 function fixture({ panel, headerBottom, footerTop, field, listHeight, viewportWidth = 1726, viewportHeight = 1000, visualViewport, isSelect = true, focusedAutocomplete = false, missingMarker = false }) {
-    const written = new Map(), classes = new Set(['mud-popover-open']);
+    const written = new Map(), priorities = new Map(), classes = new Set(['mud-popover-open']);
     const control = { getBoundingClientRect: () => field, closest: selector => selector.startsWith('[inert]') ? null : control };
     const marker = { parentElement: { closest: selector => isSelect && selector.includes('.mud-select') ? control : null } };
     const popup = {
         id: 'popovercontent-test',
         classList: { contains: value => classes.has(value), add: value => classes.add(value) },
-        style: { setProperty: (key, value) => written.set(key, value) },
+        style: { setProperty: (key, value, priority) => { written.set(key, value); priorities.set(key, priority); } },
         getBoundingClientRect: () => ({ width: 1132 }),
         querySelector: selector => selector.startsWith('.mud-list') ? { scrollHeight: listHeight } : null,
     };
@@ -34,7 +34,7 @@ function fixture({ panel, headerBottom, footerTop, field, listHeight, viewportWi
     vm.runInNewContext(js.replaceAll('export function ', 'function ') + '\nthis.position = placeDialogPopovers;', ctx);
     ctx.position(dialog);
     const num = key => Number.parseFloat(written.get('--gex-popup-' + key));
-    return { top: num('top'), left: num('left'), width: num('width'), height: num('height'), classes };
+    return { top: num('top'), left: num('left'), width: num('width'), height: num('height'), classes, styles: written, priorities };
 }
 
 test('desktop: dropdown stays immediately under its own 348px field, not the full-width modal', () => {
@@ -46,6 +46,12 @@ test('desktop: dropdown stays immediately under its own 348px field, not the ful
     assert.equal(f.top, 357);
     assert.ok(f.top + f.height <= 575);
     assert.ok(f.classes.has('gex-dialog-bound-popover'));
+    assert.equal(f.styles.get('position'), 'fixed');
+    assert.equal(f.styles.get('top'), f.top + 'px');
+    assert.equal(f.styles.get('left'), f.left + 'px');
+    assert.equal(f.styles.get('width'), f.width + 'px');
+    assert.equal(f.styles.get('transform'), 'none');
+    assert.equal(f.priorities.get('top'), 'important');
 });
 
 test('desktop: long dropdown stays below input with internal scroll before footer', () => {
@@ -76,7 +82,9 @@ test('other popovers, such as date pickers, are not modified', () => {
 });
 
 test('CSS sets exact popup width and bounds; observers are cleaned up', () => {
-    assert.match(js, /const control = container\?\.closest\('\.mud-select, \.mud-autocomplete'\)/);
+    assert.match(js, /const popovers = \[\.\.\.overlay\.querySelectorAll\('\.mud-popover-open'\)\]/);
+    assert.match(js, /const focused = document\.activeElement\?\.closest\?\./);
+    assert.match(js, /popup\.style\.setProperty\(name, value, 'important'\)/);
     assert.match(js, /Math\.min\(anchor\.width, rightMax - leftMin\)/);
     assert.match(js, /state\.stopDialogPopovers\?\.\(\)/);
     assert.match(css, /\.gex-dialog-bound-popover\s*\{[^}]*width: var\(--gex-popup-width\) !important;/);

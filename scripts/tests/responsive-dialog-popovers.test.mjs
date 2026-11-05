@@ -46,7 +46,10 @@ test('invoice cash-account autocomplete opens on focus and offers all accounts w
     const accountField = payment.match(/<MudAutocomplete @bind-Value="@Model\.FinancialAccount"[\s\S]*?\/>/)?.[0];
     assert.ok(accountField, 'cash payment financial-account field exists');
     assert.match(accountField, /OpenOnFocus="true"/);
-    assert.match(accountField, /SearchFunc="SearchFinancialAccountsAsync"/);
+    assert.match(accountField, /SearchFunc="@SearchFinancialAccountsAsync"/);
+    assert.match(accountField, /Text="@Model\.FinancialAccount\?\.Title"/);
+    assert.match(accountField, /DebounceInterval="0"/);
+    assert.match(accountField, /ShowProgressIndicator="false"/);
     assert.match(logic, /string\.Equals\(value, Model\.FinancialAccount\?\.Title,/);
     assert.match(logic, /string\.IsNullOrEmpty\(value\) \|\| isSelectedText/);
     assert.match(logic, /Model\.FinancialAccounts\?\.Where\(acc => acc\.Title\.Contains\(value,/);
