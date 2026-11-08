@@ -1203,3 +1203,11 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Razor nullable expressions for the customer's name must use explicit @(...), not implicit @object?.Property parsing, both in text and component attributes.
 - The print base now supports opt-out ShowDetailHeading and ShowNotes, both true by default so all other reports are unaffected. The customer print uses Data=_report (non-ICollection) to avoid redundant row counts, and opts out of those additional headings/notes.
 - Regression: run scripts/tests/customer-comprehensive-report.test.mjs, enterprise-report-print.test.mjs and full Node suite plus GoldEx.Server build. Keep dirty Dev worktree untouched.
+
+
+### MCP customer financial reporting (Issue #284)
+- GoldEx.Server/Mcp/GoldExMcpEngine.cs handles get_invoice_details, get_customer_balance and get_customer_statement within the enterprise server at its authenticated MCP HTTP endpoint.
+- Never use N0 or low-precision rounding for decimal gold amounts in MCP responses. Use McpFinancialReportFormatting.Exact for stored values.
+- For a date-filtered customer statement, fetch ledger history from inception through the inclusive end of the requested calendar day, then apply the start boundary in memory. This preserves historical running balances and correct opening balances, per unit.
+- The statement defaults to 200 rows per page, with optional page and pageSize arguments and accurate total counts. Never silently hide rows or describe a partial page as the complete ledger.
+- Keep existing MCP tool names/arguments backward compatible; pagination additions are optional. Do not mutate accounting entries to fix presentation bugs.
