@@ -53,6 +53,11 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         return Ok(result);
     }
 
+    [HttpGet(ApiRoutes.Reporting.GetCustomerComprehensive)]
+    public async Task<IActionResult> GetCustomerComprehensiveAsync(
+        [FromQuery] CustomerComprehensiveRpRequest request, CancellationToken cancellationToken = default)
+        => Ok(await service.GetCustomerComprehensiveAsync(request, cancellationToken));
+
     [HttpGet(ApiRoutes.Reporting.GetSellInvoices)]
     public async Task<IActionResult> GetSellInvoicesAsync(
         [FromQuery] SellInvoiceRpRequest request,

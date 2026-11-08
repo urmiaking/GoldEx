@@ -664,6 +664,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerTransactions)
                 .AppendQueryString(request);
 
+        public static string GetCustomerComprehensive(CustomerComprehensiveRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerComprehensive)
+                .AppendQueryString(request);
+
         public static string GetSellInvoices(SellInvoiceRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetSellInvoices)
                 .AppendQueryString(request);

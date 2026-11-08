@@ -38,6 +38,8 @@ public interface IReportingService
     /// <returns></returns>
     Task<List<CustomerTransactionRpResponse>> GetCustomerTransactionsAsync(CustomerTransactionRpRequest request, CancellationToken cancellationToken = default);
 
+    Task<CustomerComprehensiveRpResponse> GetCustomerComprehensiveAsync(CustomerComprehensiveRpRequest request, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Get sell invoice report
     /// </summary>

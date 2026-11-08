@@ -1,0 +1,194 @@
+@using GoldEx.Shared.DTOs.Reporting
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@using GoldEx.Sdk.Common.Extensions
+
+<div class="gex-customer-report" dir="rtl">
+    <section class="gex-customer-report-section">
+        <div class="gex-customer-report-section-head">
+            <h2>خلاصه پرونده مشتری</h2>
+            <span>@(CustomerName ?? "طرف حساب")</span>
+        </div>
+        <div class="gex-customer-kpis">
+            <div><small>فاکتور فروش</small><strong>@Data.Invoices.Count(x => x.InvoiceType == InvoiceType.Sell)</strong></div>
+            <div><small>فاکتور خرید</small><strong>@Data.Invoices.Count(x => x.InvoiceType == InvoiceType.Purchase)</strong></div>
+            <div><small>اسناد پرداخت فاکتور</small><strong>@Data.Payments.Count</strong></div>
+            <div><small>ردیف گردش حساب</small><strong>@Data.Transactions.Count</strong></div>
+        </div>
+        <div class="gex-customer-report-grid">
+            @foreach (var group in Data.Invoices.GroupBy(x => new { x.InvoiceType, x.PriceUnitTitle })
+                .OrderBy(x => x.Key.InvoiceType).ThenBy(x => x.Key.PriceUnitTitle))
+            {
+                <div class="gex-customer-total">
+                    <span>جمع @group.Key.InvoiceType.GetDisplayName() (@group.Count() فاکتور)</span>
+                    <strong>@group.Sum(x => x.TotalAmount).ToCurrencyFormat(group.Key.PriceUnitTitle)</strong>
+                </div>
+            }
+        </div>
+        <p class="gex-customer-report-note">ارزش فاکتورها حجم معاملات را نشان می‌دهد، نه بدهی مشتری؛ دریافت‌ها و پرداخت‌ها دوباره به این ارقام اضافه نشده‌اند.</p>
+    </section>
+
+    <section class="gex-customer-report-section">
+        <div class="gex-customer-report-section-head">
+            <h2>وضعیت نهایی حساب</h2>
+            <span>محاسبه‌شده از دفتر حسابداری</span>
+        </div>
+        @if (Data.Balances.Count == 0)
+        {
+            <p class="gex-customer-report-empty">مانده‌ای در دفتر حسابداری ثبت نشده است.</p>
+        }
+        else
+        {
+            <div class="gex-customer-report-grid">
+                @foreach (var balance in Data.Balances)
+                {
+                    <div class="gex-customer-total">
+                        <span>@balance.PriceUnitTitle</span>
+                        <strong class="@(balance.Amount > 0 ? "is-debit" : balance.Amount < 0 ? "is-credit" : "")">
+                            @FormatBalance(balance.Amount, balance.PriceUnitTitle)
+                        </strong>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="gex-customer-report-section">
+        <div class="gex-customer-report-section-head">
+            <h2>فاکتورهای فروش و خرید</h2>
+            <span>@Data.Invoices.Count فاکتور ثبت‌شده</span>
+        </div>
+        @if (Data.Invoices.Count == 0)
+        {
+            <p class="gex-customer-report-empty">فاکتوری در بازه انتخاب‌شده وجود ندارد.</p>
+        }
+        @foreach (var invoice in Data.Invoices)
+        {
+            <div class="gex-customer-invoice">
+                <div class="gex-customer-invoice-head">
+                    <div>
+                        <span class="gex-customer-invoice-type @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">@invoice.InvoiceType.GetDisplayName()</span>
+                        <strong>فاکتور @invoice.InvoiceNumber</strong>
+                        <small>@invoice.InvoiceDate.ToShortDateString()</small>
+                    </div>
+                    <div class="gex-customer-invoice-amount">@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnitTitle)</div>
+                </div>
+                @if (IncludeDetails && invoice.Items.Count > 0)
+                {
+                    <div class="gex-customer-report-table-wrap">
+                        <table class="gex-customer-report-table">
+                            <thead><tr><th>نوع کالا</th><th>شرح</th><th>تعداد/مقدار</th><th>وزن (گرم)</th><th>عیار</th><th>مبلغ (@invoice.PriceUnitTitle)</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in invoice.Items)
+                                {
+                                    <tr>
+                                        <td>@item.Category</td>
+                                        <td>@item.Description</td>
+                                        <td>@item.Quantity.ToString("N3")</td>
+                                        <td>@(item.Weight?.ToString("N3") ?? "—")</td>
+                                        <td>@(item.Fineness?.ToString("N1") ?? "—")</td>
+                                        <td>@item.Amount.ToCurrencyFormat(invoice.PriceUnitTitle)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                @if (invoice.DiscountAmount != 0 || invoice.ExtraCostAmount != 0)
+                {
+                    <p class="gex-customer-invoice-foot">
+                        تخفیف: @invoice.DiscountAmount.ToCurrencyFormat(invoice.PriceUnitTitle)
+                        <span> | </span>
+                        هزینه اضافه: @invoice.ExtraCostAmount.ToCurrencyFormat(invoice.PriceUnitTitle)
+                    </p>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="gex-customer-report-section">
+        <div class="gex-customer-report-section-head">
+            <h2>دریافت‌ها و پرداخت‌های فاکتورها</h2>
+            <span>@Data.Payments.Count سند</span>
+        </div>
+        <p class="gex-customer-report-note">این بخش جزئیات اسناد پرداخت فاکتورهاست؛ تسویه‌ها و حواله‌های مستقل در گردش حساب پایین گزارش قابل مشاهده‌اند.</p>
+        @if (Data.Payments.Count > 0)
+        {
+            <div class="gex-customer-report-table-wrap">
+                <table class="gex-customer-report-table">
+                    <thead><tr><th>تاریخ</th><th>فاکتور</th><th>روش</th><th>جهت</th><th>مبلغ</th><th>شماره پیگیری/توضیح</th></tr></thead>
+                    <tbody>
+                        @foreach (var payment in Data.Payments)
+                        {
+                            <tr>
+                                <td>@payment.PaymentDate.ToString("yyyy/MM/dd")</td>
+                                <td>@payment.InvoiceNumber</td>
+                                <td>@payment.PaymentType.GetDisplayName()</td>
+                                <td>@payment.PaymentSide.GetDisplayName()</td>
+                                <td>@payment.Amount.ToCurrencyFormat(payment.PriceUnitTitle)</td>
+                                <td>@(payment.ReferenceNumber ?? payment.Note ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="gex-customer-report-empty">سند پرداخت فاکتوری در این بازه وجود ندارد.</p>
+        }
+    </section>
+
+    <section class="gex-customer-report-section">
+        <div class="gex-customer-report-section-head">
+            <h2>گردش دفتر حسابداری</h2>
+            <span>@Data.Transactions.Count ردیف</span>
+        </div>
+        <p class="gex-customer-report-note">مرجع رسمی مانده‌ها؛ تراکنش‌های معکوس‌شده حذف شده‌اند. مانده هر ردیف بر اساس سوابق قبلی همان واحد حساب محاسبه می‌شود.</p>
+        @if (Data.Transactions.Count > 0)
+        {
+            <div class="gex-customer-report-table-wrap">
+                <table class="gex-customer-report-table">
+                    <thead><tr><th>تاریخ</th><th>شرح سند</th><th>مرجع</th><th>بدهکار</th><th>بستانکار</th><th>مانده</th></tr></thead>
+                    <tbody>
+                        @foreach (var line in Data.Transactions)
+                        {
+                            <tr>
+                                <td>@line.PostingDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td>@line.Description</td>
+                                <td class="gex-customer-reference">
+                                    @if (line.InvoiceId.HasValue) { <span>فاکتور</span> }
+                                    @if (line.InvoicePaymentId.HasValue) { <span>پرداخت فاکتور</span> }
+                                    @if (line.PaymentVoucherId.HasValue) { <span>سند پرداخت</span> }
+                                    @if (line.CustomerTransferVoucherId.HasValue) { <span>حواله مشتری</span> }
+                                    @if (!line.InvoiceId.HasValue && !line.InvoicePaymentId.HasValue &&
+                                         !line.PaymentVoucherId.HasValue && !line.CustomerTransferVoucherId.HasValue)
+                                    { <span>سند حسابداری</span> }
+                                </td>
+                                <td>@(line.TransactionType == TransactionType.Debit ? line.Amount.ToCurrencyFormat(line.PriceUnitTitle) : "—")</td>
+                                <td>@(line.TransactionType == TransactionType.Credit ? line.Amount.ToCurrencyFormat(line.PriceUnitTitle) : "—")</td>
+                                <td class="@(line.RunningBalance > 0 ? "is-debit" : line.RunningBalance < 0 ? "is-credit" : "")">
+                                    @FormatBalance(line.RunningBalance, line.PriceUnitTitle)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="gex-customer-report-empty">تراکنشی در این بازه وجود ندارد.</p>
+        }
+    </section>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CustomerComprehensiveRpResponse Data { get; set; } = default!;
+    [Parameter] public string? CustomerName { get; set; }
+    [Parameter] public bool IncludeDetails { get; set; } = true;
+
+    private static string FormatBalance(decimal value, string unit) =>
+        value == 0m ? 0m.ToCurrencyFormat(unit) :
+        $"{Math.Abs(value).ToCurrencyFormat(unit)} {(value > 0 ? "بدهکار" : "بستانکار")}";
+}

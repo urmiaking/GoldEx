@@ -1,0 +1,25 @@
+@using GoldEx.Client.Pages.Reporting.Components
+@attribute [Route(ClientRoutes.Reporting.Print.CustomerComprehensive)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@layout PrintLayout
+@inherits ReportPrintBase
+
+<link href="/css/reports/customer-comprehensive.css" rel="stylesheet" />
+
+@if (_report is null)
+{
+    <p role="alert" class="gex-customer-report-empty">تهیه گزارش انجام نشد. شناسه مشتری و اتصال به سامانه را بررسی کنید.</p>
+}
+else
+{
+    <ReportPrintBase Landscape="true" ShowSummary="false" ShowDateFilter="true"
+                     Data="@_report.Invoices"
+                     FromDate="@FromDate" ToDate="@ToDate"
+                     ReportTitle="@($"گزارش جامع معاملات {_customer?.FullName}")">
+        <CustomerComprehensiveDocument Data="_report"
+                                       CustomerName="_customer?.FullName"
+                                       IncludeDetails="IncludeDetails" />
+    </ReportPrintBase>
+}
+
+<script src="@Assets["js/report-print.js"]"></script>

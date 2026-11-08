@@ -154,6 +154,7 @@ public static class ClientRoutes
         public const string LedgerAccountTrialBalances = $"{ReportingPrefix}/ledger-account-trial-balances";
         public const string CustomerBalances = $"{ReportingPrefix}/customer-balances";
         public const string CustomerTransactions = $"{ReportingPrefix}/customer-transactions";
+        public const string CustomerComprehensive = $"{ReportingPrefix}/customer-comprehensive";
         public const string SellInvoices = $"{ReportingPrefix}/sell-invoices";
         public const string PurchaseInvoices = $"{ReportingPrefix}/purchase-invoices";
         public const string Payments = $"{ReportingPrefix}/payments";
@@ -174,6 +175,7 @@ public static class ClientRoutes
             public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
             public const string CustomerBalances = $"{PrintPrefix}/customer-balances";
             public const string CustomerTransactions = $"{PrintPrefix}/customer-transactions";
+            public const string CustomerComprehensive = $"{PrintPrefix}/customer-comprehensive";
             public const string SellInvoices = $"{PrintPrefix}/sell-invoices";
             public const string PurchaseInvoices = $"{PrintPrefix}/purchase-invoices";
             public const string Payments = $"{PrintPrefix}/payments";

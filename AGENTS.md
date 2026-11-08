@@ -1186,3 +1186,11 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Keep selection mapped to Model.FinancialAccount (GetFinancialAccountTitleResponse object), support both pointerdown and click (touch and keyboard), initial/reselected account text, newly added account, and manual required-account validation before Submit. Cash-account filtering is case-insensitive.
 - Restore shared responsive-dialog.js and its bounds tests from master (before 1.0.103 experiments) so CoinItemEditor and unrelated MudSelect/MudAutocomplete interactions do not inherit speculative positioning code.
 - See PaymentEditor.razor[.cs/.css] and scripts/tests/payment-cash-inline-picker.test.mjs. The authenticated browser still needs visual verification after local run.
+
+### Customer Comprehensive Report (#278, 2026-11-08)
+- Independent customer dossier under Reporting.CustomerComprehensive plus its print route; preserve the original customer ledger report.
+- Customer invoices and item/payment details come from IInvoiceRepository; authoritative balances come only from ITransactionRepository.GetCustomerTransactionsAsync.
+- To retain opening balances when date-filtering, fetch history from the beginning through ToDate before filtering visible rows by FromDate. Do not add documentary payment/invoice amounts into account balances.
+- Group commercial totals by InvoiceType and PriceUnitTitle, never mixing cash and gold units.
+- CustomerComprehensiveDocument.razor is shared between screen and enterprise print pages (ReportPrintBase and report-print.js). The dedicated stylesheet lives in Server/wwwroot/css/reports.
+- The incomplete local Dev molten-gold work is untouched; work was carried out on a clean origin/master worktree.
