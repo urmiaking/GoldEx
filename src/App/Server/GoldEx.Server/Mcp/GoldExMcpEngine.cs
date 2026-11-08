@@ -260,7 +260,9 @@ public class GoldExMcpEngine(
                         ["customerId"] = new() { Type = "string", Description = "شناسه مشتری" },
                         ["customerName"] = new() { Type = "string", Description = "نام مشتری در صورت نداشتن شناسه" },
                         ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع (شمسی مثلاً 1404/01/01 یا میلادی)" },
-                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان (شمسی مثلاً 1404/05/30 یا میلادی)" }
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان (شمسی مثلاً 1404/05/30 یا میلادی، شامل کل روز پایان)" },
+                        ["page"] = new() { Type = "integer", Description = "صفحه صورتحساب (پیش‌فرض ۱)" },
+                        ["pageSize"] = new() { Type = "integer", Description = "تعداد تراکنش هر صفحه (پیش‌فرض ۲۰۰، حداکثر ۵۰۰)" }
                     }
                 }
             },
@@ -775,7 +777,7 @@ public class GoldExMcpEngine(
                 _ => "⚪ تسویه"
             };
 
-            var formattedAmount = Math.Abs(b.Amount).ToString("N2");
+            var formattedAmount = McpFinancialReportFormatting.Exact(Math.Abs(b.Amount));
             sb.AppendLine($"| {b.PriceUnit.Title} | **{formattedAmount}** | {status} |");
         }
 
@@ -854,18 +856,14 @@ public class GoldExMcpEngine(
     private async Task<McpContentResult> ExecuteGetCustomerStatementAsync(JsonElement args, CancellationToken ct)
     {
         Guid? customerId = null;
-
         if (args.TryGetProperty("customerId", out var cidProp) && Guid.TryParse(cidProp.GetString(), out var parsedId))
         {
             customerId = parsedId;
         }
         else if (args.TryGetProperty("customerName", out var cnameProp))
         {
-            var name = cnameProp.GetString();
-            var matches = await customerService.GetByNameAsync(name, null, ct);
-            var first = matches.FirstOrDefault();
-            if (first != null)
-                customerId = first.Id;
+            var matches = await customerService.GetByNameAsync(cnameProp.GetString(), null, ct);
+            customerId = matches.FirstOrDefault()?.Id;
         }
 
         if (!customerId.HasValue)
@@ -873,27 +871,72 @@ public class GoldExMcpEngine(
 
         var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
         var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var start = ParseDate(fromDateStr)?.Date;
+        var end = ParseDate(toDateStr)?.Date;
 
-        var start = ParseDate(fromDateStr);
-        var end = ParseDate(toDateStr);
+        if ((!string.IsNullOrWhiteSpace(fromDateStr) && !start.HasValue) ||
+            (!string.IsNullOrWhiteSpace(toDateStr) && !end.HasValue))
+            return McpContentResult.Text("فرمت تاریخ شروع یا پایان معتبر نیست.", isError: true);
+        if (start.HasValue && end.HasValue && start > end)
+            return McpContentResult.Text("تاریخ شروع نمی‌تواند پس از تاریخ پایان باشد.", isError: true);
 
-        var request = new CustomerTransactionRpRequest(customerId.Value, null, null, start, end);
-        var transactions = await reportingService.GetCustomerTransactionsAsync(request, ct);
+        // The repository uses an inclusive <= ToDate predicate. Include the entire final day.
+        var throughEnd = McpFinancialReportFormatting.EndOfDay(end);
+        var fullHistory = await reportingService.GetCustomerTransactionsAsync(
+            new CustomerTransactionRpRequest(customerId.Value, null, null, null, throughEnd), ct);
 
-        if (transactions.Count == 0)
-            return McpContentResult.Text("هیچ تراکنشی برای این مشتری در بازه زمانی مورد نظر ثبت نشده است.");
+        // Preserve the repository's cumulative balance by filtering only AFTER fetching history.
+        var visible = fullHistory.Where(t => !start.HasValue || t.PostingDate >= start.Value).ToList();
+        var opening = fullHistory
+            .Where(t => start.HasValue && t.PostingDate < start.Value)
+            .GroupBy(t => t.PriceUnitTitle)
+            .ToDictionary(g => g.Key, g => g.Last().RunningBalance);
+        var closing = fullHistory.GroupBy(t => t.PriceUnitTitle)
+            .ToDictionary(g => g.Key, g => g.Last().RunningBalance);
+
+        var page = args.TryGetProperty("page", out var pgProp) && pgProp.TryGetInt32(out var pg)
+            ? Math.Clamp(pg, 1, 100_000) : 1;
+        var pageSize = args.TryGetProperty("pageSize", out var psProp) && psProp.TryGetInt32(out var ps)
+            ? Math.Clamp(ps, 1, 500) : 200;
+        var pageCount = Math.Max(1, (int)Math.Ceiling((double)visible.Count / pageSize));
+        var skipLong = ((long)page - 1) * pageSize;
+        var pageRows = skipLong >= visible.Count
+            ? new List<CustomerTransactionRpResponse>()
+            : visible.Skip((int)skipLong).Take(pageSize).ToList();
 
         var sb = new StringBuilder();
-        sb.AppendLine($"### 📜 ریز تراکنش‌های دفتر کل مشتری ({transactions.Count} تراکنش):");
-        sb.AppendLine("| تاریخ | شرح تراکنش | بدهکار | بستانکار | مانده | واحد |");
-        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- |");
+        sb.AppendLine($"### 📜 ریز تراکنش‌های دفتر کل مشتری ({visible.Count} تراکنش در بازه):");
+        sb.AppendLine($"- **صفحه:** {page} از {pageCount} | **نمایش:** {pageRows.Count} از {visible.Count} تراکنش");
+        if (page < pageCount)
+            sb.AppendLine($"- ⚠️ این گزارش کامل نیست؛ برای ادامه، ابزار get_customer_statement را با همان فیلترها و page={page + 1} و pageSize={pageSize} فراخوانی کنید.");
+        else if (page > pageCount)
+            sb.AppendLine("- ⚠️ شماره صفحه از تعداد صفحات موجود بیشتر است.");
 
-        foreach (var t in transactions.Take(50))
+        sb.AppendLine("- **مانده افتتاحیه و اختتامیه (به تفکیک واحد):**");
+        if (closing.Count == 0)
+            sb.AppendLine("  - هیچ تراکنشی برای این مشتری ثبت نشده است.");
+        else
+            foreach (var unit in closing.Keys.OrderBy(x => x))
+            {
+                var openingValue = opening.GetValueOrDefault(unit);
+                var closingValue = closing[unit];
+                sb.AppendLine($"  - {unit}: افتتاحیه **{McpFinancialReportFormatting.Exact(openingValue)}**، اختتامیه **{McpFinancialReportFormatting.Exact(closingValue)}** ({McpFinancialReportFormatting.BalanceStatus(closingValue)})");
+            }
+
+        if (visible.Count == 0)
+        {
+            sb.AppendLine("هیچ تراکنشی برای مشتری در بازه زمانی انتخاب‌شده وجود ندارد؛ مانده‌های بالا مربوط به حساب تا تاریخ پایان هستند.");
+            return McpContentResult.Text(sb.ToString());
+        }
+
+        sb.AppendLine("| تاریخ | شرح تراکنش | بدهکار | بستانکار | مانده واقعی حساب | واحد |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- |");
+        foreach (var t in pageRows)
         {
             var dateStr = t.PostingDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
-            var debitStr = t.TransactionType == TransactionType.Debit ? t.Amount.ToString("N2") : "-";
-            var creditStr = t.TransactionType == TransactionType.Credit ? t.Amount.ToString("N2") : "-";
-            sb.AppendLine($"| {dateStr} | {t.Description} | {debitStr} | {creditStr} | {t.RunningBalance:N2} | {t.PriceUnitTitle} |");
+            var debitStr = t.TransactionType == TransactionType.Debit ? McpFinancialReportFormatting.Exact(t.Amount) : "-";
+            var creditStr = t.TransactionType == TransactionType.Credit ? McpFinancialReportFormatting.Exact(t.Amount) : "-";
+            sb.AppendLine($"| {dateStr} | {t.Description} | {debitStr} | {creditStr} | {McpFinancialReportFormatting.Exact(t.RunningBalance)} | {t.PriceUnitTitle} |");
         }
 
         return McpContentResult.Text(sb.ToString());
@@ -1384,14 +1427,14 @@ public class GoldExMcpEngine(
 
         // 2. Financial Summary
         sb.AppendLine("\n### 💰 خلاصه مالی فاکتور:");
-        sb.AppendLine($"- **جمع کل ناخالص اقلام:** {invoice.TotalAmount:N0} {unitTitle}");
+        sb.AppendLine($"- **جمع کل ناخالص اقلام:** {McpFinancialReportFormatting.Exact(invoice.TotalAmount)} {unitTitle}");
         if (invoice.TotalDiscountAmount > 0)
-            sb.AppendLine($"- **تخفیف:** {invoice.TotalDiscountAmount:N0} {unitTitle}");
+            sb.AppendLine($"- **تخفیف:** {McpFinancialReportFormatting.Exact(invoice.TotalDiscountAmount)} {unitTitle}");
         if (invoice.TotalExtraCostAmount > 0)
-            sb.AppendLine($"- **هزینه‌های اضافی:** {invoice.TotalExtraCostAmount:N0} {unitTitle}");
-        sb.AppendLine($"- **مبلغ نهایی فاکتور:** **{invoice.TotalAmountWithDiscountsAndExtraCosts:N0} {unitTitle}**");
-        sb.AppendLine($"- **مجموع پرداختی و تسویه‌ها:** {invoice.TotalPaidAmount:N0} {unitTitle}");
-        sb.AppendLine($"- **مانده تسویه‌نشده:** **{invoice.TotalUnpaidAmount:N0} {unpaidUnitTitle}** " + (invoice.TotalUnpaidAmount <= 0 ? "🟢 (تسویه کامل)" : "🔴 (دارای مانده)"));
+            sb.AppendLine($"- **هزینه‌های اضافی:** {McpFinancialReportFormatting.Exact(invoice.TotalExtraCostAmount)} {unitTitle}");
+        sb.AppendLine($"- **مبلغ نهایی فاکتور:** **{McpFinancialReportFormatting.Exact(invoice.TotalAmountWithDiscountsAndExtraCosts)} {unitTitle}**");
+        sb.AppendLine($"- **مجموع پرداختی و تسویه‌ها:** {McpFinancialReportFormatting.Exact(invoice.TotalPaidAmount)} {unitTitle}");
+        sb.AppendLine($"- **مانده تسویه‌نشده:** **{McpFinancialReportFormatting.Exact(invoice.TotalUnpaidAmount)} {unpaidUnitTitle}** " + (invoice.TotalUnpaidAmount <= 0 ? "🟢 (تسویه کامل)" : "🔴 (دارای مانده)"));
 
         // 3. Product Items (Gold & Jewelry)
         if (invoice.InvoiceProductItems?.Count > 0)
@@ -1402,9 +1445,9 @@ public class GoldExMcpEngine(
             int idx = 1;
             foreach (var itm in invoice.InvoiceProductItems)
             {
-                var wageStr = itm.SaleWageType == WageType.Percent ? $"{itm.SaleWage}%" : $"{itm.ItemWageAmount:N0}";
+                var wageStr = itm.SaleWageType == WageType.Percent ? $"{itm.SaleWage}% ({McpFinancialReportFormatting.Exact(itm.ItemWageAmount)} {unitTitle})" : $"{McpFinancialReportFormatting.Exact(itm.ItemWageAmount)}";
                 var barcode = !string.IsNullOrEmpty(itm.Product?.Barcode) ? $"`{itm.Product.Barcode}`" : "-";
-                sb.AppendLine($"| {idx++} | {itm.Product?.Name ?? "کالای طلا"} | {barcode} | {itm.TotalWeight:N3} | {itm.Product?.Fineness} | {itm.GramPrice:N0} | {wageStr} | {itm.ItemProfitAmount:N0} | {itm.ItemTaxAmount:N0} | **{itm.ItemFinalAmount:N0} {unitTitle}** |");
+                sb.AppendLine($"| {idx++} | {itm.Product?.Name ?? "کالای طلا"} | {barcode} | {itm.TotalWeight:N3} | {itm.Product?.Fineness} | {McpFinancialReportFormatting.Exact(itm.GramPrice)} | {wageStr} | {McpFinancialReportFormatting.Exact(itm.ItemProfitAmount)} | {McpFinancialReportFormatting.Exact(itm.ItemTaxAmount)} | **{McpFinancialReportFormatting.Exact(itm.ItemFinalAmount)} {unitTitle}** |");
             }
         }
 
@@ -1418,7 +1461,7 @@ public class GoldExMcpEngine(
             foreach (var ug in invoice.InvoiceUsedProducts)
             {
                 var status = ug.IsBroken ? "شکسته" : "سالم";
-                sb.AppendLine($"| {idx++} | {ug.Description} | {ug.Weight:N3} | {ug.Fineness} | {ug.FinenessDeductionRate} | {ug.GramPrice:N0} | {status} | **{ug.ItemAmount:N0} {unitTitle}** |");
+                sb.AppendLine($"| {idx++} | {ug.Description} | {ug.Weight:N3} | {ug.Fineness} | {ug.FinenessDeductionRate} | {McpFinancialReportFormatting.Exact(ug.GramPrice)} | {status} | **{McpFinancialReportFormatting.Exact(ug.ItemAmount)} {unitTitle}** |");
             }
         }
 
@@ -1433,7 +1476,7 @@ public class GoldExMcpEngine(
             {
                 var total = c.Quantity * c.UnitPrice;
                 var coinTitle = c.Coin?.Coin?.Title ?? "سکه";
-                sb.AppendLine($"| {idx++} | {coinTitle} | {c.Quantity} | {c.UnitPrice:N0} | {c.ProfitPercent}% | **{total:N0} {unitTitle}** |");
+                sb.AppendLine($"| {idx++} | {coinTitle} | {c.Quantity} | {McpFinancialReportFormatting.Exact(c.UnitPrice)} | {c.ProfitPercent}% | **{McpFinancialReportFormatting.Exact(total)} {unitTitle}** |");
             }
         }
 
@@ -1447,7 +1490,7 @@ public class GoldExMcpEngine(
             foreach (var cur in invoice.InvoiceCurrencyItems)
             {
                 var total = cur.Amount * cur.UnitPrice;
-                sb.AppendLine($"| {idx++} | {cur.Currency?.Title ?? "ارز"} | {cur.Amount:N2} | {cur.UnitPrice:N0} | **{total:N0} {unitTitle}** |");
+                sb.AppendLine($"| {idx++} | {cur.Currency?.Title ?? "ارز"} | {cur.Amount:N2} | {McpFinancialReportFormatting.Exact(cur.UnitPrice)} | **{McpFinancialReportFormatting.Exact(total)} {unitTitle}** |");
             }
         }
 
@@ -1467,7 +1510,7 @@ public class GoldExMcpEngine(
                     : "";
                 var noteStr = $"{p.Note ?? ""} {checkDetails}".Trim();
 
-                sb.AppendLine($"| {idx++} | {pTypeStr} | {accTitle} | **{p.Amount:N0}** | {p.PriceUnit?.Title} | {p.ReferenceNumber ?? "-"} | {noteStr} |");
+                sb.AppendLine($"| {idx++} | {pTypeStr} | {accTitle} | **{McpFinancialReportFormatting.Exact(p.Amount)}** | {p.PriceUnit?.Title} | {p.ReferenceNumber ?? "-"} | {noteStr} |");
             }
         }
 
