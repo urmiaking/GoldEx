@@ -47,3 +47,42 @@ test('screen and print share one document and GoldEx print infrastructure', () =
  const css = src('Server/GoldEx.Server/wwwroot/css/reports/customer-comprehensive.css');
  for(const value of ['@media print','table-header-group','break-inside: avoid']) assert.ok(css.includes(value),value);
 });
+
+test('summary has trade totals and balances without meaningless document counts', () => {
+ const doc = src('Client/GoldEx.Client/Pages/Reporting/Components/CustomerComprehensiveDocument.razor');
+ for (const text of ['gex-customer-overview', 'x.InvoiceType, x.PriceUnitTitle', 'Data.Balances']) {
+  assert.ok(doc.includes(text), text);
+ }
+ for (const text of ['ردیف گردش حساب', 'اسناد پرداخت فاکتور', 'مرجع رسمی مانده‌ها', 'تراکنش‌های معکوس‌شده حذف شده‌اند', 'gex-customer-kpis']) {
+  assert.ok(!doc.includes(text), text);
+ }
+});
+test('one grouped invoice table with invoice and item rows, plus one financial table', () => {
+ const doc = src('Client/GoldEx.Client/Pages/Reporting/Components/CustomerComprehensiveDocument.razor');
+ assert.equal(doc.split('<table ').length - 1, 2);
+ for (const text of [
+  'gex-customer-invoices-table', '@foreach (var invoice in Data.Invoices)',
+  '<tbody class="gex-customer-invoice-group">', 'gex-customer-invoice-group-heading',
+  '@foreach (var item in invoice.Items)', 'gex-customer-invoice-adjustments',
+  'Data.Payments', 'Data.Transactions', 'paymentsWithLedger.Contains(x.Id)'
+ ]) assert.ok(doc.includes(text), text);
+});
+test('explicit nullable customer name interpolation and selectable portrait/landscape printing', () => {
+ const view = src('Client/GoldEx.Client/Pages/Reporting/Pages/Reports/CustomerComprehensive.razor');
+ const viewCode = src('Client/GoldEx.Client/Pages/Reporting/Pages/Reports/CustomerComprehensive.razor.cs');
+ const print = src('Client/GoldEx.Client/Pages/Reporting/Pages/Prints/CustomerComprehensiveReportPrint.razor');
+ const printCode = src('Client/GoldEx.Client/Pages/Reporting/Pages/Prints/CustomerComprehensiveReportPrint.razor.cs');
+ const template = src('Client/GoldEx.Client/Pages/Reporting/Components/ReportPrintBase.razor');
+ for (const text of ['<p>@(_customer?.FullName)</p>', 'CustomerName="@(_customer?.FullName)"', '<select @bind="_printLandscape"']) {
+  assert.ok(view.includes(text), text);
+ }
+ for (const text of ['CustomerName="@(_customer?.FullName)"', 'Landscape="@LandscapeMode"', 'ShowDetailHeading="false" ShowNotes="false"', 'Data="@_report"']) {
+  assert.ok(print.includes(text), text);
+ }
+ assert.ok(viewCode.includes('landscape = _printLandscape'));
+ assert.ok(printCode.includes('SupplyParameterFromQuery(Name = "landscape")'));
+ for (const text of [
+  '[Parameter] public bool ShowDetailHeading { get; set; } = true;',
+  '[Parameter] public bool ShowNotes { get; set; } = true;'
+ ]) assert.ok(template.includes(text), text);
+});

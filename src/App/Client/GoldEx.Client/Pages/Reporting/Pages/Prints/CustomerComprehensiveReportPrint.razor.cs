@@ -9,6 +9,7 @@ public partial class CustomerComprehensiveReportPrint
 {
     [Parameter, SupplyParameterFromQuery(Name = "customerId")] public Guid CustomerId { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "includeDetails")] public bool IncludeDetails { get; set; } = true;
+    [Parameter, SupplyParameterFromQuery(Name = "landscape")] public bool LandscapeMode { get; set; } = true;
 
     private CustomerComprehensiveRpResponse? _report;
     private GetCustomerResponse? _customer;

@@ -12,12 +12,13 @@
 }
 else
 {
-    <ReportPrintBase Landscape="true" ShowSummary="false" ShowDateFilter="true"
-                     Data="@_report.Invoices"
+    <ReportPrintBase Landscape="@LandscapeMode" ShowSummary="false" ShowDateFilter="true"
+                     ShowDetailHeading="false" ShowNotes="false"
+                     Data="@_report"
                      FromDate="@FromDate" ToDate="@ToDate"
                      ReportTitle="@($"گزارش جامع معاملات {_customer?.FullName}")">
         <CustomerComprehensiveDocument Data="_report"
-                                       CustomerName="_customer?.FullName"
+                                       CustomerName="@(_customer?.FullName)"
                                        IncludeDetails="IncludeDetails" />
     </ReportPrintBase>
 }
