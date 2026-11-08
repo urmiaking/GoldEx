@@ -73,7 +73,7 @@
                                     <span class="gex-customer-invoice-type @(invoice.InvoiceType == InvoiceType.Sell ? "is-sale" : "is-purchase")">
                                         @invoice.InvoiceType.GetDisplayName()
                                     </span>
-                                    <span class="gex-customer-group-count">@invoice.Items.Count قلم</span>
+                                    <span class="gex-customer-group-count">@invoice.ItemCount قلم</span>
                                 </td>
                                 <td class="gex-customer-amount">@invoice.TotalAmount.ToCurrencyFormat(invoice.PriceUnitTitle)</td>
                             </tr>

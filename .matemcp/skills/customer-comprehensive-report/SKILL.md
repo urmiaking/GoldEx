@@ -18,3 +18,8 @@ Full customer dossier with invoice sources, line details, payments, and official
 - Use one chronological ledger/payments table without double-counting posted payments. Show unmatched payment documents as documentary rows without fabricating accounting debit/credit.
 - Nullable Razor customer names require @(_customer?.FullName) explicitly in text/parameter attributes.
 - The view has an explicit portrait/landscape selector, forwarded as landscape query parameter into ReportPrintBase. In print, suppress its redundant detail-heading and notes without changing defaults used by other reports.
+
+## Correct printing and summary item count (#282)
+- Bind the HTML orientation selector to a string with stable landscape / portrait option values, never to a bool with lower-case HTML values. Send landscape = _printOrientation == "landscape" to the existing bool print query parameter.
+- IncludeDetails=false deliberately returns an empty Items list. Never display Items.Count as the number of invoice items; the API returns ItemCount computed from ProductItems+UsedProducts+CoinItems+CurrencyItems before materializing optional details.
+- Do not merge this fix until the user verifies it against their local database in the browser.
