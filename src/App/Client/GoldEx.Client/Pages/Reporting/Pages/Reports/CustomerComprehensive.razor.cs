@@ -20,7 +20,9 @@ public partial class CustomerComprehensive
     private GetCustomerResponse? _customer;
     private bool _loading;
     private bool _failed;
-    private bool _printLandscape = true;
+    // Native HTML option values are case-sensitive: bind a string rather than a bool
+    // (Blazor renders bool values as True/False while the previous options used true/false).
+    private string _printOrientation = "landscape";
     private Guid? _loadedCustomer;
 
     protected override async Task OnParametersSetAsync()
@@ -74,7 +76,7 @@ public partial class CustomerComprehensive
             start = _filters.DateRange?.Start?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             end = _filters.DateRange?.End?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             includeDetails = _filters.IncludeDetails,
-            landscape = _printLandscape
+            landscape = _printOrientation == "landscape"
         });
         await JS.InvokeVoidAsync("openReportPopup", Navigation.ToAbsoluteUri(url).ToString());
     }

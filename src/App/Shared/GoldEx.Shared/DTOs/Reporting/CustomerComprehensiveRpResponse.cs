@@ -19,7 +19,8 @@ public sealed record CustomerComprehensiveInvoice(
     decimal TotalAmount,
     decimal DiscountAmount,
     decimal ExtraCostAmount,
-    List<CustomerComprehensiveItem> Items);
+    List<CustomerComprehensiveItem> Items,
+    int ItemCount);
 
 public sealed record CustomerComprehensiveItem(
     string Category,

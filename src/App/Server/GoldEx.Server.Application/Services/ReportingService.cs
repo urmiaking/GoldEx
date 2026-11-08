@@ -120,7 +120,9 @@ internal class ReportingService(
                             "ارز", i.Currency?.Title ?? "ارز", i.Amount,
                             null, null, i.ItemFinalAmount)))
                         .ToList()
-                    : new List<CustomerComprehensiveItem>()))
+                    : new List<CustomerComprehensiveItem>(),
+                // Summary mode intentionally omits item details; count the original invoice lines.
+                x.ProductItems.Count + x.UsedProducts.Count + x.CoinItems.Count + x.CurrencyItems.Count))
             .ToList();
 
         var invoiceNumbers = invoices.ToDictionary(i => i.Id, i => i.InvoiceNumber);

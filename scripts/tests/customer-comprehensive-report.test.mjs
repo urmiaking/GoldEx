@@ -73,16 +73,33 @@ test('explicit nullable customer name interpolation and selectable portrait/land
  const print = src('Client/GoldEx.Client/Pages/Reporting/Pages/Prints/CustomerComprehensiveReportPrint.razor');
  const printCode = src('Client/GoldEx.Client/Pages/Reporting/Pages/Prints/CustomerComprehensiveReportPrint.razor.cs');
  const template = src('Client/GoldEx.Client/Pages/Reporting/Components/ReportPrintBase.razor');
- for (const text of ['<p>@(_customer?.FullName)</p>', 'CustomerName="@(_customer?.FullName)"', '<select @bind="_printLandscape"']) {
+ for (const text of ['<p>@(_customer?.FullName)</p>', 'CustomerName="@(_customer?.FullName)"', '<select @bind="_printOrientation"']) {
   assert.ok(view.includes(text), text);
  }
  for (const text of ['CustomerName="@(_customer?.FullName)"', 'Landscape="@LandscapeMode"', 'ShowDetailHeading="false" ShowNotes="false"', 'Data="@_report"']) {
   assert.ok(print.includes(text), text);
  }
- assert.ok(viewCode.includes('landscape = _printLandscape'));
+ assert.ok(view.includes('<option value="landscape">افقی</option>'));
+ assert.ok(view.includes('<option value="portrait">عمودی</option>'));
+ assert.ok(viewCode.includes('private string _printOrientation = "landscape";'));
+ assert.ok(viewCode.includes('landscape = _printOrientation == "landscape"'));
+ assert.ok(!viewCode.includes('landscape = _printLandscape'));
  assert.ok(printCode.includes('SupplyParameterFromQuery(Name = "landscape")'));
  for (const text of [
   '[Parameter] public bool ShowDetailHeading { get; set; } = true;',
   '[Parameter] public bool ShowNotes { get; set; } = true;'
  ]) assert.ok(template.includes(text), text);
+});
+
+test('summary-only reports preserve the actual invoice item count independently of detail rows', () => {
+ const contract = src('Shared/GoldEx.Shared/DTOs/Reporting/CustomerComprehensiveRpResponse.cs');
+ const service = src('Server/GoldEx.Server.Application/Services/ReportingService.cs');
+ const report = src('Client/GoldEx.Client/Pages/Reporting/Components/CustomerComprehensiveDocument.razor');
+ assert.ok(contract.includes('int ItemCount'), 'item count must be a separate DTO field');
+ assert.ok(service.includes('x.ProductItems.Count + x.UsedProducts.Count + x.CoinItems.Count + x.CurrencyItems.Count'),
+   'the item count covers all four invoice item kinds, regardless of summary/full mode');
+ assert.ok(service.includes('request.IncludeDetails'), 'full mode still includes detailed rows');
+ assert.ok(service.includes(': new List<CustomerComprehensiveItem>()'), 'summary mode does not fetch details');
+ assert.ok(report.includes('@invoice.ItemCount قلم'), 'the group heading reads the actual item count');
+ assert.ok(!report.includes('@invoice.Items.Count قلم'), 'summary mode cannot use the intentionally empty details collection');
 });

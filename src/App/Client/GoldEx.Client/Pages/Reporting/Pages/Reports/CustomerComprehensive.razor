@@ -30,9 +30,9 @@
                 <div class="gex-customer-print-actions">
                     <label class="gex-customer-print-orientation">
                         <span>جهت چاپ</span>
-                        <select @bind="_printLandscape" aria-label="جهت چاپ گزارش">
-                            <option value="true">افقی</option>
-                            <option value="false">عمودی</option>
+                        <select @bind="_printOrientation" aria-label="جهت چاپ گزارش">
+                            <option value="landscape">افقی</option>
+                            <option value="portrait">عمودی</option>
                         </select>
                     </label>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary"
