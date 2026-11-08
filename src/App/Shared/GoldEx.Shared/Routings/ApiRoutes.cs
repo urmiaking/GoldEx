@@ -348,6 +348,7 @@ public static class ApiRoutes
         public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";
         public const string GetCustomerRemainingBalance = "customer-remaining-balance";
         public const string GetCustomerTransactions = "customer-transactions";
+        public const string GetCustomerComprehensive = "customer-comprehensive";
         public const string GetSellInvoices = "sell-invoices";
         public const string GetPurchaseInvoices = "purchase-invoices";
         public const string GetPayments = "payments";
