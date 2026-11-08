@@ -26,12 +26,21 @@
     {
         <section class="gex-customer-report-shell">
             <header class="gex-customer-report-toolbar">
-                <div><h1>گزارش جامع معاملات مشتری</h1><p>@_customer?.FullName</p></div>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Print"
-                           OnClick="PrintReport">چاپ گزارش</MudButton>
+                <div><h1>گزارش جامع معاملات مشتری</h1><p>@(_customer?.FullName)</p></div>
+                <div class="gex-customer-print-actions">
+                    <label class="gex-customer-print-orientation">
+                        <span>جهت چاپ</span>
+                        <select @bind="_printLandscape" aria-label="جهت چاپ گزارش">
+                            <option value="true">افقی</option>
+                            <option value="false">عمودی</option>
+                        </select>
+                    </label>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Print"
+                               OnClick="PrintReport">چاپ گزارش</MudButton>
+                </div>
             </header>
-            <CustomerComprehensiveDocument Data="_report" CustomerName="_customer?.FullName"
+            <CustomerComprehensiveDocument Data="_report" CustomerName="@(_customer?.FullName)"
                                            IncludeDetails="_filters.IncludeDetails" />
         </section>
     }

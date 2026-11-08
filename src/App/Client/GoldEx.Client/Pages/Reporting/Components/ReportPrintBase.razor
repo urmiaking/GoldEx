@@ -101,10 +101,13 @@ else if (Data is not null)
         }
 
         <section class="gex-print-detail-section">
-            <div class="gex-print-section-heading">
-                <h2>جزئیات گزارش</h2>
-                <span>اطلاعات ثبت‌شده در بازه و شرایط انتخابی</span>
-            </div>
+            @if (ShowDetailHeading)
+            {
+                <div class="gex-print-section-heading">
+                    <h2>جزئیات گزارش</h2>
+                    <span>اطلاعات ثبت‌شده در بازه و شرایط انتخابی</span>
+                </div>
+            }
             <div class="gex-print-table-wrap">
                 @ChildContent
             </div>
@@ -117,11 +120,14 @@ else if (Data is not null)
             </section>
         }
 
-        <section class="gex-print-notes">
-            <h2>اطلاعات و توضیحات</h2>
-            <p>این نسخه براساس اطلاعات ثبت‌شده در سامانه و فیلترهای انتخاب‌شده هنگام تهیه گزارش ایجاد شده است.
-                مقادیر مالی و وزنی با واحد نمایش‌داده‌شده در هر بخش ارائه شده‌اند؛ مبالغ با واحدهای متفاوت با یکدیگر جمع نشده‌اند.</p>
-        </section>
+        @if (ShowNotes)
+        {
+            <section class="gex-print-notes">
+                <h2>اطلاعات و توضیحات</h2>
+                <p>این نسخه براساس اطلاعات ثبت‌شده در سامانه و فیلترهای انتخاب‌شده هنگام تهیه گزارش ایجاد شده است.
+                    مقادیر مالی و وزنی با واحد نمایش‌داده‌شده در هر بخش ارائه شده‌اند؛ مبالغ با واحدهای متفاوت با یکدیگر جمع نشده‌اند.</p>
+            </section>
+        }
         <footer class="gex-print-document-footer">
             <div>تهیه‌شده توسط سامانه حسابداری طلا و جواهر <strong>GoldEx</strong></div>
             <div>گزارش تولیدشده در تاریخ @_generatedAt.ToShortDateString() ساعت @_generatedAt.ToString("HH:mm")</div>
@@ -133,6 +139,8 @@ else if (Data is not null)
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public bool ShowDateFilter { get; set; } = true;
     [Parameter] public bool ShowSummary { get; set; } = true;
+    [Parameter] public bool ShowDetailHeading { get; set; } = true;
+    [Parameter] public bool ShowNotes { get; set; } = true;
     [Parameter, SupplyParameterFromQuery(Name = "Start")] public DateTime? FromDate { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "End")] public DateTime? ToDate { get; set; }
     [Parameter] public object? Data { get; set; }

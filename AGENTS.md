@@ -1194,3 +1194,12 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Group commercial totals by InvoiceType and PriceUnitTitle, never mixing cash and gold units.
 - CustomerComprehensiveDocument.razor is shared between screen and enterprise print pages (ReportPrintBase and report-print.js). The dedicated stylesheet lives in Server/wwwroot/css/reports.
 - The incomplete local Dev molten-gold work is untouched; work was carried out on a clean origin/master worktree.
+
+
+### Customer Comprehensive Compact Layout and Orientation (#280, 2026-11-08)
+- CustomerComprehensiveDocument now has one compact overview with trade totals grouped by InvoiceType/PriceUnitTitle and balances from the ledger, with no meaningless transaction/payment counts. One invoice table contains multiple <tbody> groups (invoice heading row and item/adjustment rows); use repeated thead in print, never one table per invoice.
+- Financial movements are one chronological table: ledger entries enriched with invoice payment metadata when the InvoicePaymentId matches; standalone invoice payments with no corresponding visible ledger entry may appear with explicit "unmatched" annotation and no invented debit/credit/balance. Do not count those amounts into official balances.
+- The page exposes a lightweight native orientation selector (landscape default, portrait alternative); its query parameter is consumed by the report print route and passed to ReportPrintBase. Both directions use the existing A4 page definitions. Portrait must never clip columns.
+- Razor nullable expressions for the customer's name must use explicit @(...), not implicit @object?.Property parsing, both in text and component attributes.
+- The print base now supports opt-out ShowDetailHeading and ShowNotes, both true by default so all other reports are unaffected. The customer print uses Data=_report (non-ICollection) to avoid redundant row counts, and opts out of those additional headings/notes.
+- Regression: run scripts/tests/customer-comprehensive-report.test.mjs, enterprise-report-print.test.mjs and full Node suite plus GoldEx.Server build. Keep dirty Dev worktree untouched.
