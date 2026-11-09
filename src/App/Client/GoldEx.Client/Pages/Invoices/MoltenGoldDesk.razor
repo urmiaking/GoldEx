@@ -10,7 +10,7 @@
     <header class="desk-heading">
         <div class="desk-title-group">
             <MudText Typo="Typo.h5" HtmlTag="h1" Class="desk-main-title">دفتر آب‌شده</MudText>
-            <MudText Typo="Typo.body2" Class="desk-subtitle">ثبت خرید و فروش طلای آبشده</MudText>
+            <MudText Typo="Typo.body2" Class="desk-subtitle">معامله را ثبت کنید؛ حساب وجه و طلا خودکار به‌روز می‌شود.</MudText>
         </div>
     </header>
 
@@ -65,21 +65,73 @@
                     <MudIconButton Icon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Color="Color.Primary"
                                    aria-label="افزودن طرف‌حساب" OnClick="AddCustomerAsync" Disabled="@_saving" />
                 </div>
-                <div class="desk-fields desk-enter" @key="_side">
-                    <MudNumericField HideSpinButtons="true" @bind-Value="_weight" Label="وزن واقعی" Variant="Variant.Outlined" Immediate="true"
-                                     Margin="Margin.Dense" Format="0.###" Min="0m" Max="1000000m" Adornment="Adornment.End"
+                <div class="desk-fields desk-primary-fields desk-enter" @key="_side">
+                    <MudNumericField HideSpinButtons="true" @bind-Value="_weight"
+                                     Label="@(_fineness == 750m ? "وزن طلای ۷۵۰" : "وزن واقعی")"
+                                     Variant="Variant.Outlined" Immediate="true" Margin="Margin.Dense"
+                                     Format="0.###" Min="0m" Max="1000000m" Adornment="Adornment.End"
                                      AdornmentText="گرم" dir="ltr" Disabled="@_saving" />
-                    <MudNumericField HideSpinButtons="true" @bind-Value="_fineness" Label="عیار" Variant="Variant.Outlined" Format="0.######"
-                                     Margin="Margin.Dense" Min="0m" Max="1000m" Immediate="true" dir="ltr" Disabled="@_saving" />
+                    <MudSelect T="MoltenGoldRateBasis" Value="_rateBasis" ValueChanged="ChangeRateBasis"
+                               Label="مبنای نرخ" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@_saving">
+                        <MudSelectItem T="MoltenGoldRateBasis" Value="MoltenGoldRateBasis.Gram">گرمی (۱۸ عیار)</MudSelectItem>
+                        <MudSelectItem T="MoltenGoldRateBasis" Value="MoltenGoldRateBasis.Mesghal">مظنه (مثقال ۷۰۵)</MudSelectItem>
+                    </MudSelect>
                 </div>
-                <div class="desk-fields">
-                    <MudNumericField HideSpinButtons="true" @bind-Value="_rate" Label="نرخ روز طلای ۱۸ عیار" Variant="Variant.Outlined"
-                                     Margin="Margin.Dense" Format="#,##0.##" Immediate="true" Min="0m" Max="1000000000000m"
+                <div class="desk-fields desk-rate-fields">
+                    <MudNumericField HideSpinButtons="true" @bind-Value="_rate"
+                                     Label="@(_rateBasis == MoltenGoldRateBasis.Gram ? "نرخ هر گرم ۱۸ عیار" : "مظنه معامله")"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Format="#,##0.##########"
+                                     Immediate="true" Min="0m" Max="1000000000000m"
                                      Adornment="Adornment.End" AdornmentText="تومان" dir="ltr" Disabled="@_saving" />
-                    <MudNumericField T="decimal" HideSpinButtons="true" @bind-Value="_commission" Label="کارمزد" Variant="Variant.Outlined"
-                                     Margin="Margin.Dense" Format="G29" dir="ltr" Min="0m" Max="100m"
-                                     Adornment="Adornment.End" AdornmentText="درصد" Disabled="@_saving" />
+                    <div class="desk-rate-note">
+                        <ShellIcon Name="clock" />
+                        <span>@(_rateUpdatedAt.HasValue ? $"آخرین نرخ: {DateText(_rateUpdatedAt.Value)}" : "نرخ را پیش از ثبت بررسی کنید.")</span>
+                    </div>
                 </div>
+                <button type="button" class="desk-options-toggle" @onclick="ToggleAdvanced" aria-expanded="@_advancedOpen" disabled="@_saving">
+                    <span>عیار و کارمزد</span>
+                    <span>@(_advancedOpen ? "بستن" : $"عیار {_fineness:0.###} · کارمزد {_commission:0.###}٪")</span>
+                    <ShellIcon Name="@(_advancedOpen ? "chevron-up" : "chevron-down")" />
+                </button>
+                @if (_advancedOpen)
+                {
+                    <div class="desk-fields desk-advanced-fields">
+                        <MudNumericField HideSpinButtons="true" @bind-Value="_fineness" Label="عیار واقعی"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.######"
+                                         Min="0m" Max="1000m" Immediate="true" dir="ltr" Disabled="@_saving" />
+                        <MudNumericField HideSpinButtons="true" @bind-Value="_commission" Label="کارمزد"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Format="G29"
+                                         Min="0m" Max="100m" Adornment="Adornment.End"
+                                         AdornmentText="درصد" dir="ltr" Disabled="@_saving" />
+                    </div>
+                }
+                <div class="desk-total" aria-live="polite">
+                    <div class="desk-total-row is-highlight">
+                        <span>مبلغ نهایی معامله</span>
+                        <span class="desk-number highlight-val">@Money(RawValue + CommissionValue)</span>
+                    </div>
+                    <details class="desk-price-breakdown">
+                        <summary>جزئیات محاسبه</summary>
+                        <div class="desk-total-row"><span>اصل طلا</span><span class="desk-number">@Money(RawValue)</span></div>
+                        <div class="desk-total-row"><span>کارمزد</span><span class="desk-number">@Money(CommissionValue)</span></div>
+                        <div class="desk-total-row"><span>معادل ۷۵۰</span><span class="desk-number">@WeightText(_weight * _fineness / 750m)</span></div>
+                    </details>
+                    @if (_immediatePayment is not null)
+                    {
+                        <div class="desk-total-row is-sub-highlight">
+                            <span>@(_side == InvoiceType.Sell ? "مانده پس از دریافت" : "مانده پس از پرداخت")</span>
+                            <span class="desk-number">@Money(RawValue + CommissionValue - _immediatePayment.Amount)</span>
+                        </div>
+                    }
+                </div>
+                <div class="desk-immediate-section">
+                    <button type="button" class="desk-options-toggle" @onclick="ToggleImmediate" aria-expanded="@_showImmediate" disabled="@_saving">
+                        <span>تسویه همزمان (اختیاری)</span>
+                        <span>@(_showImmediate ? "بستن" : ImmediateSummary)</span>
+                        <ShellIcon Name="@(_showImmediate ? "chevron-up" : "chevron-down")" />
+                    </button>
+                    @if (_showImmediate)
+                    {
                 <div class="desk-immediate">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="desk-immediate-btn"
                                Disabled="@_saving" OnClick="@(() => OpenImmediateAsync(MoltenGoldOperation.Payment))">
@@ -94,21 +146,6 @@
                         @if (_immediateDelivery is not null) { <span class="desk-draft-value">@WeightText(_immediateDelivery.Weight)</span> }
                     </MudButton>
                 </div>
-                <div class="desk-total" aria-live="polite">
-                    <div class="desk-total-row"><span>اصل طلا</span><span class="desk-number">@Money(RawValue)</span></div>
-                    <div class="desk-total-row"><span>کارمزد</span><span class="desk-number">@Money(CommissionValue)</span></div>
-                    <div class="desk-total-row"><span>معادل ۷۵۰</span><span class="desk-number">@WeightText(_weight * _fineness / 750m)</span></div>
-                    <div class="desk-total-divider"></div>
-                    <div class="desk-total-row is-highlight">
-                        <span>مبلغ معامله</span>
-                        <span class="desk-number highlight-val">@Money(RawValue + CommissionValue)</span>
-                    </div>
-                    @if (_immediatePayment is not null)
-                    {
-                        <div class="desk-total-row is-sub-highlight">
-                            <span>مانده پس از ثبت وجه</span>
-                            <span class="desk-number">@Money(RawValue + CommissionValue - _immediatePayment.Amount)</span>
-                        </div>
                     }
                 </div>
                 <MudButton FullWidth="true" Variant="Variant.Filled" Color="@(_side == InvoiceType.Purchase ? Color.Success : Color.Error)"
@@ -122,7 +159,7 @@
                 {
                     <MudPaper Class="desk-panel desk-enter" Elevation="0" @key="_customer.Id">
                         <div class="desk-entry-heading">
-                            <MudText Typo="Typo.subtitle2" Class="desk-section-title">ماندهٔ حساب @_customer.FullName</MudText>
+                            <MudText Typo="Typo.subtitle2" Class="desk-section-title">وضعیت حساب @_customer.FullName</MudText>
                         </div>
                         <div class="desk-customer-balances">
                             @if (_loadingBalances)
@@ -138,7 +175,7 @@
                             {
                                 <div class="desk-balance-box">
                                     <div class="desk-balance-header">
-                                        <span class="desk-balance-title">حساب طلایی (۱۸ عیار)</span>
+                                        <span class="desk-balance-title">مانده طلای ۱۸ عیار</span>
                                         <span class="desk-balance-status @GetBalanceStatusClass(_goldBalance)">
                                             @GetBalanceStatusText(_goldBalance)
                                         </span>
@@ -149,13 +186,13 @@
                                 </div>
                                 <div class="desk-balance-box">
                                     <div class="desk-balance-header">
-                                        <span class="desk-balance-title">حساب وزنی (آبشده)</span>
-                                        <span class="desk-balance-status @GetBalanceStatusClass(_weightBalance)">
-                                            @GetBalanceStatusText(_weightBalance)
+                                        <span class="desk-balance-title">مانده وجه (تومان)</span>
+                                        <span class="desk-balance-status @GetBalanceStatusClass(_moneyBalance)">
+                                            @GetBalanceStatusText(_moneyBalance)
                                         </span>
                                     </div>
                                     <div class="desk-balance-val" dir="ltr">
-                                        @FormatWeightBalance(_weightBalance)
+                                        @FormatMoneyBalance(_moneyBalance)
                                     </div>
                                 </div>
                             }

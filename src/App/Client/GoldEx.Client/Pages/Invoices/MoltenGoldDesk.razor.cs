@@ -32,12 +32,14 @@ public partial class MoltenGoldDesk
     private bool _loadingBalances;
     private decimal? _goldBalance;
     private string _goldUnitTitle = "گرم ۱۸ عیار";
-    private decimal? _weightBalance;
-    private string _weightUnitTitle = "مثقال";
+    private decimal? _moneyBalance;
     private InvoiceType _side = InvoiceType.Purchase;
     private decimal _weight;
     private decimal _fineness = 750m;
     private decimal _rate;
+    private MoltenGoldRateBasis _rateBasis = MoltenGoldRateBasis.Gram;
+    private bool _advancedOpen;
+    private bool _showImmediate;
     private DateTime? _rateUpdatedAt;
     private decimal _commission;
     private PayMoltenGold? _immediatePayment;
@@ -66,9 +68,28 @@ public partial class MoltenGoldDesk
         }
     }
 
+    private decimal GramRate => _settings is { GramPerMesghal: > 0m }
+        ? MoltenGoldTradePricing.GramRate(_rate, _rateBasis, _settings.GramPerMesghal)
+        : 0m;
     private decimal RawValue => _weight is > 0 and <= 1_000_000m && _rate is > 0 and <= 1_000_000_000_000m &&
-        _fineness is > 0 and < 1000m ? MoltenGoldTradePricing.Value(_weight, _fineness, _rate) : 0;
+        _fineness is > 0 and < 1000m ? MoltenGoldTradePricing.Value(_weight, _fineness, GramRate) : 0;
     private decimal CommissionValue => MoltenGoldTradePricing.Commission(RawValue, _commission);
+
+    private string ImmediateSummary
+    {
+        get
+        {
+            if (_immediatePayment is null && _immediateDelivery is null)
+                return "وجه و تحویل طلا را می‌توانید بعداً ثبت کنید.";
+            var parts = new List<string>(2);
+            if (_immediatePayment is not null)
+                parts.Add($"وجه: {Money(_immediatePayment.Amount)}");
+            if (_immediateDelivery is not null)
+                parts.Add($"طلا: {WeightText(_immediateDelivery.Weight)}");
+            return string.Join(" · ", parts);
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,7 +103,7 @@ public partial class MoltenGoldDesk
         if (_settings is null || _settings.PriceUnitId == Guid.Empty) return;
         if (_rate == 0) _rate = _settings.DayRate;
         _rateUpdatedAt = _settings.RateUpdatedAt;
-        _commission = _settings.CommissionPercent;
+        _commission = _side == InvoiceType.Sell ? _settings.CommissionPercent : 0m;
         _accounts = await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
             (s, ct) => s.GetTitlesAsync(null, _settings.PriceUnitId, ct)) ?? [];
         await LoadAsync();
@@ -113,11 +134,27 @@ public partial class MoltenGoldDesk
         await LoadAsync();
     }
 
+    private void ChangeRateBasis(MoltenGoldRateBasis next)
+    {
+        if (_rateBasis == next) return;
+        if (_settings is { GramPerMesghal: > 0m } && _rate > 0)
+        {
+            var gramRate = GramRate;
+            _rate = next == MoltenGoldRateBasis.Gram ? gramRate
+                : gramRate * _settings.GramPerMesghal * 705m / 750m;
+            _rate = Math.Round(_rate, 10, MidpointRounding.AwayFromZero);
+        }
+        _rateBasis = next;
+    }
+
+    private void ToggleAdvanced() => _advancedOpen = !_advancedOpen;
+    private void ToggleImmediate() => _showImmediate = !_showImmediate;
+
     private void ChangeSide(InvoiceType side)
     {
         if (_side == side) return;
         _side = side;
-        if (_commission == 0 && _settings is not null) _commission = _settings.CommissionPercent;
+        _commission = side == InvoiceType.Sell ? _settings?.CommissionPercent ?? 0m : 0m;
         _immediatePayment = null;
         _immediateDelivery = null;
     }
@@ -207,7 +244,7 @@ public partial class MoltenGoldDesk
             return;
         }
         var request = new CreateMoltenGoldTrade(_tradeId, _side, customerId, _immediateDelivery?.Stock?.Id, _weight, _fineness,
-            MoltenGoldRateBasis.Gram, _rate, _commission, _immediateDelivery?.AssayNumber, _immediateDelivery?.Weight ?? 0,
+            _rateBasis, _rate, _commission, _immediateDelivery?.AssayNumber, _immediateDelivery?.Weight ?? 0,
             _immediatePayment?.AccountId, _immediatePayment?.Amount ?? 0, _immediatePayment?.Reference, IsPaper: true);
         _saving = true;
         try
@@ -216,7 +253,8 @@ public partial class MoltenGoldDesk
             {
                 _tradeId = Guid.NewGuid();
                 _weight = 0;
-                _commission = _settings?.CommissionPercent ?? 0;
+                _showImmediate = false;
+                _commission = _side == InvoiceType.Sell ? _settings?.CommissionPercent ?? 0m : 0m;
                 _immediatePayment = null;
                 _immediateDelivery = null;
                 _filter = MoltenGoldTradeFilter.Today;
@@ -252,7 +290,7 @@ public partial class MoltenGoldDesk
         if (_customer?.Id == null)
         {
             _goldBalance = null;
-            _weightBalance = null;
+            _moneyBalance = null;
             return;
         }
 
@@ -265,31 +303,21 @@ public partial class MoltenGoldDesk
             if (balances is null)
             {
                 _goldBalance = 0m;
-                _weightBalance = 0m;
+                _moneyBalance = 0m;
                 return;
             }
 
-            var goldRemaining = balances.FirstOrDefault(b =>
-                b.PriceUnit.IsGoldBased &&
-                (b.PriceUnit.Title.Contains("18") || b.PriceUnit.Title.Contains("۱۸")));
-
+            // Select exact configured units. Never infer a second balance by partial unit titles.
+            var goldRemaining = balances.FirstOrDefault(b => b.PriceUnit.Id == _settings!.GoldPriceUnitId);
+            var moneyRemaining = balances.FirstOrDefault(b => b.PriceUnit.Id == _settings!.PriceUnitId);
             _goldBalance = goldRemaining?.Amount ?? 0m;
             _goldUnitTitle = goldRemaining?.PriceUnit.Title ?? "گرم ۱۸ عیار";
-
-            var weightRemaining = balances.FirstOrDefault(b =>
-                b.PriceUnit.IsGoldBased &&
-                b != goldRemaining &&
-                (b.PriceUnit.Title.Contains("مثقال") || b.PriceUnit.Title.Contains("آبشده") || b.PriceUnit.Title.Contains("وزن")));
-
-            weightRemaining ??= balances.FirstOrDefault(b => b.PriceUnit.IsGoldBased && b != goldRemaining);
-
-            _weightBalance = weightRemaining?.Amount ?? 0m;
-            _weightUnitTitle = weightRemaining?.PriceUnit.Title ?? "مثقال";
+            _moneyBalance = moneyRemaining?.Amount ?? 0m;
         }
         catch (Exception)
         {
             _goldBalance = null;
-            _weightBalance = null;
+            _moneyBalance = null;
         }
         finally
         {
@@ -318,10 +346,6 @@ public partial class MoltenGoldDesk
         return $"{Math.Abs(balance.Value):0.###} گرم";
     }
 
-    private string FormatWeightBalance(decimal? balance)
-    {
-        if (!balance.HasValue) return "-";
-        var unit = _weightUnitTitle.Contains("مثقال") ? "مثقال" : _weightUnitTitle;
-        return $"{Math.Abs(balance.Value):0.###} {unit}";
-    }
+    private static string FormatMoneyBalance(decimal? balance)
+        => !balance.HasValue ? "-" : $"{Math.Abs(balance.Value):#,##0.##} تومان";
 }

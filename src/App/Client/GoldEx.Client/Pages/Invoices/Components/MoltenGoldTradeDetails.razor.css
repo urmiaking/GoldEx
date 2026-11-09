@@ -152,3 +152,8 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+.trade-secondary-actions { border:1px solid var(--mud-palette-lines-default); border-radius:8px; padding:9px 12px; }
+.trade-secondary-actions summary { cursor:pointer; color:var(--mud-palette-text-secondary); font-size:.8rem; }
+.trade-secondary-actions summary:focus-visible { outline:2px solid var(--mud-palette-primary); outline-offset:3px; }
+.trade-secondary-actions-inner { display:flex; flex-wrap:wrap; gap:8px; padding-top:12px; }

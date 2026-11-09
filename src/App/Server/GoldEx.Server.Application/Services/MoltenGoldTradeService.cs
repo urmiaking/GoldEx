@@ -121,7 +121,7 @@ internal class MoltenGoldTradeService(
             foreach (var trade in batch)
             {
                 var state = BuildState(trade, byTrade[trade.Id].ToList(), posted);
-                if (filter == MoltenGoldTradeFilter.Unsettled && state.Remaining <= 0)
+                if (filter == MoltenGoldTradeFilter.Unsettled && state.Remaining <= 0 && trade.RemainingWeight <= 0)
                     continue;
                 if (remainingSkip > 0)
                 {

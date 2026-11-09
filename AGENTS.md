@@ -1211,3 +1211,12 @@ The user explicitly confirmed receiving a real device notification after enablin
 - For a date-filtered customer statement, fetch ledger history from inception through the inclusive end of the requested calendar day, then apply the start boundary in memory. This preserves historical running balances and correct opening balances, per unit.
 - The statement defaults to 200 rows per page, with optional page and pageSize arguments and accurate total counts. Never silently hide rows or describe a partial page as the complete ledger.
 - Keep existing MCP tool names/arguments backward compatible; pagination additions are optional. Do not mutate accounting entries to fix presentation bugs.
+
+
+## Molten gold paper quick-entry UX (2026-11-09)
+- MoltenGoldDesk supports two rate bases: 18K gram rate and 705-per-mesghal quote. Conversions must use MoltenGoldTradePricing.GramRate and the store's GramPerMesghal setting; switching the displayed unit preserves the effective gram rate.
+- Default simple entry is 750 fineness. Actual fineness and commission are progressive-disclosure inputs, and money/physical delivery at creation is explicitly optional; trade creation must continue to book paper gold and cash independently.
+- Purchase defaults to zero commission, sale defaults to the store's molten-gold commission. Changing side resets commission to the applicable default, not the other side's setting.
+- Account summary must match PriceUnit.Id against configured GoldPriceUnitId and PriceUnitId. Never infer a second customer unit by substring/title or substitute a mesghal balance for money.
+- Unsettled includes any remaining payment or gold weight; backend and frontend must agree on those predicates. Preserve idempotent operations and transaction-based accounting.
+- See src/App/Client/GoldEx.Client/Pages/Invoices/MoltenGoldDesk.razor[.cs/.css] and scripts/tests/molten-gold-fast-entry.test.mjs.

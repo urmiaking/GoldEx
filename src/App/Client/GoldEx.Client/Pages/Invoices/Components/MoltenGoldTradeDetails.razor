@@ -44,7 +44,7 @@
                 </div>
             </div>
 
-            <!-- 3. Actions (Only if unsettled) -->
+            <!-- 3. Keep routine actions prominent, advanced accounting operations secondary. -->
             @if (Trade.RemainingAmount > 0 || Trade.RemainingWeight > 0)
             {
                 <div class="trade-actions-bar">
@@ -55,11 +55,6 @@
                                    OnClick="@(() => Choose(MoltenGoldOperation.Payment))">
                             @(Trade.Side == InvoiceType.Sell ? "دریافت وجه" : "پرداخت وجه")
                         </MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                   StartIcon="@Icons.Material.Outlined.SwapHoriz"
-                                   OnClick="@(() => Choose(MoltenGoldOperation.Transfer))">
-                            ثبت حواله
-                        </MudButton>
                     }
                     @if (Trade.RemainingWeight > 0)
                     {
@@ -68,16 +63,32 @@
                                    OnClick="@(() => Choose(MoltenGoldOperation.Delivery))">
                             @(Trade.Side == InvoiceType.Sell ? "تحویل طلا" : "دریافت طلا")
                         </MudButton>
-                        @if (Trade.IsPaper)
-                        {
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       StartIcon="@Icons.Material.Outlined.AutoAwesome"
-                                       OnClick="@(() => Choose(MoltenGoldOperation.GoldSettlement))">
-                                تسویه طلایی
-                            </MudButton>
-                        }
                     }
                 </div>
+                @if (Trade.RemainingAmount > 0 || (Trade.IsPaper && Trade.RemainingWeight > 0))
+                {
+                    <details class="trade-secondary-actions">
+                        <summary>عملیات بیشتر (حواله و تهاتر)</summary>
+                        <div class="trade-secondary-actions-inner">
+                            @if (Trade.RemainingAmount > 0)
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Outlined.SwapHoriz"
+                                           OnClick="@(() => Choose(MoltenGoldOperation.Transfer))">
+                                    ثبت حواله
+                                </MudButton>
+                            }
+                            @if (Trade.IsPaper && Trade.RemainingWeight > 0)
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Outlined.AutoAwesome"
+                                           OnClick="@(() => Choose(MoltenGoldOperation.GoldSettlement))">
+                                    تسویه طلایی (تهاتر)
+                                </MudButton>
+                            }
+                        </div>
+                    </details>
+                }
             }
 
             <!-- 4. Event History (Clean, compact table) -->
