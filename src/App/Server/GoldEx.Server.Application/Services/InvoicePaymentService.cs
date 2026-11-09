@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
@@ -30,6 +32,7 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoicePaymentService(
     IInvoicePaymentRepository repository,
     IInvoicePaymentRepository paymentRepository,
+    IMoltenGoldTradeRepository moltenGoldRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     ICheckPaymentRepository checkPaymentRepository,
     ICoinInstanceRepository coinInstanceRepository,
@@ -47,6 +50,13 @@ internal class InvoicePaymentService(
             .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
             .Include(x => x.Invoice!.Customer)
             .ToListAsync(cancellationToken);
+        var voucherIds = existingPayments.Where(x => x.CustomerTransferVoucherId.HasValue)
+            .Select(x => x.CustomerTransferVoucherId!.Value).ToArray();
+        var deskVouchers = voucherIds.Length == 0 ? [] : await moltenGoldRepository.Events
+            .Where(x => x.VoucherId.HasValue && voucherIds.Contains(x.VoucherId.Value))
+            .Select(x => x.VoucherId!.Value).ToListAsync(cancellationToken);
+        var protectedIds = existingPayments.Where(x => x.CustomerTransferVoucherId.HasValue && deskVouchers.Contains(x.CustomerTransferVoucherId.Value))
+            .Select(x => x.Id.Value).ToHashSet();
 
         var paymentsToCreate = new List<InvoicePayment>();
         var paymentsToUpdate = new List<InvoicePayment>();
@@ -57,7 +67,7 @@ internal class InvoicePaymentService(
             .Where(p => p.Id.HasValue)
             .ToDictionary(p => p.Id!.Value, p => p);
 
-        var paymentsToDelete = existingPayments.Where(existing => !dtoById.ContainsKey(existing.Id.Value)).ToList();
+        var paymentsToDelete = existingPayments.Where(existing => !dtoById.ContainsKey(existing.Id.Value) && !protectedIds.Contains(existing.Id.Value)).ToList();
 
         var sourcePaymentsToDelete = paymentsToDelete
             .Where(p =>
@@ -82,6 +92,9 @@ internal class InvoicePaymentService(
 
         foreach (var paymentDto in invoicePayments)
         {
+            if (paymentDto.Id is Guid paymentId && protectedIds.Contains(paymentId))
+                continue;
+
             LedgerAccountId? ledgerAccountId = null;
             LedgerAccount? ledgerAccount = null;
             FinancialAccountId? financialAccountId = null;
@@ -411,6 +424,8 @@ internal class InvoicePaymentService(
         }
 
         var targetInvoiceId = sourcePayment.TargetInvoiceId.Value;
+        if (await moltenGoldRepository.Events.AnyAsync(x => x.InvoiceId == targetInvoiceId, cancellationToken))
+            throw new ValidationException([new ValidationFailure("Invoice", "حوالهٔ این فاکتور را از دفتر آب‌شده ثبت کنید.")]);
 
         if (existingTargetPayment == null)
         {

@@ -15,6 +15,8 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
     ICreateRepository<InventoryStock>,
     IDeleteRepository<InventoryStock>
 {
+    Task LockProductAsync(ProductId productId, CancellationToken cancellationToken);
+    Task<decimal> GetReservedMoltenGoldAsync(ProductId productId, CancellationToken cancellationToken);
     Task<decimal> GetQuantityAsync(ProductId productId, CancellationToken cancellationToken = default);
     Task<decimal> GetQuantityAsync(CoinInstanceId coinId, CancellationToken cancellationToken = default);
     Task<decimal> GetQuantityAsync(PriceUnitId currencyId, CancellationToken cancellationToken = default);

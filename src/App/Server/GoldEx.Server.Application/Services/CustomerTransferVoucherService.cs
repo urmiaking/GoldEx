@@ -28,13 +28,14 @@ namespace GoldEx.Server.Application.Services;
 internal class CustomerTransferVoucherService(
     ICustomerTransferVoucherRepository repository,
     IInvoicePaymentRepository invoicePaymentRepository,
+    IMoltenGoldTradeRepository moltenGoldRepository,
     IInvoiceRepository invoiceRepository,
     ICustomerRepository customerRepository,
     IServerLedgerAccountService ledgerAccountService,
     IAccountingTransactionService transactionService,
     ILogger<CustomerTransferVoucherService> logger,
     CreateCustomerTransferVoucherRequestValidator createValidator,
-    UpdateCustomerTransferVoucherRequestValidator updateValidator) : ICustomerTransferVoucherService
+    UpdateCustomerTransferVoucherRequestValidator updateValidator) : ICustomerTransferVoucherService, IServerCustomerTransferVoucherService
 {
     public async Task<PagedList<GetCustomerTransferVoucherListResponse>> GetListAsync(
         RequestFilter filter,
@@ -106,43 +107,41 @@ internal class CustomerTransferVoucherService(
 
     public async Task CreateAsync(CreateCustomerTransferVoucherRequest request, CancellationToken cancellationToken = default)
     {
-        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        try
-        {
-            await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        await using var transaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await GuardDeskInvoicesAsync(request.SourceInvoiceId, request.DestinationInvoiceId, cancellationToken);
+        await PostAsync(request, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
 
-            var lastNumber = await repository.GetLastNumberAsync(cancellationToken);
-            var nextNumber = lastNumber + 1;
+    public async Task<CustomerTransferVoucher> PostAsync(CreateCustomerTransferVoucherRequest request, CancellationToken cancellationToken,
+        bool isMoltenGoldDesk = false)
+    {
+        await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-            var voucher = CustomerTransferVoucher.Create(
-                nextNumber,
-                request.TransferDate,
-                new CustomerId(request.SourceCustomerId),
-                new CustomerId(request.DestinationCustomerId),
-                new PriceUnitId(request.PriceUnitId),
-                request.Amount,
-                request.ExchangeRate,
-                request.SourceInvoiceId.HasValue ? new InvoiceId(request.SourceInvoiceId.Value) : null,
-                request.DestinationInvoiceId.HasValue ? new InvoiceId(request.DestinationInvoiceId.Value) : null,
-                request.Description
-            );
+        var lastNumber = await repository.GetLastNumberAsync(cancellationToken);
+        var nextNumber = lastNumber + 1;
 
-            await repository.CreateAsync(voucher, cancellationToken);
+        var voucher = CustomerTransferVoucher.Create(
+            nextNumber,
+            request.TransferDate,
+            new CustomerId(request.SourceCustomerId),
+            new CustomerId(request.DestinationCustomerId),
+            new PriceUnitId(request.PriceUnitId),
+            request.Amount,
+            request.ExchangeRate,
+            request.SourceInvoiceId.HasValue ? new InvoiceId(request.SourceInvoiceId.Value) : null,
+            request.DestinationInvoiceId.HasValue ? new InvoiceId(request.DestinationInvoiceId.Value) : null,
+            request.Description
+        );
 
-            // Handle optional Linked Invoice Payments for settlement
-            await ApplyInvoicePaymentsAsync(voucher, cancellationToken);
+        await repository.CreateAsync(voucher, cancellationToken);
 
-            // Create Accounting Transactions
-            await transactionService.CreateTransactionsForCustomerTransferVoucherAsync(voucher, cancellationToken);
+        // Handle optional Linked Invoice Payments for settlement
+        await ApplyInvoicePaymentsAsync(voucher, cancellationToken);
 
-            await dbTransaction.CommitAsync(cancellationToken);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, e.Message);
-            await dbTransaction.RollbackAsync(cancellationToken);
-            throw;
-        }
+        // Create Accounting Transactions
+        await transactionService.CreateTransactionsForCustomerTransferVoucherAsync(voucher, cancellationToken, isMoltenGoldDesk);
+        return voucher;
     }
 
     public async Task UpdateAsync(Guid id, UpdateCustomerTransferVoucherRequest request, CancellationToken cancellationToken = default)
@@ -150,6 +149,9 @@ internal class CustomerTransferVoucherService(
         await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
+            if (await moltenGoldRepository.Events.AnyAsync(x => x.VoucherId == new CustomerTransferVoucherId(id), cancellationToken))
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("Voucher", "این حواله به دفتر آب‌شده متصل است.")]);
+            await GuardDeskInvoicesAsync(request.SourceInvoiceId, request.DestinationInvoiceId, cancellationToken);
             await updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
             var voucher = await repository
@@ -185,11 +187,22 @@ internal class CustomerTransferVoucherService(
         }
     }
 
+    private async Task GuardDeskInvoicesAsync(Guid? source, Guid? destination, CancellationToken ct)
+    {
+        InvoiceId? sourceId = source.HasValue ? new InvoiceId(source.Value) : null;
+        InvoiceId? destinationId = destination.HasValue ? new InvoiceId(destination.Value) : null;
+        if (await moltenGoldRepository.Events.AnyAsync(x =>
+                x.InvoiceId != null && (x.InvoiceId == sourceId || x.InvoiceId == destinationId), ct))
+            throw new ValidationException([new FluentValidation.Results.ValidationFailure("Invoice", "حوالهٔ این فاکتور را از دفتر آب‌شده ثبت کنید.")]);
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
+            if (await moltenGoldRepository.Events.AnyAsync(x => x.VoucherId == new CustomerTransferVoucherId(id), cancellationToken))
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("Voucher", "این حواله به دفتر آب‌شده متصل است.")]);
             var voucherId = new CustomerTransferVoucherId(id);
             var item = await repository
                 .Get(new CustomerTransferVouchersByIdSpecification(voucherId))

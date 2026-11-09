@@ -1,0 +1,159 @@
+.molten-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--mud-palette-text-primary);
+}
+
+/* 1. Header (Clean, no chips, no colored borders) */
+.trade-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--mud-palette-background-gray);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+.trade-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+}
+.trade-type-label {
+    font-weight: 500;
+}
+.trade-type-label.is-buy { color: var(--mud-palette-success); }
+.trade-type-label.is-sell { color: var(--mud-palette-error); }
+.trade-title-sep { color: var(--mud-palette-text-secondary); }
+.trade-customer { font-weight: 500; }
+.trade-datetime {
+    font-size: 0.76rem;
+    color: var(--mud-palette-text-secondary);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+}
+
+/* 2. Summary Grid (Compact, essential metrics only) */
+.trade-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+.summary-label {
+    font-size: 0.72rem;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 400;
+}
+.summary-value {
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+.summary-value small {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--mud-palette-text-secondary);
+}
+.summary-value.is-unsettled { color: var(--mud-palette-error); }
+.summary-value.is-gold-unsettled { color: #b45309; }
+.summary-value.is-settled { color: var(--mud-palette-success); }
+
+/* 3. Actions */
+.trade-actions-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--mud-palette-background-gray);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
+/* 4. History Table */
+.trade-history-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.history-section-title {
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--mud-palette-text-primary);
+}
+.history-empty {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+    padding: 16px;
+    text-align: center;
+    font-weight: 400;
+}
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: start;
+}
+.history-table th {
+    padding: 8px 12px;
+    text-align: start;
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--mud-palette-text-secondary);
+    background: var(--mud-palette-background-gray);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.history-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    vertical-align: middle;
+    text-align: start;
+    font-weight: 400;
+}
+.history-table tr:last-child td { border-bottom: 0; }
+.event-name { font-weight: 400; }
+.event-time {
+    font-size: 0.72rem;
+    color: var(--mud-palette-text-secondary);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+}
+.event-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.event-invoice-link {
+    font-size: 0.75rem;
+}
+.event-ref {
+    font-size: 0.74rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+@media (max-width: 600px) {
+    .trade-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.trade-secondary-actions { border:1px solid var(--mud-palette-lines-default); border-radius:8px; padding:9px 12px; }
+.trade-secondary-actions summary { cursor:pointer; color:var(--mud-palette-text-secondary); font-size:.8rem; }
+.trade-secondary-actions summary:focus-visible { outline:2px solid var(--mud-palette-primary); outline-offset:3px; }
+.trade-secondary-actions-inner { display:flex; flex-wrap:wrap; gap:8px; padding-top:12px; }

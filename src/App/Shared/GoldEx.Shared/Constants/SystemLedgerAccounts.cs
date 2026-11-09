@@ -25,6 +25,7 @@ public static class SystemLedgerAccounts
     public static string CurrentLiabilities => "بدهی‌های جاری";
     public static string ChecksPayable => "اسناد پرداختنی (چک‌ها)";
     public static string AccountsPayable => "حساب‌های پرداختنی";
+    public static string MoltenGoldCustomerAdvances => "پیش‌دریافت مشتریان دفتر آب‌شده";
     #endregion
 
     #region Equity (حقوق صاحبان سهام)
