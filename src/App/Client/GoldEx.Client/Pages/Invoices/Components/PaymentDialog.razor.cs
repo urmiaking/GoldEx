@@ -30,6 +30,9 @@ public partial class PaymentDialog
     private PaymentSide? _selectedSide;
     private decimal _initialEffect;
 
+    private static string GetSettlementTypeTitle(PaymentType type) =>
+        type == PaymentType.InternalCash ? "تسویه نقدی" : type.GetDisplayTitle();
+
     private string ReceiveTitle => InvoiceType == InvoiceType.Purchase
         ? "از فروشنده دریافت می‌کنم" : "از مشتری دریافت می‌کنم";
     private string PayTitle => InvoiceType == InvoiceType.Purchase
