@@ -55,6 +55,10 @@
                    OnClick="() => OnViewTransaction.InvokeAsync(Customer)" aria-label="@($"گردش حساب {Customer.FullName}")">گردش حساب</MudButton>
         <MudButton Class="customer-action-invoices" Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Material.Outlined.ReceiptLong"
                    OnClick="() => OnViewInvoices.InvokeAsync(Customer)" aria-label="@($"فاکتورهای {Customer.FullName}")">فاکتورها</MudButton>
+        <MudButton Class="customer-action-comprehensive" Variant="Variant.Text" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Outlined.Assignment"
+                   OnClick="() => OnViewComprehensive.InvokeAsync(Customer)"
+                   aria-label="@($"گزارش جامع معاملات {Customer.FullName}")">گزارش جامع مشتری</MudButton>
     </div>
 </article>
 
@@ -66,6 +70,7 @@
     [Parameter] public EventCallback<CustomerVm> OnRemove { get; set; }
     [Parameter] public EventCallback<CustomerVm> OnViewTransaction { get; set; }
     [Parameter] public EventCallback<CustomerVm> OnViewInvoices { get; set; }
+    [Parameter] public EventCallback<CustomerVm> OnViewComprehensive { get; set; }
     private ElementReference _card;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

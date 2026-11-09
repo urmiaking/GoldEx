@@ -2,6 +2,8 @@ using GoldEx.Client.Components.Components.Dialogs;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -229,6 +231,13 @@ public partial class CustomersList
             },
             wide: true);
         await dialog.Result;
+    }
+
+    private void OnViewComprehensive(CustomerVm customerVm)
+    {
+        if (!customerVm.Id.HasValue) return;
+        Navigation.NavigateTo(
+            ClientRoutes.Reporting.CustomerComprehensive.AppendQueryString(new { customerId = customerVm.Id.Value }));
     }
 
     private async Task OnViewInvoices(CustomerVm customerVm)

@@ -1,0 +1,52 @@
+@using GoldEx.Client.Pages.Reporting.ViewModels
+@using GoldEx.Client.Pages.Reporting.Components.Filters
+@using GoldEx.Client.Pages.Reporting.Components
+@using GoldEx.Shared.DTOs.Reporting
+@attribute [Route(ClientRoutes.Reporting.CustomerComprehensive)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>گزارش جامع مشتری</PageTitle>
+<link href="/css/reports/customer-comprehensive.css" rel="stylesheet" />
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="gex-report-page">
+    <ReportFiltersBase Model="_filters" OnSubmit="OnSubmit">
+        <CustomerComprehensiveFilters Model="_filters" />
+    </ReportFiltersBase>
+
+    @if (_loading)
+    {
+        <ReportTableSkeleton />
+    }
+    else if (_failed)
+    {
+        <MudAlert Severity="Severity.Error">دریافت گزارش جامع انجام نشد. دوباره تلاش کنید.</MudAlert>
+    }
+    else if (_report is not null)
+    {
+        <section class="gex-customer-report-shell">
+            <header class="gex-customer-report-toolbar">
+                <div><h1>گزارش جامع معاملات مشتری</h1><p>@(_customer?.FullName)</p></div>
+                <div class="gex-customer-print-actions">
+                    <label class="gex-customer-print-orientation">
+                        <span>جهت چاپ</span>
+                        <select @bind="_printOrientation" aria-label="جهت چاپ گزارش">
+                            <option value="landscape">افقی</option>
+                            <option value="portrait">عمودی</option>
+                        </select>
+                    </label>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Print"
+                               OnClick="PrintReport">چاپ گزارش</MudButton>
+                </div>
+            </header>
+            <CustomerComprehensiveDocument Data="_report" CustomerName="@(_customer?.FullName)"
+                                           IncludeDetails="_filters.IncludeDetails" />
+        </section>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+</MudContainer>
+<script src="@Assets["js/report-print.js"]"></script>

@@ -92,7 +92,7 @@
                     var customer = _customers[index];
                     <CustomerCard @key="customer.Id" Customer="customer" EntranceIndex="@(index % BatchSize)"
                                   FocusOnLoad="@(_appendStart > 0 && index == _appendStart)" OnEdit="OnEdit" OnRemove="OnRemove"
-                                  OnViewTransaction="OnViewTransaction" OnViewInvoices="OnViewInvoices" />
+                                  OnViewTransaction="OnViewTransaction" OnViewInvoices="OnViewInvoices" OnViewComprehensive="OnViewComprehensive" />
                 }
                 @if (_loadingMore)
                 {

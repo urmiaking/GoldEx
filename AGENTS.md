@@ -252,25 +252,12 @@ GoldEx supports standalone customer-to-customer remittances (`CustomerTransferVo
 3. **Optional Invoice Settlement Linking**:
    - `CustomerTransferVoucherService` links optional `SourceInvoiceId` and `DestinationInvoiceId`.
    - Automatically creates linked `InvoicePayment` records to settle the open balances (`Remaining`) of selected source/destination invoices.
-   - For a shop sale customer who pays the shop's supplier directly, use the standalone voucher to link the customer's sales invoice as `SourceInvoiceId` and the supplier's purchase invoice as `DestinationInvoiceId`. `PaymentEditor` disables the target-invoice selector for an incoming invoice payment. A new quick-settlement flow must validate each allocation against both invoices' open balances. The standalone request validators currently check amount positivity, customer IDs and price-unit presence.
 4. **UI & UX Standard**:
 5. **Invoice-Level Customer Transfers (حواله در فاکتور)**:
    - When registering a payment of type `PaymentType.CustomerTransfer` on an invoice (e.g. Purchase Invoice paying via another customer's receivable), both legs of the balanced transaction entry must have `Transaction.InvoiceId = invoice.Id` (the source invoice).
    - Setting `Transaction.InvoiceId` to `payment.TargetInvoiceId` must never be done, as `ReplaceTransactionsForInvoiceAsync` on the target invoice will consider those transactions as removed and falsely generate reversal transactions.
 
 ---
-
-## Enterprise Molten Gold Desk (دفتر آب‌شده)
-
-- `/invoices/molten-gold` is a store-only workflow. `MoltenGoldTrade` stores the agreed weight, fineness, rate, rate basis and fee. Its event history links physical deliveries, financial payments and customer transfer vouchers. Keep the currency balance and outstanding physical weight independent.
-- New desk entries use `IsPaper = true`. They immediately exchange customer monetary and 18K gold balances with separately recorded commission, without stock reservations, products or inventory invoices. `GoldPriceUnitId`, `RemainingGoldWeight` and `RemainingGoldBookAmount` preserve the gold quantity and carrying value. Physical handover creates a gold-denominated invoice and settles it against the contractual gold balance, without charging the monetary agreement again. A purchase receipt can supply its own assay number. Historical non-paper agreements keep their stock reservation and deferred invoice behavior. Use the per-store/product inventory lock when decreasing physical availability.
-- The sale form defaults to the existing molten gold fee setting. Purchases default to zero. Either can override the fee. For historical non-paper agreements an advance is allocated to invoices as gold is received or delivered, with desk-managed payments and vouchers protected from direct edits.
-- Use the existing standalone customer transfer voucher for directed payments against the other party's balance or an open invoice. For historical non-paper agreements, a transfer before delivery is an advance. The desk's directed payment always credits the source and debits the destination, including when both invoice links are absent. Preserve desk voucher payments when an ordinary counterpart invoice is edited. `MoltenGoldDeskSqlTester` applies the migrations and exercises these flows, paper balances with rial and toman base currencies, partial deliveries and stock reservations against SQL Server LocalDB.
-- Paper payments settle the monetary customer ledger directly. A directed remittance can also link an opposite-side paper trade, recording its allocation in both histories. Gold settlement matches an opposite-side paper trade and clears the selected 18K quantity in both customer ledgers, recording the difference between their carrying amounts. Each operation runs under the store's transaction-owned desk lock and keeps a retry identifier. Paper journal rows link to `MoltenGoldTradeId`.
-- Round the paper agreement's raw amount to the stored currency precision before converting it into base currency. Keep partial gold carrying-value allocations cumulative so the final settlement clears the exact remaining amount, including fractional rates/fineness with a rial base currency.
-- Keep the desk entry point on the invoices page, with description «ثبت خرید و فروش طلای آبشده». The user removed its standalone navigation and quick-create links. The form loads the unadjusted `Geram18` market price converted from rial to toman, labels it «نرخ روز طلای ۱۸ عیار», and has no rate-basis selector. Financial-account selectors use nullable GUIDs and explicit title formatting, so an empty selection never displays the all-zero GUID. Hide numeric spin buttons on this page.
-- Numeric inputs that feed the desk's result use `Immediate="true"`. This keeps fee and payment previews synchronized with typing. Browser verification used a disposable LocalDB instance and checked title display for an empty/selected cash account, live fee/payment calculations, regular-weight result typography and absence of horizontal overflow at 390px.
-- The user subsequently requested the established financial-page dialog workflow for the desk. Keep follow-up forms, transaction details and history in `ResponsiveDialogService` / `EditorDialogFrame` components. The list shows compact party/direction/date and money/gold remainder rows, opening `MoltenGoldTradeDetails` for actions. Immediate payment/delivery editors also use dialogs and return local drafts, which are only posted with the main trade. Show the rate timestamp opposite «ثبت معامله» and omit the manual rate refresh button.
 
 ## Sales Invoice Gold Weight Equivalent Reporting (معادل وزنی فاکتورهای فروش)
 
@@ -305,20 +292,6 @@ GoldEx displays each customer's running balance immediately after an invoice dir
    - `TransactionRepository.GetCustomerRemainingListAsync` filters ledger transactions where `PostingDate < UntilDate`, accumulating all preceding transactions and those posted by the invoice itself, while excluding subsequent transactions.
 3. **Multi-Unit Price Support**:
    - Displays running balances across all price units (currency, 18K gold, etc.) with automatic sliding carousel animation and manual slide toggle support.
-4. **Gold balance and physical availability**:
-   - `TransactionRepository.GetCustomerRemainingListAsync` groups debit and credit entries on customer ledger accounts by price unit. Use physical stock and ownership records to determine any future balance of allocated, deliverable gold.
-   - `MoltenGoldDetail` records the physical stock entry's weight, weight unit, fineness, assay number and assayer. `InvoiceService.CreateAsync` records invoice payments, inventory movements and journal entries before committing the invoice transaction.
-
----
-
-## Internal molten gold workspace scope (2026-11-06)
-
-- The user scoped the first version to authorized gold dealers and jewelers in their own GoldEx store. It is for internal calculation and recording of purchases and sales. Keep it out of the public vitrine and customer-facing order flows.
-- The enterprise invoice editor already accepts molten gold weight, fineness, gram price and assay details. `InvoicesController` restricts posting to Administrators and Owners. Preserve the existing posting flow for standard physical invoices when designing a shorter entry form.
-- The molten gold workspace prototype puts cash settlement and physical handover actions on the originating trade. It tracks independent outstanding amounts for cash and gold, accepts partial follow-ups, and shows their history on the trade. Carry that distinction into implementation and use the existing financial and inventory posting paths where they fit.
-- Current invoice creation posts stock movements for all product items. The general invoice update path reconciles invoice payments, journal entries and stock movements together. `Invoice.TotalUnpaidAmount` already derives the financial remainder from invoice payments, and `InventoryStockRepository.GetQuantitiesAsync` sums stock movements by product. A deferred handover workflow must account for both the creation and update posting paths and distinguish physical stock from weight committed to an unfulfilled sale.
-- `InvoiceService.CreateAsync` has no draft-only branch. If the molten gold workflow captures a commitment before accounting recognition, that commitment and any advance need a record that can exist before a posted invoice. Link the recognized portion to the commitment when it is posted.
-- The invoice payment validator uses `PaymentType.InternalCash` for both cash and bank-account payments. `PaymentEditor` already collects the financial account and reference number for that type. Distinguish bank transfers from `PaymentType.CustomerTransfer`, which reallocates balances between counterparties and can link to posted invoices.
 
 ---
 
@@ -1213,3 +1186,28 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Keep selection mapped to Model.FinancialAccount (GetFinancialAccountTitleResponse object), support both pointerdown and click (touch and keyboard), initial/reselected account text, newly added account, and manual required-account validation before Submit. Cash-account filtering is case-insensitive.
 - Restore shared responsive-dialog.js and its bounds tests from master (before 1.0.103 experiments) so CoinItemEditor and unrelated MudSelect/MudAutocomplete interactions do not inherit speculative positioning code.
 - See PaymentEditor.razor[.cs/.css] and scripts/tests/payment-cash-inline-picker.test.mjs. The authenticated browser still needs visual verification after local run.
+
+### Customer Comprehensive Report (#278, 2026-11-08)
+- Independent customer dossier under Reporting.CustomerComprehensive plus its print route; preserve the original customer ledger report.
+- Customer invoices and item/payment details come from IInvoiceRepository; authoritative balances come only from ITransactionRepository.GetCustomerTransactionsAsync.
+- To retain opening balances when date-filtering, fetch history from the beginning through ToDate before filtering visible rows by FromDate. Do not add documentary payment/invoice amounts into account balances.
+- Group commercial totals by InvoiceType and PriceUnitTitle, never mixing cash and gold units.
+- CustomerComprehensiveDocument.razor is shared between screen and enterprise print pages (ReportPrintBase and report-print.js). The dedicated stylesheet lives in Server/wwwroot/css/reports.
+- The incomplete local Dev molten-gold work is untouched; work was carried out on a clean origin/master worktree.
+
+
+### Customer Comprehensive Compact Layout and Orientation (#280, 2026-11-08)
+- CustomerComprehensiveDocument now has one compact overview with trade totals grouped by InvoiceType/PriceUnitTitle and balances from the ledger, with no meaningless transaction/payment counts. One invoice table contains multiple <tbody> groups (invoice heading row and item/adjustment rows); use repeated thead in print, never one table per invoice.
+- Financial movements are one chronological table: ledger entries enriched with invoice payment metadata when the InvoicePaymentId matches; standalone invoice payments with no corresponding visible ledger entry may appear with explicit "unmatched" annotation and no invented debit/credit/balance. Do not count those amounts into official balances.
+- The page exposes a lightweight native orientation selector (landscape default, portrait alternative); its query parameter is consumed by the report print route and passed to ReportPrintBase. Both directions use the existing A4 page definitions. Portrait must never clip columns.
+- Razor nullable expressions for the customer's name must use explicit @(...), not implicit @object?.Property parsing, both in text and component attributes.
+- The print base now supports opt-out ShowDetailHeading and ShowNotes, both true by default so all other reports are unaffected. The customer print uses Data=_report (non-ICollection) to avoid redundant row counts, and opts out of those additional headings/notes.
+- Regression: run scripts/tests/customer-comprehensive-report.test.mjs, enterprise-report-print.test.mjs and full Node suite plus GoldEx.Server build. Keep dirty Dev worktree untouched.
+
+
+### MCP customer financial reporting (Issue #284)
+- GoldEx.Server/Mcp/GoldExMcpEngine.cs handles get_invoice_details, get_customer_balance and get_customer_statement within the enterprise server at its authenticated MCP HTTP endpoint.
+- Never use N0 or low-precision rounding for decimal gold amounts in MCP responses. Use McpFinancialReportFormatting.Exact for stored values.
+- For a date-filtered customer statement, fetch ledger history from inception through the inclusive end of the requested calendar day, then apply the start boundary in memory. This preserves historical running balances and correct opening balances, per unit.
+- The statement defaults to 200 rows per page, with optional page and pageSize arguments and accurate total counts. Never silently hide rows or describe a partial page as the complete ledger.
+- Keep existing MCP tool names/arguments backward compatible; pagination additions are optional. Do not mutate accounting entries to fix presentation bugs.

@@ -1,0 +1,137 @@
+/* Compact customer dossier: the same content is used on-screen and in enterprise print. */
+.gex-customer-report-shell {
+    margin-block: 12px 24px;
+    padding: clamp(12px, 1.6vw, 20px);
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 14px;
+}
+.gex-customer-report-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.gex-customer-report-toolbar h1 { margin: 0; font-size: 1.12rem; font-weight: 700; }
+.gex-customer-report-toolbar p { margin: 2px 0 0; color: var(--mud-palette-text-secondary); font-size: .84rem; }
+.gex-customer-print-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.gex-customer-print-orientation { display: inline-flex; align-items: center; gap: 7px; font-size: .83rem; color: var(--mud-palette-text-secondary); }
+.gex-customer-print-orientation select {
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 8px;
+    padding: 8px 9px;
+    font: inherit;
+    cursor: pointer;
+}
+.gex-customer-print-orientation select:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
+.gex-customer-report { min-width: 0; }
+.gex-customer-overview {
+    border: 1px solid var(--mud-palette-lines-default, #dedede);
+    border-radius: 11px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--mud-palette-primary, #a77b27) 4%, var(--mud-palette-surface, #fff));
+}
+.gex-customer-overview-title { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; font-size: .86rem; margin-bottom: 8px; }
+.gex-customer-overview-title strong { font-weight: 700; }
+.gex-customer-overview-title > span { color: var(--mud-palette-text-secondary, #666); font-size: .8rem; }
+.gex-customer-overview-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 6px 10px; }
+.gex-customer-overview-metric {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 10px;
+    border-inline-start: 2px solid color-mix(in srgb, var(--mud-palette-primary, #a77b27) 50%, transparent);
+}
+.gex-customer-overview-metric > span { color: var(--mud-palette-text-secondary, #666); font-size: .76rem; }
+.gex-customer-overview-metric > span small { opacity: .8; font-size: .74rem; }
+.gex-customer-overview-metric > strong { font-size: .92rem; font-weight: 700; overflow-wrap: anywhere; }
+.gex-customer-overview-balance { border-inline-start-color: var(--mud-palette-info, #167695); }
+.gex-customer-overview-empty { font-size: .83rem; color: var(--mud-palette-text-secondary, #666); }
+.gex-customer-report-section { min-width: 0; margin-top: 14px; }
+.gex-customer-report-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 0 6px; }
+.gex-customer-report-heading h2 { margin: 0; font-size: .98rem; font-weight: 700; }
+.gex-customer-report-heading > span { color: var(--mud-palette-text-secondary, #666); font-size: .78rem; }
+.gex-customer-report-empty { margin: 5px 0; font-size: .83rem; color: var(--mud-palette-text-secondary, #666); }
+.gex-customer-report-table-wrap { width: 100%; min-width: 0; overflow-x: auto; }
+.gex-customer-report-table { width: 100%; border-collapse: collapse; font-size: .82rem; line-height: 1.6; }
+.gex-customer-report-table th, .gex-customer-report-table td {
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--mud-palette-lines-default, #ddd);
+    text-align: right;
+    vertical-align: middle;
+}
+.gex-customer-report-table th {
+    white-space: nowrap; font-weight: 650;
+    background: color-mix(in srgb, var(--mud-palette-primary, #a77b27) 7%, var(--mud-palette-surface, #fff));
+}
+.gex-customer-report-table td { overflow-wrap: anywhere; }
+.gex-customer-report-table td small, .gex-customer-muted { color: var(--mud-palette-text-secondary, #666); font-size: .75rem; }
+.gex-customer-invoice-group-heading {
+    background: color-mix(in srgb, var(--mud-palette-primary, #a77b27) 9%, var(--mud-palette-surface, #fff));
+    border-top: 2px solid color-mix(in srgb, var(--mud-palette-primary, #a77b27) 55%, var(--mud-palette-lines-default, #ddd));
+}
+.gex-customer-invoice-group-heading td { padding-block: 7px; }
+.gex-customer-invoice-group-heading td:first-child > strong { display: block; font-weight: 700; white-space: nowrap; }
+.gex-customer-invoice-group-heading td:first-child > span { display: block; }
+.gex-customer-invoice-type {
+    display: inline-block; padding: 1px 7px; border-radius: 5px;
+    background: color-mix(in srgb, var(--mud-palette-info, #137a99) 12%, transparent);
+    font-size: .75rem; font-weight: 600;
+}
+.gex-customer-invoice-type.is-purchase { background: color-mix(in srgb, var(--mud-palette-warning, #b1760d) 17%, transparent); }
+.gex-customer-group-count { margin-inline-start: 8px; color: var(--mud-palette-text-secondary, #666); font-size: .76rem; }
+.gex-customer-amount { font-weight: 700; }
+.gex-customer-invoice-item td { padding-block: 5px; }
+.gex-customer-invoice-item td:nth-child(2) > span { display: block; }
+.gex-customer-invoice-item td:nth-child(2) small { display: block; }
+.gex-customer-item-marker { text-align: center !important; color: var(--mud-palette-text-disabled, #999); font-size: 1rem; }
+.gex-customer-invoice-adjustments td { font-size: .76rem; color: var(--mud-palette-text-secondary, #666); }
+.gex-customer-invoice-adjustments span + span { margin-inline-start: 14px; }
+.gex-customer-ledger-table td:nth-child(2) > span { display: block; }
+.gex-customer-ledger-table td:nth-child(2) small { display: block; }
+.gex-customer-report .is-debit { color: var(--mud-palette-error, #a43b3b); }
+.gex-customer-report .is-credit { color: var(--mud-palette-success, #087d44); }
+.gex-customer-unposted-payment { background: color-mix(in srgb, var(--mud-palette-warning, #a77b27) 5%, transparent); }
+@media (max-width: 680px) {
+    .gex-customer-report-shell { padding: 10px; }
+    .gex-customer-print-actions { width: 100%; justify-content: space-between; }
+    .gex-customer-overview-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gex-customer-overview-metric { padding-inline: 6px; }
+    .gex-customer-report-table { min-width: 610px; }
+}
+@media print {
+    .gex-customer-report { color: #242424; }
+    .gex-customer-overview { padding: 2.5mm; border-color: #d7d4cd; border-radius: 2mm; background: #faf9f7; }
+    .gex-customer-overview-title { margin-bottom: 1mm; }
+    .gex-customer-overview-items { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1mm; }
+    .gex-customer-overview-metric { padding: 1.5mm; border-inline-start-width: 1.5pt; }
+    .gex-customer-overview-metric > span { font-size: 7pt; color: #555; }
+    .gex-customer-overview-metric > strong { font-size: 8pt; }
+    .gex-customer-report-section { margin-top: 3mm; }
+    .gex-customer-report-heading { break-after: avoid; padding-bottom: 1.5mm; }
+    .gex-customer-report-heading h2 { font-size: 9pt; }
+    .gex-customer-report-table-wrap { overflow: visible; width: 100%; }
+    .gex-customer-report-table { min-width: 0 !important; width: 100%; font-size: 7.4pt; line-height: 1.45; }
+    .gex-customer-report-table thead { display: table-header-group; }
+    .gex-customer-report-table th, .gex-customer-report-table td { padding: 1.5mm 1.2mm; border-color: #dedede; }
+    .gex-customer-report-table tr { break-inside: avoid; page-break-inside: avoid; }
+    .gex-customer-invoice-group { break-inside: auto; }
+    .gex-customer-invoice-group-heading { border-top: 1.5pt solid #ad9364; background: #f4f1e9; break-after: avoid; page-break-after: avoid; }
+    .gex-customer-invoice-item td { padding-block: 1mm; }
+    .gex-customer-invoices-table th:nth-child(1) { width: 17%; }
+    .gex-customer-invoices-table th:nth-child(2) { width: 34%; }
+    .gex-customer-invoices-table th:nth-child(3) { width: 9%; }
+    .gex-customer-invoices-table th:nth-child(4) { width: 11%; }
+    .gex-customer-invoices-table th:nth-child(5) { width: 9%; }
+    .gex-customer-invoices-table th:nth-child(6) { width: 20%; }
+    .gex-customer-invoice-group-heading td:first-child > strong { white-space: normal; }
+    .gex-customer-report .is-debit, .gex-customer-report .is-credit { color: #202020; }
+    .gex-customer-report-toolbar, .gex-customer-print-actions { display: none; }
+}

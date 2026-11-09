@@ -7,15 +7,22 @@ const server = new URL('../../src/App/Server/GoldEx.Server/', import.meta.url);
 const readClient = p => readFileSync(new URL(p, client), 'utf8');
 const readServer = p => readFileSync(new URL(p, server), 'utf8');
 
-test('all fourteen built-in print routes reuse one enterprise template', () => {
+test('all fifteen built-in print routes reuse one enterprise template', () => {
     const dir = 'Pages/Reporting/Pages/Prints/';
     const names = readdirSync(new URL(dir, client)).filter(x => x.endsWith('ReportPrint.razor'));
-    assert.equal(names.length, 14);
+    assert.equal(names.length, 15);
     for (const name of names) {
         const source = readClient(dir + name);
         assert.match(source, /<ReportPrintBase /, name);
         assert.match(source, /ReportTitle=/, name);
-        assert.match(source, /<table class="table">/, name);
+        if (name === 'CustomerComprehensiveReportPrint.razor') {
+            assert.match(source, /<CustomerComprehensiveDocument /, name);
+            const document = readClient('Pages/Reporting/Components/CustomerComprehensiveDocument.razor');
+            assert.match(document, /<table class="gex-customer-report-table gex-customer-invoices-table">/, name);
+            assert.match(document, /<tbody class="gex-customer-invoice-group">/, name);
+        } else {
+            assert.match(source, /<table class="table">/, name);
+        }
         assert.match(source, /<script src=".*report-print.js.*"><\/script>/, name);
     }
 });
@@ -27,7 +34,12 @@ test('landscape printing is selected only for wide report tables', () => {
         const source = readClient(dir + name);
         const head = source.match(/<thead[\s\S]*?<\/thead>/)?.[0] ?? '';
         const columns = (head.match(/<th\b/g) ?? []).length;
-        assert.equal(source.includes('Landscape="true"'), columns >= 7, name + ': ' + columns + ' columns');
+        if (name === 'CustomerComprehensiveReportPrint.razor') {
+            assert.match(source, /Landscape="@LandscapeMode"/, name + ': orientation selected by user');
+        } else {
+            assert.equal(source.includes('Landscape="true"'),
+                columns >= 7, name + ': ' + columns + ' columns');
+        }
     }
 });
 

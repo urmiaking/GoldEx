@@ -1,0 +1,63 @@
+@using GoldEx.Client.Pages.Reporting.ViewModels
+@using GoldEx.Shared.DTOs.Customers
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="4">
+    <MudAutocomplete T="GetCustomerResponse?"
+                     Value="_selectedCustomer"
+                     ValueChanged="CustomerChanged"
+                     Text="@_selectedCustomer?.FullName"
+                     Label="طرف حساب" Placeholder="نام یا شماره مشتری"
+                     ToStringFunc="@(customer => customer?.FullName)"
+                     SearchFunc="SearchCustomers"
+                     CoerceText="true" ResetValueOnEmptyText="true"
+                     Required="true"
+                     Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                     Variant="Variant.Outlined" Margin="Margin.Dense" />
+</MudItem>
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="bool" @bind-Value="Model.IncludeDetails"
+               Label="نوع گزارش" Variant="Variant.Outlined" Margin="Margin.Dense">
+        <MudSelectItem T="bool" Value="@(true)">کامل؛ با ریز اقلام</MudSelectItem>
+        <MudSelectItem T="bool" Value="@(false)">خلاصه معاملات</MudSelectItem>
+    </MudSelect>
+</MudItem>
+
+@code {
+    [Parameter, EditorRequired] public CustomerComprehensiveFilterVm Model { get; set; } = default!;
+    private GetCustomerResponse? _selectedCustomer;
+    private List<GetCustomerResponse>? _customers;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Model.CustomerId.HasValue && Model.CustomerId != Guid.Empty &&
+            _selectedCustomer?.Id != Model.CustomerId.Value)
+        {
+            await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                (service, ct) => service.GetAsync(Model.CustomerId.Value, ct),
+                afterSend: value => _selectedCustomer = value,
+                cancelPrevious: true);
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task<IEnumerable<GetCustomerResponse>?> SearchCustomers(
+        string? text, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            (service, ct) => service.GetByNameAsync(text, null, ct),
+            afterSend: list => _customers = list,
+            cancelPrevious: true);
+        return _customers;
+    }
+
+    private Task CustomerChanged(GetCustomerResponse? value)
+    {
+        _selectedCustomer = value;
+        Model.CustomerId = value?.Id;
+        return Task.CompletedTask;
+    }
+}

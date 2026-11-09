@@ -46,6 +46,7 @@
 .customer-card-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; }
 .customer-card-actions ::deep .customer-action-ledger { --customer-action-accent: var(--mud-palette-primary); }
 .customer-card-actions ::deep .customer-action-invoices { --customer-action-accent: var(--mud-palette-info); }
+.customer-card-actions ::deep .customer-action-comprehensive { --customer-action-accent: var(--mud-palette-primary); grid-column: 1 / -1; }
 .customer-card-actions ::deep .mud-button {
     min-height: 44px; min-width: 0; font-size: .875rem; font-weight: 500; padding: 6px 8px;
     color: var(--mud-palette-text-primary);
