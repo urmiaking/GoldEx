@@ -452,9 +452,55 @@
 
 /* Fast-entry progressive disclosure: keeps accounting details out of the primary flow. */
 .desk-primary-fields, .desk-rate-fields { align-items: center; }
-.desk-rate-note { display:flex; align-items:center; gap:7px; padding-inline:4px; min-height:35px;
-    color:var(--mud-palette-text-secondary); font-size:.76rem; }
-.desk-rate-note ::deep .gex-shell-icon { width:15px; height:15px; flex-shrink:0; }
+/* Rate freshness belongs to the card heading, not among price inputs. */
+.desk-entry-heading { flex-wrap: wrap; row-gap: 5px; column-gap: 12px; }
+.desk-rate-updated {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    font-size: .73rem;
+    font-weight: 400;
+    color: var(--mud-palette-text-secondary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.desk-rate-updated ::deep .gex-shell-icon { width: 14px; height: 14px; flex: none; }
+.desk-load-error { margin-block-end: 14px; }
+
+/* Keep fields mounted. Animate row size and fade while blocking focus on collapsed inputs. */
+.desk-expand {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(-7px);
+    visibility: hidden;
+    transition: grid-template-rows .34s cubic-bezier(.22, 1, .36, 1),
+                opacity .22s ease,
+                transform .3s ease,
+                visibility 0s linear .34s;
+}
+.desk-expand.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition: grid-template-rows .34s cubic-bezier(.22, 1, .36, 1),
+                opacity .23s ease .04s,
+                transform .3s ease,
+                visibility 0s;
+}
+.desk-expand-inner { min-height: 0; overflow: hidden; }
+.desk-expand .desk-advanced-fields { padding-block: 5px; }
+.desk-options-toggle ::deep .gex-shell-icon {
+    transition: transform .26s cubic-bezier(.22, 1, .36, 1);
+}
+.desk-options-toggle[aria-expanded="true"] ::deep .gex-shell-icon {
+    transform: rotate(180deg);
+}
+.desk-table-loading td { height: 58px; }
+.desk-table-loading td ::deep .mud-skeleton + .mud-skeleton { margin-top: 8px; }
+.desk-table-loading td ::deep .mud-skeleton { border-radius: 5px; }
 .desk-options-toggle { display:flex; align-items:center; gap:8px; width:100%; padding:9px 10px;
     border:1px solid var(--mud-palette-lines-default); border-radius:9px;
     background:var(--mud-palette-surface); color:var(--mud-palette-text-primary);
@@ -471,6 +517,10 @@
 .desk-price-breakdown summary { cursor:pointer; color:var(--mud-palette-text-secondary); font-size:.77rem; }
 .desk-price-breakdown .desk-total-row { padding-top:8px; }
 @media(max-width:600px) {
-    .desk-rate-fields { grid-template-columns:minmax(0,1fr); gap:4px; }
-    .desk-rate-note { min-height:auto; margin-bottom:4px; }
+    .desk-primary-fields { grid-template-columns: minmax(0, 1fr); }
+    .desk-rate-updated { white-space: normal; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .desk-expand, .desk-expand.is-open { transition: none; transform: none; }
+    .desk-options-toggle ::deep .gex-shell-icon { transition: none; }
 }

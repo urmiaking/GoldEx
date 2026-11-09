@@ -1220,3 +1220,11 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Account summary must match PriceUnit.Id against configured GoldPriceUnitId and PriceUnitId. Never infer a second customer unit by substring/title or substitute a mesghal balance for money.
 - Unsettled includes any remaining payment or gold weight; backend and frontend must agree on those predicates. Preserve idempotent operations and transaction-based accounting.
 - See src/App/Client/GoldEx.Client/Pages/Invoices/MoltenGoldDesk.razor[.cs/.css] and scripts/tests/molten-gold-fast-entry.test.mjs.
+
+
+## Molten gold desk UX refinement (2026-11-09; overrides the 18K/mesghal UX note)
+- The quick trade form accepts the 18K gram price ONLY. No gram/mesghal selector in the UI; submit MoltenGoldRateBasis.Gram. Preserve the underlying DTO's ability to represent historical mesghal records; do not alter existing trades or accounting logic.
+- Initial settings loading must NOT replace the whole page with an alert. Always show purchase/sale switch and entry controls (disabled until settings resolve); the ledger shows a 5-row table-shaped MudSkeleton during settings or history loading. Retry only on actual load failure.
+- Show the last refreshed rate timestamp next to the 'ثبت معامله جدید' card title, not as an input-row widget.
+- Keep both advanced groups mounted in the DOM, reveal them using .desk-expand grid-template-rows/opacity/transform transitions, set aria-hidden/inert while collapsed, and respect prefers-reduced-motion.
+- Focused tests: scripts/tests/molten-gold-fast-entry.test.mjs. The locally running Debug server must be rebuilt/restarted for Razor changes.

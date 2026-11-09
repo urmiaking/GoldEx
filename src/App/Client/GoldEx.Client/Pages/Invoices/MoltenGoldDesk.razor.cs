@@ -37,7 +37,6 @@ public partial class MoltenGoldDesk
     private decimal _weight;
     private decimal _fineness = 750m;
     private decimal _rate;
-    private MoltenGoldRateBasis _rateBasis = MoltenGoldRateBasis.Gram;
     private bool _advancedOpen;
     private bool _showImmediate;
     private DateTime? _rateUpdatedAt;
@@ -47,6 +46,7 @@ public partial class MoltenGoldDesk
     private Guid _tradeId = Guid.NewGuid();
     private bool _saving;
     private bool _loading;
+    private bool _isInitializing = true;
     private int _skip;
     private int _balanceVersion;
     private MoltenGoldTradeFilter _filter = MoltenGoldTradeFilter.Today;
@@ -68,11 +68,11 @@ public partial class MoltenGoldDesk
         }
     }
 
-    private decimal GramRate => _settings is { GramPerMesghal: > 0m }
-        ? MoltenGoldTradePricing.GramRate(_rate, _rateBasis, _settings.GramPerMesghal)
-        : 0m;
+    private bool EntryDisabled => _saving || _isInitializing || _settings is null ||
+        _settings.PriceUnitId == Guid.Empty || _settings.GoldPriceUnitId == Guid.Empty;
+
     private decimal RawValue => _weight is > 0 and <= 1_000_000m && _rate is > 0 and <= 1_000_000_000_000m &&
-        _fineness is > 0 and < 1000m ? MoltenGoldTradePricing.Value(_weight, _fineness, GramRate) : 0;
+        _fineness is > 0 and < 1000m ? MoltenGoldTradePricing.Value(_weight, _fineness, _rate) : 0;
     private decimal CommissionValue => MoltenGoldTradePricing.Commission(RawValue, _commission);
 
     private string ImmediateSummary
@@ -99,14 +99,26 @@ public partial class MoltenGoldDesk
 
     private async Task InitializeAsync()
     {
-        _settings = await SendRequestAsync<IMoltenGoldTradeService, MoltenGoldDeskSettings>((s, ct) => s.GetSettingsAsync(ct));
-        if (_settings is null || _settings.PriceUnitId == Guid.Empty) return;
-        if (_rate == 0) _rate = _settings.DayRate;
-        _rateUpdatedAt = _settings.RateUpdatedAt;
-        _commission = _side == InvoiceType.Sell ? _settings.CommissionPercent : 0m;
-        _accounts = await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
-            (s, ct) => s.GetTitlesAsync(null, _settings.PriceUnitId, ct)) ?? [];
-        await LoadAsync();
+        _isInitializing = true;
+        try
+        {
+            _settings = await SendRequestAsync<IMoltenGoldTradeService, MoltenGoldDeskSettings>(
+                (s, ct) => s.GetSettingsAsync(ct));
+            if (_settings is null || _settings.PriceUnitId == Guid.Empty || _settings.GoldPriceUnitId == Guid.Empty)
+                return;
+
+            if (_rate == 0) _rate = _settings.DayRate;
+            _rateUpdatedAt = _settings.RateUpdatedAt;
+            _commission = _side == InvoiceType.Sell ? _settings.CommissionPercent : 0m;
+
+            _accounts = await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+                (s, ct) => s.GetTitlesAsync(null, _settings.PriceUnitId, ct)) ?? [];
+            await LoadAsync();
+        }
+        finally
+        {
+            _isInitializing = false;
+        }
     }
 
     private async Task LoadAsync()
@@ -132,19 +144,6 @@ public partial class MoltenGoldDesk
     {
         _skip = Math.Max(0, _skip + delta);
         await LoadAsync();
-    }
-
-    private void ChangeRateBasis(MoltenGoldRateBasis next)
-    {
-        if (_rateBasis == next) return;
-        if (_settings is { GramPerMesghal: > 0m } && _rate > 0)
-        {
-            var gramRate = GramRate;
-            _rate = next == MoltenGoldRateBasis.Gram ? gramRate
-                : gramRate * _settings.GramPerMesghal * 705m / 750m;
-            _rate = Math.Round(_rate, 10, MidpointRounding.AwayFromZero);
-        }
-        _rateBasis = next;
     }
 
     private void ToggleAdvanced() => _advancedOpen = !_advancedOpen;
@@ -235,7 +234,7 @@ public partial class MoltenGoldDesk
 
     private async Task CreateAsync()
     {
-        if (_saving) return;
+        if (EntryDisabled) return;
         if (_customer?.Id is not Guid customerId || _weight is <= 0 or > 1_000_000m || _rate is <= 0 or > 1_000_000_000_000m ||
             _fineness is <= 0 or >= 1000m || _immediateDelivery?.Weight > _weight ||
             _immediatePayment?.Amount > RawValue + CommissionValue)
@@ -244,7 +243,7 @@ public partial class MoltenGoldDesk
             return;
         }
         var request = new CreateMoltenGoldTrade(_tradeId, _side, customerId, _immediateDelivery?.Stock?.Id, _weight, _fineness,
-            _rateBasis, _rate, _commission, _immediateDelivery?.AssayNumber, _immediateDelivery?.Weight ?? 0,
+            MoltenGoldRateBasis.Gram, _rate, _commission, _immediateDelivery?.AssayNumber, _immediateDelivery?.Weight ?? 0,
             _immediatePayment?.AccountId, _immediatePayment?.Amount ?? 0, _immediatePayment?.Reference, IsPaper: true);
         _saving = true;
         try

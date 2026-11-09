@@ -6,17 +6,34 @@ const markup = readFileSync(base + "MoltenGoldDesk.razor", "utf8");
 const viewModel = readFileSync(base + "MoltenGoldDesk.razor.cs", "utf8");
 const backend = readFileSync("src/App/Server/GoldEx.Server.Application/Services/MoltenGoldTradeService.cs", "utf8");
 
-test("entry keeps default simple and advanced options optional", () => {
-    assert.match(markup, /وزن طلای ۷۵۰/);
-    assert.match(markup, /@if \(_advancedOpen\)/);
-    assert.match(markup, /@if \(_showImmediate\)/);
-    assert.match(markup, /تسویه همزمان \(اختیاری\)/);
+test("quick entry uses 18K gram price only, never mesghal selector", () => {
+    assert.match(markup, /Label="نرخ هر گرم طلای ۱۸ عیار"/);
+    assert.doesNotMatch(markup, /مبنای نرخ|مظنه \(مثقال|MudSelect T="MoltenGoldRateBasis"/);
+    assert.match(viewModel, /MoltenGoldRateBasis\.Gram, _rate, _commission/);
+    assert.doesNotMatch(viewModel, /ChangeRateBasis|GramRate =>|_rateBasis/);
 });
-test("rate basis is submitted and converted with the shared pricing model", () => {
-    assert.match(markup, /ValueChanged="ChangeRateBasis"/);
-    assert.match(markup, /MoltenGoldRateBasis\.Mesghal/);
-    assert.match(viewModel, /MoltenGoldTradePricing\.GramRate\(_rate, _rateBasis/);
-    assert.match(viewModel, /_rateBasis, _rate, _commission,/);
+test("loading keeps buy and sell visible and skeletonizes the ledger table", () => {
+    assert.match(markup, /Class="desk-buy"/);
+    assert.match(markup, /Class="desk-sell"/);
+    assert.match(markup, /@if \(_loading \|\| _isInitializing\)/);
+    assert.match(markup, /else if \(_settings is null\)/);
+    assert.match(markup, /desk-table-loading/);
+    assert.match(markup, /@for \(var i = 0; i < 5; i\+\+\)/);
+    assert.doesNotMatch(markup, /در حال دریافت تنظیمات دفتر آب‌شده/);
+});
+test("rate freshness is in form heading, outside the inputs", () => {
+    assert.match(markup, /class="desk-rate-updated"/);
+    assert.ok(markup.indexOf("desk-rate-updated") < markup.indexOf("desk-primary-fields"));
+    assert.doesNotMatch(markup, /desk-rate-note/);
+});
+test("advanced fields and immediate settlement animate closed and opened", () => {
+    const css = readFileSync(base + "MoltenGoldDesk.razor.css", "utf8");
+    assert.equal((markup.match(/class="@\(_\w+ \? "desk-expand is-open"/g) || []).length, 2);
+    assert.match(markup, /inert="@\(!_advancedOpen\)"/);
+    assert.match(markup, /inert="@\(!_showImmediate\)"/);
+    assert.match(css, /grid-template-rows:\s*0fr/);
+    assert.match(css, /grid-template-rows:\s*1fr/);
+    assert.match(css, /prefers-reduced-motion:reduce/);
 });
 test("balances use exact configured account units", () => {
     assert.match(viewModel, /b\.PriceUnit\.Id == _settings!\.GoldPriceUnitId/);
