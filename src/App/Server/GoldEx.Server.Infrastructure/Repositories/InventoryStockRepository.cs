@@ -10,6 +10,7 @@ using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.MoltenGoldTradeAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
@@ -30,6 +31,60 @@ internal class InventoryStockRepository(
     ISettingRepository settingRepository) : RepositoryBase<InventoryStock>(dbContext),
     IInventoryStockRepository
 {
+    public async Task LockProductAsync(ProductId productId, CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsSqlServer())
+            return;
+
+        var resource = $"goldex-stock:{dbContext.CurrentStoreId.Value}:{productId.Value}";
+        await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @result int;
+            EXEC @result = sp_getapplock @Resource = {resource}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000;
+            IF @result < 0 THROW 50001, 'Could not lock product inventory.', 1;
+            """, cancellationToken);
+    }
+
+    public Task<decimal> GetReservedMoltenGoldAsync(ProductId productId, CancellationToken cancellationToken)
+        => dbContext.Set<MoltenGoldTrade>()
+            .Where(x => x.ProductId == productId && !x.IsCancelled && !x.IsPaper)
+            .SumAsync(x => x.RemainingWeight, cancellationToken);
+
+    public override async Task<int> SaveAsync(CancellationToken cancellationToken = default)
+    {
+        var changes = dbContext.ChangeTracker.Entries<InventoryStock>()
+            .Where(x => x.Entity.ProductId.HasValue && x.State is EntityState.Added or EntityState.Deleted)
+            .GroupBy(x => x.Entity.ProductId!.Value)
+            .OrderBy(x => x.Key.Value)
+            .ToList();
+
+        if (changes.Count == 0 || !dbContext.Database.IsRelational())
+            return await base.SaveAsync(cancellationToken);
+
+        await using var ownTransaction = GetCurrentTransaction() is null
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
+        foreach (var change in changes)
+        {
+            var delta = change.Sum(x => x.Entity.ChangeAmount *
+                (x.Entity.ActionType == WarehouseActionType.In ? 1 : -1) *
+                (x.State == EntityState.Added ? 1 : -1));
+            if (delta >= 0)
+                continue;
+
+            await LockProductAsync(change.Key, cancellationToken);
+            var reserved = await GetReservedMoltenGoldAsync(change.Key, cancellationToken);
+            if (reserved > 0 && await GetQuantityAsync(change.Key, cancellationToken) + delta < reserved)
+                throw new FluentValidation.ValidationException([new FluentValidation.Results.ValidationFailure(
+                    "Product", "بخشی از این قطعه برای تحویل معاملهٔ آب‌شده کنار گذاشته شده است.")]);
+        }
+
+        var result = await base.SaveAsync(cancellationToken);
+        if (ownTransaction is not null)
+            await ownTransaction.CommitAsync(cancellationToken);
+        return result;
+    }
+
     public Task<decimal> GetQuantityAsync(ProductId productId, CancellationToken cancellationToken = default)
     {
         return Query

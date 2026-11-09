@@ -18,6 +18,7 @@ public static class PaymentDescriptionBuilder
             PaymentType.TransferedPayment => GetTransferedPaymentTitle(payment),
             PaymentType.Check => GetCheckPaymentTitle(payment),
             PaymentType.Coin => GetCoinPaymentTitle(payment),
+            PaymentType.MoltenGoldDesk => PaymentType.MoltenGoldDesk.GetDisplayTitle(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

@@ -1857,7 +1857,8 @@ internal class AccountingTransactionService(
         return repository.RemoveByPaymentVoucherIdAsync(voucher.Id, cancellationToken);
     }
 
-    public async Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default)
+    public async Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default,
+        bool isMoltenGoldDesk = false)
     {
         await repository.RemoveByCustomerTransferVoucherIdAsync(voucher.Id, cancellationToken);
 
@@ -1875,9 +1876,6 @@ internal class AccountingTransactionService(
 
         var sourceLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
             voucher.SourceCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
-
-        var destLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-            voucher.DestinationCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
         var postingDate = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
 
@@ -1897,18 +1895,16 @@ internal class AccountingTransactionService(
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        var destinationRole = isMoltenGoldDesk && destInvoice?.InvoiceType == InvoiceType.Purchase
+            ? LedgerAccountRole.Payable : LedgerAccountRole.Receivable;
+        var destLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            voucher.DestinationCustomerId, voucher.PriceUnitId, destinationRole, cancellationToken);
+
         TransactionType sourceTxType;
         TransactionType destTxType;
 
-        if (destInvoice != null && destInvoice.InvoiceType == InvoiceType.Purchase)
+        if (isMoltenGoldDesk || destInvoice?.InvoiceType == InvoiceType.Purchase || sourceInvoice?.InvoiceType == InvoiceType.Sell)
         {
-            // گیرنده فاکتور خرید دارد (ما به گیرنده بدهکار بودیم): با دریافت حواله، طلب گیرنده تسویه می‌شود (بدهکار)
-            destTxType = TransactionType.Debit;
-            sourceTxType = TransactionType.Credit;
-        }
-        else if (sourceInvoice != null && sourceInvoice.InvoiceType == InvoiceType.Sell)
-        {
-            // فرستنده فاکتور فروش دارد (فرستنده به ما بدهکار بود): با انتقال وجه، بدهی فاکتور فرستنده تسویه می‌شود (بستانکار)
             sourceTxType = TransactionType.Credit;
             destTxType = TransactionType.Debit;
         }

@@ -1,4 +1,5 @@
 using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Domain.MoltenGoldTradeAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,6 +10,8 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
     public void Configure(EntityTypeBuilder<Transaction> builder)
     {
         builder.ToTable("Transactions");
+        builder.HasOne<MoltenGoldTrade>().WithMany().HasForeignKey(x => x.MoltenGoldTradeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value,

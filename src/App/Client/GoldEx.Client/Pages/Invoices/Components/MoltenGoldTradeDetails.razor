@@ -1,0 +1,177 @@
+@using GoldEx.Shared.DTOs.MoltenGold
+@using GoldEx.Client.Components.Layouts.Components
+@using System.Globalization
+
+<EditorDialogFrame>
+    <DialogContent>
+        <div class="molten-details-container" dir="rtl">
+            <!-- 1. Header (Clean, no chips, no colored borders) -->
+            <div class="trade-header">
+                <div class="trade-header-title">
+                    <span class="trade-type-label @(Trade.Side == InvoiceType.Purchase ? "is-buy" : "is-sell")">
+                        @(Trade.Side == InvoiceType.Purchase ? "خرید آب‌شده" : "فروش آب‌شده")
+                        @(Trade.IsPaper ? " (کاغذی)" : "")
+                    </span>
+                    <span class="trade-title-sep">·</span>
+                    <span class="trade-customer">@Trade.CustomerName</span>
+                </div>
+                <div class="trade-datetime">
+                    <time>@FormatShamsi(Trade.Date) ساعت @Trade.Date.ToString("HH:mm")</time>
+                </div>
+            </div>
+
+            <!-- 2. Essential Trade Metrics (Compact, useful, clean) -->
+            <div class="trade-summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">وزن معامله</span>
+                    <span class="summary-value">@Trade.Weight.ToString("0.###") گرم <small>(عیار @Trade.Fineness.ToString("0.###"))</small></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">مبلغ معامله</span>
+                    <span class="summary-value">@Trade.Total.ToString("#,##0.##") تومان</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">ماندهٔ وجه</span>
+                    <span class="summary-value @(Trade.RemainingAmount > 0 ? "is-unsettled" : "is-settled")">
+                        @(Trade.RemainingAmount > 0 ? $"{Trade.RemainingAmount:#,##0.##} تومان" : "تسویه شده")
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">ماندهٔ طلا</span>
+                    <span class="summary-value @(Trade.RemainingWeight > 0 ? "is-gold-unsettled" : "is-settled")">
+                        @(Trade.RemainingWeight > 0 ? $"{Trade.RemainingWeight:0.###} گرم" : "تحویل شده")
+                    </span>
+                </div>
+            </div>
+
+            <!-- 3. Actions (Only if unsettled) -->
+            @if (Trade.RemainingAmount > 0 || Trade.RemainingWeight > 0)
+            {
+                <div class="trade-actions-bar">
+                    @if (Trade.RemainingAmount > 0)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Payments"
+                                   OnClick="@(() => Choose(MoltenGoldOperation.Payment))">
+                            @(Trade.Side == InvoiceType.Sell ? "دریافت وجه" : "پرداخت وجه")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.SwapHoriz"
+                                   OnClick="@(() => Choose(MoltenGoldOperation.Transfer))">
+                            ثبت حواله
+                        </MudButton>
+                    }
+                    @if (Trade.RemainingWeight > 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Inventory2"
+                                   OnClick="@(() => Choose(MoltenGoldOperation.Delivery))">
+                            @(Trade.Side == InvoiceType.Sell ? "تحویل طلا" : "دریافت طلا")
+                        </MudButton>
+                        @if (Trade.IsPaper)
+                        {
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Outlined.AutoAwesome"
+                                       OnClick="@(() => Choose(MoltenGoldOperation.GoldSettlement))">
+                                تسویه طلایی
+                            </MudButton>
+                        }
+                    }
+                </div>
+            }
+
+            <!-- 4. Event History (Clean, compact table) -->
+            <div class="trade-history-section">
+                <div class="history-section-title">سوابق و گردش معامله</div>
+                @if (Trade.Events.Count == 0)
+                {
+                    <div class="history-empty">هنوز پرداختی یا تحویلی برای این معامله ثبت نشده است.</div>
+                }
+                else
+                {
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>رویداد</th>
+                                <th>تاریخ و ساعت</th>
+                                <th>توضیحات / فاکتور</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in Trade.Events.OrderByDescending(x => x.Date))
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="event-name">@EventText(entry)</span>
+                                    </td>
+                                    <td>
+                                        <time class="event-time">@FormatShamsiDateTime(entry.Date)</time>
+                                    </td>
+                                    <td>
+                                        <div class="event-meta">
+                                            @if (entry.InvoiceNumber is long number)
+                                            {
+                                                <MudLink Href="@InvoiceUrl(number)" Class="event-invoice-link">
+                                                    فاکتور @number
+                                                </MudLink>
+                                            }
+                                            @if (entry.Kind != MoltenGoldTradeEventKind.GoldSettlement && !string.IsNullOrWhiteSpace(entry.Reference))
+                                            {
+                                                <span class="event-ref">@entry.Reference</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        @if (Trade.Events.All(x => x.Kind == MoltenGoldTradeEventKind.Agreement))
+        {
+            <MudButton Color="Color.Error" Variant="Variant.Text" StartIcon="@Icons.Material.Outlined.Cancel"
+                       OnClick="@(() => Choose(MoltenGoldOperation.Cancel))">
+                لغو توافق
+            </MudButton>
+        }
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Outlined.Close"
+                   OnClick="@(() => Session.Cancel())">
+            بستن
+        </MudButton>
+    </DialogActions>
+</EditorDialogFrame>
+
+@code {
+    [CascadingParameter] private ResponsiveDialogSession Session { get; set; } = null!;
+    [Parameter, EditorRequired] public MoltenGoldTradeResponse Trade { get; set; } = null!;
+
+    private void Choose(MoltenGoldOperation operation) => Session.Close(operation);
+
+    private string InvoiceUrl(long number) => ClientRoutes.Invoices.ViewInvoice
+        .Replace("{number:long}", number.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal)
+        .Replace("{invoiceType}", Trade.Side.ToString(), StringComparison.Ordinal);
+
+    private static string FormatShamsi(DateTime date)
+    {
+        var cal = new PersianCalendar();
+        return $"{cal.GetYear(date)}/{cal.GetMonth(date):00}/{cal.GetDayOfMonth(date):00}";
+    }
+
+    private static string FormatShamsiDateTime(DateTime date)
+    {
+        var cal = new PersianCalendar();
+        return $"{cal.GetYear(date)}/{cal.GetMonth(date):00}/{cal.GetDayOfMonth(date):00} · {date:HH:mm}";
+    }
+
+    private string EventText(MoltenGoldTradeEventResponse entry) => entry.Kind switch
+    {
+        MoltenGoldTradeEventKind.Agreement => "ثبت معاملهٔ اولیه",
+        MoltenGoldTradeEventKind.Delivery => $"{(Trade.Side == InvoiceType.Sell ? "تحویل طلا" : "دریافت طلا")} · {entry.Weight:0.###} گرم",
+        MoltenGoldTradeEventKind.Payment => $"{(Trade.Side == InvoiceType.Sell ? "دریافت وجه" : "پرداخت وجه")} · {entry.Amount:#,##0.##} تومان",
+        MoltenGoldTradeEventKind.GoldSettlement => $"تسویه طلایی (تهاتر) · {entry.Weight:0.###} گرم",
+        _ => $"حواله بین طرف‌حساب‌ها · {entry.Amount:#,##0.##} تومان"
+    };
+}

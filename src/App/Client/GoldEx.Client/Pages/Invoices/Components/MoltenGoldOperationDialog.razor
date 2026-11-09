@@ -1,0 +1,150 @@
+@using GoldEx.Shared.DTOs.MoltenGold
+@using GoldEx.Shared.DTOs.Invoices
+@inherits GoldExComponentBase
+
+<div class="molten-operation" dir="rtl">
+    <MudForm @ref="_form">
+        <EditorDialogFrame>
+            <DialogContent>
+                <MudStack Spacing="3">
+                    @if (Trade is not null)
+                    {
+                        <div class="operation-context">
+                            <span>@Trade.CustomerName</span>
+                            @if (Operation == MoltenGoldOperation.GoldSettlement)
+                            {
+                                <small>ماندهٔ طلا @Trade.RemainingGoldWeight.ToString("0.##########") گرم ۱۸ عیار</small>
+                            }
+                            else if (Operation == MoltenGoldOperation.Delivery)
+                            {
+                                <small>ماندهٔ طلا @AvailableWeight.ToString("0.###") گرم</small>
+                            }
+                            else if (Operation != MoltenGoldOperation.Cancel)
+                            {
+                                <small>ماندهٔ وجه @AvailableAmount.ToString("#,##0.##") تومان</small>
+                            }
+                        </div>
+                    }
+                    @if (Operation == MoltenGoldOperation.Delivery)
+                    {
+                        @if (IsPaper && TradeSide == InvoiceType.Sell)
+                        {
+                            <MudAutocomplete T="MoltenGoldStockChoice" Label="قطعه برای تحویل واقعی" Variant="Variant.Outlined"
+                                             Margin="Margin.Dense" @bind-Value="_stock" SearchFunc="SearchStockAsync"
+                                             ToStringFunc="StockName" DebounceInterval="200" ResetValueOnEmptyText="true" Disabled="@_saving"
+                                             HelperText="قطعه‌های هم‌عیار با معامله نمایش داده می‌شوند." />
+                        }
+                        <MudNumericField HideSpinButtons="true" @bind-Value="_amount" Immediate="true" Label="وزن واقعی این نوبت"
+                                         Format="0.##########" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0m"
+                                         Max="@AvailableWeight" Adornment="Adornment.End" AdornmentText="گرم" dir="ltr" Disabled="@_saving" />
+                        @if (TradeSide == InvoiceType.Purchase)
+                        {
+                            <MudTextField @bind-Value="_assay" Label="شماره انگ این نوبت" Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" MaxLength="100" dir="ltr" Disabled="@_saving" />
+                        }
+                    }
+                    else if (Operation == MoltenGoldOperation.GoldSettlement)
+                    {
+                        <MudAutocomplete T="MoltenGoldSettlementChoice" Label="معاملهٔ مقابل" Variant="Variant.Outlined"
+                                         Margin="Margin.Dense" @bind-Value="_goldSettlement" SearchFunc="SearchSettlementsAsync"
+                                         ToStringFunc="SettlementName" OpenOnFocus="true" MinCharacters="0" DebounceInterval="200"
+                                         ResetValueOnEmptyText="true" Disabled="@_saving" />
+                        <MudNumericField HideSpinButtons="true" @bind-Value="_amount" Immediate="true" Label="وزن تسویه به گرم طلای ۱۸ عیار"
+                                         Format="0.##########" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0m"
+                                         Max="@(Trade!.RemainingGoldWeight)" dir="ltr" Disabled="@_saving" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">ماندهٔ طلای هر دو معامله کم می‌شود. وجه هر معامله جداگانه تسویه می‌شود.</MudText>
+                    }
+                    else if (Operation is MoltenGoldOperation.Payment or MoltenGoldOperation.Transfer)
+                    {
+                        <MudNumericField HideSpinButtons="true" @bind-Value="_amount" Immediate="true" Label="مبلغ این نوبت"
+                                         Format="#,##0.##" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0m" Max="@AvailableAmount"
+                                         Adornment="Adornment.End" AdornmentText="تومان" dir="ltr" Disabled="@_saving" />
+                        @if (Operation == MoltenGoldOperation.Payment)
+                        {
+                            <MudSelect T="Guid?" @bind-Value="_account" ToStringFunc="AccountName" Strict="true" Placeholder="انتخاب بانک یا صندوق"
+                                       Label="بانک یا صندوق" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                       RequiredError="بانک یا صندوق را انتخاب کنید." Disabled="@_saving">
+                                @foreach (var account in Accounts)
+                                {
+                                    <MudSelectItem T="Guid?" Value="@((Guid?)account.Id)">@account.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            @if (!IsPaper)
+                            {
+                                <MudSelect T="Guid" @bind-Value="_deskInvoice" Label="ثبت بابت" Variant="Variant.Outlined"
+                                           Margin="Margin.Dense" Disabled="@_saving">
+                                    @if (AvailableWeight > 0)
+                                    {
+                                        <MudSelectItem Value="@Guid.Empty">پیش از تحویل طلا</MudSelectItem>
+                                    }
+                                    @foreach (var delivery in Trade!.Events.Where(x => x.Kind == MoltenGoldTradeEventKind.Delivery && x.InvoiceRemaining > 0))
+                                    {
+                                        <MudSelectItem Value="@delivery.InvoiceId!.Value">فاکتور @delivery.InvoiceNumber</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <div class="operation-customer">
+                                <MudAutocomplete T="CustomerVm" Label="طرف دیگر حواله" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                 Value="_other" ValueChanged="SelectOther" SearchFunc="SearchCustomersAsync"
+                                                 ToStringFunc="CustomerName" DebounceInterval="200" ShowProgressIndicator="false"
+                                                 ResetValueOnEmptyText="true" Required="true" RequiredError="طرف دیگر حواله را انتخاب کنید." Disabled="@_saving" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Color="Color.Primary"
+                                               aria-label="افزودن طرف دیگر حواله" OnClick="AddOtherAsync" Disabled="@_saving" />
+                            </div>
+                            <MudSelect T="TransferAllocation" @bind-Value="_allocation" Label="بابت طرف دیگر"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@_saving">
+                                <MudSelectItem Value="TransferAllocation.Balance">ماندهٔ حساب</MudSelectItem>
+                                <MudSelectItem Value="TransferAllocation.Invoice">فاکتور مشخص</MudSelectItem>
+                                <MudSelectItem Value="TransferAllocation.PaperTrade">معاملهٔ دفتر آب‌شده</MudSelectItem>
+                            </MudSelect>
+                            @if (_allocation == TransferAllocation.Invoice)
+                            {
+                                <MudAutocomplete T="GetTinyInvoiceResponse" Label="فاکتور طرف دیگر" Variant="Variant.Outlined"
+                                                 Margin="Margin.Dense" @bind-Value="_otherInvoice" SearchFunc="SearchInvoicesAsync"
+                                                 ToStringFunc="InvoiceName" OpenOnFocus="true" ShowProgressIndicator="false"
+                                                 ResetValueOnEmptyText="true" Disabled="@(_saving || _other is null)" />
+                            }
+                            else if (_allocation == TransferAllocation.PaperTrade)
+                            {
+                                <MudAutocomplete T="MoltenGoldPaymentChoice" Label="معاملهٔ طرف دیگر" Variant="Variant.Outlined"
+                                                 Margin="Margin.Dense" @bind-Value="_otherPaperTrade" SearchFunc="SearchPaymentTradesAsync"
+                                                 ToStringFunc="PaymentTradeName" OpenOnFocus="true" MinCharacters="0" ShowProgressIndicator="false"
+                                                 ResetValueOnEmptyText="true" Disabled="@(_saving || _other is null)" />
+                            }
+                        }
+                        <MudTextField @bind-Value="_reference" Label="شماره پیگیری یا توضیح" Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" MaxLength="100" Disabled="@_saving" />
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                            @(IsPaper ? "توافق لغو می‌شود و اثر آن از حساب وجه و طلای طرف‌حساب برمی‌گردد." : "توافق لغو می‌شود و وزن کنار گذاشته‌شده برای فروش آزاد می‌شود.")
+                        </MudAlert>
+                    }
+                    @if (Trade is null)
+                    {
+                        <MudText Typo="Typo.caption">این اطلاعات همراه با ثبت معامله ذخیره می‌شود.</MudText>
+                    }
+                </MudStack>
+            </DialogContent>
+            <DialogActions>
+                @if (HasInitialValue)
+                {
+                    <MudButton Color="Color.Error" OnClick="ClearInitial">حذف از این معامله</MudButton>
+                }
+                else if (Operation is MoltenGoldOperation.Payment or MoltenGoldOperation.Delivery or MoltenGoldOperation.GoldSettlement)
+                {
+                    <MudButton OnClick="UseBalance" Disabled="@_saving">کل مانده</MudButton>
+                }
+                <MudButton Variant="Variant.Outlined" OnClick="Close" Disabled="@_saving">انصراف</MudButton>
+                <MudButton Variant="Variant.Filled" Color="@(Operation == MoltenGoldOperation.Cancel ? Color.Error : Color.Primary)"
+                           StartIcon="@Icons.Material.Outlined.Check" OnClick="SaveAsync" Disabled="@_saving">
+                    @(_saving ? "در حال ثبت" : Trade is null ? "تأیید" : "تأیید و ثبت")
+                </MudButton>
+            </DialogActions>
+        </EditorDialogFrame>
+    </MudForm>
+</div>

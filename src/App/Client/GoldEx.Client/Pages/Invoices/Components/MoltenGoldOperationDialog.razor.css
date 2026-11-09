@@ -1,0 +1,11 @@
+.molten-operation { min-width: 0; }
+.operation-context { display: grid; gap: 5px; padding-bottom: 14px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+.operation-context > span { font-weight: 600; }
+.operation-context small { color: var(--mud-palette-text-secondary); }
+.operation-customer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.molten-operation ::deep .mud-input-control { min-width: 0; }
+.molten-operation ::deep input[dir="ltr"],
+.molten-operation ::deep .mud-input-control[dir="ltr"] input {
+    direction: ltr;
+    text-align: left;
+}

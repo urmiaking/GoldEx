@@ -23,7 +23,10 @@ public enum PaymentType
     Check = 5,
 
     [Display(Name = "سکه")]
-    Coin = 6
+    Coin = 6,
+
+    [Display(Name = "تسویه دفتر آب‌شده")]
+    MoltenGoldDesk = 7
 }
 
 public static class PaymentTypeExtensions
@@ -39,6 +42,7 @@ public static class PaymentTypeExtensions
             PaymentType.TransferedPayment => "حواله شده",
             PaymentType.Check => "پرداخت با چک",
             PaymentType.Coin => "پرداخت با سکه",
+            PaymentType.MoltenGoldDesk => "تسویه دفتر آب‌شده",
             _ => throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null)
         };
     }

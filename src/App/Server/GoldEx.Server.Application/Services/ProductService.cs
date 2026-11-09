@@ -448,7 +448,8 @@ internal class ProductService(
         }
     }
 
-    public async Task SyncProductItemsAsync(Invoice invoice, IEnumerable<InvoiceProductItemDto> requestedItems, CancellationToken cancellationToken = default)
+    public async Task SyncProductItemsAsync(Invoice invoice, IEnumerable<InvoiceProductItemDto> requestedItems, CancellationToken cancellationToken = default,
+        bool useExistingProductsAsIs = false)
     {
         var existingItems = invoice.ProductItems.ToList();
         var requestedDtos = requestedItems.ToList();
@@ -566,11 +567,10 @@ internal class ProductService(
                 {
                     if (itemDto.Product.Id.HasValue)
                     {
-                        // existing item: should update product
-                        product = await UpdateAsync(new ProductId(itemDto.Product.Id.Value),
-                            itemDto.Product,
-                            invoice.InvoiceType,
-                            cancellationToken);
+                        var productId = new ProductId(itemDto.Product.Id.Value);
+                        product = useExistingProductsAsIs
+                            ? await repository.Get(new ProductsByIdSpecification(productId)).FirstAsync(cancellationToken)
+                            : await UpdateAsync(productId, itemDto.Product, invoice.InvoiceType, cancellationToken);
                     }
                     else
                     {

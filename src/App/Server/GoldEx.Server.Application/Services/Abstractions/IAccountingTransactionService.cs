@@ -21,7 +21,8 @@ public interface IAccountingTransactionService
     Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
     Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
-    Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default);
+    Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default,
+        bool isMoltenGoldDesk = false);
     Task ClearTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
     Task SetForMeltingBatchRequestAsync(MeltingBatchId meltingBatchId,

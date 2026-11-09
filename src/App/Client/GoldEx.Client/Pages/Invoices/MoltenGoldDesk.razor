@@ -1,0 +1,289 @@
+@using GoldEx.Shared.DTOs.MoltenGold
+@using GoldEx.Client.Components.Layouts.Components
+@inherits GoldExComponentBase
+@attribute [Route(ClientRoutes.Invoices.MoltenGoldDesk)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>دفتر آب‌شده</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="molten-desk" dir="rtl">
+    <header class="desk-heading">
+        <div class="desk-title-group">
+            <MudText Typo="Typo.h5" HtmlTag="h1" Class="desk-main-title">دفتر آب‌شده</MudText>
+            <MudText Typo="Typo.body2" Class="desk-subtitle">ثبت خرید و فروش طلای آبشده</MudText>
+        </div>
+    </header>
+
+    @if (_settings is null)
+    {
+        <MudAlert Severity="Severity.Info">در حال دریافت تنظیمات دفتر آب‌شده</MudAlert>
+        <MudButton OnClick="InitializeAsync">بارگذاری دوباره</MudButton>
+    }
+    else if (_settings.PriceUnitId == Guid.Empty || _settings.GoldPriceUnitId == Guid.Empty)
+    {
+        <MudAlert Severity="Severity.Warning">برای استفاده از دفتر آب‌شده، واحدهای تومان و گرم طلای ۱۸ عیار را فعال کنید.</MudAlert>
+    }
+    else
+    {
+        <div class="desk-mobile-switch">
+            <MudButton Variant="@(_mobileTab == 0 ? Variant.Filled : Variant.Text)" Color="Color.Primary"
+                       OnClick="@(() => _mobileTab = 0)">
+                <ShellIcon Name="edit" />
+                <span>ثبت معامله</span>
+            </MudButton>
+            <MudButton Variant="@(_mobileTab == 1 ? Variant.Filled : Variant.Text)" Color="Color.Primary"
+                       OnClick="@(() => _mobileTab = 1)">
+                <ShellIcon Name="list" />
+                <span>گردش دفتر (@(FilteredRows.Count))</span>
+            </MudButton>
+        </div>
+
+        <div class="desk-grid">
+            <MudPaper Class="@($"desk-panel desk-entry {(_mobileTab == 0 ? "" : "desk-hide-on-mobile")}")" Elevation="0">
+                <div class="desk-entry-heading">
+                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="desk-section-title">ثبت معامله جدید</MudText>
+                </div>
+                <div class="desk-segments" role="group" aria-label="نوع معامله">
+                    <MudButton Class="desk-buy" Variant="@(_side == InvoiceType.Purchase ? Variant.Filled : Variant.Outlined)" Color="Color.Success"
+                               StartIcon="@Icons.Material.Outlined.SouthWest"
+                               aria-pressed="@(_side == InvoiceType.Purchase)" Disabled="@_saving"
+                               OnClick="@(() => ChangeSide(InvoiceType.Purchase))">
+                        خرید از طرف‌حساب
+                    </MudButton>
+                    <MudButton Class="desk-sell" Variant="@(_side == InvoiceType.Sell ? Variant.Filled : Variant.Outlined)" Color="Color.Error"
+                               StartIcon="@Icons.Material.Outlined.NorthEast"
+                               aria-pressed="@(_side == InvoiceType.Sell)" Disabled="@_saving"
+                               OnClick="@(() => ChangeSide(InvoiceType.Sell))">
+                        فروش به طرف‌حساب
+                    </MudButton>
+                </div>
+                <div class="desk-customer">
+                    <MudAutocomplete T="CustomerVm" Label="طرف‌حساب" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Value="_customer" ValueChanged="SelectCustomer" SearchFunc="SearchCustomersAsync"
+                                     ToStringFunc="CustomerName" ResetValueOnEmptyText="true" ShowProgressIndicator="false"
+                                     DebounceInterval="200" Disabled="@_saving" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Color="Color.Primary"
+                                   aria-label="افزودن طرف‌حساب" OnClick="AddCustomerAsync" Disabled="@_saving" />
+                </div>
+                <div class="desk-fields desk-enter" @key="_side">
+                    <MudNumericField HideSpinButtons="true" @bind-Value="_weight" Label="وزن واقعی" Variant="Variant.Outlined" Immediate="true"
+                                     Margin="Margin.Dense" Format="0.###" Min="0m" Max="1000000m" Adornment="Adornment.End"
+                                     AdornmentText="گرم" dir="ltr" Disabled="@_saving" />
+                    <MudNumericField HideSpinButtons="true" @bind-Value="_fineness" Label="عیار" Variant="Variant.Outlined" Format="0.######"
+                                     Margin="Margin.Dense" Min="0m" Max="1000m" Immediate="true" dir="ltr" Disabled="@_saving" />
+                </div>
+                <div class="desk-fields">
+                    <MudNumericField HideSpinButtons="true" @bind-Value="_rate" Label="نرخ روز طلای ۱۸ عیار" Variant="Variant.Outlined"
+                                     Margin="Margin.Dense" Format="#,##0.##" Immediate="true" Min="0m" Max="1000000000000m"
+                                     Adornment="Adornment.End" AdornmentText="تومان" dir="ltr" Disabled="@_saving" />
+                    <MudNumericField T="decimal" HideSpinButtons="true" @bind-Value="_commission" Label="کارمزد" Variant="Variant.Outlined"
+                                     Margin="Margin.Dense" Format="G29" dir="ltr" Min="0m" Max="100m"
+                                     Adornment="Adornment.End" AdornmentText="درصد" Disabled="@_saving" />
+                </div>
+                <div class="desk-immediate">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="desk-immediate-btn"
+                               Disabled="@_saving" OnClick="@(() => OpenImmediateAsync(MoltenGoldOperation.Payment))">
+                        <ShellIcon Name="wallet" />
+                        <span>@OperationTitle(MoltenGoldOperation.Payment, _side)</span>
+                        @if (_immediatePayment is not null) { <span class="desk-draft-value">@Money(_immediatePayment.Amount)</span> }
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="desk-immediate-btn"
+                               Disabled="@_saving" OnClick="@(() => OpenImmediateAsync(MoltenGoldOperation.Delivery))">
+                        <ShellIcon Name="package" />
+                        <span>@OperationTitle(MoltenGoldOperation.Delivery, _side)</span>
+                        @if (_immediateDelivery is not null) { <span class="desk-draft-value">@WeightText(_immediateDelivery.Weight)</span> }
+                    </MudButton>
+                </div>
+                <div class="desk-total" aria-live="polite">
+                    <div class="desk-total-row"><span>اصل طلا</span><span class="desk-number">@Money(RawValue)</span></div>
+                    <div class="desk-total-row"><span>کارمزد</span><span class="desk-number">@Money(CommissionValue)</span></div>
+                    <div class="desk-total-row"><span>معادل ۷۵۰</span><span class="desk-number">@WeightText(_weight * _fineness / 750m)</span></div>
+                    <div class="desk-total-divider"></div>
+                    <div class="desk-total-row is-highlight">
+                        <span>مبلغ معامله</span>
+                        <span class="desk-number highlight-val">@Money(RawValue + CommissionValue)</span>
+                    </div>
+                    @if (_immediatePayment is not null)
+                    {
+                        <div class="desk-total-row is-sub-highlight">
+                            <span>مانده پس از ثبت وجه</span>
+                            <span class="desk-number">@Money(RawValue + CommissionValue - _immediatePayment.Amount)</span>
+                        </div>
+                    }
+                </div>
+                <MudButton FullWidth="true" Variant="Variant.Filled" Color="@(_side == InvoiceType.Purchase ? Color.Success : Color.Error)"
+                           Disabled="@_saving" OnClick="CreateAsync" Class="desk-create-btn">
+                    @(_side == InvoiceType.Purchase ? "ثبت خرید آب‌شده" : "ثبت فروش آب‌شده")
+                </MudButton>
+            </MudPaper>
+
+            <div class="@($"desk-side {(_mobileTab == 1 ? "" : "desk-hide-on-mobile")}")">
+                @if (_customer?.Id is Guid customerId)
+                {
+                    <MudPaper Class="desk-panel desk-enter" Elevation="0" @key="_customer.Id">
+                        <div class="desk-entry-heading">
+                            <MudText Typo="Typo.subtitle2" Class="desk-section-title">ماندهٔ حساب @_customer.FullName</MudText>
+                        </div>
+                        <div class="desk-customer-balances">
+                            @if (_loadingBalances)
+                            {
+                                <div class="desk-balance-box">
+                                    <MudSkeleton Width="100%" Height="48px" Animation="Animation.Wave" />
+                                </div>
+                                <div class="desk-balance-box">
+                                    <MudSkeleton Width="100%" Height="48px" Animation="Animation.Wave" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="desk-balance-box">
+                                    <div class="desk-balance-header">
+                                        <span class="desk-balance-title">حساب طلایی (۱۸ عیار)</span>
+                                        <span class="desk-balance-status @GetBalanceStatusClass(_goldBalance)">
+                                            @GetBalanceStatusText(_goldBalance)
+                                        </span>
+                                    </div>
+                                    <div class="desk-balance-val" dir="ltr">
+                                        @FormatGoldBalance(_goldBalance)
+                                    </div>
+                                </div>
+                                <div class="desk-balance-box">
+                                    <div class="desk-balance-header">
+                                        <span class="desk-balance-title">حساب وزنی (آبشده)</span>
+                                        <span class="desk-balance-status @GetBalanceStatusClass(_weightBalance)">
+                                            @GetBalanceStatusText(_weightBalance)
+                                        </span>
+                                    </div>
+                                    <div class="desk-balance-val" dir="ltr">
+                                        @FormatWeightBalance(_weightBalance)
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </MudPaper>
+                }
+                <MudPaper Class="desk-panel desk-ledger" Elevation="0">
+                    <div class="desk-ledger-header">
+                        <div class="desk-ledger-title-group">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="desk-section-title">گردش دفتر معاملات</MudText>
+                            <span class="desk-ledger-count">@(FilteredRows.Count) معامله</span>
+                        </div>
+                        <div class="desk-search-bar">
+                            <MudTextField T="string" @bind-Value="_searchText" Placeholder="جستجو در طرف‌حساب، توضیحات..."
+                                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                                          Clearable="true" />
+                        </div>
+                    </div>
+                    <div class="desk-segments desk-filters" role="group" aria-label="نمای معاملات">
+                        @foreach (var (filter, title) in Filters)
+                        {
+                            <MudButton Variant="@(_filter == filter ? Variant.Filled : Variant.Text)" Color="Color.Primary"
+                                       aria-pressed="@(_filter == filter)" Disabled="@(_loading || _saving)"
+                                       OnClick="@(() => ChangeFilterAsync(filter))">@title</MudButton>
+                        }
+                    </div>
+                    @if (_loading)
+                    {
+                        <MudSkeleton Height="115px" Animation="Animation.Wave" />
+                    }
+                    else if (_rows is null)
+                    {
+                        <MudAlert Severity="Severity.Error">گردش دفتر بارگذاری نشد.</MudAlert>
+                        <MudButton OnClick="LoadAsync">تلاش دوباره</MudButton>
+                    }
+                    else if (FilteredRows.Count == 0)
+                    {
+                        <div class="desk-empty">
+                            <ShellIcon Name="history" />
+                            <span>@(string.IsNullOrWhiteSpace(_searchText) ? "معامله‌ای در این نما وجود ندارد." : "معامله‌ای با این مشخصات یافت نشد.")</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="desk-table-wrapper desk-enter" @key="(_filter, _skip, _searchText)">
+                            <table class="desk-table">
+                                <thead>
+                                    <tr>
+                                        <th>طرف‌حساب / نوع</th>
+                                        <th>وزن و عیار</th>
+                                        <th>مبلغ معامله</th>
+                                        <th>وضعیت مانده</th>
+                                        <th class="text-center">گردش</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var trade in FilteredRows)
+                                    {
+                                        <tr @key="trade.Id" class="desk-tr" @onclick="@(() => OpenTradeAsync(trade))" title="مشاهده گردش دفتر و جزئیات">
+                                            <td>
+                                                <div class="desk-cell-customer">
+                                                    <div class="desk-cell-row1">
+                                                        <span class="desk-side-pill @(trade.Side == InvoiceType.Purchase ? "is-buy" : "is-sell")">
+                                                            @(trade.Side == InvoiceType.Purchase ? "خرید" : "فروش")
+                                                        </span>
+                                                        @if (trade.IsPaper)
+                                                        {
+                                                            <span class="desk-paper-pill">کاغذی</span>
+                                                        }
+                                                        <span class="desk-name">@trade.CustomerName</span>
+                                                    </div>
+                                                    <time class="desk-date-text">@DateText(trade.Date)</time>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="desk-cell-gold">
+                                                    <span class="desk-weight">@WeightText(trade.Weight)</span>
+                                                    <span class="desk-fineness">عیار @trade.Fineness.ToString("0.###")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="desk-money">@Money(trade.Total)</span>
+                                            </td>
+                                            <td>
+                                                <div class="desk-cell-balances">
+                                                    @if (trade.RemainingAmount <= 0 && trade.RemainingWeight <= 0)
+                                                    {
+                                                        <span class="desk-settled-text">
+                                                            <ShellIcon Name="check" />
+                                                            <span>تسویه کامل</span>
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @if (trade.RemainingAmount > 0)
+                                                        {
+                                                            <span class="desk-balance-item is-money" title="مانده وجه">
+                                                                مانده وجه: @Money(trade.RemainingAmount)
+                                                            </span>
+                                                        }
+                                                        @if (trade.RemainingWeight > 0)
+                                                        {
+                                                            <span class="desk-balance-item is-gold" title="مانده طلا">
+                                                                مانده طلا: @WeightText(trade.RemainingWeight)
+                                                            </span>
+                                                        }
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="desk-open-btn" aria-label="مشاهده گردش دفتر">
+                                                    <ShellIcon Name="forward" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    <div class="desk-pagination">
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Disabled="@(_loading || _skip == 0)" OnClick="@(() => ChangePageAsync(-30))">صفحه قبلی</MudButton>
+                        <span class="desk-page-info">صفحه @(_skip / 30 + 1) @(FilteredRows.Count > 0 ? $"({FilteredRows.Count} معامله)" : "")</span>
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Disabled="@(_loading || _rows?.Count != 30)" OnClick="@(() => ChangePageAsync(30))">صفحه بعدی</MudButton>
+                    </div>
+                </MudPaper>
+            </div>
+        </div>
+    }
+</MudContainer>

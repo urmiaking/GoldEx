@@ -239,7 +239,7 @@ public class StoreServiceTester
             productCategoryRepoMock.Object,
             _fileServiceMock.Object,
             _webHostEnvironmentMock.Object,
-            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext),
+            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext, _webHostEnvironmentMock.Object),
             new UpdateStoreRequestValidator(_storeRepoMock.Object),
             new DeleteStoreValidator(dbContext, _storeContext)
         );
@@ -373,7 +373,7 @@ public class StoreServiceTester
             new Mock<IProductCategoryRepository>().Object,
             _fileServiceMock.Object,
             _webHostEnvironmentMock.Object,
-            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext),
+            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext, _webHostEnvironmentMock.Object),
             new UpdateStoreRequestValidator(_storeRepoMock.Object),
             new DeleteStoreValidator(dbContext, _storeContext)
         );
@@ -502,7 +502,7 @@ public class StoreServiceTester
             productCategoryRepoMock.Object,
             _fileServiceMock.Object,
             _webHostEnvironmentMock.Object,
-            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext),
+            new CreateStoreRequestValidator(_storeRepoMock.Object, new Mock<IConfiguration>().Object, dbContext, _webHostEnvironmentMock.Object),
             new UpdateStoreRequestValidator(_storeRepoMock.Object),
             new DeleteStoreValidator(dbContext, _storeContext)
         );

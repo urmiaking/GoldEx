@@ -140,6 +140,7 @@ public static class ClientRoutes
         public const string Index = $"{InvoicesPrefix}";
         public const string List = $"{InvoicesPrefix}/list";
         public const string SetInvoice = $"{InvoicesPrefix}/set/{{id?}}";
+        public const string MoltenGoldDesk = $"{InvoicesPrefix}/molten-gold";
         public const string Create = $"{InvoicesPrefix}/create";
         public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}/{{invoiceType}}";
     }

@@ -6,8 +6,8 @@ namespace GoldEx.Server.Infrastructure.Specifications.Products;
 
 public class ProductsByMoltenGoldSpecification : SpecificationBase<Product>
 {
-    public ProductsByMoltenGoldSpecification(decimal fineness)
+    public ProductsByMoltenGoldSpecification(decimal? fineness = null)
     {
-        AddCriteria(x => x.ProductType == ProductType.MoltenGold && x.Fineness == fineness);
+        AddCriteria(x => x.ProductType == ProductType.MoltenGold && (!fineness.HasValue || x.Fineness == fineness.Value));
     }
 }

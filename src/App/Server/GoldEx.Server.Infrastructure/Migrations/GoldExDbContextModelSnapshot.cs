@@ -1124,6 +1124,151 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.ToTable("MeltingBatches", (string)null);
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTrade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AssayNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("CommissionPercent")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasPrecision(38, 18)
+                        .HasColumnType("decimal(38,18)");
+
+                    b.Property<decimal>("Fineness")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<Guid?>("GoldPriceUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("GramRate")
+                        .HasPrecision(38, 18)
+                        .HasColumnType("decimal(38,18)");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaper")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PriceUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<int>("RateBasis")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RemainingGoldBookAmount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<decimal>("RemainingGoldWeight")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<decimal>("RemainingWeight")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<int>("Side")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("GoldPriceUnitId");
+
+                    b.HasIndex("PriceUnitId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StoreId", "CreatedAt");
+
+                    b.HasIndex("StoreId", "ProductId", "IsCancelled");
+
+                    b.ToTable("MoltenGoldTrades", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTradeEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("JournalGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("VoucherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("TradeId");
+
+                    b.HasIndex("VoucherId");
+
+                    b.HasIndex("StoreId", "TradeId", "CreatedAt");
+
+                    b.ToTable("MoltenGoldTradeEvents", (string)null);
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.NotificationAggregate.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2318,6 +2463,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("MeltingBatchId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("MoltenGoldTradeId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("PaymentVoucherId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2353,6 +2501,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("LedgerAccountId");
 
                     b.HasIndex("MeltingBatchId");
+
+                    b.HasIndex("MoltenGoldTradeId");
 
                     b.HasIndex("PaymentVoucherId");
 
@@ -3566,6 +3716,52 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("ChangeLogs");
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTrade", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", null)
+                        .WithMany()
+                        .HasForeignKey("GoldPriceUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", null)
+                        .WithMany()
+                        .HasForeignKey("PriceUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.ProductAggregate.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTradeEvent", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTrade", null)
+                        .WithMany()
+                        .HasForeignKey("TradeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.CustomerTransferVoucherAggregate.CustomerTransferVoucher", null)
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.NotificationAggregate.Notification", b =>
                 {
                     b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
@@ -4199,6 +4395,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasOne("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", "MeltingBatch")
                         .WithMany("Transactions")
                         .HasForeignKey("MeltingBatchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.MoltenGoldTradeAggregate.MoltenGoldTrade", null)
+                        .WithMany()
+                        .HasForeignKey("MoltenGoldTradeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", "PaymentVoucher")

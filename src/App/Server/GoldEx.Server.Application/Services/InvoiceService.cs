@@ -30,6 +30,7 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoicePaymentRepository paymentRepository,
+    IMoltenGoldTradeRepository moltenGoldRepository,
     ICustomerRepository customerRepository,
     IServerProductService productService,
     IServerReminderService reminderService,
@@ -48,88 +49,105 @@ internal class InvoiceService(
 {
     public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await using var transaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            try
-            {
-                await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                #region Invoice (Create new invoice instance)    
-
-                var basePriceUnit = await priceUnitRepository
-                    .Get(new PriceUnitsSetAsDefaultSpecification())
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("Base price unit not found");
-
-                var targetPriceUnit = await priceUnitRepository
-                    .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Target price unit not found");
-
-                var customer = await customerRepository
-                    .Get(new CustomersByIdSpecification(new CustomerId(request.CustomerId)))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Customer not found");
-
-                var invoice = Invoice.Create(request.InvoiceNumber,
-                    request.UnpaidAmountExchangeRate,
-                    request.ExchangeRate,
-                    request.InvoiceType,
-                    request.TradeScale,
-                    customer.Id,
-                    basePriceUnit.Id,
-                    new PriceUnitId(request.PriceUnitId),
-                    request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
-                    DateOnly.FromDateTime(request.InvoiceDate),
-                    request.DueDate.HasValue
-                        ? DateOnly.FromDateTime(request.DueDate.Value)
-                        : null);
-
-                invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
-                    InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
-
-                invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
-                    InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
-
-                invoice.SetPriceUnit(targetPriceUnit);
-
-                invoice.SetCustomer(customer);
-
-                #endregion
-
-                #region InvoiceItems
-
-                foreach (var currencyItemDto in request.InvoiceCurrencyItems)
-                {
-                    invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
-                            ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
-                            : null,
-                        new PriceUnitId(currencyItemDto.CurrencyId),
-                        new FinancialAccountId(currencyItemDto.FinancialAccountId),
-                        currencyItemDto.UnitPrice,
-                        currencyItemDto.Amount,
-                        currencyItemDto.TaxPercent,
-                        currencyItemDto.ProfitPercent);
-                }
-
-                await coinInstanceService.SyncCoinItemsAsync(invoice, request.InvoiceCoinItems, cancellationToken);
-                await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
-                await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken);
-
-                #endregion
-
-                await invoiceRepository.CreateAsync(invoice, cancellationToken);
-
-                await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
-                await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
-                await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
-
-                await dbTransaction.CommitAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, e.Message);
-                await dbTransaction.RollbackAsync(cancellationToken);
-                throw;
-            }
+            await PostAsync(request, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task<Invoice> PostAsync(InvoiceRequestDto request, CancellationToken cancellationToken, bool useExistingProductsAsIs = false)
+    {
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+        #region Invoice (Create new invoice instance)
+
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("Base price unit not found");
+
+        var targetPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Target price unit not found");
+
+        var customer = await customerRepository
+            .Get(new CustomersByIdSpecification(new CustomerId(request.CustomerId)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Customer not found");
+
+        var invoice = Invoice.Create(request.InvoiceNumber,
+            request.UnpaidAmountExchangeRate,
+            request.ExchangeRate,
+            request.InvoiceType,
+            request.TradeScale,
+            customer.Id,
+            basePriceUnit.Id,
+            new PriceUnitId(request.PriceUnitId),
+            request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
+            DateOnly.FromDateTime(request.InvoiceDate),
+            request.DueDate.HasValue
+                ? DateOnly.FromDateTime(request.DueDate.Value)
+                : null);
+
+        invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
+            InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+        invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
+            InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+        invoice.SetPriceUnit(targetPriceUnit);
+
+        invoice.SetCustomer(customer);
+
+        #endregion
+
+        #region InvoiceItems
+
+        foreach (var currencyItemDto in request.InvoiceCurrencyItems)
+        {
+            invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
+                    ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
+                    : null,
+                new PriceUnitId(currencyItemDto.CurrencyId),
+                new FinancialAccountId(currencyItemDto.FinancialAccountId),
+                currencyItemDto.UnitPrice,
+                currencyItemDto.Amount,
+                currencyItemDto.TaxPercent,
+                currencyItemDto.ProfitPercent);
+        }
+
+        await coinInstanceService.SyncCoinItemsAsync(invoice, request.InvoiceCoinItems, cancellationToken);
+        await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
+        await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken, useExistingProductsAsIs);
+
+        #endregion
+
+        await invoiceRepository.CreateAsync(invoice, cancellationToken);
+
+        await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
+        await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
+        await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
+        return invoice;
+    }
+
+    private async Task GuardDeskInvoiceAsync(Guid id, CancellationToken cancellationToken)
+    {
+        if (await moltenGoldRepository.Events.AnyAsync(x => x.InvoiceId == new InvoiceId(id), cancellationToken))
+            throw new ValidationException([new FluentValidation.Results.ValidationFailure("Invoice", "برای پیگیری این فاکتور از دفتر آب‌شده استفاده کنید.")]);
+    }
+
+    private async Task<bool> HasDeskVoucherAsync(Invoice invoice, CancellationToken ct)
+    {
+        var voucherIds = invoice.InvoicePayments?.Where(x => x.CustomerTransferVoucherId.HasValue)
+            .Select(x => x.CustomerTransferVoucherId!.Value).ToArray();
+        return voucherIds is { Length: > 0 } && await moltenGoldRepository.Events.AnyAsync(x =>
+            x.VoucherId.HasValue && voucherIds.Contains(x.VoucherId.Value), ct);
     }
 
     public async Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
@@ -137,6 +155,7 @@ internal class InvoiceService(
         await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
+            await GuardDeskInvoiceAsync(id, cancellationToken);
             await validator.ValidateAndThrowAsync(request, cancellationToken);
 
             var invoice = await invoiceRepository
@@ -146,6 +165,10 @@ internal class InvoiceService(
                 .Include(x => x.Customer)
                 .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new NotFoundException();
+
+            var hasDeskVoucher = await HasDeskVoucherAsync(invoice, cancellationToken);
+            if (hasDeskVoucher && (invoice.CustomerId.Value != request.CustomerId || invoice.PriceUnitId.Value != request.PriceUnitId))
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("Invoice", "طرف‌حساب و واحد فاکتورِ متصل به حوالهٔ دفتر آب‌شده قابل تغییر نیست.")]);
 
             invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
             invoice.SetCustomerId(new CustomerId(request.CustomerId));
@@ -189,6 +212,8 @@ internal class InvoiceService(
             await invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
             await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
+            if (hasDeskVoucher && invoice.TotalUnpaidAmount < 0)
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("Invoice", "مبلغ فاکتور از تسویه‌های ثبت‌شده کمتر است.")]);
             await transactionService.ReplaceTransactionsForInvoiceAsync(invoice, cancellationToken);
             await inventoryStockService.ReplaceInventoryForInvoiceAsync(invoice, cancellationToken);
 
@@ -381,12 +406,16 @@ internal class InvoiceService(
         await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
+            await GuardDeskInvoiceAsync(id, cancellationToken);
             var item = await invoiceRepository
                 .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
                 .Include(x => x.ProductItems)
                     .ThenInclude(x => x.Product)
                 .Include(x => x.InvoicePayments)
                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+            if (await HasDeskVoucherAsync(item, cancellationToken))
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("Invoice", "این فاکتور به حوالهٔ دفتر آب‌شده متصل است.")]);
 
             await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
             await transactionService.ClearTransactionsForInvoiceAsync(item, cancellationToken);

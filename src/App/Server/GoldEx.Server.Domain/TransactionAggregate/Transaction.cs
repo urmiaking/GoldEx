@@ -8,6 +8,7 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
+using GoldEx.Server.Domain.MoltenGoldTradeAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
@@ -19,6 +20,20 @@ public readonly record struct TransactionId(Guid Value);
 public class Transaction : EntityBase<TransactionId>, IStoreFiltered
 {
     public StoreId StoreId { get; private set; }
+    public Guid? MoltenGoldTradeId { get; private set; }
+
+    public static Transaction CreateForMoltenGoldTrade(MoltenGoldTrade trade, string description,
+        decimal amount, decimal exchangeRate, decimal baseCurrencyAmount, Guid groupId,
+        TransactionType type, LedgerAccountId ledger, PriceUnitId unit)
+    {
+        if (baseCurrencyAmount < 0)
+            throw new ArgumentOutOfRangeException(nameof(baseCurrencyAmount));
+        var entry = CreateForManualEntry(description, amount, exchangeRate, groupId, type, ledger,
+            unit, null, null, DateTime.Now, trade.StoreId);
+        entry.MoltenGoldTradeId = trade.Id;
+        entry.BaseCurrencyAmount = baseCurrencyAmount;
+        return entry;
+    }
 
     public static Transaction CreateForInvoice(
         string description,

@@ -2,6 +2,7 @@ namespace GoldEx.Shared.Routings;
 
 public static class ApiRoutes
 {
+    public const string MoltenGoldDesk = "api/molten-gold-desk";
     public static class Account
     {
         public const string Base = "/api/Account";
