@@ -94,3 +94,11 @@ test('invoice workspace includes an always-visible settlement sidebar and access
  const dialogStyle=read('PaymentDialog.razor.css');
  assert.match(dialogStyle,/\.invoice-settlement-direction-info strong\{font-weight:500\}/);
 });
+test('cash settlement is direction-neutral in desktop and mobile review, while descriptions stay intact',()=>{
+ const view=read('PaymentDialog.razor');
+ const logic=read('PaymentDialog.razor.cs');
+ assert.equal((view.match(/@GetSettlementTypeTitle\(item\.PaymentType\)/g)||[]).length,2);
+ assert.match(logic,/type == PaymentType\.InternalCash \? "تسویه نقدی" : type\.GetDisplayTitle\(\)/);
+ assert.match(view,/<td><span class="invoice-payment-description" title="@item.Description">/);
+ assert.match(view,/<p title="@item.Description">@item.Description<\/p>/);
+});
