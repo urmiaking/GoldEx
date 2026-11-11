@@ -23,6 +23,7 @@
 .directory-applied-filters ::deep button { min-height: 44px; }
 @media (max-width: 959px) {
     .directory-toolbar { grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; padding: 8px; }
+    .directory-heading ::deep .directory-create { padding: 0; }
     .directory-sort, .directory-sort-toggle { display: none; }
     .directory-toolbar ::deep .directory-filter { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; }
     .directory-toolbar ::deep .directory-filter .mud-button-icon-start { margin: 0; }
@@ -35,7 +36,7 @@
     .directory-heading { margin-bottom: 18px; align-items: flex-start; }
     .directory-title h1 { font-size: 1.375rem; gap: 4px 7px; }
     .directory-title p { font-size: .8125rem; max-width: 185px; }
-    .directory-heading ::deep .directory-create { min-height: 44px; padding: 7px 12px; font-size: .8rem; margin-top: 2px; }
+    .directory-heading ::deep .directory-create { min-height: 44px; padding: 0; font-size: .8rem; margin-top: 2px; }
 }
 
 .invoice-results { position: relative; min-width: 0; border: 1px solid var(--mud-palette-lines-default); border-radius: 18px; background: var(--mud-palette-surface); box-shadow: 0 5px 22px rgba(10,30,40,.055); overflow: visible; }

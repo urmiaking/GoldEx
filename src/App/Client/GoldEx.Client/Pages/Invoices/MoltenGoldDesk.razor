@@ -63,13 +63,13 @@
                                StartIcon="@Icons.Material.Outlined.SouthWest"
                                aria-pressed="@(_side == InvoiceType.Purchase)" Disabled="@_saving"
                                OnClick="@(() => ChangeSide(InvoiceType.Purchase))">
-                        خرید از طرف‌حساب
+                        می‌خرم
                     </MudButton>
                     <MudButton Class="desk-sell" Variant="@(_side == InvoiceType.Sell ? Variant.Filled : Variant.Outlined)" Color="Color.Error"
                                StartIcon="@Icons.Material.Outlined.NorthEast"
                                aria-pressed="@(_side == InvoiceType.Sell)" Disabled="@_saving"
                                OnClick="@(() => ChangeSide(InvoiceType.Sell))">
-                        فروش به طرف‌حساب
+                        می‌فروشم
                     </MudButton>
                 </div>
                 <div class="desk-customer">
@@ -156,7 +156,7 @@
                 </div>
                 <MudButton FullWidth="true" Variant="Variant.Filled" Color="@(_side == InvoiceType.Purchase ? Color.Success : Color.Error)"
                            Disabled="@EntryDisabled" OnClick="CreateAsync" Class="desk-create-btn">
-                    @(_side == InvoiceType.Purchase ? "ثبت خرید آب‌شده" : "ثبت فروش آب‌شده")
+                    ثبت معامله
                 </MudButton>
             </MudPaper>
 

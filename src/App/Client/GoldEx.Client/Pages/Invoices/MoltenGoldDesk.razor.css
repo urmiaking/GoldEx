@@ -151,6 +151,8 @@
     border-block: 1px solid var(--mud-palette-lines-default);
 }
 .desk-immediate-btn {
+    min-width: 0;
+    max-width: 100%;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -160,6 +162,7 @@
     font-weight: 400;
 }
 .desk-immediate-btn ::deep .gex-shell-icon { width: 16px; height: 16px; }
+.desk-immediate ::deep .desk-immediate-btn .mud-button-label { min-width: 0; flex-wrap: wrap; justify-content: center; }
 .desk-draft-value { font-size: .75rem; margin-inline-start: 6px; font-weight: 400; }
 .desk-caption { color: var(--mud-palette-text-secondary); font-weight: 400; }
 
@@ -501,18 +504,18 @@
 .desk-table-loading td { height: 58px; }
 .desk-table-loading td ::deep .mud-skeleton + .mud-skeleton { margin-top: 8px; }
 .desk-table-loading td ::deep .mud-skeleton { border-radius: 5px; }
-.desk-options-toggle { display:flex; align-items:center; gap:8px; width:100%; padding:9px 10px;
+.desk-options-toggle { display:flex; align-items:center; gap:8px; width:100%; max-width:100%; min-width:0; box-sizing:border-box; padding:9px 10px;
     border:1px solid var(--mud-palette-lines-default); border-radius:9px;
     background:var(--mud-palette-surface); color:var(--mud-palette-text-primary);
     cursor:pointer; text-align:start; font:inherit; font-size:.8rem; }
-.desk-options-toggle > span:first-child { font-weight:500; white-space:nowrap; }
-.desk-options-toggle > span:nth-child(2) { margin-inline-start:auto; color:var(--mud-palette-text-secondary);
+.desk-options-toggle > span:first-child { font-weight:500; flex:0 1 auto; min-width:0; white-space:normal; overflow-wrap:anywhere; }
+.desk-options-toggle > span:nth-child(2) { flex:1 1 auto; min-width:0; margin-inline-start:auto; text-align:end; color:var(--mud-palette-text-secondary);
     font-size:.74rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .desk-options-toggle ::deep .gex-shell-icon { width:16px; height:16px; flex-shrink:0; }
 .desk-options-toggle:hover { border-color:var(--mud-palette-primary); }
 .desk-options-toggle:focus-visible { outline:2px solid var(--mud-palette-primary); outline-offset:2px; }
 .desk-options-toggle:disabled { opacity:.6; cursor:not-allowed; }
-.desk-immediate-section { display:grid; gap:10px; }
+.desk-immediate-section { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; min-width:0; }
 .desk-price-breakdown { padding-top:8px; border-top:1px solid var(--mud-palette-lines-default); }
 .desk-price-breakdown summary { cursor:pointer; color:var(--mud-palette-text-secondary); font-size:.77rem; }
 .desk-price-breakdown .desk-total-row { padding-top:8px; }

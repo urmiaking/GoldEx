@@ -1228,3 +1228,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - Show the last refreshed rate timestamp next to the 'ثبت معامله جدید' card title, not as an input-row widget.
 - Keep both advanced groups mounted in the DOM, reveal them using .desk-expand grid-template-rows/opacity/transform transitions, set aria-hidden/inert while collapsed, and respect prefers-reduced-motion.
 - Focused tests: scripts/tests/molten-gold-fast-entry.test.mjs. The locally running Debug server must be rebuilt/restarted for Razor changes.
+## Mobile invoice and molten desk layout (2026-11-12)
+- InvoicesList uses MudMenu for 'فاکتور جدید' while CustomersList uses MudButton. Below 960px, remove the MudMenu wrapper's padding (not the inner .mud-button-root padding) to avoid a doubled left gap. Preserve the desktop margin-inline-end override.
+- MoltenGoldDesk trade direction labels are 'می‌خرم'/'می‌فروشم' and the submit text is 'ثبت معامله' in either direction. Keep InvoiceType and accounting semantics unchanged.
+- The optional immediate settlement toggle needs border-box width, min-width:0 on grid/flex parents, and wrapping or shrinkable text to fit narrow mobile viewports. Run scripts/tests/mobile-goldex-trade-ux.test.mjs.
