@@ -2,7 +2,7 @@
 @page "/catalog"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
-@implements IDisposable
+@attribute [ExcludeFromInteractiveRouting]
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
@@ -10,9 +10,7 @@
 @using GoldEx.Shared.Routings
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
-@inject PersistentComponentState ApplicationState
 @inject IStoreContext StoreContext
-@inject IJSRuntime JsRuntime
 
 <PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
 
@@ -65,6 +63,7 @@
     </script>
 </HeadContent>
 
+<div class="vitrine-catalog" data-vitrine-catalog>
 <div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
     <!-- Breadcrumb & Header -->
     <div style="margin-bottom: 24px;">
@@ -83,7 +82,7 @@
 
     <!-- Mobile Filter Bar (< 992px) -->
     <div class="catalog-mobile-filter-bar">
-        <button type="button" class="catalog-mobile-filter-btn" @onclick="OpenFilterDrawer">
+        <button type="button" class="catalog-mobile-filter-btn" data-vitrine-filter-open aria-expanded="false" aria-controls="vitrine-catalog-drawer">
             <div class="d-flex align-items-center gap-2">
                 <i class="fa-solid fa-sliders catalog-mobile-filter-icon"></i>
                 <span class="catalog-mobile-filter-text">فیلترها و دسته‌بندی‌ها</span>
@@ -103,64 +102,64 @@
             <div class="catalog-mobile-quick-pills">
                 @if (_onlyAvailable)
                 {
-                    <button type="button" class="catalog-quick-pill active" @onclick="ToggleOnlyAvailable">
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl("onlyAvailable", _onlyAvailable ? null : "true"))" data-vitrine-catalog-link>
                         <i class="fa-solid fa-circle-check" style="font-size: 0.75rem;"></i>
                         <span>فقط موجود</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
                 @if (_onlyFeatured)
                 {
-                    <button type="button" class="catalog-quick-pill active" @onclick="ToggleOnlyFeatured">
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl("onlyFeatured", _onlyFeatured ? null : "true"))" data-vitrine-catalog-link>
                         <i class="fa-solid fa-star" style="font-size: 0.75rem;"></i>
                         <span>پیشنهادات ویژه</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
                 @if (_selectedCategoryId.HasValue)
                 {
                     var activeCat = _categories.FirstOrDefault(c => c.Id == _selectedCategoryId.Value);
                     if (activeCat != null)
                     {
-                        <button type="button" class="catalog-quick-pill active" @onclick="() => FilterByCategory(null)">
+                        <a class="catalog-quick-pill active" href="@(GetCatalogUrl("categoryId"))" data-vitrine-catalog-link>
                             <span>@activeCat.Title</span>
                             <i class="fa-solid fa-xmark remove-pill"></i>
-                        </button>
+                        </a>
                     }
                 }
                 @if (_selectedProductType.HasValue)
                 {
-                    <button type="button" class="catalog-quick-pill active" @onclick="() => FilterByType(null)">
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl("type"))" data-vitrine-catalog-link>
                         <span>@(_selectedProductType == ProductType.Gold ? "طلا" : "جواهرات")</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
                 @if (_weightFilter != "all")
                 {
-                    <button type="button" class="catalog-quick-pill active" @onclick='() => SetWeightFilter("all")'>
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl("weight", "all"))" data-vitrine-catalog-link>
                         <span>@GetWeightFilterTitle(_weightFilter)</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
                 @if (_wageFilter != "all")
                 {
-                    <button type="button" class="catalog-quick-pill active" @onclick='() => SetWageFilter("all")'>
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl("wage", "all"))" data-vitrine-catalog-link>
                         <span>@GetWageFilterTitle(_wageFilter)</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
                 @foreach (var (attrId, attrVal) in _selectedAttributeFilters)
                 {
                     var group = AvailableAttributeFacets.FirstOrDefault(g => g.AttributeId == attrId);
                     var title = group != null ? $"{group.Title}: {attrVal}" : attrVal;
-                    <button type="button" class="catalog-quick-pill active" @onclick="() => SetAttributeFilter(attrId, null)">
+                    <a class="catalog-quick-pill active" href="@(GetCatalogUrl(attributeId: attrId))" data-vitrine-catalog-link>
                         <span>@title</span>
                         <i class="fa-solid fa-xmark remove-pill"></i>
-                    </button>
+                    </a>
                 }
-                <button type="button" class="catalog-quick-pill clear-all" @onclick="ResetFilters">
+                <a class="catalog-quick-pill clear-all" href="@(CatalogUrl)" data-vitrine-catalog-link>
                     <span>حذف همه</span>
-                </button>
+                </a>
             </div>
         }
     </div>
@@ -174,7 +173,7 @@
         </aside>
 
         <!-- ۲. بخش محصولات سمت چپ (Left Products Section) -->
-        <section class="shop-products">
+        <section class="shop-products" tabindex="-1">
             
             <!-- نوار ابزار بالای محصولات -->
             <div class="shop-toolbar">
@@ -192,27 +191,27 @@
                 <div class="sort-tabs-container">
                     <span style="font-size: 0.84rem; color: var(--gray-600); font-weight: 700; white-space: nowrap; flex-shrink: 0;">مرتب‌سازی:</span>
                     <div class="sort-tabs">
-                        <button type="button" class="sort-tab @(_sortBy == "newest" ? "active" : "")" @onclick='() => SetSortBy("newest")'>
+                        <a class="sort-tab @(_sortBy == "newest" ? "active" : "")" href="@(GetCatalogUrl("sort", "newest"))" data-vitrine-catalog-link>
                             جدیدترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "wage_asc" ? "active" : "")" @onclick='() => SetSortBy("wage_asc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "wage_asc" ? "active" : "")" href="@(GetCatalogUrl("sort", "wage_asc"))" data-vitrine-catalog-link>
                             کم‌اجرت‌ترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" @onclick='() => SetSortBy("price_asc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" href="@(GetCatalogUrl("sort", "price_asc"))" data-vitrine-catalog-link>
                             ارزان‌ترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "price_desc" ? "active" : "")" @onclick='() => SetSortBy("price_desc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "price_desc" ? "active" : "")" href="@(GetCatalogUrl("sort", "price_desc"))" data-vitrine-catalog-link>
                             گران‌ترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "weight_asc" ? "active" : "")" @onclick='() => SetSortBy("weight_asc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "weight_asc" ? "active" : "")" href="@(GetCatalogUrl("sort", "weight_asc"))" data-vitrine-catalog-link>
                             سبک‌ترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" @onclick='() => SetSortBy("weight_desc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" href="@(GetCatalogUrl("sort", "weight_desc"))" data-vitrine-catalog-link>
                             سنگین‌ترین
-                        </button>
-                        <button type="button" class="sort-tab @(_sortBy == "wage_desc" ? "active" : "")" @onclick='() => SetSortBy("wage_desc")'>
+                        </a>
+                        <a class="sort-tab @(_sortBy == "wage_desc" ? "active" : "")" href="@(GetCatalogUrl("sort", "wage_desc"))" data-vitrine-catalog-link>
                             بیشترین اجرت
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -237,20 +236,20 @@
             }
             else if (FilteredProducts.Count == 0)
             {
-                <div class="text-center py-5 animate-catalog-filter" @key="_filterSequence" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
+                <div class="text-center py-5 animate-catalog-filter" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
                     <i class="fa-solid fa-magnifying-glass mb-3" style="font-size: 3rem; color: var(--accent-color); display: block;"></i>
                     <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">موردی با مشخصات انتخابی یافت نشد</h3>
                     <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 24px; font-size: 0.92rem; line-height: 1.8;">
                         لطفاً فیلترهای اعمال‌شده، دسته‌بندی یا عبارت جستجو را تغییر دهید.
                     </p>
-                    <button type="button" class="btn-gisu btn-gisu-outline" style="display: inline-flex;" @onclick="ResetFilters">
+                    <a class="btn-gisu btn-gisu-outline" style="display: inline-flex;" href="@(CatalogUrl)" data-vitrine-catalog-link>
                         <span>نمایش تمام محصولات</span>
-                    </button>
+                    </a>
                 </div>
             }
             else
             {
-                <div class="vitrine-grid animate-catalog-filter" @key="_filterSequence" style="padding-top: 0;">
+                <div class="vitrine-grid animate-catalog-filter" style="padding-top: 0;">
                     @foreach (var product in VisibleProducts)
                     {
                         <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
@@ -311,37 +310,16 @@
                         </a>
                     }
 
-                    @if (_isLoadingMore)
-                    {
-                        @for (int i = 0; i < 3; i++)
-                        {
-                            <div class="vitrine-card-skeleton animate-fade-in">
-                                <div class="skeleton-image skeleton-shimmer"></div>
-                                <div class="skeleton-info">
-                                    <div class="skeleton-line short skeleton-shimmer"></div>
-                                    <div class="skeleton-line medium skeleton-shimmer"></div>
-                                    <div class="skeleton-line price skeleton-shimmer mt-2"></div>
-                                </div>
-                            </div>
-                        }
-                    }
                 </div>
 
                 @if (_visibleCount < FilteredProducts.Count)
                 {
                     <div class="text-center mt-5 mb-4 animate-fade-in">
-                        <button type="button" class="btn-gisu btn-gisu-primary btn-load-more" @onclick="LoadMoreAsync" disabled="@_isLoadingMore">
-                            @if (_isLoadingMore)
-                            {
-                                <i class="fa-solid fa-spinner fa-spin ms-2"></i>
-                                <span>در حال بارگذاری موارد بیشتر...</span>
-                            }
-                            else
-                            {
-                                <i class="fa-solid fa-arrow-down-long ms-2"></i>
-                                <span>نمایش @(Math.Min(PageSize, FilteredProducts.Count - _visibleCount)) محصول دیگر (@Math.Min(_visibleCount, FilteredProducts.Count) از @FilteredProducts.Count)</span>
-                            }
-                        </button>
+                        <a href="@GetCatalogUrl(pages: _visibleCount / PageSize + 1)" data-vitrine-catalog-link
+                           class="btn-gisu btn-gisu-primary btn-load-more">
+                            <i class="fa-solid fa-arrow-down-long ms-2"></i>
+                            <span>نمایش @(Math.Min(PageSize, FilteredProducts.Count - _visibleCount)) محصول دیگر (@_visibleCount از @FilteredProducts.Count)</span>
+                        </a>
                     </div>
                 }
                 else if (FilteredProducts.Count > PageSize)
@@ -359,9 +337,9 @@
 </div>
 
 <!-- Mobile Off-Canvas Filter Drawer -->
-<div class="catalog-drawer-backdrop @(_isFilterDrawerOpen ? "open" : "")" @onclick="CloseFilterDrawer"></div>
+<div class="catalog-drawer-backdrop" data-vitrine-filter-close></div>
 
-<div class="catalog-filter-drawer @(_isFilterDrawerOpen ? "open" : "")" aria-hidden="@(!_isFilterDrawerOpen)">
+<div id="vitrine-catalog-drawer" class="catalog-filter-drawer" aria-hidden="true" inert>
     <div class="catalog-drawer-header">
         <div class="d-flex align-items-center gap-2">
             <i class="fa-solid fa-sliders" style="color: var(--accent-color); font-size: 1.1rem;"></i>
@@ -371,7 +349,7 @@
                 <span class="active-filter-badge">@ActiveFiltersCount</span>
             }
         </div>
-        <button type="button" class="catalog-drawer-close" @onclick="CloseFilterDrawer" aria-label="بستن فیلترها">
+        <button type="button" class="catalog-drawer-close" data-vitrine-filter-close aria-label="بستن فیلترها">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -381,10 +359,12 @@
     </div>
 
     <div class="catalog-drawer-footer">
-        <button type="button" class="btn-gisu btn-gisu-primary" style="width: 100%; justify-content: center; font-size: 0.92rem; padding: 12px;" @onclick="CloseFilterDrawer">
+        <button type="button" class="btn-gisu btn-gisu-primary" style="width: 100%; justify-content: center; font-size: 0.92rem; padding: 12px;" data-vitrine-filter-close>
             <span>مشاهده محصولات (@FilteredProducts.Count کالا)</span>
         </button>
     </div>
+</div>
+
 </div>
 
 @code {
@@ -392,12 +372,16 @@
     [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
     [SupplyParameterFromQuery] public bool? OnlyAvailable { get; set; }
     [SupplyParameterFromQuery(Name = "q")] public string? QuerySearch { get; set; }
+    [SupplyParameterFromQuery(Name = "type")] public string? SelectedType { get; set; }
+    [SupplyParameterFromQuery(Name = "weight")] public string? WeightRange { get; set; }
+    [SupplyParameterFromQuery(Name = "wage")] public string? WageRange { get; set; }
+    [SupplyParameterFromQuery(Name = "sort")] public string? Sort { get; set; }
+    [SupplyParameterFromQuery(Name = "pages")] public int? Pages { get; set; }
+    [SupplyParameterFromQuery(Name = "attribute")] public string[]? Attributes { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
 
     private const int PageSize = 24;
     private int _visibleCount = PageSize;
-    private bool _isLoadingMore = false;
-    private int _filterSequence = 0;
 
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineCategoryDto> _categories = [];
@@ -405,49 +389,36 @@
     private ProductType? _selectedProductType;
     private bool _onlyFeatured;
     private bool _onlyAvailable;
-    private bool _isFilterDrawerOpen;
     private string _weightFilter = "all";
     private string _wageFilter = "all";
     private string _searchTerm = "";
     private string _sortBy = "newest";
     private bool _isLoading = true;
-    private Dictionary<Guid, string> _selectedAttributeFilters = new();
-
-    private string SearchTerm
-    {
-        get => _searchTerm;
-        set
-        {
-            if (_searchTerm != value)
-            {
-                _searchTerm = value;
-                ResetVisibleCount();
-            }
-        }
-    }
-
-    private PersistingComponentStateSubscription _persistingSubscription;
+    private readonly Dictionary<Guid, string> _selectedAttributeFilters = new();
 
     private RenderFragment FilterWidgetsContent => @<text>
         <!-- ویجت جستجو -->
         <div class="sidebar-widget">
             <h3>جستجوی زیورآلات</h3>
-            <div class="search-box">
-                <input type="text"
-                       @bind="SearchTerm"
-                       @bind:event="oninput"
+            <form class="search-box" action="@CatalogUrl" method="get" data-vitrine-catalog-search role="search">
+                @foreach (var (name, value) in GetCatalogParameters().Where(pair => pair.Key != "q"))
+                {
+                    <input type="hidden" name="@name" value="@value" />
+                }
+                <input type="search" name="q" value="@_searchTerm"
+                       autocomplete="off" aria-label="جستجوی زیورآلات"
                        placeholder="نام مدل، دسته‌بندی، بارکد..."
                        class="luxury-search-input" />
-                <span class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></span>
-            </div>
+                <button type="submit" class="search-btn" aria-label="جستجو"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
         </div>
 
         <!-- ویجت وضعیت و دسترسی -->
         <div class="sidebar-widget">
             <h3>وضعیت و دسترسی</h3>
             <div class="filter-pills-vertical">
-                <button type="button" class="filter-pill-btn filter-toggle-pill @(_onlyAvailable ? "active" : "")"
-                        @onclick="ToggleOnlyAvailable">
+                <a class="filter-pill-btn filter-toggle-pill @(_onlyAvailable ? "active" : "")"
+                        href="@(GetCatalogUrl("onlyAvailable", _onlyAvailable ? null : "true"))" data-vitrine-catalog-link>
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-circle-check" style="font-size: 0.9rem; color: @(_onlyAvailable ? "var(--accent-color)" : "#10b981");"></i>
                         <span>فقط اجناس موجود</span>
@@ -455,9 +426,9 @@
                     <div class="luxury-switch-indicator @(_onlyAvailable ? "checked" : "")">
                         <span class="luxury-switch-thumb"></span>
                     </div>
-                </button>
-                <button type="button" class="filter-pill-btn filter-toggle-pill @(_onlyFeatured ? "active" : "")"
-                        @onclick="ToggleOnlyFeatured">
+                </a>
+                <a class="filter-pill-btn filter-toggle-pill @(_onlyFeatured ? "active" : "")"
+                        href="@(GetCatalogUrl("onlyFeatured", _onlyFeatured ? null : "true"))" data-vitrine-catalog-link>
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-star" style="font-size: 0.9rem; color: @(_onlyFeatured ? "var(--accent-color)" : "#eab308");"></i>
                         <span>پیشنهادات ویژه</span>
@@ -465,7 +436,7 @@
                     <div class="luxury-switch-indicator @(_onlyFeatured ? "checked" : "")">
                         <span class="luxury-switch-thumb"></span>
                     </div>
-                </button>
+                </a>
             </div>
         </div>
 
@@ -475,24 +446,24 @@
             <div class="sidebar-widget">
                 <h3>دسته‌بندی‌های گالری</h3>
                 <div class="category-chips-list">
-                    <div class="category-chip-item @(_selectedCategoryId == null ? "active" : "")"
-                         @onclick="() => FilterByCategory(null)">
+                    <a class="category-chip-item @(_selectedCategoryId == null ? "active" : "")"
+                         href="@(GetCatalogUrl("categoryId"))" data-vitrine-catalog-link>
                         <div class="d-flex align-items-center gap-2">
                             <i class="fa-solid fa-gem" style="font-size: 0.85rem; color: var(--accent-color);"></i>
                             <span>همه دسته‌ها</span>
                         </div>
                         <span class="chip-badge">@_products.Count</span>
-                    </div>
+                    </a>
                     @foreach (var cat in _categories)
                     {
-                        <div class="category-chip-item @(_selectedCategoryId == cat.Id ? "active" : "")"
-                             @onclick="() => FilterByCategory(cat.Id)">
+                        <a class="category-chip-item @(_selectedCategoryId == cat.Id ? "active" : "")"
+                             href="@(GetCatalogUrl("categoryId", cat.Id.ToString()))" data-vitrine-catalog-link>
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-sparkles" style="font-size: 0.8rem; opacity: 0.7;"></i>
                                 <span>@cat.Title</span>
                             </div>
                             <span class="chip-badge">@cat.ProductCount</span>
-                        </div>
+                        </a>
                     }
                 </div>
             </div>
@@ -502,8 +473,8 @@
         <div class="sidebar-widget">
             <h3>نوع زیورآلات</h3>
             <div class="filter-pills-vertical">
-                <button type="button" class="filter-pill-btn @(_selectedProductType == null ? "active" : "")"
-                        @onclick="() => FilterByType(null)">
+                <a class="filter-pill-btn @(_selectedProductType == null ? "active" : "")"
+                        href="@(GetCatalogUrl("type"))" data-vitrine-catalog-link>
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-layer-group" style="font-size: 0.85rem;"></i>
                         <span>همه انواع</span>
@@ -512,9 +483,9 @@
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_selectedProductType == ProductType.Gold ? "active" : "")"
-                        @onclick="() => FilterByType(ProductType.Gold)">
+                </a>
+                <a class="filter-pill-btn @(_selectedProductType == ProductType.Gold ? "active" : "")"
+                        href="@(GetCatalogUrl("type", nameof(ProductType.Gold)))" data-vitrine-catalog-link>
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-ring" style="font-size: 0.85rem; color: var(--accent-color);"></i>
                         <span>فقط طلا</span>
@@ -523,9 +494,9 @@
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_selectedProductType == ProductType.Jewelry ? "active" : "")"
-                        @onclick="() => FilterByType(ProductType.Jewelry)">
+                </a>
+                <a class="filter-pill-btn @(_selectedProductType == ProductType.Jewelry ? "active" : "")"
+                        href="@(GetCatalogUrl("type", nameof(ProductType.Jewelry)))" data-vitrine-catalog-link>
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-gem" style="font-size: 0.85rem; color: #0ea5e9;"></i>
                         <span>جواهرات نگین‌دار</span>
@@ -534,7 +505,7 @@
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
+                </a>
             </div>
         </div>
 
@@ -542,46 +513,46 @@
         <div class="sidebar-widget">
             <h3>محدوده وزن (گرم)</h3>
             <div class="filter-pills-vertical">
-                <button type="button" class="filter-pill-btn @(_weightFilter == "all" ? "active" : "")"
-                        @onclick='() => SetWeightFilter("all")'>
+                <a class="filter-pill-btn @(_weightFilter == "all" ? "active" : "")"
+                        href="@(GetCatalogUrl("weight", "all"))" data-vitrine-catalog-link>
                     <span>همه وزن‌ها</span>
                     @if (_weightFilter == "all")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_weightFilter == "under_2" ? "active" : "")"
-                        @onclick='() => SetWeightFilter("under_2")'>
+                </a>
+                <a class="filter-pill-btn @(_weightFilter == "under_2" ? "active" : "")"
+                        href="@(GetCatalogUrl("weight", "under_2"))" data-vitrine-catalog-link>
                     <span>زیر ۲ گرم (سبک و اقتصادی)</span>
                     @if (_weightFilter == "under_2")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_weightFilter == "2_to_5" ? "active" : "")"
-                        @onclick='() => SetWeightFilter("2_to_5")'>
+                </a>
+                <a class="filter-pill-btn @(_weightFilter == "2_to_5" ? "active" : "")"
+                        href="@(GetCatalogUrl("weight", "2_to_5"))" data-vitrine-catalog-link>
                     <span>۲ تا ۵ گرم</span>
                     @if (_weightFilter == "2_to_5")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_weightFilter == "5_to_10" ? "active" : "")"
-                        @onclick='() => SetWeightFilter("5_to_10")'>
+                </a>
+                <a class="filter-pill-btn @(_weightFilter == "5_to_10" ? "active" : "")"
+                        href="@(GetCatalogUrl("weight", "5_to_10"))" data-vitrine-catalog-link>
                     <span>۵ تا ۱۰ گرم</span>
                     @if (_weightFilter == "5_to_10")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_weightFilter == "over_10" ? "active" : "")"
-                        @onclick='() => SetWeightFilter("over_10")'>
+                </a>
+                <a class="filter-pill-btn @(_weightFilter == "over_10" ? "active" : "")"
+                        href="@(GetCatalogUrl("weight", "over_10"))" data-vitrine-catalog-link>
                     <span>بالای ۱۰ گرم (سنگین و مجلسی)</span>
                     @if (_weightFilter == "over_10")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
+                </a>
             </div>
         </div>
 
@@ -589,49 +560,48 @@
         <div class="sidebar-widget">
             <h3>محدوده اجرت ساخت</h3>
             <div class="filter-pills-vertical">
-                <button type="button" class="filter-pill-btn @(_wageFilter == "all" ? "active" : "")"
-                        @onclick='() => SetWageFilter("all")'>
+                <a class="filter-pill-btn @(_wageFilter == "all" ? "active" : "")"
+                        href="@(GetCatalogUrl("wage", "all"))" data-vitrine-catalog-link>
                     <span>همه اجرت‌ها</span>
                     @if (_wageFilter == "all")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_wageFilter == "low" ? "active" : "")"
-                        @onclick='() => SetWageFilter("low")'>
+                </a>
+                <a class="filter-pill-btn @(_wageFilter == "low" ? "active" : "")"
+                        href="@(GetCatalogUrl("wage", "low"))" data-vitrine-catalog-link>
                     <span>طلای کم‌اجرت (زیر ۱۰٪ - اقتصادی)</span>
                     @if (_wageFilter == "low")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_wageFilter == "medium" ? "active" : "")"
-                        @onclick='() => SetWageFilter("medium")'>
+                </a>
+                <a class="filter-pill-btn @(_wageFilter == "medium" ? "active" : "")"
+                        href="@(GetCatalogUrl("wage", "medium"))" data-vitrine-catalog-link>
                     <span>اجرت متوسط (۱۰٪ تا ۲۰٪)</span>
                     @if (_wageFilter == "medium")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
-                <button type="button" class="filter-pill-btn @(_wageFilter == "high" ? "active" : "")"
-                        @onclick='() => SetWageFilter("high")'>
+                </a>
+                <a class="filter-pill-btn @(_wageFilter == "high" ? "active" : "")"
+                        href="@(GetCatalogUrl("wage", "high"))" data-vitrine-catalog-link>
                     <span>کارهای فاخر و پرکار (بالای ۲۰٪)</span>
                     @if (_wageFilter == "high")
                     {
                         <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                     }
-                </button>
+                </a>
             </div>
         </div>
 
         <!-- ویجت‌های ویژگی‌های توصیفی پویا (آکاردئونی و باز و بسته‌شونده) -->
         @foreach (var group in AvailableAttributeFacets)
         {
-            var isExpanded = IsAttributeWidgetExpanded(group.AttributeId);
             var hasActiveFilter = _selectedAttributeFilters.ContainsKey(group.AttributeId);
 
-            <div class="sidebar-widget">
-                <h3 class="widget-collapsible @(isExpanded ? "expanded" : "")" @onclick="() => ToggleAttributeWidget(group.AttributeId)">
+            <details class="sidebar-widget" open="@hasActiveFilter" data-vitrine-facet="@group.AttributeId">
+                <summary class="widget-collapsible">
                     <div class="d-flex align-items-center gap-2">
                         <span>@group.Title @(!string.IsNullOrWhiteSpace(group.Unit) ? $"({group.Unit})" : "")</span>
                         @if (hasActiveFilter)
@@ -639,44 +609,41 @@
                             <span class="active-facet-dot"></span>
                         }
                     </div>
-                    <i class="fa-solid fa-chevron-down widget-toggle-icon @(isExpanded ? "rotated" : "")"></i>
-                </h3>
+                    <i class="fa-solid fa-chevron-down widget-toggle-icon"></i>
+                </summary>
 
-                @if (isExpanded)
-                {
-                    <div class="filter-pills-vertical animate-fade-in" style="margin-top: 10px;">
-                        <button type="button" class="filter-pill-btn @(!_selectedAttributeFilters.ContainsKey(group.AttributeId) ? "active" : "")"
-                                @onclick="() => SetAttributeFilter(group.AttributeId, null)">
+                    <div class="filter-pills-vertical" style="margin-top: 10px;">
+                        <a class="filter-pill-btn @(!_selectedAttributeFilters.ContainsKey(group.AttributeId) ? "active" : "")"
+                                href="@(GetCatalogUrl(attributeId: group.AttributeId))" data-vitrine-catalog-link>
                             <span>همه</span>
                             @if (!_selectedAttributeFilters.ContainsKey(group.AttributeId))
                             {
                                 <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                             }
-                        </button>
+                        </a>
                         @foreach (var val in group.Values)
                         {
                             var isSelected = _selectedAttributeFilters.TryGetValue(group.AttributeId, out var currentVal) && currentVal.Equals(val, StringComparison.OrdinalIgnoreCase);
-                            <button type="button" class="filter-pill-btn @(isSelected ? "active" : "")"
-                                    @onclick="() => SetAttributeFilter(group.AttributeId, val)">
+                            <a class="filter-pill-btn @(isSelected ? "active" : "")"
+                                    href="@(GetCatalogUrl(attributeId: group.AttributeId, attributeValue: val))" data-vitrine-catalog-link>
                                 <span>@val</span>
                                 @if (isSelected)
                                 {
                                     <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
                                 }
-                            </button>
+                            </a>
                         }
                     </div>
-                }
-            </div>
+            </details>
         }
 
         <!-- دکمه پاک کردن فیلترها -->
         @if (HasActiveFilters)
         {
-            <button type="button" class="btn-gisu btn-gisu-outline" style="width: 100%; justify-content: center; font-size: 0.86rem;" @onclick="ResetFilters">
+            <a class="btn-gisu btn-gisu-outline" style="width: 100%; justify-content: center; font-size: 0.86rem;" href="@(CatalogUrl)" data-vitrine-catalog-link>
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>حذف تمام فیلترها (@ActiveFiltersCount)</span>
-            </button>
+            </a>
         }
     </text>;
 
@@ -694,96 +661,42 @@
         ? $"/p/{barcode}"
         : $"/{EffectiveStoreSlug}/p/{barcode}";
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
-        {
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-            return;
-        }
-
-        _selectedCategoryId = CategoryId;
-        _onlyFeatured = OnlyFeatured ?? false;
-        _onlyAvailable = OnlyAvailable ?? false;
-        if (!string.IsNullOrWhiteSpace(QuerySearch))
-        {
-            _searchTerm = QuerySearch.Trim();
-        }
-        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
-
-        var restoredCategories = ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>("vitrine_catalog_categories", out var catRestored) && catRestored != null
-            ? catRestored
-            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_catalog_categories_{EffectiveStoreSlug}", out catRestored) && catRestored != null ? catRestored : null);
-
-        var restoredProducts = ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>("vitrine_catalog_products", out var prodRestored) && prodRestored != null
-            ? prodRestored
-            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_catalog_products_{EffectiveStoreSlug}", out prodRestored) && prodRestored != null ? prodRestored : null);
-
-        if (restoredCategories != null && restoredProducts != null)
-        {
-            _categories = restoredCategories;
-            _products = restoredProducts;
-            ResetVisibleCount();
-            _isLoading = false;
-        }
-        else
-        {
-            await LoadDataAsync();
-        }
-    }
+    private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveStoreSlug}/catalog";
 
     protected override async Task OnParametersSetAsync()
     {
         if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
         {
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
             return;
         }
 
         _selectedCategoryId = CategoryId;
-        _onlyFeatured = OnlyFeatured ?? false;
-        _onlyAvailable = OnlyAvailable ?? false;
-        if (QuerySearch != null && _searchTerm != QuerySearch.Trim())
-        {
-            _searchTerm = QuerySearch.Trim();
-            ResetVisibleCount();
-        }
+        _selectedProductType = Enum.TryParse<ProductType>(SelectedType, true, out var productType)
+            && productType is ProductType.Gold or ProductType.Jewelry ? productType : null;
+        _onlyFeatured = OnlyFeatured is true;
+        _onlyAvailable = OnlyAvailable is true;
+        _searchTerm = QuerySearch?.Trim() ?? "";
+        _weightFilter = WeightRange is "under_2" or "2_to_5" or "5_to_10" or "over_10" ? WeightRange : "all";
+        _wageFilter = WageRange is "low" or "medium" or "high" ? WageRange : "all";
+        _sortBy = Sort is "price_asc" or "price_desc" or "wage_asc" or "wage_desc" or "weight_asc" or "weight_desc" ? Sort : "newest";
+        _visibleCount = (int)Math.Min((long)Math.Max(Pages ?? 1, 1) * PageSize, int.MaxValue);
 
-        if (_products.Count == 0 && !_isLoading)
+        _selectedAttributeFilters.Clear();
+        foreach (var attribute in Attributes ?? [])
         {
-            await LoadDataAsync();
-        }
-    }
-
-    private Task PersistCatalogData()
-    {
-        if (_categories != null && _categories.Count > 0)
-        {
-            ApplicationState.PersistAsJson("vitrine_catalog_categories", _categories);
-            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
+            var separator = attribute.IndexOf(':');
+            if (separator > 0 && Guid.TryParse(attribute.AsSpan(0, separator), out var id) &&
+                !string.IsNullOrWhiteSpace(attribute[(separator + 1)..]))
             {
-                ApplicationState.PersistAsJson($"vitrine_catalog_categories_{EffectiveStoreSlug}", _categories);
+                _selectedAttributeFilters[id] = attribute[(separator + 1)..];
             }
         }
-        if (_products != null && _products.Count > 0)
-        {
-            ApplicationState.PersistAsJson("vitrine_catalog_products", _products);
-            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
-            {
-                ApplicationState.PersistAsJson($"vitrine_catalog_products_{EffectiveStoreSlug}", _products);
-            }
-        }
-        return Task.CompletedTask;
-    }
 
-    private async Task LoadDataAsync()
-    {
-        _isLoading = true;
         try
         {
             _categories = (await VitrineService.GetCategoriesAsync(EffectiveStoreSlug)).ToList();
             _products = (await VitrineService.GetVitrineProductsAsync(EffectiveStoreSlug)).ToList();
-            ResetVisibleCount();
+            FilteredProducts = FilterProducts();
         }
         catch (Exception ex)
         {
@@ -795,140 +708,47 @@
         }
     }
 
-    public void Dispose()
+    private IEnumerable<KeyValuePair<string, string>> GetCatalogParameters(
+        string? key = null, string? value = null, Guid? attributeId = null, string? attributeValue = null, int? pages = null)
     {
-        _persistingSubscription.Dispose();
-        if (_isFilterDrawerOpen)
+        var filters = new Dictionary<string, string?>
         {
-            _isFilterDrawerOpen = false;
-            try
-            {
-                _ = JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", false);
-            }
-            catch { }
-        }
-    }
+            ["categoryId"] = _selectedCategoryId?.ToString(),
+            ["type"] = _selectedProductType?.ToString(),
+            ["onlyFeatured"] = _onlyFeatured ? "true" : null,
+            ["onlyAvailable"] = _onlyAvailable ? "true" : null,
+            ["q"] = _searchTerm,
+            ["weight"] = _weightFilter == "all" ? null : _weightFilter,
+            ["wage"] = _wageFilter == "all" ? null : _wageFilter,
+            ["sort"] = _sortBy == "newest" ? null : _sortBy
+        };
+        if (key != null)
+            filters[key] = value is "all" or "newest" ? null : value;
 
-    private void ResetVisibleCount()
-    {
-        _visibleCount = PageSize;
-        _filterSequence++;
-    }
-
-    private async Task LoadMoreAsync()
-    {
-        if (_isLoadingMore) return;
-        _isLoadingMore = true;
-        StateHasChanged();
-        await Task.Delay(250); // Gentle feedback
-        _visibleCount += PageSize;
-        _isLoadingMore = false;
-        StateHasChanged();
-    }
-
-    private async Task OpenFilterDrawer()
-    {
-        _isFilterDrawerOpen = true;
-        try
+        foreach (var (name, item) in filters)
         {
-            await JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", true);
+            if (!string.IsNullOrEmpty(item))
+                yield return new(name, item);
         }
-        catch { }
-    }
 
-    private async Task CloseFilterDrawer()
-    {
-        _isFilterDrawerOpen = false;
-        try
+        foreach (var (id, attribute) in _selectedAttributeFilters)
         {
-            await JsRuntime.InvokeVoidAsync("goldexVitrine.setFilterDrawerOpen", false);
+            if (id != attributeId)
+                yield return new("attribute", $"{id}:{attribute}");
         }
-        catch { }
+
+        if (attributeId.HasValue && !string.IsNullOrEmpty(attributeValue))
+            yield return new("attribute", $"{attributeId}:{attributeValue}");
+
+        if (pages > 1)
+            yield return new("pages", pages.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
-    private void ToggleOnlyAvailable()
+    private string GetCatalogUrl(string? key = null, string? value = null, Guid? attributeId = null, string? attributeValue = null, int? pages = null)
     {
-        _onlyAvailable = !_onlyAvailable;
-        ResetVisibleCount();
-    }
-
-    private void ToggleOnlyFeatured()
-    {
-        _onlyFeatured = !_onlyFeatured;
-        ResetVisibleCount();
-    }
-
-    private void FilterByCategory(Guid? categoryId)
-    {
-        _selectedCategoryId = categoryId;
-        ResetVisibleCount();
-    }
-
-    private void FilterByType(ProductType? type)
-    {
-        _selectedProductType = type;
-        ResetVisibleCount();
-    }
-
-    private void SetWeightFilter(string filter)
-    {
-        _weightFilter = filter;
-        ResetVisibleCount();
-    }
-
-    private void SetWageFilter(string filter)
-    {
-        _wageFilter = filter;
-        ResetVisibleCount();
-    }
-
-    private void SetSortBy(string sort)
-    {
-        _sortBy = sort;
-        ResetVisibleCount();
-    }
-
-    private readonly HashSet<Guid> _expandedAttributeWidgets = new();
-
-    private void ToggleAttributeWidget(Guid attributeId)
-    {
-        if (!_expandedAttributeWidgets.Add(attributeId))
-        {
-            _expandedAttributeWidgets.Remove(attributeId);
-        }
-    }
-
-    private bool IsAttributeWidgetExpanded(Guid attributeId)
-    {
-        return _selectedAttributeFilters.ContainsKey(attributeId) || _expandedAttributeWidgets.Contains(attributeId);
-    }
-
-    private void SetAttributeFilter(Guid attributeId, string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            _selectedAttributeFilters.Remove(attributeId);
-        }
-        else
-        {
-            _selectedAttributeFilters[attributeId] = value;
-            _expandedAttributeWidgets.Add(attributeId);
-        }
-        ResetVisibleCount();
-    }
-
-    private void ResetFilters()
-    {
-        _selectedCategoryId = null;
-        _selectedProductType = null;
-        _onlyFeatured = false;
-        _onlyAvailable = false;
-        _weightFilter = "all";
-        _wageFilter = "all";
-        _searchTerm = "";
-        _sortBy = "newest";
-        _selectedAttributeFilters.Clear();
-        ResetVisibleCount();
+        var query = string.Join("&", GetCatalogParameters(key, value, attributeId, attributeValue, pages)
+            .Select(pair => $"{pair.Key}={Uri.EscapeDataString(pair.Value)}"));
+        return query.Length == 0 ? CatalogUrl : $"{CatalogUrl}?{query}";
     }
 
     public record AttributeFacetGroup(Guid AttributeId, string Title, string? Unit, List<string> Values);
@@ -1011,95 +831,94 @@
 
     private IEnumerable<VitrineProductSummaryDto> VisibleProducts => FilteredProducts.Take(_visibleCount);
 
-    private List<VitrineProductSummaryDto> FilteredProducts
+    private List<VitrineProductSummaryDto> FilteredProducts { get; set; } = [];
+
+    private List<VitrineProductSummaryDto> FilterProducts()
     {
-        get
+        var result = _products.AsEnumerable();
+
+        if (_onlyAvailable)
         {
-            var result = _products.AsEnumerable();
-
-            if (_onlyAvailable)
-            {
-                result = result.Where(x => x.IsAvailable);
-            }
-
-            if (_selectedCategoryId.HasValue)
-            {
-                result = result.Where(x => x.CategoryId == _selectedCategoryId.Value);
-            }
-
-            if (_selectedProductType.HasValue)
-            {
-                result = result.Where(x => x.ProductType == _selectedProductType.Value);
-            }
-
-            if (_onlyFeatured)
-            {
-                result = result.Where(x => x.IsFeatured);
-            }
-
-            if (_weightFilter == "under_2")
-            {
-                result = result.Where(x => x.Weight < 2.0m);
-            }
-            else if (_weightFilter == "2_to_5")
-            {
-                result = result.Where(x => x.Weight >= 2.0m && x.Weight <= 5.0m);
-            }
-            else if (_weightFilter == "5_to_10")
-            {
-                result = result.Where(x => x.Weight > 5.0m && x.Weight <= 10.0m);
-            }
-            else if (_weightFilter == "over_10")
-            {
-                result = result.Where(x => x.Weight > 10.0m);
-            }
-
-            if (_wageFilter == "low")
-            {
-                result = result.Where(x => GetEffectiveWage(x) < 10.0m);
-            }
-            else if (_wageFilter == "medium")
-            {
-                result = result.Where(x => GetEffectiveWage(x) >= 10.0m && GetEffectiveWage(x) <= 20.0m);
-            }
-            else if (_wageFilter == "high")
-            {
-                result = result.Where(x => GetEffectiveWage(x) > 20.0m);
-            }
-
-            if (!string.IsNullOrWhiteSpace(_searchTerm))
-            {
-                var term = _searchTerm.Trim();
-                result = result.Where(x => x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                                           x.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                                           (x.CategoryTitle != null && x.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            if (_selectedAttributeFilters.Count > 0)
-            {
-                foreach (var (attrId, attrVal) in _selectedAttributeFilters)
-                {
-                    result = result.Where(x => x.Attributes != null && x.Attributes.Any(a => a.AttributeId == attrId && a.Value.Equals(attrVal, StringComparison.OrdinalIgnoreCase)));
-                }
-            }
-
-            // Keep "newest" faithful to its label: creation date is the primary key.
-            // Availability is only a tie-breaker for products created at the same instant.
-            result = _sortBy switch
-            {
-                "price_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.EstimatedPrice),
-                "price_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.EstimatedPrice),
-                "wage_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => GetEffectiveWage(x)).ThenBy(x => x.WageAmount),
-                "wage_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => GetEffectiveWage(x)).ThenByDescending(x => x.WageAmount),
-                "weight_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.Weight),
-                "weight_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.Weight),
-                _ => result.OrderByDescending(x => x.CreatedAt)
-                    .ThenByDescending(x => x.IsAvailable)
-                    .ThenByDescending(x => x.Id) // newest / default
-            };
-
-            return result.ToList();
+            result = result.Where(x => x.IsAvailable);
         }
+
+        if (_selectedCategoryId.HasValue)
+        {
+            result = result.Where(x => x.CategoryId == _selectedCategoryId.Value);
+        }
+
+        if (_selectedProductType.HasValue)
+        {
+            result = result.Where(x => x.ProductType == _selectedProductType.Value);
+        }
+
+        if (_onlyFeatured)
+        {
+            result = result.Where(x => x.IsFeatured);
+        }
+
+        if (_weightFilter == "under_2")
+        {
+            result = result.Where(x => x.Weight < 2.0m);
+        }
+        else if (_weightFilter == "2_to_5")
+        {
+            result = result.Where(x => x.Weight >= 2.0m && x.Weight <= 5.0m);
+        }
+        else if (_weightFilter == "5_to_10")
+        {
+            result = result.Where(x => x.Weight > 5.0m && x.Weight <= 10.0m);
+        }
+        else if (_weightFilter == "over_10")
+        {
+            result = result.Where(x => x.Weight > 10.0m);
+        }
+
+        if (_wageFilter == "low")
+        {
+            result = result.Where(x => GetEffectiveWage(x) < 10.0m);
+        }
+        else if (_wageFilter == "medium")
+        {
+            result = result.Where(x => GetEffectiveWage(x) >= 10.0m && GetEffectiveWage(x) <= 20.0m);
+        }
+        else if (_wageFilter == "high")
+        {
+            result = result.Where(x => GetEffectiveWage(x) > 20.0m);
+        }
+
+        if (!string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            var term = _searchTerm.Trim();
+            result = result.Where(x => x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                       x.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                       (x.CategoryTitle != null && x.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        if (_selectedAttributeFilters.Count > 0)
+        {
+            foreach (var (attrId, attrVal) in _selectedAttributeFilters)
+            {
+                result = result.Where(x => x.Attributes != null && x.Attributes.Any(a => a.AttributeId == attrId && a.Value.Equals(attrVal, StringComparison.OrdinalIgnoreCase)));
+            }
+        }
+
+        // Keep "newest" faithful to its label: creation date is the primary key.
+        // Availability is only a tie-breaker for products created at the same instant.
+        result = _sortBy switch
+        {
+            "price_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.EstimatedPrice),
+            "price_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.EstimatedPrice),
+            "wage_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => GetEffectiveWage(x)).ThenBy(x => x.WageAmount),
+            "wage_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => GetEffectiveWage(x)).ThenByDescending(x => x.WageAmount),
+            "weight_asc" => result.OrderByDescending(x => x.IsAvailable).ThenBy(x => x.Weight),
+            "weight_desc" => result.OrderByDescending(x => x.IsAvailable).ThenByDescending(x => x.Weight),
+            _ => result.OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.IsAvailable)
+                .ThenByDescending(x => x.Id) // newest / default
+        };
+
+        return result.ToList();
     }
 
     private string GetCatalogJsonLd(string canonicalUrl, string storeName, string pageDesc)

@@ -2,7 +2,7 @@
 @page "/p/{Barcode}"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
-@implements IDisposable
+@attribute [ExcludeFromInteractiveRouting]
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
@@ -12,8 +12,6 @@
 @using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
-@inject IJSRuntime JsRuntime
-@inject PersistentComponentState ApplicationState
 @inject IStoreContext StoreContext
 
 <PageTitle>@(_product != null ? $"{_product.Name} (عیار {(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")}) - {(_storeInfo?.Name ?? "گالری طلا")}" : "جزئیات قطعه طلا")</PageTitle>
@@ -389,7 +387,7 @@ else
                         </a>
                     }
 
-                    <button id="vitrineShareBtn" type="button" class="btn-gisu btn-gisu-outline" @onclick="OnShareClickedAsync" style="padding: 14px;">
+                    <button type="button" data-vitrine-share="@GetShareData()" class="btn-gisu btn-gisu-outline" style="padding: 14px;">
                         <i class="fa-solid fa-share-nodes"></i>
                         <span>اشتراک‌گذاری کالا</span>
                     </button>
@@ -408,7 +406,6 @@ else
 }
 
 @code {
-    [CascadingParameter] private HttpContext? HttpContext { get; set; }
     [Parameter] public string? StoreSlug { get; set; }
     [Parameter] public string Barcode { get; set; } = default!;
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
@@ -430,59 +427,11 @@ else
 
     private VitrineProductDetailDto? _product;
     private bool _isLoading = true;
-    private PersistingComponentStateSubscription _persistingSubscription;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
-        {
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-            return;
-        }
-
-        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistProductData);
-
-        var restored = (ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{Barcode}", out var prodRestored) && prodRestored != null)
-            ? prodRestored
-            : (!string.IsNullOrWhiteSpace(EffectiveStoreSlug) && ApplicationState.TryTakeFromJson<VitrineProductDetailDto>($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", out prodRestored) && prodRestored != null ? prodRestored : null);
-
-        if (restored != null)
-        {
-            _product = restored;
-            _isLoading = false;
-        }
-        else
-        {
-            await LoadProductAsync();
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
-        {
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-            return;
-        }
-
-        if (_product == null && !_isLoading)
-        {
-            await LoadProductAsync();
-        }
-    }
-
-    private Task PersistProductData()
-    {
-        if (_product != null)
-        {
-            ApplicationState.PersistAsJson($"vitrine_product_{Barcode}", _product);
-            if (!string.IsNullOrWhiteSpace(EffectiveStoreSlug))
-            {
-                ApplicationState.PersistAsJson($"vitrine_product_{EffectiveStoreSlug}_{Barcode}", _product);
-            }
-        }
-        return Task.CompletedTask;
-    }
+    protected override Task OnParametersSetAsync() =>
+        !string.IsNullOrWhiteSpace(StoreSlug) && ClientRoutes.Vitrine.IsReservedSegment(StoreSlug)
+            ? Task.CompletedTask
+            : LoadProductAsync();
 
     private async Task LoadProductAsync()
     {
@@ -499,23 +448,7 @@ else
         finally
         {
             _isLoading = false;
-            try
-            {
-                if (_product == null && HttpContext != null && !HttpContext.Response.HasStarted)
-                {
-                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-                }
-            }
-            catch
-            {
-                // ignore if response stream already started
-            }
         }
-    }
-
-    public void Dispose()
-    {
-        _persistingSubscription.Dispose();
     }
 
     private string GetWhatsAppInquiryUrl()
@@ -698,9 +631,9 @@ else
         });
     }
 
-    private async Task OnShareClickedAsync()
+    private string GetShareData()
     {
-        if (_product == null) return;
+        if (_product == null) return string.Empty;
 
         var mainImg = _product.ImageUrls.Count > 0 ? _product.ImageUrls[0] : "";
         if (!string.IsNullOrEmpty(mainImg) && !mainImg.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -725,6 +658,6 @@ else
             url = Navigation.ToAbsoluteUri(ProductUrl).ToString()
         };
 
-        await JsRuntime.InvokeVoidAsync("goldexVitrine.shareProduct", shareData);
+        return System.Text.Json.JsonSerializer.Serialize(shareData);
     }
 }

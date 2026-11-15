@@ -398,24 +398,22 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
 4. **UI/UX & Styling Standard**:
    - Custom luxury obsidian-and-gold theme defined in `wwwroot/assets/vitrine/css/vitrine.css`.
    - Lightweight gallery and share interaction helpers in `wwwroot/assets/vitrine/js/vitrine.js`.
+   - The public homepage starts with a full-width `vitrine-campaign` carousel. `VitrineHome.razor` prerenders the first banner, and `vitrine.js` registers the element independently of Blazor. The banners are generated editorial images based on Fani Jewellery's emerald set (`20601016`), Rezendorf ring (`20201304`), and nail bracelet (`20900903`). Each banner has a dedicated portrait and landscape WebP under `wwwroot/assets/vitrine/images/`. Keep the caption rendered as HTML and the slide links pointed at the current storefront catalog.
+   - The desktop carousel starts below the header in normal page flow. Its minimum height scales with the viewport width so wide screens show both the models' faces and the jewelry.
+   - The public storefront shares the same header styles across home, catalog, product, and about pages. The logo is centered with a navigation row on desktop, and the compact mobile header keeps search and catalog shortcuts beside the brand.
+   - The homepage category row displays square photos with native RTL horizontal scrolling. The curated Fani WebP assets under `wwwroot/assets/vitrine/images/categories/` are selected by category ID. Other categories use a published product photo when available. Category tiles retain the storefront's catalog query links and product counts.
+   - `VitrineSearchPanel.razor` expands in the storefront header's normal layout and pushes the page down. `vitrine.js` synchronizes the toggle's `aria-expanded`, the panel's `inert` state and keyboard focus. Keep the search usable alongside page content. The browser loads the storefront's public product and category API data on first search and renders results using DOM text nodes. The form submits the catalog's `q` query.
+   - In the RTL homepage carousel, a rightward swipe advances and brings in the next slide from the left. A leftward swipe moves back. The indicator buttons also select slides and any manual selection stops autoplay for the current visit. Honor reduced-motion preferences for both the transition and autoplay.
    - Fast, fluid 60fps animations, mobile-first responsive layout, and distinct Drawer shortcut for store admins.
 5. **Custom Domain & Public Vitrine Link Generation**:
    - Stores support optional `CustomDomain` (configured strictly by Administrators in `/settings/stores`).
    - `VitrineUrlHelper` generates public vitrine product and catalog links using `CustomDomain` (e.g. `https://fanijewellery.ir/{slug}/p/{barcode}`), falling back to current base URL if unconfigured.
    - Inventory management (`VitrineQuickEditDialog` and `InventoryStockList`) includes 1-click clipboard copy and open buttons for public product URLs.
-6. **WebAssembly Bootstrap Footprint & Embedded Browser Compatibility**:
-   - The public vitrine currently uses `InteractiveWebAssemblyRenderMode(prerender: true)` from the same `GoldEx.Client` project as the full administration application; it is not a separately trimmed vitrine client.
-   - A representative .NET 10 release publish contains roughly 396 files and about 51.5 MB of uncompressed `_framework` assets, including large administration-only dependencies such as DevExpress and EF Core. This can make first-load hydration fragile in memory-constrained embedded browsers such as Instagram's in-app WebView even though SSR content remains visible.
-   - The application currently sends `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin-allow-popups` on vitrine HTML and framework assets. Instagram's in-app WebView was confirmed to lose all Blazor interactivity in both `InteractiveWebAssembly` and `InteractiveServer` modes while these headers were present; ordinary mobile Chrome was unaffected. Hiding both response headers for the public custom domain in Nginx immediately restored interactivity.
-   - Public vitrine routes must therefore remain exempt from COEP/COOP unless a future feature demonstrably requires cross-origin isolation and has been tested in embedded browsers. The WASM payload size remains a secondary first-load performance risk, not the cause of this confirmed Instagram failure.
-   - Vitrine startup must unregister active service workers and delete `blazor-cache-*` Cache Storage entries **before** calling `Blazor.start()`. Cleanup after startup is too late: a stale WASM bundle can hydrate over correct SSR markup and display obsolete UI or DTO behavior.
-   - **Multi-Layer Cache & Hydration Management**:
-     1. `App.razor` executes an asynchronous pre-boot routine before `Blazor.start()`:
-        - Unregisters all service workers on Vitrine routes. If a Service Worker controller is active at load time, it wipes `caches` and triggers a safe, one-time reload (guarded by `sessionStorage.getItem('gex_sw_cleared_once')`).
-        - Enforces version-based cache eviction: Compares server version (`@AppVersion` from `IAppReleaseService` / `releases.json`) with `localStorage('gex_vitrine_wasm_ver')`. If different, it wipes all browser Cache Storage entries (`caches.delete()`) before boot.
-        - Configures `Blazor.start({ webAssembly: { loadBootResource: ... } })` so that `blazor.boot.json` is always fetched with `{ cache: 'no-store' }`, guaranteeing that hash comparisons always reflect the latest deployment.
-     2. `service-worker.published.js` actively self-destructs on non-platform custom domains (e.g. `fanijewellery.ir`), and treats `blazor.boot.json` and boot scripts as Network-First on platform domains.
-     3. Vitrine static assets (`vitrine.css?v=@AppVersion` and `vitrine.js?v=@AppVersion`) are strictly version-stamped, and `vitrine.js` is loaded prior to `Blazor.start()`.
+6. **Static SSR & Browser Interaction**:
+   - `App.razor.cs` selects static SSR for public storefront requests, and `App.razor` serves the vitrine script without loading or starting Blazor for those requests. Storefront pages opt out of interactive routing from the enterprise app. The enterprise app keeps its existing render modes.
+   - Catalog filters, sorting, and expanded pagination use addressable query links and native forms. `vitrine.js` fetches updated SSR catalog markup for in-page updates, keeps browser history and the mobile drawer state, and leaves decimal filtering and pricing logic in Razor/server code.
+   - Search, gallery, sharing and the homepage slider work through JavaScript. Public storefront components do not need persistent Blazor component state or JS interop.
+   - The enterprise service worker bypasses storefront routes on the platform host. The public custom-domain bootstrap unregisters old service workers. CSS and JS remain versioned with `releases.json`.
 7. **Catalog "Newest" Sorting**:
    - The `VitrineCatalog.razor` `newest` option uses `Product.CreatedAt` as its chronology field. `GetVitrineProductsAsync` propagates it through `VitrineProductRawProjection` and `VitrineProductSummaryDto`.
    - For the `newest` option, `CreatedAt` descending is the primary ordering key. Availability is only a secondary tie-breaker, followed by `Id` descending for deterministic ordering. Do not place availability before `CreatedAt`, because that makes older in-stock products appear ahead of genuinely newer sold products while the UI says «جدیدترین».
@@ -431,11 +429,9 @@ GoldEx provides a public-facing, responsive online showcase and digital catalog 
    - A vitrine product is partially sold when its positive remaining stock is lower than Product.Weight (using a small decimal tolerance).
    - Public DTOs expose OriginalWeight, RemainingWeight, and IsPartiallySold. Catalog, home/search, product detail, WhatsApp inquiry, and share/story content must explicitly say that weight and price refer to the remaining portion so a partially sold set is never presented as a complete set.
 
-10. **Custom-Domain Deployment Cache Checks**:
-   - Vitrine pages prerender on the server and then rerender from `GoldEx.Client` WebAssembly. An element present in SSR but absent after hydration can indicate an older client bundle or a client-side rendering difference; compare the actual HTML, loaded framework asset URLs, and browser network responses before changing component markup.
-   - On `fanijewellery.ir`, Nginx has separate locations for framework scripts, WebAssembly binaries, static files, and HTML. Only its framework-script location hides COEP/COOP; the general HTML and binary locations can still pass those headers through. Apply any embedded-browser header policy consistently to the document and all required assets.
-   - The binary location sets a 30-day `immutable` policy for `.wasm` and related files. Use long immutable caching only for URLs proven to change when content changes; version changes and Cache Storage deletion cannot clear the browser HTTP cache or the CDN. Verify ArvanCloud response headers and cache status at the public hostname when diagnosing deployments.
-
+10. **Custom-Domain Deployment Checks**:
+   - Check the page HTML and browser network responses for the current vitrine stylesheet/script and the absence of Blazor and WebAssembly bootstrap requests.
+   - Test both the slug-prefixed storefront and the custom-domain root and child routes. Preserve the proxy's public storefront asset and response-header policy.
 ---
 
 ## Coin Payment & Trade-In Architecture (تهاتر و پرداخت با سکه در فاکتورها)

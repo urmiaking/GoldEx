@@ -49,16 +49,15 @@
 
     protected override void OnInitialized()
     {
-        try
+        var response = HttpContext?.Response;
+        if (response is { HasStarted: false })
         {
-            if (HttpContext != null && !HttpContext.Response.HasStarted)
+            // Let static SSR render the storefront error page before sending its HTTP status.
+            response.OnStarting(() =>
             {
-                HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            }
-        }
-        catch
-        {
-            // ignore if response stream has already started
+                response.StatusCode = StatusCodes.Status404NotFound;
+                return Task.CompletedTask;
+            });
         }
     }
 }

@@ -1,0 +1,36 @@
+@using GoldEx.Shared.Routings
+
+<div id="vitrine-search-panel" class="vitrine-search-panel" inert
+     data-products-url="@GetApiUrl(ApiRoutes.Vitrine.GetProducts)"
+     data-categories-url="@GetApiUrl(ApiRoutes.Vitrine.GetCategories)"
+     data-product-base-url="@ProductBaseUrl">
+    <div class="vitrine-search-clip">
+        <div class="vitrine-container vitrine-search-content">
+            <form class="vitrine-search-form" role="search" aria-label="جستجوی محصولات ویترین" action="@CatalogUrl" method="get">
+                <i class="fa-solid fa-magnifying-glass vitrine-search-icon" aria-hidden="true"></i>
+                <input type="search" name="q" class="vitrine-search-input"
+                       aria-label="نام، دسته‌بندی یا کد کالا"
+                       placeholder="نام، دسته‌بندی یا کد کالا"
+                       autocomplete="off" />
+                <button type="submit" class="vitrine-search-submit-btn" aria-label="نمایش نتیجه‌ها در کاتالوگ">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="vitrine-search-close" data-vitrine-search-close aria-label="بستن جستجو">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <p class="vitrine-search-status" data-vitrine-search-status role="status" hidden></p>
+            <div class="vitrine-search-results" data-vitrine-search-results></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string CatalogUrl { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string ProductBaseUrl { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string StoreSlug { get; set; } = string.Empty;
+
+    private string GetApiUrl(string route) =>
+        $"{ApiRoutes.Vitrine.Base}/{route.Replace("{storeSlug}", Uri.EscapeDataString(StoreSlug))}";
+}

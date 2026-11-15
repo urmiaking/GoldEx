@@ -446,8 +446,8 @@ window.goldexVitrine = {
 
           <!-- Copy Link Section -->
           <div class="vitrine-share-link-box">
-            <input type="text" readonly value="${productUrl}" class="vitrine-share-link-input" />
-            <button type="button" class="vitrine-share-copy-btn" onclick="window.goldexVitrine.copyShareLink('${productUrl}')">
+            <input type="text" readonly class="vitrine-share-link-input" />
+            <button type="button" class="vitrine-share-copy-btn">
               <i class="fa-solid fa-copy"></i>
               <span>کپی لینک</span>
             </button>
@@ -457,6 +457,11 @@ window.goldexVitrine = {
     `;
 
     document.body.insertAdjacentHTML("beforeend", modalHtml);
+    var modal = document.getElementById("vitrineShareModal");
+    modal.querySelector(".vitrine-share-link-input").value = productUrl;
+    modal.querySelector(".vitrine-share-copy-btn").addEventListener("click", function () {
+      window.goldexVitrine.copyShareLink(productUrl);
+    });
   },
 
   nativeShare: async function () {
@@ -484,10 +489,451 @@ window.goldexVitrine = {
   }
 };
 
-// Close filter drawer on Escape key
+document.addEventListener('click', (event) => {
+  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+
+  const share = event.target.closest('[data-vitrine-share]');
+  if (share) {
+    window.goldexVitrine.shareProduct(JSON.parse(share.dataset.vitrineShare));
+  }
+});
+
+// Close the share dialog or the catalog filter drawer on Escape.
 document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape" && document.body.classList.contains("vitrine-filter-drawer-open")) {
+  if (e.key !== "Escape" || e.isComposing || e.defaultPrevented) return;
+
+  if (document.getElementById('vitrineShareModal')) {
+    window.goldexVitrine.closeShareModal();
+  } else if (document.body.classList.contains("vitrine-filter-drawer-open")) {
     var closeBtn = document.querySelector(".catalog-drawer-close");
     if (closeBtn) closeBtn.click();
+  }
+});
+function initializeVitrineSearch(panel) {
+  const toggle = document.querySelector('[data-vitrine-search-toggle]');
+  const form = panel.querySelector('form[role="search"]');
+  const input = form.elements.q;
+  const results = panel.querySelector('[data-vitrine-search-results]');
+  const status = panel.querySelector('[data-vitrine-search-status]');
+  const prices = new Intl.NumberFormat(document.documentElement.lang || 'fa', { maximumFractionDigits: 0 });
+  let data;
+  let request;
+  let timer;
+
+  function element(tag, className, content) {
+    const node = document.createElement(tag);
+    node.className = className;
+    if (content != null) node.textContent = content;
+    return node;
+  }
+
+  function showStatus(message) {
+    status.textContent = message;
+    status.hidden = !message;
+  }
+
+  function render(term, products, categories) {
+    const matches = (value) => value?.toLocaleLowerCase().includes(term);
+    const matchingCategories = categories.filter(category => matches(category.title)).slice(0, 3);
+    const matchingProducts = products.filter(product => matches(product.name) || matches(product.barcode) || matches(product.categoryTitle));
+    const catalogUrl = new URL(form.action);
+    showStatus(matchingCategories.length || matchingProducts.length ? '' : 'محصولی پیدا نشد.');
+    const fragment = document.createDocumentFragment();
+
+    if (matchingCategories.length) {
+      const section = element('section', 'vitrine-dropdown-section');
+      section.append(element('h3', 'vitrine-dropdown-section-title', 'دسته‌بندی‌های مرتبط'));
+      const list = element('div', 'vitrine-dropdown-categories');
+      matchingCategories.forEach(category => {
+        const link = element('a', 'vitrine-dropdown-cat-pill', category.title);
+        const url = new URL(catalogUrl);
+        url.searchParams.set('categoryId', category.id);
+        link.href = url;
+        link.append(element('span', 'vitrine-dropdown-cat-count', `${category.productCount} کالا`));
+        list.append(link);
+      });
+      section.append(list);
+      fragment.append(section);
+    }
+
+    if (matchingProducts.length) {
+      const section = element('section', 'vitrine-dropdown-section');
+      section.append(element('h3', 'vitrine-dropdown-section-title', `محصولات (${matchingProducts.length})`));
+      const list = element('div', 'vitrine-dropdown-products-list');
+      matchingProducts.slice(0, 5).forEach(product => {
+        const link = element('a', 'vitrine-dropdown-product-item');
+        link.href = panel.dataset.productBaseUrl + encodeURIComponent(product.barcode);
+        const imageFrame = element('span', 'vitrine-dropdown-product-img');
+        if (product.mainImageUrl) {
+          const image = document.createElement('img');
+          image.src = product.mainImageUrl;
+          image.alt = '';
+          image.loading = 'lazy';
+          imageFrame.append(image);
+        } else {
+          imageFrame.append(element('i', 'fa-solid fa-gem'));
+        }
+
+        const details = element('span', 'vitrine-dropdown-product-meta');
+        details.append(element('span', 'vitrine-dropdown-product-name', product.name));
+        const weight = `${product.weight} گرم`;
+        details.append(element('span', 'vitrine-dropdown-product-sub', [
+          product.categoryTitle || 'طلا',
+          product.isPartiallySold ? `باقی‌مانده: ${weight}` : weight,
+          `عیار ${product.fineness || 750}`
+        ].join(' • ')));
+        if (!product.isAvailable || product.isPartiallySold) {
+          details.append(element('span', 'vitrine-dropdown-product-sub', product.isAvailable ? 'بخشی فروخته شده' : 'فروخته شد'));
+        }
+        const price = element('span', 'vitrine-dropdown-product-price');
+        price.append(element('span', 'vitrine-dropdown-price-val', prices.format(product.estimatedPrice)),
+          element('span', 'vitrine-dropdown-price-unit', ' تومان'));
+        link.append(imageFrame, details, price);
+        list.append(link);
+      });
+      section.append(list);
+      const all = element('a', 'vitrine-dropdown-view-all-btn', 'مشاهده همهٔ نتایج در کاتالوگ');
+      catalogUrl.searchParams.set('q', input.value.trim());
+      all.href = catalogUrl;
+      section.append(all);
+      fragment.append(section);
+    }
+    results.replaceChildren(fragment);
+  }
+
+  async function search() {
+    const term = input.value.trim().toLocaleLowerCase();
+    if (!term || panel.inert) return;
+
+    const controller = new AbortController();
+    request = controller;
+    try {
+      if (!data) {
+        showStatus('در حال دریافت محصولات…');
+        const load = async (url) => {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error('Vitrine search request failed');
+          return response.json();
+        };
+        const [products, categories] = await Promise.all([load(panel.dataset.productsUrl), load(panel.dataset.categoriesUrl)]);
+        products.sort((first, second) => Number(second.isAvailable) - Number(first.isAvailable) ||
+          second.createdAt.localeCompare(first.createdAt));
+        data = [products, categories];
+      }
+      if (!controller.signal.aborted) render(term, ...data);
+    } catch {
+      if (!controller.signal.aborted) showStatus('دریافت نتیجه‌ها ممکن نشد. دوباره جستجو کنید.');
+    } finally {
+      if (request === controller) request = undefined;
+    }
+  }
+
+  input.addEventListener('input', (event) => {
+    if (event.isComposing) return;
+    clearTimeout(timer);
+    request?.abort();
+    results.replaceChildren();
+    showStatus('');
+    if (input.value.trim()) timer = setTimeout(search, data ? 0 : 180);
+  });
+  function setOpen(open) {
+    toggle.setAttribute('aria-expanded', String(open));
+    if (!open && panel.contains(document.activeElement)) toggle.focus({ preventScroll: true });
+    panel.inert = !open;
+
+    if (open) {
+      input.focus({ preventScroll: true });
+      if (input.value.trim()) search();
+      return;
+    }
+    clearTimeout(timer);
+    request?.abort();
+  }
+
+  toggle.addEventListener('click', (event) => {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    setOpen(panel.inert);
+  });
+  panel.querySelector('[data-vitrine-search-close]').addEventListener('click', () => setOpen(false));
+  panel.closest('header').addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || event.isComposing || panel.inert) return;
+    event.preventDefault();
+    setOpen(false);
+  });
+}
+
+const vitrineSearch = document.getElementById('vitrine-search-panel');
+if (vitrineSearch) initializeVitrineSearch(vitrineSearch);
+
+function initializeVitrineCatalog() {
+  let catalog = document.querySelector('[data-vitrine-catalog]');
+  if (!catalog) return;
+
+  const getDrawer = () => catalog.querySelector('.catalog-filter-drawer');
+  const getOpener = () => catalog.querySelector('[data-vitrine-filter-open]');
+  let request;
+  let searchTimer;
+
+  function setDrawer(open, moveFocus = true) {
+    const drawer = getDrawer();
+    drawer.classList.toggle('open', open);
+    drawer.inert = !open;
+    drawer.setAttribute('aria-hidden', String(!open));
+    getOpener().setAttribute('aria-expanded', String(open));
+    catalog.querySelector('.catalog-drawer-backdrop').classList.toggle('open', open);
+    window.goldexVitrine.setFilterDrawerOpen(open);
+    if (moveFocus) {
+      (open ? drawer.querySelector('.catalog-drawer-close') : getOpener()).focus({ preventScroll: true });
+    }
+  }
+
+  async function updateCatalog(url, searchForm, loadMore = false) {
+    clearTimeout(searchTimer);
+    request?.abort();
+    const controller = new AbortController();
+    request = controller;
+    catalog.setAttribute('aria-busy', 'true');
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok || response.redirected) throw new Error('Could not load catalog');
+      const documentFragment = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const updated = documentFragment.querySelector('[data-vitrine-catalog]');
+      if (!updated) throw new Error('Catalog missing from response');
+      if (controller.signal.aborted) return;
+
+      const drawer = getDrawer();
+      const drawerOpen = drawer.classList.contains('open');
+      const drawerScroll = drawer.querySelector('.catalog-drawer-body').scrollTop;
+      const openedFacets = new Set(Array.from(catalog.querySelectorAll('details[open]'), details => details.dataset.vitrineFacet));
+      const focused = document.activeElement;
+      const activeSearch = searchForm?.contains(focused);
+      const selection = activeSearch ? [focused.selectionStart, focused.selectionEnd] : null;
+      const previousCardCount = loadMore ? catalog.querySelectorAll('.product-card').length : 0;
+
+      catalog.replaceWith(updated);
+      catalog = updated;
+      updated.querySelectorAll('details').forEach(details => {
+        if (openedFacets.has(details.dataset.vitrineFacet)) details.open = true;
+      });
+      setDrawer(drawerOpen, false);
+      getDrawer().querySelector('.catalog-drawer-body').scrollTop = drawerScroll;
+      if (activeSearch) {
+        const area = drawerOpen ? getDrawer() : catalog.querySelector('.shop-sidebar');
+        const input = area.querySelector('input[name="q"]');
+        input.focus({ preventScroll: true });
+        input.setSelectionRange(...selection);
+      } else if (drawerOpen) {
+        getDrawer().querySelector('.catalog-drawer-close').focus({ preventScroll: true });
+      } else if (loadMore) {
+        catalog.querySelectorAll('.product-card')[previousCardCount]?.focus({ preventScroll: true });
+      } else if (focused?.matches('[data-vitrine-catalog-link]')) {
+        const matchingLink = Array.from(catalog.querySelectorAll('[data-vitrine-catalog-link]'))
+          .find(link => link.href === focused.href && link.getClientRects().length);
+        (matchingLink || catalog.querySelector('.shop-products')).focus({ preventScroll: true });
+      }
+
+      if (url.href !== location.href) {
+        if (searchForm && history.state?.vitrineSearch) history.replaceState(history.state, '', url);
+        else history.pushState({ vitrineSearch: Boolean(searchForm) }, '', url);
+      }
+    } catch {
+      if (!controller.signal.aborted) location.assign(url);
+    } finally {
+      if (request === controller) {
+        request = undefined;
+        catalog.removeAttribute('aria-busy');
+      }
+    }
+  }
+
+  function searchCatalog(form) {
+    const url = new URL(form.action);
+    url.search = new URLSearchParams(new FormData(form));
+    if (!url.searchParams.get('q').trim()) url.searchParams.delete('q');
+    updateCatalog(url, form);
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!catalog.contains(event.target) || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (event.target.closest('[data-vitrine-filter-open]')) {
+      setDrawer(true);
+    } else if (event.target.closest('[data-vitrine-filter-close]')) {
+      setDrawer(false);
+    } else {
+      const link = event.target.closest('[data-vitrine-catalog-link]');
+      if (!link) return;
+      event.preventDefault();
+      updateCatalog(new URL(link.href), null, link.classList.contains('btn-load-more'));
+    }
+  });
+
+  document.addEventListener('submit', (event) => {
+    if (!event.target.matches('[data-vitrine-catalog-search]')) return;
+    event.preventDefault();
+    searchCatalog(event.target);
+  });
+  document.addEventListener('input', (event) => {
+    const form = event.target.closest('[data-vitrine-catalog-search]');
+    if (!form || event.isComposing) return;
+    clearTimeout(searchTimer);
+    request?.abort();
+    searchTimer = setTimeout(() => searchCatalog(form), 260);
+  });
+  matchMedia('(min-width: 992px)').addEventListener('change', (event) => {
+    if (event.matches && getDrawer().classList.contains('open')) setDrawer(false, false);
+  });
+  window.addEventListener('popstate', () => location.reload());
+}
+
+initializeVitrineCatalog();
+
+customElements.define('vitrine-campaign', class extends HTMLElement {
+  connectedCallback() {
+    queueMicrotask(() => {
+      if (this.isConnected && !this.stop) this.initialize();
+    });
+  }
+
+  initialize() {
+    // The prerendered slide also works before Blazor or when JavaScript is unavailable.
+    const track = this.querySelector('[data-campaign-slides]');
+    if (!track) return;
+
+    const slides = Array.from(track.querySelectorAll('[data-campaign-slide]'));
+    const controls = this.querySelector('[data-campaign-controls]');
+    const indicators = Array.from(controls.querySelectorAll('[data-campaign-indicator]'));
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const forward = getComputedStyle(track).direction === 'rtl' ? 1 : -1;
+    const listeners = new AbortController();
+    const { signal } = listeners;
+    let current = 0;
+    let manuallySelected = false;
+    let hovering = false;
+    let timer;
+    let gesture;
+    let animations = [];
+    let ignoreClickUntil = 0;
+
+    const restart = () => {
+      clearTimeout(timer);
+      const autoplay = !manuallySelected && !reducedMotion.matches;
+      track.setAttribute('aria-live', autoplay ? 'off' : 'polite');
+      if (autoplay && !hovering && !gesture && !document.hidden && !this.contains(document.activeElement)) {
+        timer = setTimeout(() => show(current + 1, forward), 6500);
+      }
+    };
+
+    const settle = () => {
+      animations.forEach(animation => animation.cancel());
+      animations = [];
+      slides.forEach((slide, i) => {
+        slide.hidden = i !== current;
+        slide.inert = i !== current;
+      });
+    };
+
+    const show = (index, direction, manual = false) => {
+      manuallySelected ||= manual;
+      restart();
+      const next = (index + slides.length) % slides.length;
+      if (next === current) return;
+
+      settle();
+      const outgoing = slides[current];
+      current = next;
+      const incoming = slides[current];
+      indicators.forEach((indicator, i) => {
+        if (i === current) indicators[i].setAttribute('aria-current', 'true');
+        else indicators[i].removeAttribute('aria-current');
+      });
+
+      if (reducedMotion.matches) {
+        settle();
+        return;
+      }
+
+      outgoing.inert = true;
+      incoming.inert = false;
+      incoming.hidden = false;
+      const timing = { duration: 350, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
+      const outgoingMotion = outgoing.animate({ transform: ['translateX(0)', `translateX(${direction * 100}%)`] }, timing);
+      const incomingMotion = incoming.animate({ transform: [`translateX(${-direction * 100}%)`, 'translateX(0)'] }, timing);
+      animations = [outgoingMotion, incomingMotion];
+      incomingMotion.onfinish = () => {
+        if (animations.includes(incomingMotion)) settle();
+      };
+    };
+
+    indicators.forEach((button, index) => {
+      button.addEventListener('click', () => show(index, Math.sign(index - current) * forward, true), { signal });
+    }, { signal });
+    this.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      hovering = true;
+      restart();
+    }, { signal });
+    this.addEventListener('pointerleave', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      hovering = false;
+      restart();
+    }, { signal });
+    this.addEventListener('focusin', restart, { signal });
+    this.addEventListener('focusout', () => queueMicrotask(() => {
+      if (!signal.aborted) restart();
+    }), { signal });
+    document.addEventListener('visibilitychange', restart, { signal });
+    reducedMotion.addEventListener('change', () => {
+      if (reducedMotion.matches) settle();
+      restart();
+    }, { signal });
+
+    track.addEventListener('pointerdown', (event) => {
+      ignoreClickUntil = 0;
+      if (event.pointerType === 'touch' && event.isPrimary) {
+        gesture = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        restart();
+      }
+    }, { signal });
+    track.addEventListener('pointercancel', (event) => {
+      if (event.pointerId !== gesture?.id) return;
+      gesture = undefined;
+      restart();
+    }, { signal });
+    track.addEventListener('pointerup', (event) => {
+      if (event.pointerId !== gesture?.id) return;
+      const x = event.clientX - gesture.x;
+      const y = event.clientY - gesture.y;
+      gesture = undefined;
+      if (Math.abs(x) < 42 || Math.abs(x) <= Math.abs(y)) {
+        restart();
+        return;
+      }
+      ignoreClickUntil = performance.now() + 500;
+      const direction = Math.sign(x);
+      show(current + direction * forward, direction, true);
+    }, { signal });
+    track.addEventListener('click', (event) => {
+      if (event.detail > 0 && performance.now() < ignoreClickUntil) event.preventDefault();
+    }, { signal });
+
+    this.stop = () => {
+      listeners.abort();
+      clearTimeout(timer);
+      settle();
+    };
+    controls.hidden = false;
+    settle();
+    indicators.forEach((indicator, i) => {
+      if (i === current) indicator.setAttribute('aria-current', 'true');
+      else indicator.removeAttribute('aria-current');
+    });
+    restart();
+  }
+
+  disconnectedCallback() {
+    this.stop?.();
+    this.stop = undefined;
   }
 });

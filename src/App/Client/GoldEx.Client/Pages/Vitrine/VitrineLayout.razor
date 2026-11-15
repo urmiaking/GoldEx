@@ -1,13 +1,8 @@
 @inherits LayoutComponentBase
-@implements IDisposable
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
-@using Microsoft.AspNetCore.Http
-@using Microsoft.JSInterop
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
-@inject IJSRuntime JsRuntime
-@inject PersistentComponentState ApplicationState
 @inject IStoreContext StoreContext
 
 <HeadContent>
@@ -81,14 +76,22 @@
                         }
                     </div>
                     <div>
-                        <div style="font-size: 1.45rem; font-weight: 900; line-height: 1.1;">
+                        <div class="vitrine-logo-name" style="font-size: 1.45rem; font-weight: 900; line-height: 1.1;">
                             @(_storeInfo?.Name ?? "گالری طلا و جواهر")
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--gray-600); font-weight: 400; margin-top: 3px;">
+                        <div class="vitrine-logo-tagline" style="font-size: 0.75rem; color: var(--gray-600); font-weight: 400; margin-top: 3px;">
                             ویترین رسمی و کالکشن‌های فاخر
                         </div>
                     </div>
                 </a>
+
+                @if (_storeInfo != null)
+                {
+                    <a href="@CatalogHref" class="vitrine-header-search" data-vitrine-search-toggle aria-label="جستجوی محصولات" aria-expanded="false" aria-controls="vitrine-search-panel">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span>جستجو</span>
+                    </a>
+                }
 
                 <!-- Desktop Navigation Menu -->
                 <nav class="d-none d-lg-flex vitrine-nav-menu">
@@ -107,7 +110,7 @@
                 </nav>
 
                 <!-- Fast Contact Actions -->
-                <div class="d-flex align-items-center gap-3">
+                <div class="vitrine-header-actions d-flex align-items-center gap-3">
                     @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
                     {
                         var waPhone = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
@@ -131,6 +134,12 @@
                 </div>
             </div>
         </div>
+        @if (_storeInfo != null)
+        {
+            <VitrineSearchPanel CatalogUrl="@CatalogHref"
+                                ProductBaseUrl="@(StoreContext.IsCustomDomain ? "/p/" : $"/{StoreSlug}/p/")"
+                                StoreSlug="@StoreSlug" />
+        }
     </header>
 
     <!-- Main Content Body -->
@@ -271,81 +280,19 @@
 </div>
 
 @code {
-    [CascadingParameter] private HttpContext? HttpContext { get; set; }
-
-    private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
     private string StoreSlug = string.Empty;
     private bool _isStoreLoaded;
-    private PersistingComponentStateSubscription _persistingSubscription;
 
     private string HomeHref => StoreContext.IsCustomDomain ? "/" : $"/{StoreSlug}";
     private string CatalogHref => StoreContext.IsCustomDomain ? "/catalog" : $"/{StoreSlug}/catalog";
     private string FeaturedCatalogHref => StoreContext.IsCustomDomain ? "/catalog?onlyFeatured=true" : $"/{StoreSlug}/catalog?onlyFeatured=true";
     private string AboutHref => StoreContext.IsCustomDomain ? "/about" : $"/{StoreSlug}/about";
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnParametersSetAsync()
     {
         ResolveStoreSlug();
-        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistStoreInfo);
-
-        if ((ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>("vitrine_store_info", out var restored) && restored != null) ||
-            (!string.IsNullOrWhiteSpace(StoreSlug) && ApplicationState.TryTakeFromJson<VitrineStoreInfoDto>($"vitrine_store_info_{StoreSlug}", out restored) && restored != null))
-        {
-            _storeInfo = restored;
-            StoreSlug = restored.Slug;
-            if (StoreContext is ClientStoreContext clientCtx)
-            {
-                clientCtx.StoreSlug = restored.Slug;
-                clientCtx.CustomDomain = restored.CustomDomain;
-            }
-            _isStoreLoaded = true;
-        }
-        else
-        {
-            await LoadStoreInfoAsync();
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var oldSlug = StoreSlug;
-        ResolveStoreSlug();
-        if (_storeInfo == null || (!string.IsNullOrWhiteSpace(StoreSlug) && !oldSlug.Equals(StoreSlug, StringComparison.OrdinalIgnoreCase)))
-        {
-            await LoadStoreInfoAsync();
-        }
-    }
-
-    private Task PersistStoreInfo()
-    {
-        if (_storeInfo != null)
-        {
-            ApplicationState.PersistAsJson("vitrine_store_info", _storeInfo);
-            if (!string.IsNullOrWhiteSpace(StoreSlug))
-            {
-                ApplicationState.PersistAsJson($"vitrine_store_info_{StoreSlug}", _storeInfo);
-            }
-        }
-        return Task.CompletedTask;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                // Dismiss the WASM loading splash screen
-                await JsRuntime.InvokeVoidAsync("GoldEx.removeSplash");
-            }
-            catch
-            {
-                // ignore
-            }
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
+        return LoadStoreInfoAsync();
     }
 
     private void ResolveStoreSlug()
@@ -409,11 +356,6 @@
             if (_storeInfo != null)
             {
                 StoreSlug = _storeInfo.Slug;
-                if (StoreContext is ClientStoreContext clientCtx)
-                {
-                    clientCtx.StoreSlug = _storeInfo.Slug;
-                    clientCtx.CustomDomain = _storeInfo.CustomDomain;
-                }
             }
         }
         catch
@@ -423,17 +365,6 @@
         finally
         {
             _isStoreLoaded = true;
-            try
-            {
-                if (_storeInfo == null && HttpContext != null && !HttpContext.Response.HasStarted)
-                {
-                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-                }
-            }
-            catch
-            {
-                // ignore
-            }
         }
     }
 
@@ -495,8 +426,4 @@
         };
     }
 
-    public void Dispose()
-    {
-        _persistingSubscription.Dispose();
-    }
 }

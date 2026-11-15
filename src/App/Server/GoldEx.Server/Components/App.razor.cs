@@ -46,7 +46,7 @@ public partial class App
         return ClientRoutes.Vitrine.IsVitrinePath(path, StoreContext.IsCustomDomain);
     }
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+    private IComponentRenderMode? RenderModeForPage => IsVitrineRoute() || HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : GetRenderMode();
 
@@ -56,9 +56,6 @@ public partial class App
     {
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
-
-        if (IsVitrineRoute())
-            return new InteractiveWebAssemblyRenderMode(prerender: true);
 
         return new InteractiveWebAssemblyRenderMode(prerender: false);
     }

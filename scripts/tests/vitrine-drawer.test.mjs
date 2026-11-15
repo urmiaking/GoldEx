@@ -78,15 +78,17 @@ test("vitrine.js defines setFilterDrawerOpen and Escape listener", () => {
   assert.ok(js.includes("document.addEventListener(\"keydown\""));
 });
 
-test("VitrineCatalog renders drawer outside vitrine-container and syncs drawer state to JS", () => {
+test("VitrineCatalog renders the drawer outside the grid and uses JavaScript for drawer state", () => {
   const razor = fs.readFileSync(vitrineCatalogPath, "utf-8");
+  const js = fs.readFileSync(vitrineJsPath, "utf-8");
 
   // Rendered outside </main>\r\n</div>
   const mainCloseIdx = razor.indexOf("</main>");
   const drawerIdx = razor.indexOf("class=\"catalog-filter-drawer");
   assert.ok(drawerIdx > mainCloseIdx, "Filter drawer must be rendered outside main content container");
 
-  // State synchronization
-  assert.ok(razor.includes("goldexVitrine.setFilterDrawerOpen"));
-  assert.ok(razor.includes("@inject IJSRuntime JsRuntime"));
+  assert.match(razor, /data-vitrine-filter-open\s+aria-expanded="false"/);
+  assert.match(razor, /id="vitrine-catalog-drawer"[^>]*aria-hidden="true" inert/);
+  assert.doesNotMatch(razor, /@onclick|@bind|IJSRuntime/);
+  assert.ok(js.includes("window.goldexVitrine.setFilterDrawerOpen(open)"));
 });

@@ -111,63 +111,33 @@
         }
     }
 
-    @if (!IsVitrineRoute())
+    @if (IsVitrineRoute())
     {
-        <script src=@Assets["app.js"]></script>
+        <script src="/assets/vitrine/js/vitrine.js?v=@AppVersion"></script>
+        @if (StoreContext.IsCustomDomain)
+        {
+            <script>
+                (async function () {
+                    try {
+                        if (!('serviceWorker' in navigator)) return;
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(registrations.map(registration => registration.unregister()));
+                        if (navigator.serviceWorker.controller && !sessionStorage.getItem('gex_sw_cleared_once')) {
+                            sessionStorage.setItem('gex_sw_cleared_once', '1');
+                            location.reload();
+                        }
+                    } catch (error) {
+                        console.warn('[GoldEx Vitrine] Service worker cleanup failed:', error);
+                    }
+                })();
+            </script>
+        }
     }
     else
     {
-        <script src="/assets/vitrine/js/vitrine.js?v=@AppVersion"></script>
-    }
-
-    <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
-    <script>
-        (async function () {
-            @if (StoreContext.IsCustomDomain)
-            {
-                <text>
-                try {
-                    // 1. Unregister active service workers on Vitrine routes & custom domains
-                    if ('serviceWorker' in navigator) {
-                        const regs = await navigator.serviceWorker.getRegistrations();
-                        if (regs.length > 0) {
-                            for (const r of regs) {
-                                await r.unregister();
-                            }
-                            const swKey = 'gex_sw_cleared_once';
-                            if (navigator.serviceWorker.controller && !sessionStorage.getItem(swKey)) {
-                                sessionStorage.setItem(swKey, '1');
-                                if ('caches' in window) {
-                                    const keys = await caches.keys();
-                                    for (const k of keys) {
-                                        await caches.delete(k);
-                                    }
-                                }
-                                window.location.reload();
-                                return;
-                            }
-                        }
-                    }
-
-                    // 2. Version-based Cache Eviction
-                    const serverVer = '@AppVersion';
-                    const localVer = localStorage.getItem('gex_vitrine_wasm_ver');
-                    if (serverVer && localVer !== serverVer) {
-                        if ('caches' in window) {
-                            const keys = await caches.keys();
-                            for (const k of keys) {
-                                await caches.delete(k);
-                            }
-                        }
-                        localStorage.setItem('gex_vitrine_wasm_ver', serverVer);
-                    }
-                } catch (e) {
-                    console.warn('[GoldEx Vitrine Boot] Cache sync warning:', e);
-                }
-                </text>
-            }
-
-            // 3. Start Blazor with guaranteed fresh blazor.boot.json
+        <script src=@Assets["app.js"]></script>
+        <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
+        <script>
             Blazor.start({
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {
@@ -178,10 +148,7 @@
                     }
                 }
             });
-        })();
-    </script>
-    @if (!IsVitrineRoute())
-    {
+        </script>
         <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
         <script src="@Assets["js/pwa-helper.js"]"></script>
         <script src="@Assets["js/smart-tray-audio.js"]"></script>
