@@ -1228,3 +1228,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 - InvoicesList uses MudMenu for 'فاکتور جدید' while CustomersList uses MudButton. Below 960px, remove the MudMenu wrapper's padding (not the inner .mud-button-root padding) to avoid a doubled left gap. Preserve the desktop margin-inline-end override.
 - MoltenGoldDesk trade direction labels are 'می‌خرم'/'می‌فروشم' and the submit text is 'ثبت معامله' in either direction. Keep InvoiceType and accounting semantics unchanged.
 - The optional immediate settlement toggle needs border-box width, min-width:0 on grid/flex parents, and wrapping or shrinkable text to fit narrow mobile viewports. Run scripts/tests/mobile-goldex-trade-ux.test.mjs.
+
+### Invoice coin edits and existing balances (2026-11-16)
+- InvoiceCoinItem.Update must recalculate ItemRawAmount, ItemProfitAmount and ItemFinalAmount whenever unit price, quantity or profit changes; use the same validation/calculation logic as creation.
+- InvoiceService.UpdateAsync already calls SyncCoinItemsAsync and ReplaceTransactionsForInvoiceAsync inside a database transaction. Do not bypass that flow for ledger corrections.
+- Existing persisted coin items affected by the former bug are not auto-corrected by a code deployment alone: re-save the affected invoice after deployment to recalculate its coin amounts and replace its associated accounting entries. Verify invoice total, unpaid balance and customer statement afterward.
+- Regression coverage: src/Tests/GoldEx.Tests.Server/Domain/InvoiceCoinItemTests.cs.

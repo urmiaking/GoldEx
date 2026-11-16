@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Shared.Helpers;
 
@@ -9,24 +9,10 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 {
     private InvoiceCoinItem(InvoiceCoinItemId id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent, bool isInstant)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0);
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0);
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
-
-        var itemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent, quantity);
-        var itemFinalAmount = (unitPrice * quantity) + itemProfitAmount;
-
         Id = id;
         CoinInstanceId = coinInstanceId;
-        UnitPrice = unitPrice;
-        Quantity = quantity;
-        ProfitPercent = profitPercent;
         IsInstant = isInstant;
-
-        ItemRawAmount = unitPrice;
-        ItemProfitAmount = itemProfitAmount;
-        ItemFinalAmount = itemFinalAmount;
+        RecalculateAmounts(unitPrice, quantity, profitPercent);
     }
 
     internal static InvoiceCoinItem Create(InvoiceCoinItemId? id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent, bool isInstant)
@@ -54,9 +40,23 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 
     public void Update(CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent)
     {
+        RecalculateAmounts(unitPrice, quantity, profitPercent);
         CoinInstanceId = coinInstanceId;
+    }
+
+    private void RecalculateAmounts(decimal unitPrice, int quantity, decimal profitPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
+
         UnitPrice = unitPrice;
         Quantity = quantity;
         ProfitPercent = profitPercent;
+
+        ItemRawAmount = unitPrice;
+        ItemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent, quantity);
+        ItemFinalAmount = (unitPrice * quantity) + ItemProfitAmount;
     }
 }
