@@ -1,0 +1,105 @@
+@using GoldEx.Shared.DTOs.InventoryStocks
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<DashboardPanel Title="موجودی فعلی طلا" Description="وزن فیزیکی کالاهای موجود در انبار" Icon="@Icons.Material.Outlined.Scale" Tone="dash-tone-gold">
+    <Actions><MudButton Href="@ClientRoutes.InventoryStocks.List" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Outlined.ArrowBack">فهرست موجودی</MudButton></Actions>
+    <ChildContent>
+        @if (_loading || _data is null)
+        {
+            <DashboardStatus Loading="@_loading" Retry="LoadAsync" />
+        }
+        else
+        {
+            var bars = new[]
+            {
+                (Label: "طلا و جواهر", Weight: _data.ManufacturedGoldWeight, Count: _data.ManufacturedGoldCount, Tone: "dash-tone-gold"),
+                (Label: "طلای آبشده", Weight: _data.MoltenGoldWeight, Count: _data.MoltenGoldCount, Tone: "dash-tone-blue"),
+                (Label: "طلای مستعمل", Weight: _data.UsedGoldWeight, Count: _data.UsedGoldCount, Tone: "dash-tone-indigo")
+            };
+            var total = bars.Sum(x => x.Weight);
+            if (total == 0m)
+            {
+                <div class="dash-empty">در انبار طلای قابل نمایش وجود ندارد.</div>
+            }
+            else
+            {
+                <div class="dash-inventory-total"><span>وزن کل طلا</span><strong>@DashboardDisplay.Number(total) <small>گرم</small></strong></div>
+                <div class="dash-stock-stack" aria-hidden="true">
+                    @foreach (var item in bars)
+                    {
+                        <span class="@item.Tone" style="@FormattableString.Invariant($"inline-size:{100m * item.Weight / total:0.###}%;")"></span>
+                    }
+                </div>
+                <dl class="dash-stock-grid">
+                    @foreach (var (label, weight, count, tone) in bars)
+                    {
+                        <div class="@tone"><dt>@label</dt><dd>@DashboardDisplay.Number(weight) <small>گرم</small></dd><dd class="dash-fact-note">@DashboardDisplay.Number(count) قلم</dd></div>
+                    }
+                </dl>
+            }
+        }
+    </ChildContent>
+</DashboardPanel>
+
+@if (_data is { } data && !_loading)
+{
+    <div class="dash-detail-grid">
+        <DashboardPanel Title="موجودی سکه" Description="تعداد فیزیکی سکه‌های موجود" Icon="@Icons.Material.Outlined.Toll" Tone="dash-tone-gold">
+            <ChildContent>
+                <div class="dash-inventory-total"><strong>@DashboardDisplay.Number(data.CoinsTotalQuantity) <small>عدد سکه</small></strong></div>
+                <MudButton Href="@ClientRoutes.Reporting.CoinInventory" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Outlined.ArrowBack">گزارش موجودی سکه</MudButton>
+            </ChildContent>
+        </DashboardPanel>
+        <DashboardPanel Title="موجودی ارز" Description="@($"{DashboardDisplay.Number(data.CurrenciesCount)} نوع ارز با موجودی مثبت")"
+                        Icon="@Icons.Material.Outlined.CurrencyExchange" Tone="dash-tone-green">
+            <ChildContent>
+                @if (data.CurrencySummaries.Count == 0)
+                {
+                    <div class="dash-empty dash-empty-compact">موجودی ارزی برای نمایش نیست.</div>
+                }
+                else
+                {
+                    <ul class="dash-list dash-value-list">
+                        @foreach (var row in data.CurrencySummaries.OrderBy(x => x.Title))
+                        {
+                            <li><strong>@row.Title</strong><bdi>@DashboardDisplay.Number(row.Amount)</bdi></li>
+                        }
+                    </ul>
+                }
+                <MudButton Href="@ClientRoutes.Reporting.CurrencyInventory" Variant="Variant.Outlined" Color="Color.Success" EndIcon="@Icons.Material.Outlined.ArrowBack">گزارش موجودی ارز</MudButton>
+            </ChildContent>
+        </DashboardPanel>
+    </div>
+    <DashboardPanel Title="گزارش‌های انبار" Icon="@Icons.Material.Outlined.Inventory2">
+        <ChildContent>
+            <div class="dash-links">
+                <MudButton Href="@ClientRoutes.Reporting.ProductInventory" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Inventory2">موجودی کالا</MudButton>
+                <MudButton Href="@ClientRoutes.Reporting.InventoryKardex" Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Outlined.SwapHoriz">ورود و خروج کالا</MudButton>
+                <MudButton Href="@ClientRoutes.InventoryStocks.MeltingBatches.Index" Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Outlined.Whatshot">ذوب و ری‌گیری</MudButton>
+            </div>
+        </ChildContent>
+    </DashboardPanel>
+}
+
+@code {
+    private GetInventoryOverviewResponse? _data;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try
+        {
+            _data = await SendRequestAsync<IInventoryStockService, GetInventoryOverviewResponse>(
+                (s, ct) => s.GetInventoryOverviewAsync(ct), createScope: true);
+        }
+        finally { _loading = false; }
+    }
+}

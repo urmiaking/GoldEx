@@ -1,0 +1,18 @@
+<MudSelect T="Guid" Label="@Label" Value="@Value" ValueChanged="@ValueChanged" Disabled="@Disabled"
+           ToStringFunc="GetTitle" Strict="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+           Dense="true" Class="dash-unit-picker">
+    @foreach (var unit in Units)
+    {
+        <MudSelectItem @key="unit.Id" T="Guid" Value="@unit.Id">@unit.Title</MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
+    [Parameter, EditorRequired] public IEnumerable<(Guid Id, string Title)> Units { get; set; } = [];
+    [Parameter] public Guid Value { get; set; }
+    [Parameter] public EventCallback<Guid> ValueChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private string GetTitle(Guid id) => Units.FirstOrDefault(unit => unit.Id == id).Title ?? string.Empty;
+}

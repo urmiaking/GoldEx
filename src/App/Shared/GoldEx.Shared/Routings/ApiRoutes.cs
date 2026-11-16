@@ -489,6 +489,7 @@ public static class ApiRoutes
     public class Dashboard
     {
         public const string Base = "/api/dashboard";
+        public const string GetOverview = "overview";
         public const string GetTodaySales = "today-sales";
         public const string GetCustomerBalances = "customer-balances";
         public const string GetTradeTrend30Days = "trade-trend";

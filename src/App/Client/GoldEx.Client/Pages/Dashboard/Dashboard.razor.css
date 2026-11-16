@@ -1,0 +1,411 @@
+.store-dashboard {
+    --dash-surface: var(--mud-palette-surface);
+    --dash-ink: var(--mud-palette-text-primary);
+    --dash-muted: var(--mud-palette-text-secondary);
+    --dash-line: var(--mud-palette-divider);
+    --dash-accent: var(--mud-palette-primary);
+    --dash-tone: var(--dash-accent);
+    --dash-green: var(--mud-palette-success);
+    --dash-red: var(--mud-palette-error);
+    --dash-indigo: #8272db;
+    --dash-gold: #c38a29;
+    --dash-sell-color: var(--dash-green);
+    --dash-buy-color: var(--mud-palette-info);
+    --dash-soft: color-mix(in srgb, var(--dash-accent) 7%, var(--dash-surface));
+    color: var(--dash-ink);
+    font-family: var(--mud-typography-default-family, inherit);
+    font-weight: 400;
+    container-type: inline-size;
+    padding-block: clamp(1rem, 2vw, 2rem) 2rem;
+}
+
+.store-dashboard ::deep .dash-tone-green { --dash-tone: var(--dash-green); }
+.store-dashboard ::deep .dash-tone-red { --dash-tone: var(--dash-red); }
+.store-dashboard ::deep .dash-tone-blue { --dash-tone: var(--dash-buy-color); }
+.store-dashboard ::deep .dash-tone-indigo { --dash-tone: var(--dash-indigo); }
+.store-dashboard ::deep .dash-tone-gold { --dash-tone: var(--dash-gold); }
+
+.dash-heading, .dash-period, .store-dashboard ::deep .dash-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem 1rem;
+}
+
+.dash-heading {
+    margin-block-end: 1.15rem;
+    padding: clamp(.95rem, 2.1cqi, 1.5rem);
+    border: 1px solid color-mix(in srgb, var(--dash-accent) 20%, var(--dash-line));
+    border-radius: 1.15rem;
+    background: linear-gradient(110deg, var(--dash-surface) 35%, color-mix(in srgb, var(--dash-accent) 12%, var(--dash-surface)));
+}
+.dash-heading-title, .dash-period-context, .store-dashboard ::deep .dash-panel-title {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    min-inline-size: 0;
+}
+.dash-heading-icon, .dash-period-context .dash-panel-icon, .store-dashboard ::deep .dash-panel-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border-radius: .8rem;
+    background: color-mix(in srgb, var(--dash-tone) 15%, var(--dash-surface));
+    color: color-mix(in srgb, var(--dash-tone) 70%, var(--dash-ink));
+}
+.dash-heading-icon {
+    inline-size: clamp(2.6rem, 5cqi, 3.5rem);
+    block-size: clamp(2.6rem, 5cqi, 3.5rem);
+}
+.dash-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 500; line-height: 1.35; }
+.dash-heading p, .store-dashboard ::deep .dash-panel-heading p {
+    margin: .3rem 0 0;
+    color: var(--dash-muted);
+    font-size: .91rem;
+    line-height: 1.65;
+}
+
+.store-dashboard ::deep .dash-tab-workspace .gex-calculator-panels > [role="tabpanel"] {
+    padding: clamp(.625rem, 1.6cqi, 1rem);
+}
+
+.store-dashboard ::deep .mud-button-root {
+    min-block-size: 44px;
+    border-radius: .7rem;
+    padding-inline: .9rem;
+    font-weight: 500;
+}
+.store-dashboard ::deep .mud-button-outlined:not(:hover):not(.mud-disabled) {
+    background: color-mix(in srgb, currentColor 6%, var(--dash-surface));
+}
+.store-dashboard ::deep strong { font-weight: 500; }
+.dash-period {
+    margin-block-end: 1rem;
+    padding: .65rem .8rem;
+    border: 1px solid color-mix(in srgb, var(--dash-accent) 18%, var(--dash-line));
+    border-radius: .85rem;
+    background: var(--dash-soft);
+}
+.dash-period-label { display: grid; gap: .16rem; font-size: .91rem; font-weight: 500; }
+.store-dashboard ::deep .dash-period-options { display: flex; flex-wrap: wrap; gap: .35rem; }
+.store-dashboard ::deep .dash-period-options .mud-chip { margin: 0; min-block-size: 40px; font-weight: 500; }
+
+.store-dashboard ::deep .dash-section { min-inline-size: 0; margin-block: 0 1rem; }
+.store-dashboard ::deep .dash-panel {
+    min-inline-size: 0;
+    padding: clamp(.85rem, 2.4cqi, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--dash-tone) 19%, var(--dash-line));
+    border-radius: 1rem;
+    background: var(--dash-surface);
+    color: var(--dash-ink);
+}
+
+.store-dashboard ::deep .dash-panel-heading { margin-block-end: .9rem; }
+.store-dashboard ::deep .dash-panel-heading h2 { font-size: 1.14rem; font-weight: 500; margin: 0; }
+.store-dashboard ::deep .dash-unit-picker {
+    flex: 0 1 12rem;
+    inline-size: min(100%, 12rem);
+}
+.store-dashboard ::deep .dash-unit-picker .mud-input { border-radius: .65rem; }
+.store-dashboard ::deep .dash-overview-grid, .store-dashboard ::deep .dash-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 1rem;
+    align-items: start;
+}
+
+.store-dashboard ::deep .dash-facts, .store-dashboard ::deep .dash-stock-grid, .store-dashboard ::deep .dash-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+}
+
+.store-dashboard ::deep .dash-facts {
+    margin-block-end: 1rem;
+    gap: .65rem;
+}
+
+.store-dashboard ::deep .dash-facts > div {
+    min-inline-size: 0;
+    padding: clamp(.55rem, 2.1cqi, 1rem);
+    border: 1px solid color-mix(in srgb, var(--dash-tone) 24%, var(--dash-line));
+    border-radius: .85rem;
+    background: color-mix(in srgb, var(--dash-tone) 9%, var(--dash-surface));
+}
+.store-dashboard ::deep dt { color: var(--dash-muted); font-size: .84rem; }
+.store-dashboard ::deep .dash-facts dt { display: flex; gap: .35rem; align-items: center; }
+.store-dashboard ::deep .dash-facts dt svg { flex: 0 0 auto; color: color-mix(in srgb, var(--dash-tone) 68%, var(--dash-ink)); }
+.store-dashboard ::deep dd {
+    margin: .22rem 0;
+    font-size: clamp(1.1rem, 3cqi, 1.65rem);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+.store-dashboard ::deep small, .store-dashboard ::deep .dash-fact-note { color: var(--dash-muted); font-size: .75rem; font-weight: 400; }
+
+.store-dashboard ::deep .dash-trade-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin-block-end: 1rem; }
+.store-dashboard ::deep .dash-trade-totals > div {
+    --series-color: var(--dash-sell-color);
+    background: color-mix(in srgb, var(--series-color) 10%, var(--dash-surface));
+    border: 1px solid color-mix(in srgb, var(--series-color) 24%, var(--dash-line));
+    border-radius: .65rem;
+    padding: clamp(.55rem, 2cqi, .95rem);
+    min-inline-size: 0;
+}
+.store-dashboard ::deep .dash-trade-totals > div:nth-child(2) { --series-color: var(--dash-buy-color); }
+.store-dashboard ::deep .dash-trade-totals strong {
+    display: block;
+    margin-block: .25rem;
+    font-size: clamp(1rem, 3cqi, 1.65rem);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.store-dashboard ::deep .dash-legend { color: var(--dash-muted); font-size: .84rem; }
+.store-dashboard ::deep .dash-legend::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    inline-size: .65rem;
+    block-size: .65rem;
+    margin-inline-end: .3rem;
+    border-radius: .18rem;
+    background: var(--dash-sell-color);
+}
+.store-dashboard ::deep .dash-legend.dash-buy::before, .store-dashboard ::deep .dash-plot-bar.dash-buy {
+    background: repeating-linear-gradient(135deg, var(--dash-buy-color) 0 3px,
+        color-mix(in srgb, var(--dash-buy-color) 60%, var(--dash-surface)) 3px 6px);
+}
+.store-dashboard ::deep .dash-comparison { color: var(--dash-muted); font-size: .76rem; }
+
+.store-dashboard ::deep .dash-plot {
+    --plot-grid: color-mix(in srgb, var(--dash-muted) 24%, transparent);
+    display: grid;
+    grid-template-columns: repeat(var(--dash-columns), minmax(0, 1fr));
+    height: clamp(9rem, 24cqi, 15rem);
+    position: relative;
+    isolation: isolate;
+    border-block-start: 1px solid var(--plot-grid);
+    background: repeating-linear-gradient(to top, var(--plot-grid) 0 1px, transparent 1px 25%);
+}
+.store-dashboard ::deep .dash-plot::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: var(--dash-zero);
+    border-block-start: 1px solid var(--dash-muted);
+    opacity: .65;
+    pointer-events: none;
+}
+.store-dashboard ::deep .dash-plot-column {
+    position: relative;
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+    min-inline-size: 0;
+}
+.store-dashboard ::deep .dash-plot-column:is(:hover, .is-selected) { background: color-mix(in srgb, var(--dash-accent) 12%, transparent); }
+.store-dashboard ::deep .dash-plot-bar {
+    position: absolute;
+    left: 14%;
+    width: 33%;
+    max-width: 1.15rem;
+    border-radius: .24rem .24rem 0 0;
+    background: var(--dash-sell-color);
+    pointer-events: none;
+}
+.store-dashboard ::deep .dash-plot-bar.dash-buy { left: auto; right: 14%; }
+.store-dashboard ::deep .dash-axis {
+    display: flex;
+    justify-content: space-between;
+    margin-block: .2rem .7rem;
+    color: var(--dash-muted);
+    font-size: .74rem;
+}
+.store-dashboard ::deep .dash-chart-readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem 1.05rem;
+    border-block-start: 1px solid var(--dash-line);
+    padding-block-start: .65rem;
+    font-size: .84rem;
+    overflow-wrap: anywhere;
+}
+
+.store-dashboard ::deep .dash-list { list-style: none; margin: 0 0 .5rem; padding: 0; }
+.store-dashboard ::deep .dash-list > li + li { border-block-start: 1px solid var(--dash-line); }
+.store-dashboard ::deep .dash-due-list a, .store-dashboard ::deep .dash-value-list li, .store-dashboard ::deep .dash-ranks li > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    gap: .35rem .8rem;
+    padding-block: .55rem;
+    overflow-wrap: anywhere;
+}
+.store-dashboard ::deep .dash-due-list a {
+    min-block-size: 44px;
+    align-items: center;
+    padding-inline: .25rem;
+    color: var(--dash-ink);
+    border-radius: .35rem;
+    text-decoration: none;
+}
+.store-dashboard ::deep .dash-due-list a:hover { background: var(--dash-soft); }
+.store-dashboard ::deep .dash-due-list strong { font-size: .85rem; }
+.store-dashboard ::deep .dash-due-list small { display: block; margin-block-start: .13rem; line-height: 1.5; }
+.store-dashboard ::deep .dash-due-list a > span:last-child { text-align: end; }
+.store-dashboard ::deep .dash-due-list a > span { min-inline-size: 0; }
+.store-dashboard ::deep .dash-due-list small:is(.dash-due-late, .dash-due-today) {
+    display: inline-block;
+    border-radius: .35rem;
+    padding: .15rem .4rem;
+    background: color-mix(in srgb, var(--status-color) 12%, var(--dash-surface));
+    color: color-mix(in srgb, var(--status-color) 68%, var(--dash-ink));
+}
+.store-dashboard ::deep .dash-due-late { --status-color: var(--dash-red); }
+.store-dashboard ::deep .dash-due-today { --status-color: var(--dash-gold); }
+
+.store-dashboard ::deep .dash-empty, .store-dashboard ::deep .dash-loading {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: .65rem;
+    min-block-size: 8rem;
+    padding: 1rem;
+    border: 1px dashed var(--dash-line);
+    border-radius: .6rem;
+    text-align: center;
+    color: var(--dash-muted);
+}
+.store-dashboard ::deep .dash-loading { justify-items: stretch; }
+.store-dashboard ::deep .dash-empty-compact { min-block-size: 4.5rem; }
+.store-dashboard ::deep .dash-metrics, .store-dashboard ::deep .dash-stock-grid { gap: .5rem; }
+.store-dashboard ::deep .dash-unit-picker + .dash-metrics { margin-block-start: .6rem; }
+.store-dashboard ::deep .dash-metrics > div, .store-dashboard ::deep .dash-stock-grid > div {
+    min-inline-size: 0;
+    padding: .8rem;
+    border: 1px solid var(--dash-line);
+    border-radius: .65rem;
+}
+.store-dashboard ::deep .dash-metrics > .dash-metric-feature, .store-dashboard ::deep .dash-stock-grid > div {
+    border-color: color-mix(in srgb, var(--dash-tone) 23%, var(--dash-line));
+    background: color-mix(in srgb, var(--dash-tone) 9%, var(--dash-surface));
+}
+.store-dashboard ::deep .dash-metric-feature dd { color: color-mix(in srgb, var(--dash-tone) 64%, var(--dash-ink)); }
+.store-dashboard ::deep .dash-note, .store-dashboard ::deep .dash-notice { margin: .75rem 0 0; color: var(--dash-muted); font-size: .86rem; }
+.store-dashboard ::deep .dash-notice { display: flex; gap: .45rem; align-items: center; background: var(--dash-soft); padding: .55rem; border-radius: .4rem; }
+.store-dashboard ::deep .dash-notice svg { flex: 0 0 auto; }
+.store-dashboard ::deep .dash-ranks li { padding-block: .35rem .65rem; }
+.store-dashboard ::deep .dash-meter, .store-dashboard ::deep .dash-stock-stack {
+    display: flex;
+    border-radius: 99px;
+    background: var(--dash-soft);
+    overflow: hidden;
+    block-size: .42rem;
+}
+.store-dashboard ::deep .dash-meter > span, .store-dashboard ::deep .dash-stock-stack > span { background: var(--dash-tone); }
+.store-dashboard ::deep .dash-stock-stack { margin-block: .55rem 1rem; block-size: .8rem; }
+.store-dashboard ::deep .dash-inventory-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-block-end: .5rem; }
+.store-dashboard ::deep .dash-inventory-total strong {
+    font-size: clamp(1.35rem, 4cqi, 2rem);
+    color: color-mix(in srgb, var(--dash-tone) 66%, var(--dash-ink));
+    overflow-wrap: anywhere;
+}
+.store-dashboard ::deep .dash-unit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.store-dashboard ::deep .dash-unit-card {
+    min-inline-size: 0;
+    padding: clamp(.5rem, 1.6cqi, .85rem);
+    display: grid;
+    align-content: start;
+    gap: .55rem;
+    border-radius: .8rem;
+    border: 1px solid var(--dash-line);
+    background: color-mix(in srgb, var(--dash-accent) 3%, var(--dash-surface));
+}
+.store-dashboard ::deep .dash-unit-card > header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .25rem .6rem;
+    padding-inline: .2rem;
+}
+.store-dashboard ::deep .dash-unit-name {
+    background: var(--dash-soft);
+    border-radius: .35rem;
+    padding: .2rem .55rem;
+    font-weight: 500;
+}
+.store-dashboard ::deep .dash-unit-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .45rem;
+    margin: 0;
+}
+.store-dashboard ::deep .dash-unit-value {
+    --unit-text: color-mix(in srgb, var(--dash-tone) 65%, var(--dash-ink));
+    background: color-mix(in srgb, var(--dash-tone) 11%, var(--dash-surface));
+    border: 1px solid color-mix(in srgb, var(--dash-tone) 23%, var(--dash-line));
+    border-radius: .65rem;
+    padding: clamp(.38rem, 1.4cqi, .8rem);
+    min-inline-size: 0;
+}
+.store-dashboard ::deep .dash-unit-value dt { color: var(--unit-text); display: flex; gap: .3rem; align-items: center; }
+.store-dashboard ::deep .dash-unit-value dt svg { flex: none; inline-size: 1rem; }
+.store-dashboard ::deep .dash-unit-value dd:not(.dash-fact-note) {
+    color: var(--unit-text);
+    font-size: clamp(.94rem, 2cqi, 1.38rem);
+    line-height: 1.65;
+    margin-block: .1rem 0;
+}
+.store-dashboard ::deep .dash-rank-grid { gap: .75rem; }
+.store-dashboard ::deep .dash-rank-grid > div {
+    padding: .75rem;
+    min-inline-size: 0;
+    border-radius: .7rem;
+    border: 1px solid color-mix(in srgb, var(--dash-tone) 22%, var(--dash-line));
+    background: color-mix(in srgb, var(--dash-tone) 7%, var(--dash-surface));
+}
+.store-dashboard ::deep .dash-rank-grid h3 { font-size: 1rem; font-weight: 500; margin: 0; color: color-mix(in srgb, var(--dash-tone) 65%, var(--dash-ink)); }
+.store-dashboard ::deep .dash-links { display: flex; flex-wrap: wrap; gap: .45rem; }
+.store-dashboard ::deep .dash-market-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: .75rem;
+}
+.store-dashboard ::deep .dash-market-grid .price-card-base {
+    min-inline-size: 0;
+    border-color: color-mix(in srgb, var(--dash-gold) 25%, var(--dash-line));
+    box-shadow: none;
+}
+.store-dashboard ::deep .dash-market-grid .price-card-content .justify-space-between { flex-wrap: wrap; gap: .5rem; }
+.store-dashboard ::deep .dash-market-grid .price-card-content .mud-typography-h5 { font-size: clamp(1.1rem, 2.2cqi, 1.42rem); }
+.store-dashboard ::deep :is(button, a, select):where(:not([role="tab"], [data-tab-scroll])):focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 2px; }
+.store-dashboard ::deep .dash-plot-column:focus-visible { outline-offset: -2px; }
+
+@container (min-width: 620px) {
+    .store-dashboard ::deep .dash-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .store-dashboard ::deep .dash-stock-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .store-dashboard ::deep .dash-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (min-width: 740px) {
+    .store-dashboard ::deep .dash-unit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (min-width: 920px) {
+    .store-dashboard ::deep .dash-overview-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+}
+@container (max-width: 390px) {
+    .store-dashboard ::deep .dash-period-options .mud-chip { padding-inline: .45rem; font-size: .78rem; min-block-size: 44px; }
+}

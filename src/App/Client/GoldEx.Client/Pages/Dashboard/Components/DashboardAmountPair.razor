@@ -1,0 +1,42 @@
+<li class="dash-unit-card">
+    <header>
+        <span class="dash-unit-name">@Unit</span>
+        @if (Detail is not null)
+        {
+            <small>@Detail</small>
+        }
+    </header>
+    <dl class="dash-unit-values">
+        <div class="@($"dash-unit-value {FirstTone}")">
+            <dt><MudIcon Icon="@FirstIcon" Size="Size.Small" /> @FirstLabel</dt>
+            <dd><bdi>@DashboardDisplay.Number(FirstAmount)</bdi></dd>
+            @if (FirstDetail is not null)
+            {
+                <dd class="dash-fact-note">@FirstDetail</dd>
+            }
+        </div>
+        <div class="@($"dash-unit-value {SecondTone}")">
+            <dt><MudIcon Icon="@SecondIcon" Size="Size.Small" /> @SecondLabel</dt>
+            <dd><bdi>@DashboardDisplay.Number(SecondAmount)</bdi></dd>
+            @if (SecondDetail is not null)
+            {
+                <dd class="dash-fact-note">@SecondDetail</dd>
+            }
+        </div>
+    </dl>
+</li>
+
+@code {
+    [Parameter, EditorRequired] public string Unit { get; set; } = default!;
+    [Parameter] public string? Detail { get; set; }
+    [Parameter, EditorRequired] public string FirstLabel { get; set; } = default!;
+    [Parameter, EditorRequired] public string FirstIcon { get; set; } = default!;
+    [Parameter, EditorRequired] public string FirstTone { get; set; } = default!;
+    [Parameter, EditorRequired] public decimal FirstAmount { get; set; }
+    [Parameter] public string? FirstDetail { get; set; }
+    [Parameter, EditorRequired] public string SecondLabel { get; set; } = default!;
+    [Parameter, EditorRequired] public string SecondIcon { get; set; } = default!;
+    [Parameter, EditorRequired] public string SecondTone { get; set; } = default!;
+    [Parameter, EditorRequired] public decimal SecondAmount { get; set; }
+    [Parameter] public string? SecondDetail { get; set; }
+}
