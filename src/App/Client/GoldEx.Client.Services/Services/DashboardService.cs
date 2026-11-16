@@ -11,6 +11,16 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class DashboardService(HttpClient client, JsonSerializerOptions jsonOptions) : IDashboardService
 {
+    public async Task<DashboardOverviewResponse> GetOverviewAsync(int days, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Dashboard.GetOverview(days), cancellationToken);
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        return await response.Content.ReadFromJsonAsync<DashboardOverviewResponse>(jsonOptions, cancellationToken)
+            ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<List<TodaySalesSummaryDto>> GetTodaySalesAsync(CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Dashboard.GetTodaySales(), cancellationToken);

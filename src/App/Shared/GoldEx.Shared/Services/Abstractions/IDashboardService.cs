@@ -4,6 +4,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IDashboardService
 {
+    Task<DashboardOverviewResponse> GetOverviewAsync(int days, CancellationToken cancellationToken = default);
     Task<List<TodaySalesSummaryDto>> GetTodaySalesAsync(CancellationToken cancellationToken = default);
     Task<CustomerBalancesSummaryDto> GetCustomerBalancesSummaryAsync(CancellationToken cancellationToken = default);
     Task<List<TradeTrendPointDto>> GetTradeTrend30DaysAsync(CancellationToken cancellationToken = default);

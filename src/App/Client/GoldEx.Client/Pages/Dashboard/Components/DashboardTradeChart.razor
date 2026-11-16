@@ -1,0 +1,67 @@
+@using GoldEx.Shared.DTOs.Dashboard
+
+@if (_buckets.All(b => b.Sell == 0m && b.Purchase == 0m))
+{
+    <div class="dash-empty dash-empty-compact">در این بازه مبلغی در این واحد ثبت نشده است.</div>
+}
+else
+{
+    <div class="dash-plot" dir="ltr" role="group" aria-label="نمودار خرید و فروش؛ هر ستون را برای دیدن مبلغ انتخاب کنید"
+         style="@FormattableString.Invariant($"--dash-columns:{_buckets.Count};--dash-zero:{Zero:0.###}%;")">
+        @for (var i = 0; i < _buckets.Count; i++)
+        {
+            var index = i;
+            var point = _buckets[index];
+            <button type="button" class="dash-plot-column @(index == _selected ? "is-selected" : "")"
+                    aria-pressed="@(index == _selected ? "true" : "false")" aria-label="@PointLabel(point)"
+                    title="@PointLabel(point)" @onclick="() => _selected = index">
+                <span class="dash-plot-bar dash-sell" style="@BarStyle(point.Sell)" aria-hidden="true"></span>
+                <span class="dash-plot-bar dash-buy" style="@BarStyle(point.Purchase)" aria-hidden="true"></span>
+            </button>
+        }
+    </div>
+    <div class="dash-axis" dir="ltr" aria-hidden="true">
+        <span>@DashboardDisplay.Date(_buckets[0].From, false)</span>
+        <span>@DashboardDisplay.Date(_buckets[_buckets.Count / 2].From, false)</span>
+        <span>@DashboardDisplay.Date(_buckets[^1].To, false)</span>
+    </div>
+    var selected = _buckets[_selected];
+    <div class="dash-chart-readout" aria-live="polite" aria-atomic="true">
+        <strong>@DateRange(selected)</strong>
+        <span class="dash-legend dash-sell">فروش: <bdi>@DashboardDisplay.Number(selected.Sell)</bdi> @Series.PriceUnit</span>
+        <span class="dash-legend dash-buy">خرید: <bdi>@DashboardDisplay.Number(selected.Purchase)</bdi> @Series.PriceUnit</span>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public DashboardTradeSeries Series { get; set; } = default!;
+
+    private sealed record Bucket(DateOnly From, DateOnly To, decimal Sell, decimal Purchase);
+    private List<Bucket> _buckets = [];
+    private decimal _min;
+    private decimal _max;
+    private int _selected;
+    private decimal Span => _max > _min ? _max - _min : 1m;
+    private decimal Zero => -_min / Span * 100m;
+
+    protected override void OnParametersSet()
+    {
+        var interval = Series.Points.Count switch { <= 7 => 1, <= 30 => 3, _ => 9 };
+        _buckets = Series.Points.Chunk(interval)
+            .Select(chunk => new Bucket(chunk[0].Date, chunk[^1].Date,
+                chunk.Sum(p => p.SellAmount), chunk.Sum(p => p.PurchaseAmount)))
+            .ToList();
+        _min = Math.Min(0m, _buckets.SelectMany(b => new[] { b.Sell, b.Purchase }).DefaultIfEmpty().Min());
+        _max = Math.Max(0m, _buckets.SelectMany(b => new[] { b.Sell, b.Purchase }).DefaultIfEmpty().Max());
+        _selected = Math.Max(0, _buckets.FindLastIndex(b => b.Sell != 0m || b.Purchase != 0m));
+    }
+
+    private string BarStyle(decimal amount) => FormattableString.Invariant(
+        $"bottom:{(Math.Min(0m, amount) - _min) / Span * 100m:0.###}%;height:{Math.Abs(amount) / Span * 100m:0.###}%;");
+
+    private static string DateRange(Bucket bucket) => bucket.From == bucket.To
+        ? DashboardDisplay.Date(bucket.From)
+        : $"{DashboardDisplay.Date(bucket.From, false)} تا {DashboardDisplay.Date(bucket.To, false)}";
+
+    private string PointLabel(Bucket bucket) => $"{DateRange(bucket)}، فروش {DashboardDisplay.Number(bucket.Sell)} {Series.PriceUnit}، خرید {DashboardDisplay.Number(bucket.Purchase)} {Series.PriceUnit}";
+}

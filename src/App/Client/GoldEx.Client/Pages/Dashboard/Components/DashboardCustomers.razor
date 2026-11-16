@@ -1,0 +1,173 @@
+@using GoldEx.Shared.DTOs.Customers
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.DTOs.Transactions
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<DashboardPanel Title="دفتر مشتریان" Description="مشتریان ثبت‌شدهٔ این فروشگاه"
+                Icon="@Icons.Material.Outlined.People" Tone="dash-tone-indigo">
+    <Actions><MudButton Href="@ClientRoutes.Customers.Index" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Outlined.ArrowBack">فهرست مشتریان</MudButton></Actions>
+    <ChildContent>
+        @if (_loadingCustomers || _customers is null)
+        {
+            <DashboardStatus Loading="@_loadingCustomers" Retry="LoadCustomersAsync" />
+        }
+        else
+        {
+            <dl class="dash-stock-grid">
+                <div><dt>همهٔ مشتریان</dt><dd>@DashboardDisplay.Number(_customers.TotalCustomersCount)</dd></div>
+                <div><dt>خرده‌فروشی</dt><dd>@DashboardDisplay.Number(_customers.RetailCustomersCount)</dd></div>
+                <div><dt>همکار و عمده‌فروشی</dt><dd>@DashboardDisplay.Number(_customers.WholesaleCustomersCount)</dd></div>
+            </dl>
+        }
+    </ChildContent>
+</DashboardPanel>
+
+<DashboardPanel Title="ماندهٔ حساب مشتریان" Description="طلب و بدهی فعلی، جداگانه برای هر واحد"
+                Icon="@Icons.Material.Outlined.AccountBalanceWallet" Tone="dash-tone-blue">
+    <Actions>
+        <MudButton Href="@ClientRoutes.Reporting.CustomerBalances" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Outlined.ArrowBack">گزارش مانده‌ها</MudButton>
+    </Actions>
+    <ChildContent>
+        @if (_loadingBalances || _balances is null)
+        {
+            <DashboardStatus Loading="@_loadingBalances" Retry="LoadBalancesAsync" />
+        }
+        else if (_units.Count == 0)
+        {
+            <div class="dash-empty">مشتری با ماندهٔ بدهکار یا بستانکار ثبت نشده است.</div>
+        }
+        else
+        {
+            <ul class="dash-unit-grid">
+                @foreach (var unit in _units)
+                {
+                    var receivable = _balances.Receivables.FirstOrDefault(x => x.PriceUnitId == unit.Id);
+                    var payable = _balances.Payables.FirstOrDefault(x => x.PriceUnitId == unit.Id);
+                    <DashboardAmountPair @key="unit.Id" Unit="@unit.Title"
+                                         FirstLabel="بدهکاران" FirstAmount="@(receivable?.Amount ?? 0m)" FirstTone="dash-tone-red"
+                                         FirstIcon="@Icons.Material.Outlined.CallReceived" FirstDetail="@($"{DashboardDisplay.Number(receivable?.Count ?? 0)} مشتری")"
+                                         SecondLabel="بستانکاران" SecondAmount="@(payable?.Amount ?? 0m)" SecondTone="dash-tone-green"
+                                         SecondIcon="@Icons.Material.Outlined.CallMade" SecondDetail="@($"{DashboardDisplay.Number(payable?.Count ?? 0)} مشتری")" />
+                }
+            </ul>
+        }
+    </ChildContent>
+</DashboardPanel>
+
+@if (_units.Count != 0)
+{
+    <DashboardPanel Title="بیشترین مانده‌ها" Description="پنج مشتری اول در واحد انتخاب‌شده"
+                    Icon="@Icons.Material.Outlined.FormatListNumbered" Tone="dash-tone-indigo">
+        <Actions>
+            @if (_units.Count > 1)
+            {
+                <DashboardUnitPicker Label="واحد مانده" Value="@_selectedUnit" ValueChanged="SelectUnitAsync"
+                                     Disabled="@_loadingRanks" Units="_units" />
+            }
+        </Actions>
+        <ChildContent>
+            @if (_loadingRanks || _debtors is null || _creditors is null)
+            {
+                <DashboardStatus Loading="@_loadingRanks" Retry="LoadRanksAsync" />
+            }
+            else
+            {
+                <div class="dash-detail-grid dash-rank-grid">
+                    @foreach (var (label, tone, rows) in new[] { ("بیشترین طلب از مشتری", "dash-tone-red", _debtors),
+                        ("بیشترین بدهی به مشتری", "dash-tone-green", _creditors) })
+                    {
+                        <div class="@tone">
+                            <h3>@label</h3>
+                            @if (rows.Count == 0)
+                            {
+                                <p class="dash-note">در این واحد مانده‌ای ثبت نشده است.</p>
+                            }
+                            else
+                            {
+                                <ol class="dash-list dash-value-list">
+                                    @foreach (var row in rows)
+                                    {
+                                        <li><strong>@row.CustomerName</strong><span><bdi>@DashboardDisplay.Number(row.Amount)</bdi> @row.PriceUnit</span></li>
+                                    }
+                                </ol>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </ChildContent>
+    </DashboardPanel>
+}
+
+@code {
+    private GetCustomerOverviewResponse? _customers;
+    private CustomerBalancesSummaryDto? _balances;
+    private List<(Guid Id, string Title)> _units = [];
+    private List<GetTopCustomerResponse>? _debtors, _creditors;
+    private bool _loadingCustomers = true, _loadingBalances = true, _loadingRanks;
+    private Guid _selectedUnit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Task.WhenAll(LoadCustomersAsync(), LoadBalancesAsync());
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        _loadingCustomers = true;
+        try
+        {
+            _customers = await SendRequestAsync<ICustomerService, GetCustomerOverviewResponse>(
+                (s, ct) => s.GetOverviewAsync(ct), createScope: true);
+        }
+        finally { _loadingCustomers = false; }
+    }
+
+    private async Task LoadBalancesAsync()
+    {
+        _loadingBalances = true;
+        try
+        {
+            _balances = await SendRequestAsync<IDashboardService, CustomerBalancesSummaryDto>(
+                (s, ct) => s.GetCustomerBalancesSummaryAsync(ct), createScope: true);
+            if (_balances is not null)
+            {
+                _units = _balances.Receivables.Concat(_balances.Payables).Where(x => x.PriceUnitId.HasValue)
+                    .Select(x => (Id: x.PriceUnitId!.Value, Title: x.PriceUnit)).Distinct()
+                    .OrderByDescending(x => x.Title is "تومان" or "ریال").ThenBy(x => x.Title).ToList();
+            }
+        }
+        finally { _loadingBalances = false; }
+        if (!IsDisposed && _units.Count > 0)
+        {
+            _selectedUnit = _units[0].Id;
+            await LoadRanksAsync();
+        }
+    }
+
+    private async Task SelectUnitAsync(Guid id)
+    {
+        if (_loadingRanks || _selectedUnit == id)
+            return;
+        _selectedUnit = id;
+        await LoadRanksAsync();
+    }
+
+    private async Task LoadRanksAsync()
+    {
+        _loadingRanks = true;
+        try
+        {
+            var unit = _selectedUnit;
+            var results = await Task.WhenAll(
+                SendRequestAsync<ITransactionService, List<GetTopCustomerResponse>>(
+                    (s, ct) => s.GetTopCustomersAsync(TransactionType.Debit, unit, ct), createScope: true),
+                SendRequestAsync<ITransactionService, List<GetTopCustomerResponse>>(
+                    (s, ct) => s.GetTopCustomersAsync(TransactionType.Credit, unit, ct), createScope: true));
+            (_debtors, _creditors) = (results[0], results[1]);
+        }
+        finally { _loadingRanks = false; }
+    }
+}

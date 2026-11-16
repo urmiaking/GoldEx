@@ -1,0 +1,29 @@
+<section class="dash-section" aria-labelledby="@_headingId">
+    <MudPaper Elevation="0" Class="@($"dash-panel {Tone}")">
+        <header class="dash-panel-heading">
+            <div class="dash-panel-title">
+                <span class="dash-panel-icon"><MudIcon Icon="@Icon" Size="Size.Small" /></span>
+                <div>
+                    <h2 id="@_headingId">@Title</h2>
+                    @if (Description is not null)
+                    {
+                        <p>@Description</p>
+                    }
+                </div>
+            </div>
+            @Actions
+        </header>
+        @ChildContent
+    </MudPaper>
+</section>
+
+@code {
+    private readonly string _headingId = $"dash-heading-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+    [Parameter] public string? Description { get; set; }
+    [Parameter, EditorRequired] public string Icon { get; set; } = default!;
+    [Parameter] public string? Tone { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

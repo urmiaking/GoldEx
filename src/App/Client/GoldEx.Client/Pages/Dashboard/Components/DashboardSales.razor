@@ -1,0 +1,155 @@
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.DTOs.Reporting
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<div class="dash-detail-grid">
+    <DashboardPanel Title="تحلیل سود فروش" Description="سود ناخالص، پیش از هزینه‌های مغازه"
+                    Icon="@Icons.Material.Outlined.TrendingUp" Tone="dash-tone-green">
+        <Actions>
+            <MudButton Href="@ReportUrl(ClientRoutes.Reporting.ProfitAnalysis)" Color="Color.Success" Variant="Variant.Outlined"
+                       EndIcon="@Icons.Material.Outlined.ArrowBack">گزارش سود</MudButton>
+        </Actions>
+        <ChildContent>
+            @if (_loadingProfit || _profit is null)
+            {
+                <DashboardStatus Loading="@_loadingProfit" Retry="LoadProfitAsync" />
+            }
+            else if (SelectedProfit is { } summary)
+            {
+                @if (_profit.Summaries.Count > 1)
+                {
+                    <DashboardUnitPicker Label="واحد سود" Value="@summary.PriceUnitId" ValueChanged="SelectProfitUnit"
+                                         Units="_profit.Summaries.Select(x => (x.PriceUnitId, x.PriceUnit))" />
+                }
+                <dl class="dash-metrics">
+                    <div class="dash-metric-feature @(summary.GrossProfit < 0m ? "dash-tone-red" : "dash-tone-green")"><dt>سود ناخالص</dt><dd><bdi>@DashboardDisplay.Number(summary.GrossProfit)</bdi> <small>@summary.PriceUnit</small></dd></div>
+                    <div><dt>حاشیهٔ معامله</dt><dd><bdi>@DashboardDisplay.Number(summary.TradingMargin)</bdi> <small>@summary.PriceUnit</small></dd></div>
+                    <div><dt>اثر تغییر نرخ طلا</dt><dd><bdi>@DashboardDisplay.Number(summary.GoldPriceEffect)</bdi> <small>@summary.PriceUnit</small></dd></div>
+                    <div><dt>اثر تغییر نرخ ارز</dt><dd><bdi>@DashboardDisplay.Number(summary.ExchangeRateEffect)</bdi> <small>@summary.PriceUnit</small></dd></div>
+                </dl>
+                <p class="dash-note">@DashboardDisplay.Number(_profit.CalculatedCount) از @DashboardDisplay.Number(_profit.TotalCount) ردیف فروش در همهٔ واحدها قابل محاسبه بود.</p>
+            }
+            else
+            {
+                <div class="dash-empty">در این بازه سود قابل محاسبه‌ای برای نمایش نیست.</div>
+            }
+            @if (!_loadingProfit && _profit is { IncompleteCount: > 0 } profit)
+            {
+                <p class="dash-notice"><MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" />
+                    @DashboardDisplay.Number(profit.IncompleteCount) ردیفِ بدون اطلاعات کافی در سود لحاظ نشده است.</p>
+            }
+        </ChildContent>
+    </DashboardPanel>
+    <DashboardPanel Title="گروه‌های پرفروش" Description="رتبه‌بندی بر اساس تعداد کالاهای فروخته‌شده"
+                    Icon="@Icons.Material.Outlined.BarChart" Tone="dash-tone-indigo">
+        <ChildContent>
+            @if (_loadingCategories || _categories is null)
+            {
+                <DashboardStatus Loading="@_loadingCategories" Retry="LoadCategoriesAsync" />
+            }
+            else if (_categories.Count == 0)
+            {
+                <div class="dash-empty">در این بازه فروش کالایی برای رتبه‌بندی ثبت نشده است.</div>
+            }
+            else
+            {
+                <ol class="dash-list dash-ranks">
+                    @foreach (var group in _categories)
+                    {
+                        <li>
+                            <div><strong>@group.CategoryTitle</strong><span>@DashboardDisplay.Number(group.TotalQuantity) عدد</span></div>
+                            <div class="dash-meter" aria-hidden="true"><span style="@FormattableString.Invariant($"inline-size:{100m * group.TotalQuantity / _categories[0].TotalQuantity:0.###}%;")"></span></div>
+                        </li>
+                    }
+                </ol>
+            }
+        </ChildContent>
+    </DashboardPanel>
+</div>
+
+<DashboardPanel Title="دریافت و پرداخت وجه فاکتورها" Description="تسویهٔ حساب‌های داخلی بر اساس تاریخ پرداخت"
+                Icon="@Icons.Material.Outlined.CompareArrows" Tone="dash-tone-blue">
+    <Actions>
+        <MudButton Href="@PaymentReportUrl" Color="Color.Info" Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Outlined.ArrowBack">گزارش دریافت و پرداخت</MudButton>
+    </Actions>
+    <ChildContent>
+        @if (Data.Settlements.Count == 0)
+        {
+            <div class="dash-empty dash-empty-compact">در این بازه دریافت یا پرداختی در حساب‌های داخلی ثبت نشده است.</div>
+        }
+        else
+        {
+            <ul class="dash-unit-grid">
+                @foreach (var row in Data.Settlements)
+                {
+                    <DashboardAmountPair Unit="@row.PriceUnit" Detail="@($"{DashboardDisplay.Number(row.Count)} پرداخت و دریافت")"
+                                         FirstLabel="دریافت" FirstAmount="@row.Received" FirstTone="dash-tone-green" FirstIcon="@Icons.Material.Outlined.CallReceived"
+                                         SecondLabel="پرداخت" SecondAmount="@row.Paid" SecondTone="dash-tone-red" SecondIcon="@Icons.Material.Outlined.CallMade" />
+                }
+            </ul>
+        }
+    </ChildContent>
+</DashboardPanel>
+
+<DashboardPanel Title="گزارش‌های خرید، فروش و تسویه" Icon="@Icons.Material.Outlined.Assessment">
+    <ChildContent>
+        <div class="dash-links">
+            <MudButton Href="@ReportUrl(ClientRoutes.Reporting.SellInvoices)" Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Outlined.NorthEast">فروش</MudButton>
+            <MudButton Href="@ReportUrl(ClientRoutes.Reporting.PurchaseInvoices)" Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Outlined.SouthWest">خرید</MudButton>
+            <MudButton Href="@ClientRoutes.Finances.PaymentVouchers" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.ReceiptLong">اسناد دریافت و پرداخت</MudButton>
+            <MudButton Href="@ClientRoutes.Finances.Checks" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Payments">چک‌ها</MudButton>
+            <MudButton Href="@ClientRoutes.Invoices.MoltenGoldDesk" Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Outlined.Scale">معاملات آبشده</MudButton>
+        </div>
+    </ChildContent>
+</DashboardPanel>
+
+@code {
+    [Parameter, EditorRequired] public DashboardOverviewResponse Data { get; set; } = default!;
+
+    private ProfitAnalysisRpResponse? _profit;
+    private List<CategorySalesRpResponse>? _categories;
+    private bool _loadingProfit = true, _loadingCategories = true;
+    private Guid? _profitUnit;
+
+    private ProfitAnalysisSummary? SelectedProfit => _profit?.Summaries.FirstOrDefault(s => s.PriceUnitId == _profitUnit)
+        ?? _profit?.Summaries.FirstOrDefault();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Task.WhenAll(LoadProfitAsync(), LoadCategoriesAsync());
+    }
+
+    private DateTime FromDate => Data.FromDate.ToDateTime(TimeOnly.MinValue);
+    private DateTime ToDate => Data.ToDate.ToDateTime(TimeOnly.MinValue);
+    private string ReportUrl(string route) => route.AppendQueryString(new { Start = FromDate, End = ToDate });
+    private string PaymentReportUrl => ClientRoutes.Reporting.Payments.AppendQueryString(
+        new { Start = FromDate, End = ToDate, PaymentType = PaymentType.InternalCash });
+    private void SelectProfitUnit(Guid id) => _profitUnit = id;
+
+    private async Task LoadProfitAsync()
+    {
+        _loadingProfit = true;
+        try
+        {
+            _profit = await SendRequestAsync<IReportingService, ProfitAnalysisRpResponse>(
+                (s, ct) => s.GetProfitAnalysisAsync(new(FromDate, ToDate, SummaryOnly: true), ct), createScope: true);
+        }
+        finally { _loadingProfit = false; }
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        _loadingCategories = true;
+        try
+        {
+            var data = await SendRequestAsync<IReportingService, List<CategorySalesRpResponse>>(
+                (s, ct) => s.GetCategorySalesSummaryAsync(new(FromDate, ToDate), ct), createScope: true);
+            _categories = data?.Where(x => x.TotalQuantity > 0).OrderByDescending(x => x.TotalQuantity)
+                .ThenBy(x => x.CategoryTitle).Take(8).ToList();
+        }
+        finally { _loadingCategories = false; }
+    }
+}

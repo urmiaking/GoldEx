@@ -8,6 +8,7 @@ public class CustomerBalancesSummaryDto
 
 public class PriceUnitSummaryDto
 {
+    public Guid? PriceUnitId { get; set; }
     public string PriceUnit { get; set; } = "تومان";
     public decimal Amount { get; set; }
     public int Count { get; set; }

@@ -1,32 +1,132 @@
 ﻿@attribute [Route(ClientRoutes.Dashboard.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
+@using GoldEx.Shared.DTOs.Dashboard
+@using GoldEx.Shared.Services.Abstractions
 @inherits GoldExComponentBase
 
-<PageTitle>داشبورد</PageTitle>
+<PageTitle>داشبورد فروشگاه</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+    <div class="store-dashboard" dir="rtl">
+        <header class="dash-heading">
+            <div class="dash-heading-title">
+                <span class="dash-heading-icon"><MudIcon Icon="@Icons.Material.Outlined.SpaceDashboard" /></span>
+                <div>
+                    <h1>داشبورد فروشگاه</h1>
+                    <p>فروش، موجودی و حساب مشتریان در یک نگاه</p>
+                </div>
+            </div>
+            <MudButton Href="@ClientRoutes.Reporting.Index" Color="Color.Primary" Variant="Variant.Filled" DisableElevation="true"
+                       StartIcon="@Icons.Material.Outlined.Assessment">همهٔ گزارش‌ها</MudButton>
+        </header>
 
-    <MudText Typo="Typo.h5" GutterBottom="true">نرخ لحظه ای</MudText>
-    <MudDivider Class="mb-2" />
-    <PriceList />
+        <WorkspaceTabs TKey="View" Label="نماهای داشبورد" Tabs="Views" @bind-ActiveKey="_view" Class="dash-tab-workspace">
+            <PanelContent Context="view">
+                @if (view is View.Overview or View.Sales)
+                {
+                    <div class="dash-period">
+                        <div class="dash-period-context">
+                            <span class="dash-panel-icon"><MudIcon Icon="@Icons.Material.Outlined.DateRange" Size="Size.Small" /></span>
+                            <div class="dash-period-label" aria-live="polite">
+                                <span>بازهٔ گزارش</span>
+                                @if (!_loading && _overview is { } overview)
+                                {
+                                    <small>@DashboardDisplay.Date(overview.FromDate) تا @DashboardDisplay.Date(overview.ToDate)</small>
+                                }
+                            </div>
+                        </div>
+                        <MudChipSet T="int" Class="dash-period-options" aria-label="انتخاب بازهٔ گزارش"
+                                    SelectionMode="SelectionMode.SingleSelection" SelectedValue="_days" SelectedValueChanged="SetPeriodAsync"
+                                    Disabled="_loading" CheckMark="true">
+                            @foreach (var days in Periods)
+                            {
+                                <MudChip @key="days" T="int" Value="@days" Color="Color.Default" SelectedColor="Color.Primary"
+                                         Variant="@(_days == days ? Variant.Filled : Variant.Outlined)">
+                                    @DashboardDisplay.Number(days) روز
+                                </MudChip>
+                            }
+                        </MudChipSet>
+                    </div>
+                }
 
-    <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">آمار</MudText>
-    <MudDivider Class="mb-2" />
-    <MudGrid>
-        <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
-            <InventoryWeightChart />
-        </MudItem>
-        <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
-            <TopCustomers />
-        </MudItem>
-        <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
-            <AccountBalance />
-        </MudItem>
-    </MudGrid>
+                @switch (view)
+                {
+                    case View.Overview:
+                    case View.Sales:
+                        @if (_loading || _overview is null)
+                        {
+                            <DashboardStatus Loading="@_loading" Retry="LoadOverviewAsync" />
+                        }
+                        else if (view == View.Overview)
+                        {
+                            <DashboardTradeOverview Data="_overview" @bind-SelectedUnitId="_tradeUnitId" />
+                        }
+                        else
+                        {
+                            <DashboardSales @key="_overview" Data="_overview" />
+                        }
+                        break;
+                    case View.Inventory:
+                        <DashboardInventory />
+                        break;
+                    case View.Customers:
+                        <DashboardCustomers />
+                        break;
+                    case View.Market:
+                        <DashboardPanel Title="نرخ بازار" Description="آخرین نرخ‌های ثبت‌شدهٔ طلا، سکه و ارز"
+                                        Icon="@Icons.Material.Outlined.Timeline" Tone="dash-tone-gold">
+                            <ChildContent><PriceList /></ChildContent>
+                        </DashboardPanel>
+                        break;
+                }
+            </PanelContent>
+        </WorkspaceTabs>
+    </div>
 </MudContainer>
+
+@code {
+    private enum View { Overview, Sales, Inventory, Customers, Market }
+
+    private static readonly int[] Periods = [7, 30, 90];
+    private static readonly WorkspaceTab<View>[] Views =
+    [
+        new(View.Overview, "نمای کلی", "grid"),
+        new(View.Sales, "فروش و سود", "chart-bar"),
+        new(View.Inventory, "موجودی", "package"),
+        new(View.Customers, "مشتریان", "users"),
+        new(View.Market, "نرخ بازار", "gem")
+    ];
+
+    private View _view;
+    private int _days = 30;
+    private bool _loading = true;
+    private DashboardOverviewResponse? _overview;
+    private Guid? _tradeUnitId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadOverviewAsync();
+    }
+
+    private async Task SetPeriodAsync(int days)
+    {
+        if (_loading || _days == days)
+            return;
+
+        _days = days;
+        await LoadOverviewAsync();
+    }
+
+    private async Task LoadOverviewAsync()
+    {
+        _loading = true;
+        try
+        {
+            _overview = await SendRequestAsync<IDashboardService, DashboardOverviewResponse>(
+                (service, ct) => service.GetOverviewAsync(_days, ct), createScope: true);
+        }
+        finally { _loading = false; }
+    }
+}

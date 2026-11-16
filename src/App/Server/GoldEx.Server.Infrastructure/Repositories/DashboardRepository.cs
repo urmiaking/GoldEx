@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class DashboardRepository(GoldExDbContext dbContext) : IDashboardRepository
+internal partial class DashboardRepository(GoldExDbContext dbContext) : IDashboardRepository
 {
     public async Task<List<TodaySalesSummaryDto>> GetTodaySalesSummaryAsync(CancellationToken cancellationToken = default)
     {
@@ -66,24 +66,27 @@ internal class DashboardRepository(GoldExDbContext dbContext) : IDashboardReposi
             .Select(g => new
             {
                 g.Key.Unit,
+                g.Key.PriceUnitId,
                 Amount = g.Sum(t => t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
             })
             .ToListAsync(cancellationToken);
 
         var receivables = byCustomerAndUnit.Where(x => x.Amount > 0)
-            .GroupBy(x => x.Unit)
+            .GroupBy(x => new { x.Unit, x.PriceUnitId })
             .Select(g => new PriceUnitSummaryDto
             {
-                PriceUnit = g.Key,
+                PriceUnit = g.Key.Unit,
+                PriceUnitId = g.Key.PriceUnitId.Value,
                 Amount = g.Sum(x => x.Amount),
                 Count = g.Count(),
                 Subtitle = "مانده بدهکاری مشتریان به ما"
             }).ToList();
         var payables = byCustomerAndUnit.Where(x => x.Amount < 0)
-            .GroupBy(x => x.Unit)
+            .GroupBy(x => new { x.Unit, x.PriceUnitId })
             .Select(g => new PriceUnitSummaryDto
             {
-                PriceUnit = g.Key,
+                PriceUnit = g.Key.Unit,
+                PriceUnitId = g.Key.PriceUnitId.Value,
                 Amount = g.Sum(x => Math.Abs(x.Amount)),
                 Count = g.Count(),
                 Subtitle = "مانده بستانکاری مشتریان نزد ما"
