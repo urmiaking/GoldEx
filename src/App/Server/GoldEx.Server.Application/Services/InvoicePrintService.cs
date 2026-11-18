@@ -101,8 +101,24 @@ internal class InvoicePrintService(
             invoice.TotalReceivedFromCustomerAmount, invoice.TotalPaidToCustomerAmount, remaining,
             invoice.UnpaidPriceUnit is null ? null : remaining * invoice.UnpaidAmountExchangeRate,
             invoice.UnpaidPriceUnit?.Title,
-            new InvoicePrintCharges(invoice.TotalWageAmount, invoice.TotalProfitAmount, invoice.TotalTaxAmount, invoice.TotalStoneAmount),
+            GetPrintCharges(invoice),
             goldRates.Length == 1 ? goldRates[0] : null);
+    }
+
+    private static InvoicePrintCharges GetPrintCharges(Invoice invoice)
+    {
+        IReadOnlyList<InvoiceProductItem> soldProducts = invoice.InvoiceType == InvoiceType.Sell ? invoice.ProductItems : [];
+        var profitRates = soldProducts.Where(item => item.Product?.ProductType is not ProductType.UsedGold)
+            .Select(item => item.ProfitPercent)
+            .Concat(invoice.CoinItems.Select(item => item.ProfitPercent))
+            .Concat(invoice.CurrencyItems.Select(item => item.ProfitPercent))
+            .Distinct().Order().ToArray();
+        var taxRates = soldProducts.Where(item => item.Product?.ProductType is not (ProductType.UsedGold or ProductType.MoltenGold))
+            .Select(item => item.TaxPercent)
+            .Concat(invoice.CurrencyItems.Select(item => item.TaxPercent))
+            .Distinct().Order().ToArray();
+
+        return new InvoicePrintCharges(invoice.TotalWageAmount, profitRates, taxRates, invoice.TotalStoneAmount);
     }
 
     private async Task<GetInvoiceDetailResponse> GetInvoiceDetailAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default)

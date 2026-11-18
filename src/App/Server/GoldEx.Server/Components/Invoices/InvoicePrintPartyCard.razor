@@ -1,0 +1,48 @@
+@using GoldEx.Client.Components.Layouts.Components
+@using GoldEx.Server.Application.Reporting
+@using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
+
+<section class="invoice-party-card @(IsStore ? "is-store" : null)">
+    <header class="invoice-party-heading">
+        <span class="invoice-party-icon"><ShellIcon Name="@(IsStore ? "store" : "user")" /></span>
+        <div>
+            <h2>@Role</h2>
+            <strong>@Party.Name</strong>
+        </div>
+    </header>
+    @if (HasContactDetails)
+    {
+        <dl class="invoice-party-details">
+            @if (!string.IsNullOrWhiteSpace(Party.Phone))
+            {
+                <div>
+                    <dt>تلفن</dt>
+                    <dd><bdi dir="ltr">@Digits(Party.Phone)</bdi></dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Party.CustomerCode))
+            {
+                <div>
+                    <dt>کد مشتری</dt>
+                    <dd><bdi dir="ltr">@Digits(Party.CustomerCode)</bdi></dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Party.Address))
+            {
+                <div class="invoice-party-address">
+                    <dt>نشانی</dt>
+                    <dd>@Digits(Party.Address)</dd>
+                </div>
+            }
+        </dl>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Role { get; set; } = default!;
+    [Parameter, EditorRequired] public InvoicePrintParty Party { get; set; } = default!;
+    [Parameter] public bool IsStore { get; set; }
+
+    private bool HasContactDetails => !string.IsNullOrWhiteSpace(Party.Phone) ||
+        !string.IsNullOrWhiteSpace(Party.CustomerCode) || !string.IsNullOrWhiteSpace(Party.Address);
+}

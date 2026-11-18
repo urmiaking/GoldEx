@@ -26,7 +26,11 @@ public sealed record InvoicePrintDocument(
     InvoicePrintCharges Charges,
     InvoicePrintGoldRate? GoldRate = null);
 
-public sealed record InvoicePrintCharges(decimal Wage, decimal Profit, decimal Tax, decimal Stones);
+public sealed record InvoicePrintCharges(
+    decimal Wage,
+    IReadOnlyList<decimal> ProfitRates,
+    IReadOnlyList<decimal> TaxRates,
+    decimal Stones);
 
 public sealed record InvoicePrintGoldRate(decimal Amount, GoldUnitType Unit);
 

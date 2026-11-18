@@ -5,7 +5,7 @@
 @using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
 
 @{
-    var charges = Charges;
+    var charges = GetChargeDisplay().ToArray();
 }
 
 <!DOCTYPE html>
@@ -57,34 +57,8 @@
 
         <div class="invoice-body">
             <section class="invoice-parties" aria-label="طرف‌های معامله">
-                <div>
-                    <h2>@(IsSale ? "فروشنده" : "خریدار")</h2>
-                    <strong>@StoreName</strong>
-                    @if (!string.IsNullOrWhiteSpace(Setting?.PhoneNumber))
-                    {
-                        <div>تلفن <bdi dir="ltr">@Digits(Setting.PhoneNumber)</bdi></div>
-                    }
-                    @if (!string.IsNullOrWhiteSpace(Setting?.Address))
-                    {
-                        <div>@Digits(Setting.Address)</div>
-                    }
-                </div>
-                <div>
-                    <h2>@(IsSale ? "خریدار" : "فروشنده")</h2>
-                    <strong>@Invoice.Customer.Name</strong>
-                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.CustomerCode))
-                    {
-                        <div>کد مشتری <bdi dir="ltr">@Digits(Invoice.Customer.CustomerCode)</bdi></div>
-                    }
-                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.Phone))
-                    {
-                        <div>تلفن <bdi dir="ltr">@Digits(Invoice.Customer.Phone)</bdi></div>
-                    }
-                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.Address))
-                    {
-                        <div>@Digits(Invoice.Customer.Address)</div>
-                    }
-                </div>
+                <InvoicePrintPartyCard Role="@(IsSale ? "فروشنده" : "خریدار")" Party="@StoreParty" IsStore="true" />
+                <InvoicePrintPartyCard Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
             </section>
 
             <InvoicePrintLines Title="اقلام فاکتور" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
@@ -139,10 +113,10 @@
                     <h2 id="invoice-totals-title">جمع‌بندی فاکتور</h2>
                     @if (charges.Length > 0)
                     {
-                        <dl class="invoice-charges" aria-label="اجزای مبلغ فاکتور">
-                            @foreach (var (label, amount) in charges)
+                        <dl class="invoice-charges" aria-label="اجرت، نرخ‌ها و ارزش سنگ">
+                            @foreach (var (label, value) in charges)
                             {
-                                <div><dt>@label</dt><dd><bdi dir="ltr">@Number(amount)</bdi> @Invoice.Unit</dd></div>
+                                <div><dt>@label</dt><dd>@value</dd></div>
                             }
                         </dl>
                     }
@@ -204,6 +178,7 @@
     private bool IsSale => Invoice.Type == InvoiceType.Sell;
     private bool IsWholesaleSale => IsSale && Invoice.Scale == TradeScale.Wholesale;
     private string StoreName => string.IsNullOrWhiteSpace(Setting?.InstitutionName) ? "فروشگاه طلا و جواهر" : Setting.InstitutionName;
+    private InvoicePrintParty StoreParty => new(StoreName, Setting?.PhoneNumber, Setting?.Address);
     private string Title => $"فاکتور {Invoice.Type.GetDisplayName()}";
     private string StoreSignature => IsWholesaleSale ? "مهر و امضای تحویل‌دهنده" : IsSale ? "مهر و امضای فروشنده" : "مهر و امضای خریدار";
     private string CustomerSignature => IsWholesaleSale ? "امضای تحویل‌گیرنده" : IsSale ? "امضای خریدار" : "امضای فروشنده";
@@ -211,13 +186,20 @@
     private string RemainingLabel => Invoice.Remaining == 0 ? "تسویه کامل" :
         IsSale == (Invoice.Remaining > 0) ? "مانده دریافت از مشتری" : "مانده پرداخت به مشتری";
 
-    private (string Label, decimal Amount)[] Charges => new (string, decimal)[]
+    private IEnumerable<(string Label, string Value)> GetChargeDisplay()
     {
-        ("جمع اجرت", Invoice.Charges.Wage),
-        ("جمع سود", Invoice.Charges.Profit),
-        ("مالیات ارزش افزوده", Invoice.Charges.Tax),
-        ("ارزش سنگ‌ها", Invoice.Charges.Stones),
-    }.Where(charge => charge.Item2 != 0).ToArray();
+        var charges = Invoice.Charges;
+        if (charges.Wage != 0)
+            yield return ("جمع اجرت", $"{Number(charges.Wage)} {Invoice.Unit}");
+        if (charges.ProfitRates.Count > 0)
+            yield return ("درصد سود", FormatRates(charges.ProfitRates));
+        if (charges.TaxRates.Count > 0)
+            yield return ("درصد مالیات ارزش افزوده", FormatRates(charges.TaxRates));
+        if (charges.Stones != 0)
+            yield return ("ارزش سنگ‌ها", $"{Number(charges.Stones)} {Invoice.Unit}");
+    }
+
+    private static string FormatRates(IReadOnlyList<decimal> rates) => string.Join("، ", rates.Select(rate => $"{Number(rate)}٪"));
 
     private IEnumerable<(string Label, decimal Amount, bool Emphasized)> Totals
     {
