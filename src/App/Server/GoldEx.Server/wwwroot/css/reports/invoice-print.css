@@ -419,8 +419,16 @@ strong { font-weight: 500; }
     .invoice-sheet { width: auto; margin: 0; padding: 1.5mm 1.5mm 0; border-radius: 0; box-shadow: none; background: white; }
     .invoice-body { padding-inline: 2mm; }
     .invoice-letterhead { border-radius: 0; min-height: 26mm; padding: 3mm 4mm; background: white; }
-    .invoice-letterhead-art { opacity: .32; }
-    .invoice-letterhead::after { background: linear-gradient(90deg, transparent 15%, white 69%); }
+    .invoice-letterhead-art {
+        inset: 0 auto 0 0;
+        z-index: 0;
+        width: 62%;
+        opacity: .32;
+        mask-image: linear-gradient(to right, black 38%, transparent 100%);
+        print-color-adjust: exact;
+    }
+    .invoice-letterhead::after { display: none; }
+    .invoice-brand, .invoice-reference { position: relative; z-index: 1; }
     .invoice-brand, .invoice-store { color: #222; }
     .invoice-letterhead h1 { font-size: 20pt; }
     .invoice-reference { background: white; box-shadow: none; }
