@@ -1,0 +1,240 @@
+@using GoldEx.Client.Components.Layouts.Components
+@using GoldEx.Server.Application.Reporting
+@using GoldEx.Shared.DTOs.Settings
+@using GoldEx.Shared.Enums
+@using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
+
+@{
+    var charges = Charges;
+}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>@Title @DocumentNumber | GoldEx</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/reports/invoice-print.css" />
+    <script src="/js/invoice-print.js" defer></script>
+</head>
+<body>
+    <nav class="print-toolbar" aria-label="ابزارهای چاپ">
+        <a href="@ClientRoutes.Invoices.Index">بازگشت به فاکتورها</a>
+        <button type="button" data-print-invoice hidden><ShellIcon Name="print" /> چاپ / ذخیره PDF</button>
+    </nav>
+
+    <main class="invoice-sheet">
+        <header class="invoice-letterhead">
+            <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
+            <div class="invoice-brand">
+                <img src="@LogoUrl" width="56" height="56" alt="" />
+                <div>
+                    <p class="invoice-store">@StoreName</p>
+                    <h1>@Title</h1>
+                </div>
+            </div>
+            <div class="invoice-reference">
+                <span>شماره فاکتور</span>
+                <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
+            </div>
+        </header>
+
+        <dl class="invoice-meta">
+            <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
+            @if (Invoice.DueDate is { } dueDate)
+            {
+                <div><dt>سررسید</dt><dd><bdi dir="ltr">@Date(dueDate)</bdi></dd></div>
+            }
+            <div><dt>نوع معامله</dt><dd>@Invoice.Scale.GetDisplayName()</dd></div>
+            <div><dt>واحد فاکتور</dt><dd>@Invoice.Unit</dd></div>
+            @if (Invoice.GoldRate is { } rate)
+            {
+                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Number(rate.Amount)</bdi> @Invoice.Unit</dd></div>
+            }
+        </dl>
+
+        <div class="invoice-body">
+            <section class="invoice-parties" aria-label="طرف‌های معامله">
+                <div>
+                    <h2>@(IsSale ? "فروشنده" : "خریدار")</h2>
+                    <strong>@StoreName</strong>
+                    @if (!string.IsNullOrWhiteSpace(Setting?.PhoneNumber))
+                    {
+                        <div>تلفن <bdi dir="ltr">@Digits(Setting.PhoneNumber)</bdi></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Setting?.Address))
+                    {
+                        <div>@Digits(Setting.Address)</div>
+                    }
+                </div>
+                <div>
+                    <h2>@(IsSale ? "خریدار" : "فروشنده")</h2>
+                    <strong>@Invoice.Customer.Name</strong>
+                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.CustomerCode))
+                    {
+                        <div>کد مشتری <bdi dir="ltr">@Digits(Invoice.Customer.CustomerCode)</bdi></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.Phone))
+                    {
+                        <div>تلفن <bdi dir="ltr">@Digits(Invoice.Customer.Phone)</bdi></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Invoice.Customer.Address))
+                    {
+                        <div>@Digits(Invoice.Customer.Address)</div>
+                    }
+                </div>
+            </section>
+
+            <InvoicePrintLines Title="اقلام فاکتور" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
+            <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit" Lines="@Invoice.UsedGold" />
+
+            @if (Invoice.Payments.Count > 0)
+            {
+                <section class="invoice-section">
+                    <h2>ریز پرداخت و دریافت</h2>
+                    <table class="invoice-table payment-table">
+                        <thead><tr><th scope="col">تاریخ</th><th scope="col">روش و جزئیات</th><th scope="col" class="amount">مبلغ</th></tr></thead>
+                        <tbody>
+                            @foreach (var payment in Invoice.Payments)
+                            {
+                                <tr>
+                                    <td><bdi dir="ltr">@Date(payment.Date)</bdi></td>
+                                    <td>
+                                        <strong>@payment.Side.GetDisplayTitle()</strong> · @(payment.Type == PaymentType.InternalCash ? "نقدی یا بانکی" : payment.Type.GetDisplayName())
+                                        @if (!string.IsNullOrWhiteSpace(payment.Reference))
+                                        {
+                                            <small>شماره پیگیری <bdi>@Digits(payment.Reference)</bdi></small>
+                                        }
+                                        @if (payment.CheckDueDate is { } checkDate)
+                                        {
+                                            <small>سررسید چک <bdi dir="ltr">@Date(checkDate)</bdi></small>
+                                        }
+                                        @if (payment.GoldFineness is > 0)
+                                        {
+                                            <small>عیار <bdi dir="ltr">@Number(payment.GoldFineness.Value)</bdi></small>
+                                        }
+                                        @if (payment.CoinQuantity is > 0)
+                                        {
+                                            <small><bdi dir="ltr">@Number(payment.CoinQuantity.Value)</bdi> عدد @payment.CoinName</small>
+                                        }
+                                    </td>
+                                    <td class="amount">
+                                        <bdi dir="ltr">@Number(payment.Amount)</bdi> @payment.Unit
+                                        @if (payment.Unit != Invoice.Unit || payment.InvoiceAmount != payment.Amount)
+                                        {
+                                            <small>معادل <bdi dir="ltr">@Number(payment.InvoiceAmount)</bdi> @Invoice.Unit</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </section>
+            }
+
+            <div class="invoice-closing">
+                <section class="invoice-totals" aria-labelledby="invoice-totals-title">
+                    <h2 id="invoice-totals-title">جمع‌بندی فاکتور</h2>
+                    @if (charges.Length > 0)
+                    {
+                        <dl class="invoice-charges" aria-label="اجزای مبلغ فاکتور">
+                            @foreach (var (label, amount) in charges)
+                            {
+                                <div><dt>@label</dt><dd><bdi dir="ltr">@Number(amount)</bdi> @Invoice.Unit</dd></div>
+                            }
+                        </dl>
+                    }
+                    <dl class="invoice-summary">
+                        @foreach (var (label, amount, emphasized) in Totals)
+                        {
+                            <div class="@(emphasized ? "invoice-total-final" : null)">
+                                <dt>@label</dt><dd><bdi dir="ltr">@Number(amount)</bdi> @Invoice.Unit</dd>
+                            </div>
+                        }
+                    </dl>
+                    <div class="invoice-remaining @(Invoice.Remaining == 0 ? "is-settled" : null)">
+                        <span>@RemainingLabel</span>
+                        <div class="amount">
+                            @if (Invoice.Remaining != 0)
+                            {
+                                <strong><bdi dir="ltr">@Number(Math.Abs(Invoice.Remaining))</bdi> @Invoice.Unit</strong>
+                                @if (Invoice.SecondaryRemaining is { } equivalent && !string.IsNullOrWhiteSpace(Invoice.SecondaryUnit))
+                                {
+                                    <small>معادل <bdi dir="ltr">@Number(Math.Abs(equivalent))</bdi> @Invoice.SecondaryUnit</small>
+                                }
+                            }
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="invoice-footer">
+                    @if (IsWholesaleSale)
+                    {
+                        <section class="invoice-terms">
+                            <h2>شرایط تحویل امانی</h2>
+                            <p>کلیهٔ طلاجات مندرج در این قبض جهت بازاریابی به اینجانب @Invoice.Customer.Name به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم، بهای آن را علاوه بر اجرت نقداً به @StoreName بپردازم و مابقی اجناس را عندالمطالبه مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمهٔ اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره به عمل آید، ضامن و مسئول پاسخگو هستم.</p>
+                        </section>
+                    }
+                    else if (IsSale && Invoice.Items.Any(item => item.ProductType.HasValue))
+                    {
+                        <section class="invoice-terms">
+                            <h2>شرایط فروش</h2>
+                            <p>کالاهای فوق با اجرت، سود و مالیات ارزش افزودهٔ درج‌شده در جمع‌بندی عرضه شده‌اند. در زمان فروش مجدد، کالا با ارائهٔ فاکتور و به نرخ روز خریداری می‌شود. اجناس فروخته‌شده بدون علت پس گرفته نمی‌شود.</p>
+                        </section>
+                    }
+                    <div class="invoice-signatures" aria-label="محل امضا">
+                        <span>@StoreSignature</span>
+                        <span>@CustomerSignature</span>
+                    </div>
+                </footer>
+            </div>
+            <div class="invoice-endmark"><span class="invoice-wordmark" dir="ltr">GoldEx</span></div>
+        </div>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter, EditorRequired] public InvoicePrintDocument Invoice { get; set; } = default!;
+    [Parameter] public GetSettingResponse? Setting { get; set; }
+    [Parameter, EditorRequired] public string LogoUrl { get; set; } = default!;
+
+    private bool IsSale => Invoice.Type == InvoiceType.Sell;
+    private bool IsWholesaleSale => IsSale && Invoice.Scale == TradeScale.Wholesale;
+    private string StoreName => string.IsNullOrWhiteSpace(Setting?.InstitutionName) ? "فروشگاه طلا و جواهر" : Setting.InstitutionName;
+    private string Title => $"فاکتور {Invoice.Type.GetDisplayName()}";
+    private string StoreSignature => IsWholesaleSale ? "مهر و امضای تحویل‌دهنده" : IsSale ? "مهر و امضای فروشنده" : "مهر و امضای خریدار";
+    private string CustomerSignature => IsWholesaleSale ? "امضای تحویل‌گیرنده" : IsSale ? "امضای خریدار" : "امضای فروشنده";
+    private string DocumentNumber => Digits(Invoice.Number.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    private string RemainingLabel => Invoice.Remaining == 0 ? "تسویه کامل" :
+        IsSale == (Invoice.Remaining > 0) ? "مانده دریافت از مشتری" : "مانده پرداخت به مشتری";
+
+    private (string Label, decimal Amount)[] Charges => new (string, decimal)[]
+    {
+        ("جمع اجرت", Invoice.Charges.Wage),
+        ("جمع سود", Invoice.Charges.Profit),
+        ("مالیات ارزش افزوده", Invoice.Charges.Tax),
+        ("ارزش سنگ‌ها", Invoice.Charges.Stones),
+    }.Where(charge => charge.Item2 != 0).ToArray();
+
+    private IEnumerable<(string Label, decimal Amount, bool Emphasized)> Totals
+    {
+        get
+        {
+            yield return ("جمع اقلام", Invoice.Subtotal, false);
+            if (Invoice.Discount != 0)
+                yield return ("تخفیف", -Invoice.Discount, false);
+            if (Invoice.ExtraCost != 0)
+                yield return ("هزینه اضافی", Invoice.ExtraCost, false);
+            yield return ("مبلغ نهایی فاکتور", Invoice.Total, true);
+            if (IsSale && Invoice.UsedGoldAmount != 0)
+                yield return ("ارزش طلای دریافتی", Invoice.UsedGoldAmount, false);
+            if (Invoice.Received != 0)
+                yield return ("دریافت از مشتری", Invoice.Received, false);
+            if (Invoice.Paid != 0)
+                yield return ("پرداخت به مشتری", Invoice.Paid, false);
+        }
+    }
+}

@@ -176,6 +176,7 @@
                                 <td>
                                     <div class="invoice-actions">
                                         <button type="button" class="is-print" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                        <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-enhance-nav="false" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber"><ShellIcon Name="file" /> چاپ جدید</a>
                                         <button type="button" class="is-edit" title="ویرایش فاکتور" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
                                         <button type="button" class="is-danger" title="حذف فاکتور" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
                                     </div>
@@ -218,6 +219,7 @@
                             <button type="button" class="invoice-card-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")" @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /> @(invoice.ShowDetails ? "بستن جزئیات" : "جزئیات و مانده مشتری")</button>
                             <div class="invoice-actions">
                                 <button type="button" class="is-print" title="چاپ" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
+                                <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-enhance-nav="false" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber"><ShellIcon Name="file" /> چاپ جدید</a>
                                 <button type="button" class="is-edit" title="ویرایش" aria-label="ویرایش فاکتور @invoice.InvoiceNumber" @onclick="() => OnEditInvoice(invoice)"><ShellIcon Name="edit" /></button>
                                 <button type="button" class="is-danger" title="حذف" aria-label="حذف فاکتور @invoice.InvoiceNumber" @onclick="() => OnRemoveInvoice(invoice)"><ShellIcon Name="trash" /></button>
                             </div>

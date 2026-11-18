@@ -143,6 +143,7 @@ public static class ClientRoutes
         public const string MoltenGoldDesk = $"{InvoicesPrefix}/molten-gold";
         public const string Create = $"{InvoicesPrefix}/create";
         public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}/{{invoiceType}}";
+        public const string PrintPreview = $"{InvoicesPrefix}/print/{{id:guid}}";
     }
 
     public static class Reporting

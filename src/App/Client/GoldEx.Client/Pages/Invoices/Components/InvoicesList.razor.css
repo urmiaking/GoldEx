@@ -262,3 +262,31 @@
 .invoice-actions button.is-danger { --invoice-accent:var(--mud-palette-error); }
 .invoice-actions button:not(:disabled):hover { background:color-mix(in srgb,var(--invoice-accent) 18%,var(--mud-palette-surface)); border-color:color-mix(in srgb,var(--invoice-accent) 45%,var(--mud-palette-lines-default)); }
 .invoice-actions button:focus-visible { outline:2px solid var(--invoice-accent); outline-offset:2px; }
+
+.invoice-print-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 33px;
+    padding-inline: 8px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 34%, var(--mud-palette-lines-default));
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 10%, var(--mud-palette-surface));
+    color: var(--mud-palette-text-primary);
+    font-size: .75rem;
+}
+
+.invoice-print-preview:hover {
+    background: color-mix(in srgb, var(--mud-palette-primary) 20%, var(--mud-palette-surface));
+    color: var(--mud-palette-text-primary);
+}
+
+.invoice-print-preview:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+@media (max-width: 959px) {
+    .invoice-card-footer { flex-wrap: wrap; }
+    .invoice-print-preview { min-height: 35px; }
+}

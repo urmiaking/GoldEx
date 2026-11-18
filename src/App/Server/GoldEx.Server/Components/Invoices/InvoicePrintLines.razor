@@ -1,0 +1,85 @@
+@using GoldEx.Server.Application.Reporting
+@using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
+
+@if (Lines.Count > 0)
+{
+    <section class="invoice-section" aria-label="@Title">
+        <h2>@Title</h2>
+        <table class="invoice-table invoice-lines" role="table">
+            <thead role="rowgroup">
+                <tr role="row">
+                    <th scope="col" role="columnheader" class="line-index">ردیف</th>
+                    <th scope="col" role="columnheader" class="line-name">شرح کالا</th>
+                    <th scope="col" role="columnheader" class="line-quantity">تعداد / مقدار</th>
+                    <th scope="col" role="columnheader" class="line-weight">وزن کل</th>
+                    <th scope="col" role="columnheader" class="line-fineness">عیار</th>
+                    <th scope="col" role="columnheader" class="line-total">مبلغ کل <small>(@Unit)</small></th>
+                </tr>
+            </thead>
+            <tbody role="rowgroup">
+                @for (var index = 0; index < Lines.Count; index++)
+                {
+                    var item = Lines[index];
+                    <tr role="row">
+                        <td class="line-index" role="cell"><span>@Number(index + 1)</span></td>
+                        <td class="line-name" role="cell">
+                            <strong>@(string.IsNullOrWhiteSpace(item.Name) ? "طلا" : item.Name)</strong>
+                            <div class="line-details">
+                                @if (item.ProductType is { } type)
+                                {
+                                    <small>@type.GetDisplayName()</small>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.Barcode))
+                                {
+                                    <small>بارکد <bdi dir="ltr">@Digits(item.Barcode)</bdi></small>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.AssayNumber))
+                                {
+                                    <small>انگ <bdi>@Digits(item.AssayNumber)</bdi></small>
+                                }
+                                @if (item.MintYear is >= 623 and <= 9999)
+                                {
+                                    <small>ضرب @(Date(new DateOnly(item.MintYear.Value, 3, 21))[..4])</small>
+                                }
+                            </div>
+                        </td>
+                        <td class="line-quantity" role="cell">
+                            <span class="mobile-label" aria-hidden="true">مقدار</span>
+                            <bdi dir="ltr">@Number(item.Quantity)</bdi> @(item.QuantityUnit ?? "عدد")
+                        </td>
+                        <td class="line-weight" role="cell">
+                            <span class="mobile-label" aria-hidden="true">وزن کل</span>
+                            @if (item.Weight is { } weight)
+                            {
+                                <bdi dir="ltr">@Number(weight)</bdi><span class="weight-unit">@item.WeightUnit?.GetDisplayName()</span>
+                            }
+                            else { <span class="empty-value">—</span> }
+                        </td>
+                        <td class="line-fineness" role="cell">
+                            <span class="mobile-label" aria-hidden="true">عیار</span>
+                            @if (item.Fineness is > 0)
+                            {
+                                <bdi dir="ltr">@Number(item.Fineness.Value)</bdi>
+                            }
+                            else { <span class="empty-value">—</span> }
+                            @if (item.FinenessDeduction is { } deduction && deduction != 0)
+                            {
+                                <small>کسری <bdi dir="ltr">@Number(deduction)</bdi></small>
+                            }
+                        </td>
+                        <td class="line-total" role="cell">
+                            <span class="mobile-label" aria-hidden="true">مبلغ کل</span>
+                            <span class="line-total-value"><bdi dir="ltr">@Number(item.Total)</bdi><span class="mobile-unit">@Unit</span></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+    [Parameter, EditorRequired] public string Unit { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<InvoicePrintLine> Lines { get; set; } = default!;
+}
