@@ -24,7 +24,9 @@ public sealed record InvoicePrintDocument(
     decimal? SecondaryRemaining,
     string? SecondaryUnit,
     InvoicePrintCharges Charges,
-    InvoicePrintGoldRate? GoldRate = null);
+    InvoicePrintGoldRate? GoldRate = null,
+    decimal? PreviousRemaining = null,
+    decimal? PreviousSecondaryRemaining = null);
 
 public sealed record InvoicePrintCharges(
     IReadOnlyList<decimal> ProfitRates,

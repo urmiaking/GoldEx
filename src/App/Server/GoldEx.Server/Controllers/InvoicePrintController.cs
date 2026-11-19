@@ -37,7 +37,7 @@ public sealed class InvoicePrintController(
         if (store.StoreId is not { } storeId)
             return Results.Forbid();
 
-        var invoice = await invoices.GetPrintDocumentAsync(id, cancellationToken);
+        var invoice = await invoices.GetPrintDocumentAsync(id, includePreviousBalance: true, cancellationToken);
         if (invoice is null)
             return Results.NotFound();
 
@@ -61,7 +61,7 @@ public sealed class InvoicePrintController(
             return Results.NotFound();
 
         store.SetStore(share.StoreId, storeSlug);
-        var invoice = await invoices.GetPrintDocumentAsync(share.InvoiceId, cancellationToken);
+        var invoice = await invoices.GetPrintDocumentAsync(share.InvoiceId, includePreviousBalance: false, cancellationToken);
         if (invoice is null)
             return Results.NotFound();
 

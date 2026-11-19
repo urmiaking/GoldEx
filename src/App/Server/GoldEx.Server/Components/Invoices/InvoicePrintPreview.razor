@@ -164,16 +164,33 @@
                                 <dt>@label</dt><dd><bdi dir="ltr">@Amount(amount, Invoice.Unit)</bdi> @Invoice.Unit</dd>
                             </div>
                         }
+                        @if (!IsShared && Invoice.PreviousRemaining is { } previous)
+                        {
+                            <div class="invoice-previous-balance">
+                                <dt>مانده قبلی مشتری</dt>
+                                <dd>
+                                    <bdi dir="ltr">@Amount(Math.Abs(previous), Invoice.Unit)</bdi> @Invoice.Unit
+                                    @if (previous != 0)
+                                    {
+                                        <small>@(previous > 0 ? "بدهکار" : "بستانکار")</small>
+                                    }
+                                    @if (Invoice.PreviousSecondaryRemaining is { } previousEquivalent && !string.IsNullOrWhiteSpace(Invoice.SecondaryUnit))
+                                    {
+                                        <small class="invoice-balance-equivalent">(<bdi dir="ltr">@Amount(Math.Abs(previousEquivalent), Invoice.SecondaryUnit)</bdi> @Invoice.SecondaryUnit)</small>
+                                    }
+                                </dd>
+                            </div>
+                        }
                     </dl>
                     <div class="invoice-remaining @(Invoice.Remaining == 0 ? "is-settled" : null)">
                         <span>@RemainingLabel</span>
                         <div class="amount">
-                            @if (Invoice.Remaining != 0)
+                            @if (Invoice.Remaining != 0 || Invoice.SecondaryRemaining.HasValue)
                             {
                                 <strong><bdi dir="ltr">@Amount(Math.Abs(Invoice.Remaining), Invoice.Unit)</bdi> @Invoice.Unit</strong>
                                 @if (Invoice.SecondaryRemaining is { } equivalent && !string.IsNullOrWhiteSpace(Invoice.SecondaryUnit))
                                 {
-                                    <small>معادل <bdi dir="ltr">@Amount(Math.Abs(equivalent), Invoice.SecondaryUnit)</bdi> @Invoice.SecondaryUnit</small>
+                                    <small class="invoice-balance-equivalent">(<bdi dir="ltr">@Amount(Math.Abs(equivalent), Invoice.SecondaryUnit)</bdi> @Invoice.SecondaryUnit)</small>
                                 }
                             }
                         </div>

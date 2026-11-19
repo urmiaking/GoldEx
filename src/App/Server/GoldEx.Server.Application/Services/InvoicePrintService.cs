@@ -39,7 +39,7 @@ internal class InvoicePrintService(
         storeRepository.Get(new StoresByIdsSpecification([new StoreId(storeId)]))
             .AsNoTracking().Select(store => (string?)store.Slug).FirstOrDefaultAsync(cancellationToken);
 
-    public async Task<InvoicePrintDocument?> GetPrintDocumentAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<InvoicePrintDocument?> GetPrintDocumentAsync(Guid id, bool includePreviousBalance, CancellationToken cancellationToken = default)
     {
         var invoice = await invoiceRepository.Get(new InvoicesByIdSpecification(new InvoiceId(id)))
             .AsNoTracking()
@@ -98,17 +98,34 @@ internal class InvoicePrintService(
         var customer = new InvoicePrintParty(invoice.Customer?.FullName ?? "مشتری", invoice.Customer?.PhoneNumber,
             invoice.Customer?.Address, invoice.Customer?.NationalId);
         var remaining = invoice.TotalUnpaidAmount;
+        var secondaryUnit = invoice.UnpaidPriceUnit;
+        var secondaryRate = secondaryUnit is not null && secondaryUnit.Id != invoice.PriceUnitId &&
+            invoice.UnpaidAmountExchangeRate is > 0 ? invoice.UnpaidAmountExchangeRate : null;
+        decimal? previousRemaining = null;
+        if (includePreviousBalance && invoice.PriceUnit is { } mainUnit)
+        {
+            var balances = await GetPreviousBalancesAsync(invoice, mainUnit.Id, cancellationToken);
+            previousRemaining = balances.GetValueOrDefault(mainUnit);
+        }
+
         return new InvoicePrintDocument(
             invoice.InvoiceNumber, invoice.InvoiceType, invoice.TradeScale, invoice.InvoiceDate, invoice.DueDate,
             customer, unit, items, usedGold, payments,
             invoice.TotalAmount, invoice.TotalDiscountAmount, invoice.TotalExtraCostAmount,
             invoice.TotalAmountWithDiscountsAndExtraCosts, invoice.TotalUsedProductsAmount,
             invoice.TotalReceivedFromCustomerAmount, invoice.TotalPaidToCustomerAmount, remaining,
-            invoice.UnpaidPriceUnit is null ? null : remaining * invoice.UnpaidAmountExchangeRate,
-            invoice.UnpaidPriceUnit?.Title,
+            remaining * secondaryRate,
+            secondaryUnit?.Title,
             GetPrintCharges(invoice),
-            GetPrintGoldRate(invoice, productItems, usedProducts));
+            GetPrintGoldRate(invoice, productItems, usedProducts),
+            previousRemaining,
+            previousRemaining * secondaryRate);
     }
+
+    private Task<Dictionary<PriceUnit, decimal>> GetPreviousBalancesAsync(Invoice invoice, PriceUnitId? priceUnitId,
+        CancellationToken cancellationToken) =>
+        transactionRepository.GetCustomerRemainingListAsync(invoice.CustomerId, priceUnitId,
+            invoice.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(invoice.CreatedAt.TimeOfDay)), cancellationToken: cancellationToken);
 
     private static InvoicePrintWage? GetPrintWage(InvoiceProductItem item, InvoiceType invoiceType, string invoiceUnit)
     {
@@ -232,10 +249,7 @@ internal class InvoicePrintService(
         var impact = unpaid * (item.InvoiceType == InvoiceType.Sell ? 1m : -1m); // Sell: + (بدهکار مثبت), Purchase: - (بستانکار منفی)
 
         // مانده قبلی (قبل از CreatedAt)
-        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId,
-            null,
-            item.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(item.CreatedAt.TimeOfDay)),
-            cancellationToken: cancellationToken);
+        var previousRemaining = await GetPreviousBalancesAsync(item, null, cancellationToken);
 
         decimal? exchangeRate = null;
 
