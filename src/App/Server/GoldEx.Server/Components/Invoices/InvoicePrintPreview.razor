@@ -51,35 +51,35 @@
                         </ul>
                     }
                 </div>
-                @if (ShareUrl is not null && QrImage is not null)
-                {
-                    <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
-                        <img src="@QrImage" width="90" height="90" alt="کد QR نسخهٔ مشتری" />
-                    </a>
-                }
-            </div>
-            <div class="invoice-header-details">
-                <InvoicePrintCounterparty Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
-                <div class="invoice-reference">
-                    <div class="invoice-reference-number">
+                <div class="invoice-header-tools">
+                    <div class="invoice-reference">
                         <h1>@Title</h1>
                         <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
                     </div>
-                    <dl class="invoice-meta">
-                        <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
-                        @if (Invoice.DueDate is { } dueDate)
-                        {
-                            <div><dt>سررسید</dt><dd><bdi dir="ltr">@Date(dueDate)</bdi></dd></div>
-                        }
-                        @if (Invoice.GoldRate is { } rate)
-                        {
-                            <div>
-                                <dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt>
-                                <dd><bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi> تومان</dd>
-                            </div>
-                        }
-                    </dl>
+                    @if (ShareUrl is not null && QrImage is not null)
+                    {
+                        <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
+                            <img src="@QrImage" width="90" height="90" alt="کد QR نسخهٔ مشتری" />
+                        </a>
+                    }
                 </div>
+            </div>
+            <div class="invoice-header-details">
+                <InvoicePrintCounterparty Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
+                <dl class="invoice-meta">
+                    <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
+                    @if (Invoice.DueDate is { } dueDate)
+                    {
+                        <div><dt>سررسید</dt><dd><bdi dir="ltr">@Date(dueDate)</bdi></dd></div>
+                    }
+                    @if (Invoice.GoldRate is { } rate)
+                    {
+                        <div>
+                            <dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt>
+                            <dd><bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi> تومان</dd>
+                        </div>
+                    }
+                </dl>
             </div>
         </header>
 
