@@ -103,8 +103,10 @@
                     </tr>
                 }
                 <tr role="row">
-                    <th scope="row" colspan="6" role="rowheader">@SubtotalLabel</th>
-                    <td class="line-total" role="cell"><bdi dir="ltr">@Amount(Subtotal, Unit)</bdi><span class="mobile-unit">@Unit</span></td>
+                    <td class="line-subtotal" colspan="7" role="cell">
+                        @SubtotalLabel
+                        <span class="line-total-value"><bdi dir="ltr">@Amount(Subtotal, Unit)</bdi><span class="mobile-unit">@Unit</span></span>
+                    </td>
                 </tr>
             </tfoot>
         </table>
@@ -117,6 +119,6 @@
     [Parameter, EditorRequired] public string Unit { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyList<InvoicePrintLine> Lines { get; set; } = default!;
     [Parameter, EditorRequired] public decimal Subtotal { get; set; }
-    [Parameter] public string SubtotalLabel { get; set; } = "جمع اقلام";
+    [Parameter] public string SubtotalLabel { get; set; } = "جمع کل";
     [Parameter] public decimal StoneAmount { get; set; }
 }

@@ -177,6 +177,7 @@ strong { font-weight: 500; }
 .invoice-brand img {
     object-fit: contain;
     flex: none;
+    scale: 1.12;
     padding: 6px;
     background: #fff9eb;
     border: 1px solid #e2bc72;
@@ -190,6 +191,7 @@ strong { font-weight: 500; }
     gap: 2px 14px;
     margin: 3px 0 0;
     padding: 0;
+    translate: 0 2px;
     list-style: none;
     font-size: .86em;
 }
@@ -314,6 +316,8 @@ strong { font-weight: 500; }
 .line-details small::before { content: '·'; margin-inline: .45em; }
 .weight-unit { margin-inline-start: .24em; }
 .line-total-value { display: inline-block; padding: 3px 6px; border: 1px solid #dcccaa; border-radius: 5px; color: var(--deep); background: #fbf1d9; font-weight: 500; }
+.invoice-table .line-subtotal { text-align: end; }
+.line-subtotal .line-total-value { margin-inline-start: .55em; }
 .empty-value { color: var(--muted); }
 .mobile-unit, .mobile-label { display: none; }
 
@@ -440,6 +444,7 @@ strong { font-weight: 500; }
     .invoice-lines :is(.line-quantity, .line-weight, .line-fineness, .line-wage) { text-align: start; }
     .invoice-lines tbody .line-total { grid-column: 3 / -1; display: flex; justify-content: space-between; align-items: center; gap: 6px; border-block-start: 1px solid var(--rule); }
     .invoice-lines tfoot tr { display: flex; justify-content: space-between; align-items: baseline; }
+    .invoice-lines tfoot .line-subtotal { width: 100%; }
     .mobile-unit { display: inline; margin-inline-start: .3em; }
     .mobile-label { display: block; color: var(--muted); font-size: .82em; }
     .invoice-payments + .invoice-totals { margin-block-start: 9px; }
