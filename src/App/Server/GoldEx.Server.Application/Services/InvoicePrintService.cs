@@ -90,14 +90,6 @@ internal class InvoicePrintService(
                 x.CheckPayment is null ? null : DateOnly.FromDateTime(x.CheckPayment.DueDate),
                 x.GoldFineness, x.CoinInstance?.Coin?.Title, x.CoinQuantity)).ToArray() ?? [];
 
-        var goldRates = invoice.ProductItems
-            .Where(x => x.Product is not null)
-            .Select(x => new InvoicePrintGoldRate(x.GramPrice, x.Product!.GoldUnitType))
-            .Concat(invoice.UsedProducts.Select(x => new InvoicePrintGoldRate(x.GramPrice, x.UnitType)))
-            .Where(rate => rate.Amount > 0)
-            .Distinct()
-            .Take(2)
-            .ToArray();
         var customer = new InvoicePrintParty(invoice.Customer?.FullName ?? "مشتری", invoice.Customer?.PhoneNumber,
             invoice.Customer?.Address, invoice.Customer?.NationalId);
         var remaining = invoice.TotalUnpaidAmount;
@@ -110,7 +102,32 @@ internal class InvoicePrintService(
             invoice.UnpaidPriceUnit is null ? null : remaining * invoice.UnpaidAmountExchangeRate,
             invoice.UnpaidPriceUnit?.Title,
             GetPrintCharges(invoice),
-            goldRates.Length == 1 ? ConvertGoldRateToToman(invoice, goldRates[0]) : null);
+            GetPrintGoldRate(invoice));
+    }
+
+    private static InvoicePrintGoldRate? GetPrintGoldRate(Invoice invoice)
+    {
+        var rates = invoice.ProductItems
+            .Where(item => item.GramPrice > 0 && item.Product is not null)
+            .Select(item => new InvoicePrintGoldRate(item.GramPrice, item.Product!.GoldUnitType))
+            .ToArray();
+        if (rates.Length == 0)
+        {
+            rates = invoice.UsedProducts
+                .Where(item => item.GramPrice > 0)
+                .Select(item => new InvoicePrintGoldRate(item.GramPrice, item.UnitType))
+                .ToArray();
+        }
+
+        var group = rates.GroupBy(rate => rate.Unit)
+            .OrderBy(rateGroup => rateGroup.Key)
+            .FirstOrDefault();
+        if (group is null)
+            return null;
+
+        var minimum = group.Min(rate => rate.Amount);
+        var maximum = group.Max(rate => rate.Amount);
+        return ConvertGoldRateToToman(invoice, new(minimum, group.Key, maximum > minimum ? maximum : null));
     }
 
     private static InvoicePrintGoldRate? ConvertGoldRateToToman(Invoice invoice, InvoicePrintGoldRate rate)
@@ -121,13 +138,13 @@ internal class InvoicePrintService(
         if (invoice.ExchangeRate is > 0 and var exchangeRate)
         {
             if (invoice.BasePriceUnit?.UnitType == UnitType.TMN || invoice.BasePriceUnit?.Title == "تومان")
-                return rate with { Amount = rate.Amount * exchangeRate };
+                return rate with { Amount = rate.Amount * exchangeRate, MaximumAmount = rate.MaximumAmount * exchangeRate };
             if (invoice.BasePriceUnit?.UnitType == UnitType.IRR || invoice.BasePriceUnit?.Title == "ریال")
-                return rate with { Amount = rate.Amount * exchangeRate / 10m };
+                return rate with { Amount = rate.Amount * exchangeRate / 10m, MaximumAmount = rate.MaximumAmount * exchangeRate / 10m };
         }
 
         return invoice.PriceUnit?.UnitType == UnitType.IRR || invoice.PriceUnit?.Title == "ریال"
-            ? rate with { Amount = rate.Amount / 10m }
+            ? rate with { Amount = rate.Amount / 10m, MaximumAmount = rate.MaximumAmount / 10m }
             : null;
     }
 
@@ -144,7 +161,7 @@ internal class InvoicePrintService(
             .Concat(invoice.CurrencyItems.Select(item => item.TaxPercent))
             .Distinct().Order().ToArray();
 
-        return new InvoicePrintCharges(invoice.TotalWageAmount, profitRates, taxRates, invoice.TotalStoneAmount);
+        return new InvoicePrintCharges(profitRates, taxRates, invoice.TotalStoneAmount);
     }
 
     private async Task<GetInvoiceDetailResponse> GetInvoiceDetailAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default)

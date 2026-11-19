@@ -32,7 +32,30 @@
             <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
             <div class="invoice-brand">
                 <img src="@LogoUrl" width="56" height="56" alt="" />
-                <p class="invoice-store">@StoreName</p>
+                <div class="invoice-brand-info">
+                    <p class="invoice-store">@StoreName</p>
+                    <dl class="invoice-meta">
+                        <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
+                        @if (Invoice.DueDate is { } dueDate)
+                        {
+                            <div><dt>سررسید</dt><dd><bdi dir="ltr">@Date(dueDate)</bdi></dd></div>
+                        }
+                        @if (Invoice.GoldRate is { } rate)
+                        {
+                            <div class="invoice-meta-rate">
+                                <dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt>
+                                <dd>
+                                    <bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi>
+                                    @if (rate.MaximumAmount is { } maximum)
+                                    {
+                                        <text> تا </text><bdi dir="ltr">@Amount(maximum, "تومان")</bdi>
+                                    }
+                                    تومان
+                                </dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
             </div>
             <div class="invoice-header-tools">
                 <div class="invoice-reference">
@@ -48,20 +71,6 @@
             </div>
         </header>
 
-        <dl class="invoice-meta">
-            <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
-            @if (Invoice.DueDate is { } dueDate)
-            {
-                <div><dt>سررسید</dt><dd><bdi dir="ltr">@Date(dueDate)</bdi></dd></div>
-            }
-            <div><dt>نوع معامله</dt><dd>@Invoice.Scale.GetDisplayName()</dd></div>
-            <div><dt>واحد فاکتور</dt><dd>@Invoice.Unit</dd></div>
-            @if (Invoice.GoldRate is { } rate)
-            {
-                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi> تومان</dd></div>
-            }
-        </dl>
-
         <div class="invoice-body">
             <section class="invoice-parties" aria-label="طرف‌های معامله">
                 <InvoicePrintPartyCard Role="@(IsSale ? "فروشنده" : "خریدار")" Party="@StoreParty" IsStore="true" />
@@ -71,7 +80,7 @@
             <InvoicePrintLines Title="اقلام فاکتور" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
             <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit" Lines="@Invoice.UsedGold" />
 
-            <div class="invoice-closing">
+            <div class="invoice-closing @(IsWholesaleSale ? "is-wholesale" : null)">
                 @if (Invoice.Payments.Count > 0)
                 {
                     <section class="invoice-section invoice-payments">
@@ -115,13 +124,8 @@
                         </table>
                     </section>
                 }
-                <section class="invoice-totals" aria-labelledby="invoice-totals-title">
-                    <h2 id="invoice-totals-title">جمع‌بندی فاکتور</h2>
+                <section class="invoice-totals" aria-label="جمع‌بندی فاکتور">
                     <dl class="invoice-summary">
-                        @foreach (var (label, value) in GetChargeDisplay())
-                        {
-                            <div class="invoice-summary-charge"><dt>@label</dt><dd>@value</dd></div>
-                        }
                         @foreach (var (label, amount, emphasized) in Totals)
                         {
                             <div class="@(emphasized ? "invoice-total-final" : null)">
@@ -142,38 +146,28 @@
                             }
                         </div>
                     </div>
-                </section>
-
-                <footer class="invoice-footer">
-                    @if (IsWholesaleSale)
-                    {
-                        <section class="invoice-terms">
-                            <h2>شرایط تحویل امانی</h2>
-                            <p>کلیهٔ طلاجات مندرج در این قبض جهت بازاریابی به اینجانب @Invoice.Customer.Name به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم، بهای آن را علاوه بر اجرت نقداً به @StoreName بپردازم و مابقی اجناس را عندالمطالبه مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمهٔ اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره به عمل آید، ضامن و مسئول پاسخگو هستم.</p>
-                        </section>
-                    }
-                    else if (IsSale && Invoice.Items.Any(item => item.ProductType.HasValue))
-                    {
-                        <section class="invoice-terms">
-                            <h2>شرایط فروش</h2>
-                            <p>
-                                @if (Invoice.Charges.ProfitRates.Count > 0)
-                                {
-                                    <text>سود فروشنده @FormatRates(Invoice.Charges.ProfitRates) است.</text>
-                                }
-                                @if (Invoice.Charges.TaxRates.Count > 0)
-                                {
-                                    <text> مالیات ارزش افزوده با نرخ @FormatRates(Invoice.Charges.TaxRates) محاسبه شده است.</text>
-                                }
-                                در زمان فروش مجدد، کالا با ارائهٔ فاکتور و به نرخ روز خریداری می‌شود. اجناس فروخته‌شده بدون علت پس گرفته نمی‌شود.
-                            </p>
-                        </section>
-                    }
                     <div class="invoice-signatures" aria-label="محل امضا">
                         <span>@StoreSignature</span>
                         <span>@CustomerSignature</span>
                     </div>
-                </footer>
+                </section>
+
+                @if (IsWholesaleSale)
+                {
+                    <footer class="invoice-terms">
+                        <h2>شرایط تحویل امانی</h2>
+                        <p>کلیهٔ طلاجات مندرج در این قبض جهت بازاریابی به اینجانب @Invoice.Customer.Name به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم، بهای آن را علاوه بر اجرت نقداً به @StoreName بپردازم و مابقی اجناس را عندالمطالبه مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمهٔ اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره به عمل آید، ضامن و مسئول پاسخگو هستم.</p>
+                    </footer>
+                }
+                else if (IsSale && Invoice.Items.Any(item => item.ProductType.HasValue))
+                {
+                    <footer class="invoice-terms" aria-label="شرایط فروش">
+                        <ul class="invoice-sale-terms">
+                            <li>@RetailSaleTerms</li>
+                            <li>اجناس فروخته شده بدون علت پس گرفته نمی‌شود.</li>
+                        </ul>
+                    </footer>
+                }
             </div>
             <div class="invoice-endmark"><span class="invoice-wordmark" dir="ltr">GoldEx</span></div>
         </div>
@@ -200,13 +194,14 @@
     private string RemainingLabel => Invoice.Remaining == 0 ? "تسویه کامل" :
         IsSale == (Invoice.Remaining > 0) ? "مانده دریافت از مشتری" : "مانده پرداخت به مشتری";
 
-    private IEnumerable<(string Label, string Value)> GetChargeDisplay()
+    private string RetailSaleTerms
     {
-        var charges = Invoice.Charges;
-        if (charges.Wage != 0)
-            yield return ("جمع اجرت", $"{Amount(charges.Wage, Invoice.Unit)} {Invoice.Unit}");
-        if (charges.Stones != 0)
-            yield return ("ارزش سنگ‌ها", $"{Amount(charges.Stones, Invoice.Unit)} {Invoice.Unit}");
+        get
+        {
+            var profit = Invoice.Charges.ProfitRates.Count > 0 ? $" و سود {FormatRates(Invoice.Charges.ProfitRates)}" : "";
+            var tax = Invoice.Charges.TaxRates.Count > 0 ? $" و مالیات ارزش افزوده {FormatRates(Invoice.Charges.TaxRates)} از اجرت و سود" : "";
+            return $"اجناس فوق با اجرت مشخص{profit}{tax} عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.";
+        }
     }
 
     private static string FormatRates(IReadOnlyList<decimal> rates) => string.Join("، ", rates.Select(rate => $"{Number(rate)}٪"));
@@ -215,6 +210,8 @@
     {
         get
         {
+            if (Invoice.Charges.Stones != 0)
+                yield return ("ارزش سنگ‌ها", Invoice.Charges.Stones, false);
             yield return ("جمع اقلام", Invoice.Subtotal, false);
             if (Invoice.Discount != 0)
                 yield return ("تخفیف", -Invoice.Discount, false);

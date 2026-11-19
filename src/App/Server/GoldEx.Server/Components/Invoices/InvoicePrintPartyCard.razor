@@ -31,7 +31,7 @@
             {
                 <div class="invoice-party-address">
                     <dt>نشانی</dt>
-                    <dd>@Digits(Party.Address)</dd>
+                    <dd title="@(IsStore ? Digits(Party.Address) : null)">@Digits(Party.Address)</dd>
                 </div>
             }
         </dl>
