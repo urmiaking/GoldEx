@@ -18,10 +18,6 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         var take = filter.Take ?? 100;
         ApplyPaging(skip, take);
 
-        // --- Includes ---
-        AddInclude(x => x.Customer!);
-        AddInclude(x => x.PriceUnit!);
-
         // --- Main Filtering Logic ---
 
         // Apply customer filter if provided
@@ -145,6 +141,8 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         {
             ApplySorting(nameof(Invoice.CreatedAt), SortDirection.Descending);
         }
+
+        ApplyOrderByDescending(x => x.Id);
     }
 }
 

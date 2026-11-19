@@ -70,6 +70,7 @@ public partial class InvoicesList
     private string _sortLabel = "CreatedAt";
     private Sdk.Common.Definitions.SortDirection _sortDirection = Sdk.Common.Definitions.SortDirection.Descending;
     private List<InvoiceListVm> _invoices = [];
+    private int _loadVersion;
 
     private InvoicePaymentStatus? _invoicePaymentStatus;
     private InvoiceType? _invoiceType;
@@ -122,6 +123,7 @@ public partial class InvoicesList
 
     private async Task LoadInvoicesAsync()
     {
+        var loadVersion = ++_loadVersion;
         _loading = true;
         _loadFailed = false;
         // Let the skeleton render before awaiting the server request; otherwise
@@ -131,6 +133,9 @@ public partial class InvoicesList
 
         try
         {
+            if (loadVersion != _loadVersion)
+                return;
+
             var filter = new RequestFilter(_pageIndex * _pageSize, _pageSize, _searchString,
                 _sortLabel, _sortDirection);
             var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale,
@@ -140,12 +145,22 @@ public partial class InvoicesList
                 action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
                 afterSend: response =>
                 {
+                    if (loadVersion != _loadVersion)
+                        return;
+
                     _invoices = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
                     _totalItems = response.Total;
                 },
-                onFailure: () => { _loadFailed = true; },
+                onFailure: () =>
+                {
+                    if (loadVersion == _loadVersion)
+                        _loadFailed = true;
+                },
                 createScope: true,
                 cancelPrevious: true);
+            if (loadVersion != _loadVersion)
+                return;
+
             if (!_loadFailed && _pageIndex >= PageCount)
             {
                 _pageIndex = PageCount - 1;
@@ -156,8 +171,11 @@ public partial class InvoicesList
         }
         finally
         {
-            _loading = false;
-            StateHasChanged();
+            if (loadVersion == _loadVersion)
+            {
+                _loading = false;
+                StateHasChanged();
+            }
         }
     }
 

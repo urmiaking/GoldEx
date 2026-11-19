@@ -239,20 +239,41 @@ internal class InvoiceService(
             customerId.HasValue ? new CustomerId(customerId.Value) : null
         );
 
-        var data = await invoiceRepository
+        // Resolve the ordered page once. Split loading the invoice details by ID avoids
+        // repeating the name/product search and pagination for every child collection.
+        var pageIds = await invoiceRepository
             .Get(spec)
             .AsNoTracking()
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product)
-            .Include(x => x.UsedProducts)
-            .Include(x => x.InvoicePayments)
-            .ToListAsync(cancellationToken);
+            .Select(x => x.Id)
+            .ToArrayAsync(cancellationToken);
 
-        var totalCount = await invoiceRepository.CountAsync(spec, cancellationToken);
+        var totalCount = pageIds.Length < take && (skip == 0 || pageIds.Length > 0)
+            ? skip + pageIds.Length
+            : await invoiceRepository.CountAsync(spec, cancellationToken);
+
+        List<GetInvoiceListResponse> data = [];
+        if (pageIds.Length > 0)
+        {
+            var invoicesById = await invoiceRepository
+                .Get(new InvoicesByIdsSpecification(pageIds))
+                .AsNoTracking()
+                .IgnoreAutoIncludes()
+                .Include(x => x.Customer)
+                .Include(x => x.PriceUnit)
+                .Include(x => x.UnpaidPriceUnit)
+                .Include(x => x.InvoicePayments)
+                .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+            foreach (var id in pageIds)
+            {
+                if (invoicesById.TryGetValue(id, out var invoice))
+                    data.Add(mapper.Map<GetInvoiceListResponse>(invoice));
+            }
+        }
 
         return new PagedList<GetInvoiceListResponse>
         {
-            Data = mapper.Map<List<GetInvoiceListResponse>>(data),
+            Data = data,
             Skip = skip,
             Take = take,
             Total = totalCount
