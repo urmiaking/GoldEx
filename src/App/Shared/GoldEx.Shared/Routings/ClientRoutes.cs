@@ -144,6 +144,8 @@ public static class ClientRoutes
         public const string Create = $"{InvoicesPrefix}/create";
         public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}/{{invoiceType}}";
         public const string PrintPreview = $"{InvoicesPrefix}/print/{{id:guid}}";
+        public const string SharedPrintPrefix = $"{InvoicesPrefix}/shared";
+        public const string SharedPrint = $"{SharedPrintPrefix}/{{token}}";
     }
 
     public static class Reporting

@@ -21,8 +21,14 @@
 </head>
 <body>
     <nav class="print-toolbar" aria-label="ابزارهای چاپ">
-        <a href="@ClientRoutes.Invoices.Index">بازگشت به فاکتورها</a>
-        <button type="button" data-print-invoice hidden><ShellIcon Name="print" /> چاپ / ذخیره PDF</button>
+        @if (!IsShared)
+        {
+            <a href="@ClientRoutes.Invoices.Index">بازگشت به فاکتورها</a>
+        }
+        <div class="print-toolbar-actions">
+            <button type="button" data-print-invoice="mono" hidden><ShellIcon Name="print" /> چاپ سیاه‌وسفید</button>
+            <button type="button" data-print-invoice="color" hidden><ShellIcon Name="print" /> چاپ رنگی</button>
+        </div>
     </nav>
 
     <main class="invoice-sheet">
@@ -35,9 +41,17 @@
                     <h1>@Title</h1>
                 </div>
             </div>
-            <div class="invoice-reference">
-                <span>شماره فاکتور</span>
-                <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
+            <div class="invoice-header-tools">
+                <div class="invoice-reference">
+                    <span>شماره فاکتور</span>
+                    <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
+                </div>
+                @if (ShareUrl is not null && QrImage is not null)
+                {
+                    <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
+                        <img src="@QrImage" width="86" height="86" alt="کد QR نسخهٔ مشتری" />
+                    </a>
+                }
             </div>
         </header>
 
@@ -51,7 +65,7 @@
             <div><dt>واحد فاکتور</dt><dd>@Invoice.Unit</dd></div>
             @if (Invoice.GoldRate is { } rate)
             {
-                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Number(rate.Amount)</bdi> @Invoice.Unit</dd></div>
+                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Number(rate.Amount)</bdi> تومان</dd></div>
             }
         </dl>
 
@@ -174,6 +188,9 @@
     [Parameter, EditorRequired] public InvoicePrintDocument Invoice { get; set; } = default!;
     [Parameter] public GetSettingResponse? Setting { get; set; }
     [Parameter, EditorRequired] public string LogoUrl { get; set; } = default!;
+    [Parameter] public string? ShareUrl { get; set; }
+    [Parameter] public string? QrImage { get; set; }
+    [Parameter] public bool IsShared { get; set; }
 
     private bool IsSale => Invoice.Type == InvoiceType.Sell;
     private bool IsWholesaleSale => IsSale && Invoice.Scale == TradeScale.Wholesale;

@@ -8,4 +8,5 @@ public interface IInvoicePrintService
 {
     Task<GetInvoiceReportResponse> GetInvoiceReportAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default);
     Task<InvoicePrintDocument?> GetPrintDocumentAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<string?> GetActiveStoreSlugAsync(Guid storeId, CancellationToken cancellationToken = default);
 }

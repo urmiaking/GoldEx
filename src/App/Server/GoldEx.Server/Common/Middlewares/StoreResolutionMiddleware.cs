@@ -188,7 +188,8 @@ public class StoreResolutionMiddleware(RequestDelegate next)
         path = path.TrimEnd('/');
 
         if (path.Equals("/NoStore", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/api/Account/Logout", StringComparison.OrdinalIgnoreCase))
+            path.Equals("/api/Account/Logout", StringComparison.OrdinalIgnoreCase) ||
+            new PathString(path).StartsWithSegments(ClientRoutes.Invoices.SharedPrintPrefix))
         {
             return true;
         }

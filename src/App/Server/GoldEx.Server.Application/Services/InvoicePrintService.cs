@@ -3,9 +3,11 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Reporting;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
+using GoldEx.Server.Infrastructure.Specifications.Stores;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
@@ -20,6 +22,7 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoicePrintService(
     IInvoiceRepository invoiceRepository,
     ITransactionRepository transactionRepository,
+    IStoreRepository storeRepository,
     ISettingService settingService,
     IMapper mapper) : IInvoicePrintService
 {
@@ -32,12 +35,17 @@ internal class InvoicePrintService(
         return new GetInvoiceReportResponse(invoiceResponse, setting!);
     }
 
+    public Task<string?> GetActiveStoreSlugAsync(Guid storeId, CancellationToken cancellationToken = default) =>
+        storeRepository.Get(new StoresByIdsSpecification([new StoreId(storeId)]))
+            .AsNoTracking().Select(store => (string?)store.Slug).FirstOrDefaultAsync(cancellationToken);
+
     public async Task<InvoicePrintDocument?> GetPrintDocumentAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var invoice = await invoiceRepository.Get(new InvoicesByIdSpecification(new InvoiceId(id)))
             .AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.PriceUnit)
+            .Include(x => x.BasePriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.ProductItems).ThenInclude(x => x.Product)
             .Include(x => x.CoinItems).ThenInclude(x => x.CoinInstance).ThenInclude(x => x!.Coin)
@@ -102,7 +110,25 @@ internal class InvoicePrintService(
             invoice.UnpaidPriceUnit is null ? null : remaining * invoice.UnpaidAmountExchangeRate,
             invoice.UnpaidPriceUnit?.Title,
             GetPrintCharges(invoice),
-            goldRates.Length == 1 ? goldRates[0] : null);
+            goldRates.Length == 1 ? ConvertGoldRateToToman(invoice, goldRates[0]) : null);
+    }
+
+    private static InvoicePrintGoldRate? ConvertGoldRateToToman(Invoice invoice, InvoicePrintGoldRate rate)
+    {
+        if (invoice.PriceUnit?.UnitType == UnitType.TMN || invoice.PriceUnit?.Title == "تومان")
+            return rate;
+
+        if (invoice.ExchangeRate is > 0 and var exchangeRate)
+        {
+            if (invoice.BasePriceUnit?.UnitType == UnitType.TMN || invoice.BasePriceUnit?.Title == "تومان")
+                return rate with { Amount = rate.Amount * exchangeRate };
+            if (invoice.BasePriceUnit?.UnitType == UnitType.IRR || invoice.BasePriceUnit?.Title == "ریال")
+                return rate with { Amount = rate.Amount * exchangeRate / 10m };
+        }
+
+        return invoice.PriceUnit?.UnitType == UnitType.IRR || invoice.PriceUnit?.Title == "ریال"
+            ? rate with { Amount = rate.Amount / 10m }
+            : null;
     }
 
     private static InvoicePrintCharges GetPrintCharges(Invoice invoice)
