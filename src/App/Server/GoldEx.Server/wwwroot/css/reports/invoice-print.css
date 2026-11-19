@@ -152,7 +152,7 @@ strong { font-weight: 500; }
     padding: 19px 22px;
     overflow: hidden;
     border: 1px solid var(--gold);
-    border-radius: 11px 11px 0 0;
+    border-radius: 11px;
     background: #fbf4e0;
 }
 
@@ -201,10 +201,6 @@ strong { font-weight: 500; }
     align-items: stretch;
     gap: 12px;
     padding: 6px 12px;
-    border: 1px solid var(--rule);
-    border-block-start: 0;
-    border-radius: 0 0 9px 9px;
-    background: #fff9e9ee;
 }
 .invoice-counterparty { align-self: center; min-width: 0; }
 .invoice-counterparty-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15em .65em; }
@@ -410,7 +406,7 @@ strong { font-weight: 500; }
     .print-toolbar button, .print-toolbar a { padding-inline: 8px; font-size: .82rem; }
     .invoice-sheet { padding: 6px 6px 0; border-radius: 11px; }
     .invoice-body { padding-inline: 4px; }
-    .invoice-letterhead { --letterhead-gradient: linear-gradient(155deg, #102c25 50%, #204538f2 65%, #e6cc9269 98%); gap: 8px; padding: 8px; min-height: 0; border-radius: 6px 6px 0 0; }
+    .invoice-letterhead { --letterhead-gradient: linear-gradient(155deg, #102c25 50%, #204538f2 65%, #e6cc9269 98%); gap: 8px; padding: 8px; min-height: 0; border-radius: 6px; }
     .invoice-brand { gap: 7px; }
     .invoice-brand img { width: 36px; height: 36px; padding: 3px; border-radius: 8px; }
     .invoice-store { font-size: 1.55rem; }
@@ -421,7 +417,7 @@ strong { font-weight: 500; }
     .invoice-reference h1 { font-size: .72rem; }
     .invoice-reference strong { font-size: 1.06rem; }
     .invoice-qr img { width: 54px; height: 54px; }
-    .invoice-meta { justify-content: flex-start; padding: 5px 0 0; border-inline-start: 0; border-block-start: 1px solid var(--rule); font-size: .78em; }
+    .invoice-meta { justify-content: flex-start; padding: 0; border-inline-start: 0; font-size: .78em; }
     .invoice-meta dd { white-space: normal; }
     .payment-table thead th:first-child { width: 29%; }
     .invoice-lines, .invoice-lines tbody, .invoice-lines tfoot { display: block; }
@@ -559,7 +555,7 @@ strong { font-weight: 500; }
     html:not([data-invoice-print-mode="color"]) .invoice-panel-label { background: white; }
     html:not([data-invoice-print-mode="color"]) .invoice-table thead { background: #f1f1f1c9; color: #222; }
     html:not([data-invoice-print-mode="color"]) .invoice-table th { border-block-start: 1px solid var(--rule); }
-    html:not([data-invoice-print-mode="color"]) :is(.invoice-table tbody tr:nth-child(even), .invoice-table tfoot, .invoice-header-details, .invoice-totals, .invoice-payments, .invoice-terms, .line-index span, .line-total-value, .invoice-total-final, .invoice-remaining) { background: transparent; }
+    html:not([data-invoice-print-mode="color"]) :is(.invoice-table tbody tr:nth-child(even), .invoice-table tfoot, .invoice-totals, .invoice-payments, .invoice-terms, .line-index span, .line-total-value, .invoice-total-final, .invoice-remaining) { background: transparent; }
     html:not([data-invoice-print-mode="color"]) :is(.invoice-remaining, .invoice-brand img, .invoice-reference, .line-total-value, .invoice-signatures span) { border-color: var(--rule); }
     html:not([data-invoice-print-mode="color"]) .invoice-remaining small { color: #444; }
 }
