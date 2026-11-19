@@ -268,12 +268,21 @@
     align-items: center;
     gap: 4px;
     min-height: 33px;
-    padding-inline: 8px;
+    padding-inline: 5px;
     border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 34%, var(--mud-palette-lines-default));
     border-radius: 9px;
     background: color-mix(in srgb, var(--mud-palette-primary) 10%, var(--mud-palette-surface));
     color: var(--mud-palette-text-primary);
-    font-size: .75rem;
+}
+
+.invoice-print-preview ::deep .gex-shell-icon { width: 18px; height: 18px; }
+
+.invoice-print-badge {
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: #f6dfa4;
+    color: #563a0f;
+    font: 700 .625rem/1.2 system-ui, sans-serif;
 }
 
 .invoice-print-preview:hover {
