@@ -225,12 +225,10 @@ strong { font-weight: 500; }
 .invoice-qr:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
 
 .invoice-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    display: grid;
     align-content: center;
-    justify-content: flex-end;
-    gap: .15em 1em;
+    justify-items: start;
+    gap: .15em;
     padding-inline-start: 8px;
     border-inline-start: 1px solid var(--rule);
     text-align: start;
@@ -417,7 +415,7 @@ strong { font-weight: 500; }
     .invoice-reference h1 { font-size: .72rem; }
     .invoice-reference strong { font-size: 1.06rem; }
     .invoice-qr img { width: 54px; height: 54px; }
-    .invoice-meta { justify-content: flex-start; padding: 0; border-inline-start: 0; font-size: .78em; }
+    .invoice-meta { padding: 0; border-inline-start: 0; font-size: .78em; }
     .invoice-meta dd { white-space: normal; }
     .payment-table thead th:first-child { width: 29%; }
     .invoice-lines, .invoice-lines tbody, .invoice-lines tfoot { display: block; }
