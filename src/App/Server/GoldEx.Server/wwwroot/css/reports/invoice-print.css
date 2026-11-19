@@ -294,7 +294,8 @@ strong { font-weight: 500; }
 .invoice-table th.amount { width: 30%; }
 .payment-table:has(.invoice-balance-equivalent) th.amount { width: 43%; }
 .payment-table .invoice-balance-equivalent { display: inline-block; }
-.invoice-table thead th:first-child:not(.line-index) { width: 24%; }
+.payment-table thead th:first-child { width: 5.6em; }
+.payment-table tbody td:first-child { padding-inline: .45em; font-size: .92em; white-space: nowrap; }
 .invoice-table th.line-index { width: 6%; }
 .invoice-table th.line-name { width: 41%; }
 .invoice-table th.line-quantity { width: 10%; }
@@ -428,7 +429,6 @@ strong { font-weight: 500; }
     .invoice-qr img { width: 54px; height: 54px; }
     .invoice-meta { padding: 0; border-inline-start: 0; font-size: .78em; }
     .invoice-meta dd { white-space: normal; }
-    .payment-table thead th:first-child { width: 29%; }
     .invoice-lines, .invoice-lines tbody, .invoice-lines tfoot { display: block; }
     .invoice-lines thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     .invoice-lines tbody tr {
@@ -455,6 +455,12 @@ strong { font-weight: 500; }
     .mobile-unit { display: inline; margin-inline-start: .3em; }
     .mobile-label { display: block; color: var(--muted); font-size: .82em; }
     .invoice-payments + .invoice-totals { margin-block-start: 9px; }
+}
+
+@media screen and (601px <= width < 750px) {
+    .payment-table { font-size: .78em; }
+    .payment-table:has(.invoice-balance-equivalent) { font-size: .72em; }
+    .payment-table :is(th, td) { padding-inline: 2px; }
 }
 
 @media print, screen and (min-width: 750px) {
