@@ -292,6 +292,8 @@ strong { font-weight: 500; }
 .invoice-table tfoot :is(th, td) { font-weight: 500; }
 .invoice-table .amount, .invoice-table .line-total, .amount { text-align: end; }
 .invoice-table th.amount { width: 30%; }
+.payment-table:has(.invoice-balance-equivalent) th.amount { width: 43%; }
+.payment-table .invoice-balance-equivalent { display: inline-block; }
 .invoice-table thead th:first-child:not(.line-index) { width: 24%; }
 .invoice-table th.line-index { width: 6%; }
 .invoice-table th.line-name { width: 41%; }
@@ -337,7 +339,8 @@ strong { font-weight: 500; }
 .invoice-summary dd, .invoice-remaining .amount { text-align: end; font-variant-numeric: tabular-nums; }
 .invoice-previous-balance small { color: var(--muted); }
 .invoice-previous-balance small:not(.invoice-balance-equivalent) { margin-inline-start: .4em; }
-.invoice-balance-equivalent { display: inline-block; margin-inline-start: .25em; font-size: .88em; }
+.invoice-amount-value, .invoice-balance-equivalent { display: inline-block; white-space: nowrap; }
+.invoice-balance-equivalent { margin-inline-start: .25em; font-size: .88em; }
 .invoice-total-final { font-weight: 500; background: var(--tint); }
 .invoice-total-final dt { color: var(--ink); }
 .invoice-remaining {

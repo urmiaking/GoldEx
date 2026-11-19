@@ -131,10 +131,10 @@
                                             }
                                         </td>
                                         <td class="amount">
-                                            <bdi dir="ltr">@Amount(payment.Amount, payment.Unit)</bdi> @payment.Unit
+                                            <span class="invoice-amount-value"><bdi dir="ltr">@Amount(payment.Amount, payment.Unit)</bdi> @payment.Unit</span>
                                             @if (payment.Unit != Invoice.Unit || payment.InvoiceAmount != payment.Amount)
                                             {
-                                                <small>معادل <bdi dir="ltr">@Amount(payment.InvoiceAmount, Invoice.Unit)</bdi> @Invoice.Unit</small>
+                                                <small class="invoice-balance-equivalent">(<bdi dir="ltr">@Amount(payment.InvoiceAmount, Invoice.Unit)</bdi> @Invoice.Unit)</small>
                                             }
                                         </td>
                                     </tr>
@@ -145,11 +145,11 @@
                                 <tfoot>
                                     @if (Invoice.Received != 0)
                                     {
-                                        <tr><th scope="row" colspan="2">جمع دریافتی</th><td class="amount"><bdi dir="ltr">@Amount(Invoice.Received, Invoice.Unit)</bdi> @Invoice.Unit</td></tr>
+                                        <tr><th scope="row" colspan="2">جمع دریافتی</th><td class="amount"><span class="invoice-amount-value"><bdi dir="ltr">@Amount(Invoice.Received, Invoice.Unit)</bdi> @Invoice.Unit</span></td></tr>
                                     }
                                     @if (Invoice.Paid != 0)
                                     {
-                                        <tr><th scope="row" colspan="2">جمع پرداختی</th><td class="amount"><bdi dir="ltr">@Amount(Invoice.Paid, Invoice.Unit)</bdi> @Invoice.Unit</td></tr>
+                                        <tr><th scope="row" colspan="2">جمع پرداختی</th><td class="amount"><span class="invoice-amount-value"><bdi dir="ltr">@Amount(Invoice.Paid, Invoice.Unit)</bdi> @Invoice.Unit</span></td></tr>
                                     }
                                 </tfoot>
                             }
@@ -161,7 +161,7 @@
                         @foreach (var (label, amount, emphasized) in Totals)
                         {
                             <div class="@(emphasized ? "invoice-total-final" : null)">
-                                <dt>@label</dt><dd><bdi dir="ltr">@Amount(amount, Invoice.Unit)</bdi> @Invoice.Unit</dd>
+                                <dt>@label</dt><dd><span class="invoice-amount-value"><bdi dir="ltr">@Amount(amount, Invoice.Unit)</bdi> @Invoice.Unit</span></dd>
                             </div>
                         }
                         @if (!IsShared && Invoice.PreviousRemaining is { } previous)
@@ -169,7 +169,7 @@
                             <div class="invoice-previous-balance">
                                 <dt>مانده قبلی مشتری</dt>
                                 <dd>
-                                    <bdi dir="ltr">@Amount(Math.Abs(previous), Invoice.Unit)</bdi> @Invoice.Unit
+                                    <span class="invoice-amount-value"><bdi dir="ltr">@Amount(Math.Abs(previous), Invoice.Unit)</bdi> @Invoice.Unit</span>
                                     @if (previous != 0)
                                     {
                                         <small>@(previous > 0 ? "بدهکار" : "بستانکار")</small>
@@ -187,7 +187,7 @@
                         <div class="amount">
                             @if (Invoice.Remaining != 0 || Invoice.SecondaryRemaining.HasValue)
                             {
-                                <strong><bdi dir="ltr">@Amount(Math.Abs(Invoice.Remaining), Invoice.Unit)</bdi> @Invoice.Unit</strong>
+                                <strong class="invoice-amount-value"><bdi dir="ltr">@Amount(Math.Abs(Invoice.Remaining), Invoice.Unit)</bdi> @Invoice.Unit</strong>
                                 @if (Invoice.SecondaryRemaining is { } equivalent && !string.IsNullOrWhiteSpace(Invoice.SecondaryUnit))
                                 {
                                     <small class="invoice-balance-equivalent">(<bdi dir="ltr">@Amount(Math.Abs(equivalent), Invoice.SecondaryUnit)</bdi> @Invoice.SecondaryUnit)</small>
