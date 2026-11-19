@@ -60,7 +60,9 @@ internal class InvoicePrintService(
             return null;
 
         var unit = invoice.PriceUnit?.Title ?? "";
-        var items = invoice.ProductItems.Select(x => new InvoicePrintLine(
+        var productItems = invoice.ProductItems.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id.Value).ToArray();
+        var usedProducts = invoice.UsedProducts.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id.Value).ToArray();
+        var items = productItems.Select(x => new InvoicePrintLine(
                 x.Product?.Name ?? "کالا", x.Quantity, x.ItemFinalAmount + x.ItemStoneAmount,
                 ProductType: x.Product?.ProductType, Barcode: x.Product?.Barcode,
                 Weight: x.TotalWeight, WeightUnit: x.Product?.GoldUnitType, Fineness: x.Product?.Fineness,
@@ -75,7 +77,7 @@ internal class InvoicePrintService(
                 QuantityUnit: x.Currency?.Title)))
             .ToArray();
 
-        var usedGold = invoice.UsedProducts.Select(x => new InvoicePrintLine(
+        var usedGold = usedProducts.Select(x => new InvoicePrintLine(
             x.Description, x.Quantity, x.ItemFinalAmount,
             ProductType: x.ProductType, Barcode: x.Product?.Barcode,
             Weight: x.Weight * x.Quantity, WeightUnit: x.UnitType, Fineness: x.Product?.Fineness,
@@ -102,32 +104,21 @@ internal class InvoicePrintService(
             invoice.UnpaidPriceUnit is null ? null : remaining * invoice.UnpaidAmountExchangeRate,
             invoice.UnpaidPriceUnit?.Title,
             GetPrintCharges(invoice),
-            GetPrintGoldRate(invoice));
+            GetPrintGoldRate(invoice, productItems, usedProducts));
     }
 
-    private static InvoicePrintGoldRate? GetPrintGoldRate(Invoice invoice)
+    private static InvoicePrintGoldRate? GetPrintGoldRate(Invoice invoice,
+        IReadOnlyList<InvoiceProductItem> productItems, IReadOnlyList<InvoiceUsedProduct> usedProducts)
     {
-        var rates = invoice.ProductItems
+        var rate = productItems
             .Where(item => item.GramPrice > 0 && item.Product is not null)
             .Select(item => new InvoicePrintGoldRate(item.GramPrice, item.Product!.GoldUnitType))
-            .ToArray();
-        if (rates.Length == 0)
-        {
-            rates = invoice.UsedProducts
+            .FirstOrDefault()
+            ?? usedProducts
                 .Where(item => item.GramPrice > 0)
                 .Select(item => new InvoicePrintGoldRate(item.GramPrice, item.UnitType))
-                .ToArray();
-        }
-
-        var group = rates.GroupBy(rate => rate.Unit)
-            .OrderBy(rateGroup => rateGroup.Key)
-            .FirstOrDefault();
-        if (group is null)
-            return null;
-
-        var minimum = group.Min(rate => rate.Amount);
-        var maximum = group.Max(rate => rate.Amount);
-        return ConvertGoldRateToToman(invoice, new(minimum, group.Key, maximum > minimum ? maximum : null));
+                .FirstOrDefault();
+        return rate is null ? null : ConvertGoldRateToToman(invoice, rate);
     }
 
     private static InvoicePrintGoldRate? ConvertGoldRateToToman(Invoice invoice, InvoicePrintGoldRate rate)
@@ -138,13 +129,13 @@ internal class InvoicePrintService(
         if (invoice.ExchangeRate is > 0 and var exchangeRate)
         {
             if (invoice.BasePriceUnit?.UnitType == UnitType.TMN || invoice.BasePriceUnit?.Title == "تومان")
-                return rate with { Amount = rate.Amount * exchangeRate, MaximumAmount = rate.MaximumAmount * exchangeRate };
+                return rate with { Amount = rate.Amount * exchangeRate };
             if (invoice.BasePriceUnit?.UnitType == UnitType.IRR || invoice.BasePriceUnit?.Title == "ریال")
-                return rate with { Amount = rate.Amount * exchangeRate / 10m, MaximumAmount = rate.MaximumAmount * exchangeRate / 10m };
+                return rate with { Amount = rate.Amount * exchangeRate / 10m };
         }
 
         return invoice.PriceUnit?.UnitType == UnitType.IRR || invoice.PriceUnit?.Title == "ریال"
-            ? rate with { Amount = rate.Amount / 10m, MaximumAmount = rate.MaximumAmount / 10m }
+            ? rate with { Amount = rate.Amount / 10m }
             : null;
     }
 

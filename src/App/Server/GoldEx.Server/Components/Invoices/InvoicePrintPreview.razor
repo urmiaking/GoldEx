@@ -32,8 +32,14 @@
             <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
             <div class="invoice-brand">
                 <img src="@LogoUrl" width="56" height="56" alt="" />
-                <div class="invoice-brand-info">
-                    <p class="invoice-store">@StoreName</p>
+                <p class="invoice-store">@StoreName</p>
+            </div>
+            <div class="invoice-header-tools">
+                <div class="invoice-reference">
+                    <div class="invoice-reference-number">
+                        <h1>@Title</h1>
+                        <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
+                    </div>
                     <dl class="invoice-meta">
                         <div><dt>تاریخ فاکتور</dt><dd><bdi dir="ltr">@Date(Invoice.Date)</bdi></dd></div>
                         @if (Invoice.DueDate is { } dueDate)
@@ -42,25 +48,12 @@
                         }
                         @if (Invoice.GoldRate is { } rate)
                         {
-                            <div class="invoice-meta-rate">
+                            <div>
                                 <dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt>
-                                <dd>
-                                    <bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi>
-                                    @if (rate.MaximumAmount is { } maximum)
-                                    {
-                                        <text> تا </text><bdi dir="ltr">@Amount(maximum, "تومان")</bdi>
-                                    }
-                                    تومان
-                                </dd>
+                                <dd><bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi> تومان</dd>
                             </div>
                         }
                     </dl>
-                </div>
-            </div>
-            <div class="invoice-header-tools">
-                <div class="invoice-reference">
-                    <h1>@Title</h1>
-                    <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
                 </div>
                 @if (ShareUrl is not null && QrImage is not null)
                 {
@@ -77,14 +70,24 @@
                 <InvoicePrintPartyCard Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
             </section>
 
-            <InvoicePrintLines Title="اقلام فاکتور" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
+            <InvoicePrintLines Title="اقلام فاکتور" ShowHeading="false" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
             <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit" Lines="@Invoice.UsedGold" />
 
-            <div class="invoice-closing @(IsWholesaleSale ? "is-wholesale" : null)">
+            @if (IsSale && !IsWholesaleSale && Invoice.Items.Any(item => item.ProductType.HasValue))
+            {
+                <section class="invoice-terms" aria-label="شرایط فروش">
+                    <ul class="invoice-sale-terms">
+                        <li>@RetailSaleTerms</li>
+                        <li>اجناس فروخته شده بدون علت پس گرفته نمی‌شود.</li>
+                    </ul>
+                </section>
+            }
+
+            <div class="invoice-closing">
                 @if (Invoice.Payments.Count > 0)
                 {
-                    <section class="invoice-section invoice-payments">
-                        <h2>ریز پرداخت و دریافت</h2>
+                    <section class="invoice-payments" aria-labelledby="invoice-payments-title">
+                        <h2 id="invoice-payments-title" class="invoice-panel-label">تسویه‌ها</h2>
                         <table class="invoice-table payment-table">
                             <thead><tr><th scope="col">تاریخ</th><th scope="col">روش و جزئیات</th><th scope="col" class="amount">مبلغ</th></tr></thead>
                             <tbody>
@@ -151,22 +154,12 @@
                         <span>@CustomerSignature</span>
                     </div>
                 </section>
-
                 @if (IsWholesaleSale)
                 {
-                    <footer class="invoice-terms">
+                    <section class="invoice-terms invoice-consignment-terms">
                         <h2>شرایط تحویل امانی</h2>
                         <p>کلیهٔ طلاجات مندرج در این قبض جهت بازاریابی به اینجانب @Invoice.Customer.Name به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم، بهای آن را علاوه بر اجرت نقداً به @StoreName بپردازم و مابقی اجناس را عندالمطالبه مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمهٔ اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره به عمل آید، ضامن و مسئول پاسخگو هستم.</p>
-                    </footer>
-                }
-                else if (IsSale && Invoice.Items.Any(item => item.ProductType.HasValue))
-                {
-                    <footer class="invoice-terms" aria-label="شرایط فروش">
-                        <ul class="invoice-sale-terms">
-                            <li>@RetailSaleTerms</li>
-                            <li>اجناس فروخته شده بدون علت پس گرفته نمی‌شود.</li>
-                        </ul>
-                    </footer>
+                    </section>
                 }
             </div>
             <div class="invoice-endmark"><span class="invoice-wordmark" dir="ltr">GoldEx</span></div>

@@ -4,7 +4,10 @@
 @if (Lines.Count > 0)
 {
     <section class="invoice-section" aria-label="@Title">
-        <h2>@Title</h2>
+        @if (ShowHeading)
+        {
+            <h2>@Title</h2>
+        }
         <table class="invoice-table invoice-lines" role="table">
             <thead role="rowgroup">
                 <tr role="row">
@@ -80,6 +83,7 @@
 
 @code {
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
+    [Parameter] public bool ShowHeading { get; set; } = true;
     [Parameter, EditorRequired] public string Unit { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyList<InvoicePrintLine> Lines { get; set; } = default!;
 }
