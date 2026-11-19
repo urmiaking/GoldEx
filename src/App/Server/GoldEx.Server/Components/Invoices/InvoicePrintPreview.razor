@@ -115,7 +115,7 @@
                                             <strong>@payment.Side.GetDisplayTitle()</strong> · @(payment.Type == PaymentType.InternalCash ? "نقدی یا بانکی" : payment.Type.GetDisplayName())
                                             @if (!string.IsNullOrWhiteSpace(payment.Reference))
                                             {
-                                                <small>شماره پیگیری <bdi>@Digits(payment.Reference)</bdi></small>
+                                                <text> (<bdi dir="ltr">@Digits(payment.Reference)</bdi>)</text>
                                             }
                                             @if (payment.CheckDueDate is { } checkDate)
                                             {
