@@ -8,58 +8,37 @@
     }
     else
     {
-        <section @ref="_workspace" class="gex-calculator-workspace @Class" aria-label="ابزارهای محاسبه‌گر">
-            <div class="gex-calculator-tabbar" dir="ltr">
-                <button type="button" class="gex-calculator-scroll gex-calculator-scroll-left" data-tab-scroll="left" aria-label="نمایش تب‌های سمت چپ" hidden disabled><ShellIcon Name="chevron-left" /></button>
-                <div class="gex-calculator-tab-viewport" dir="rtl">
-                    <div class="gex-calculator-tab-track" role="tablist" aria-label="ابزارهای محاسبه‌گر" aria-orientation="horizontal">
-                        @foreach (var tool in VisibleTools)
-                        {
-                            <button @key="tool.Index" type="button" role="tab" id="@TabId(tool.Index)" aria-controls="@PanelId(tool.Index)"
-                                    aria-selected="@(_activeTabIndex == tool.Index ? "true" : "false")" tabindex="@(_activeTabIndex == tool.Index ? 0 : -1)"
-                                    class="gex-calculator-tab @(_activeTabIndex == tool.Index ? "is-active" : null)" @onclick="() => SelectTool(tool.Index)">
-                                <ShellIcon Name="@tool.Icon" /><span>@tool.Title</span>
-                            </button>
-                        }
-                    </div>
-                </div>
-                <button type="button" class="gex-calculator-scroll gex-calculator-scroll-right" data-tab-scroll="right" aria-label="نمایش تب‌های سمت راست" hidden disabled><ShellIcon Name="chevron-right" /></button>
-            </div>
-            <header class="gex-calculator-context" aria-live="polite" aria-atomic="true">
-                <span class="gex-calculator-context-icon"><ShellIcon Name="@CurrentTool.Icon" /></span>
-                <div><h2>@CurrentTool.Title</h2><p>@CurrentTool.Description</p></div>
-            </header>
-            <div class="gex-calculator-panels">
-                @foreach (var tool in VisibleTools)
+        <WorkspaceTabs TKey="int" Label="ابزارهای محاسبه‌گر" Tabs="VisibleTools"
+                       ActiveKey="@_activeTabIndex" ActiveKeyChanged="SelectTool" Class="@Class">
+            <ContextContent>
+                <header class="gex-calculator-context" aria-live="polite" aria-atomic="true">
+                    <span class="gex-calculator-context-icon"><ShellIcon Name="@CurrentTool.Icon" /></span>
+                    <div><h2>@CurrentTool.Title</h2><p>@CurrentTool.Description</p></div>
+                </header>
+            </ContextContent>
+            <PanelContent Context="index">
+                @switch (index)
                 {
-                    <section @key="tool.Index" role="tabpanel" id="@PanelId(tool.Index)" aria-labelledby="@TabId(tool.Index)" tabindex="0" hidden="@(_activeTabIndex != tool.Index)">
-                        @if (_activeTabIndex == tool.Index)
-                        {
-                            @switch (tool.Index)
-                            {
-                                case 0:
-                                    <SimpleCalculator Elevation="0" />
-                                    break;
-                                case 1:
-                                    <SmartTrayPage Elevation="0" IsEmbedded="true" />
-                                    break;
-                                case 2:
-                                    <ReverseCalculator Elevation="0" />
-                                    break;
-                                case 3:
-                                    <CurrencyExchange Elevation="0" />
-                                    break;
-                                case 4:
-                                    <GoldParity Elevation="0" />
-                                    break;
-                                case 5:
-                                    <AdvancedCalculator Elevation="0" />
-                                    break;
-                            }
-                        }
-                    </section>
+                    case 0:
+                        <SimpleCalculator Elevation="0" />
+                        break;
+                    case 1:
+                        <SmartTrayPage Elevation="0" IsEmbedded="true" />
+                        break;
+                    case 2:
+                        <ReverseCalculator Elevation="0" />
+                        break;
+                    case 3:
+                        <CurrencyExchange Elevation="0" />
+                        break;
+                    case 4:
+                        <GoldParity Elevation="0" />
+                        break;
+                    case 5:
+                        <AdvancedCalculator Elevation="0" />
+                        break;
                 }
-            </div>
-        </section>
+            </PanelContent>
+        </WorkspaceTabs>
     }
 </MudContainer>

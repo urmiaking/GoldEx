@@ -1,0 +1,108 @@
+@using GoldEx.Shared.DTOs.Dashboard
+
+<dl class="dash-facts" aria-label="خلاصهٔ فعالیت فروشگاه">
+    <div class="dash-tone-green"><dt><MudIcon Icon="@Icons.Material.Outlined.NorthEast" Size="Size.Small" /> فاکتور فروش</dt><dd>@DashboardDisplay.Number(Data.SellCount)</dd></div>
+    <div class="dash-tone-blue"><dt><MudIcon Icon="@Icons.Material.Outlined.SouthWest" Size="Size.Small" /> فاکتور خرید</dt><dd>@DashboardDisplay.Number(Data.PurchaseCount)</dd></div>
+    <div class="dash-tone-indigo"><dt><MudIcon Icon="@Icons.Material.Outlined.People" Size="Size.Small" /> مشتری فعال</dt><dd>@DashboardDisplay.Number(Data.ActiveCustomerCount)</dd></div>
+    <div class="dash-tone-gold"><dt><MudIcon Icon="@Icons.Material.Outlined.Schedule" Size="Size.Small" /> فاکتور عقب‌افتاده</dt><dd>@DashboardDisplay.Number(Data.OverdueCount)</dd><dd class="dash-fact-note">@DashboardDisplay.Number(Data.DueTodayCount) سررسید امروز</dd></div>
+</dl>
+
+<div class="dash-overview-grid">
+    <DashboardPanel Title="روند خرید و فروش" Description="مبلغ نهایی فاکتورها در هر واحد"
+                    Icon="@Icons.Material.Outlined.BarChart" Tone="dash-tone-green">
+        <Actions>
+            @if (Data.Units.Count > 1)
+            {
+                <DashboardUnitPicker Label="واحد نمودار" Value="@SelectedUnit!.PriceUnitId" ValueChanged="SelectUnit"
+                                     Units="Data.Units.Select(x => (x.PriceUnitId, x.PriceUnit))" />
+            }
+        </Actions>
+        <ChildContent>
+            @if (SelectedUnit is { } series)
+            {
+                <div class="dash-trade-totals">
+                    <div>
+                        <span class="dash-legend dash-sell">فروش این بازه</span>
+                        <strong><bdi>@DashboardDisplay.Number(series.SellAmount)</bdi> <small>@series.PriceUnit</small></strong>
+                        <span class="dash-comparison">@Comparison(series.SellAmount, series.PreviousSellAmount)</span>
+                    </div>
+                    <div>
+                        <span class="dash-legend dash-buy">خرید این بازه</span>
+                        <strong><bdi>@DashboardDisplay.Number(series.PurchaseAmount)</bdi> <small>@series.PriceUnit</small></strong>
+                        <span class="dash-comparison">@Comparison(series.PurchaseAmount, series.PreviousPurchaseAmount)</span>
+                    </div>
+                </div>
+                <DashboardTradeChart @key="series.PriceUnitId" Series="series" />
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <MudIcon Icon="@Icons.Material.Outlined.ShowChart" />
+                    <span>در این بازه و بازهٔ قبل فاکتوری ثبت نشده است.</span>
+                    <MudButton Href="@ClientRoutes.Invoices.Create" Color="Color.Primary" Variant="Variant.Filled"
+                               DisableElevation="true" StartIcon="@Icons.Material.Outlined.Add">ثبت فاکتور</MudButton>
+                </div>
+            }
+        </ChildContent>
+    </DashboardPanel>
+
+    <DashboardPanel Title="پیگیری سررسیدها" Description="فاکتورهای تسویه‌نشده تا امروز، از قدیمی‌ترین"
+                    Icon="@Icons.Material.Outlined.EventNote" Tone="dash-tone-gold">
+        <ChildContent>
+            @if (Data.DueInvoices.Count == 0)
+            {
+                <div class="dash-empty">
+                    <MudIcon Icon="@Icons.Material.Outlined.CheckCircleOutline" />
+                    <span>فاکتور تسویه‌نشده با سررسید گذشته یا امروز ندارید.</span>
+                </div>
+            }
+            else
+            {
+                <ul class="dash-list dash-due-list">
+                    @foreach (var invoice in Data.DueInvoices)
+                    {
+                        var isToday = invoice.DueDate == Data.ToDate;
+                        var daysLate = Data.ToDate.DayNumber - invoice.DueDate.DayNumber;
+                        <li>
+                            <a href="@ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = invoice.Number, invoiceType = invoice.Type.ToString() })">
+                                <span>
+                                    <strong>@invoice.Customer</strong>
+                                    <small>@(invoice.Type == InvoiceType.Sell ? "فروش" : "خرید") شماره @DashboardDisplay.Number(invoice.Number)</small>
+                                </span>
+                                <span>
+                                    <strong><bdi>@DashboardDisplay.Number(invoice.Remaining)</bdi> @invoice.PriceUnit</strong>
+                                    <small class="@(isToday ? "dash-due-today" : "dash-due-late")">
+                                        @(isToday ? "سررسید امروز" : $"{DashboardDisplay.Number(daysLate)} روز گذشته از سررسید")
+                                    </small>
+                                </span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            <MudButton Href="@ClientRoutes.Invoices.List" Variant="Variant.Outlined" Color="Color.Primary"
+                       EndIcon="@Icons.Material.Outlined.ArrowBack">فهرست فاکتورها</MudButton>
+        </ChildContent>
+    </DashboardPanel>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DashboardOverviewResponse Data { get; set; } = default!;
+    [Parameter] public Guid? SelectedUnitId { get; set; }
+    [Parameter] public EventCallback<Guid?> SelectedUnitIdChanged { get; set; }
+    private DashboardTradeSeries? SelectedUnit => Data.Units.FirstOrDefault(x => x.PriceUnitId == SelectedUnitId) ?? Data.Units.FirstOrDefault();
+    private Task SelectUnit(Guid id) => SelectedUnitIdChanged.InvokeAsync(id);
+
+    private static string Comparison(decimal current, decimal previous)
+    {
+        if (previous <= 0m)
+            return "بازهٔ قبل: " + DashboardDisplay.Number(previous);
+
+        var delta = (current - previous) / previous * 100m;
+        var rounded = Math.Round(delta, 1);
+        if (rounded == 0m)
+            return "بدون تغییر محسوس نسبت به بازهٔ قبل";
+
+        return $"{DashboardDisplay.Number(Math.Abs(rounded))}٪ {(rounded > 0 ? "بیشتر" : "کمتر")} از بازهٔ قبل";
+    }
+}

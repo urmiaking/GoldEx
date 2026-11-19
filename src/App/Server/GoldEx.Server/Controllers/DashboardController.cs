@@ -11,6 +11,15 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class DashboardController(IDashboardService service) : ApiControllerBase
 {
+    [HttpGet(ApiRoutes.Dashboard.GetOverview)]
+    public async Task<IActionResult> GetOverviewAsync([FromQuery] int days = 30, CancellationToken cancellationToken = default)
+    {
+        if (days is not (7 or 30 or 90))
+            return BadRequest();
+
+        return Ok(await service.GetOverviewAsync(days, cancellationToken));
+    }
+
     [HttpGet(ApiRoutes.Dashboard.GetTodaySales)]
     public async Task<IActionResult> GetTodaySalesAsync(CancellationToken cancellationToken = default)
     {

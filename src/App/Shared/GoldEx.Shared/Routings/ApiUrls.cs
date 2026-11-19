@@ -939,6 +939,9 @@ public class ApiUrls
 
     public class Dashboard
     {
+        public static string GetOverview(int days) =>
+            BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetOverview).AppendQueryString(new { days });
+
         public static string GetTodaySales() =>
             BuildUrl(ApiRoutes.Dashboard.Base, ApiRoutes.Dashboard.GetTodaySales);
 

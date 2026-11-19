@@ -727,19 +727,23 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .Where(t => !priceUnitId.HasValue || t.PriceUnitId == new PriceUnitId(priceUnitId.Value));
 
         var grouped = await query
-            .GroupBy(t => new { CustomerName = t.LedgerAccount!.Customer!.FullName, PriceUnit = t.PriceUnit!.Title })
+            .GroupBy(t => new
+            {
+                t.LedgerAccount!.CustomerId,
+                CustomerName = t.LedgerAccount.Customer!.FullName,
+                t.PriceUnitId,
+                PriceUnit = t.PriceUnit!.Title
+            })
             .Select(g => new
             {
                 g.Key,
-                Amount = 
-                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
-                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount) 
-                    + 
-                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
-                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+                Amount = g.Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
             })
             .Where(x => transactionType == TransactionType.Debit ? x.Amount > 0 : x.Amount < 0)
             .OrderByDescending(x => transactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+            .ThenBy(x => x.Key.CustomerName)
+            .ThenBy(x => x.Key.CustomerId)
+            .ThenBy(x => x.Key.PriceUnitId)
             .Take(5)
             .ToListAsync(cancellationToken);
 
