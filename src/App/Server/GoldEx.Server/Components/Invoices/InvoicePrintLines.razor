@@ -45,13 +45,13 @@
                         </td>
                         <td class="line-quantity" role="cell">
                             <span class="mobile-label" aria-hidden="true">مقدار</span>
-                            <bdi dir="ltr">@Number(item.Quantity)</bdi> @(item.QuantityUnit ?? "عدد")
+                            <bdi dir="ltr">@Amount(item.Quantity, item.QuantityUnit)</bdi> @(item.QuantityUnit ?? "عدد")
                         </td>
                         <td class="line-weight" role="cell">
                             <span class="mobile-label" aria-hidden="true">وزن کل</span>
                             @if (item.Weight is { } weight)
                             {
-                                <bdi dir="ltr">@Number(weight)</bdi><span class="weight-unit">@item.WeightUnit?.GetDisplayName()</span>
+                                <bdi dir="ltr">@Weight(weight)</bdi><span class="weight-unit">@item.WeightUnit?.GetDisplayName()</span>
                             }
                             else { <span class="empty-value">—</span> }
                         </td>
@@ -69,7 +69,7 @@
                         </td>
                         <td class="line-total" role="cell">
                             <span class="mobile-label" aria-hidden="true">مبلغ کل</span>
-                            <span class="line-total-value"><bdi dir="ltr">@Number(item.Total)</bdi><span class="mobile-unit">@Unit</span></span>
+                            <span class="line-total-value"><bdi dir="ltr">@Amount(item.Total, Unit)</bdi><span class="mobile-unit">@Unit</span></span>
                         </td>
                     </tr>
                 }

@@ -4,10 +4,6 @@
 @using GoldEx.Shared.Enums
 @using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
 
-@{
-    var charges = GetChargeDisplay().ToArray();
-}
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -65,7 +61,7 @@
             <div><dt>واحد فاکتور</dt><dd>@Invoice.Unit</dd></div>
             @if (Invoice.GoldRate is { } rate)
             {
-                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Number(rate.Amount)</bdi> تومان</dd></div>
+                <div><dt>نرخ هر @rate.Unit.GetDisplayName() طلای ۱۸ عیار</dt><dd><bdi dir="ltr">@Amount(rate.Amount, "تومان")</bdi> تومان</dd></div>
             }
         </dl>
 
@@ -109,10 +105,10 @@
                                         }
                                     </td>
                                     <td class="amount">
-                                        <bdi dir="ltr">@Number(payment.Amount)</bdi> @payment.Unit
+                                        <bdi dir="ltr">@Amount(payment.Amount, payment.Unit)</bdi> @payment.Unit
                                         @if (payment.Unit != Invoice.Unit || payment.InvoiceAmount != payment.Amount)
                                         {
-                                            <small>معادل <bdi dir="ltr">@Number(payment.InvoiceAmount)</bdi> @Invoice.Unit</small>
+                                            <small>معادل <bdi dir="ltr">@Amount(payment.InvoiceAmount, Invoice.Unit)</bdi> @Invoice.Unit</small>
                                         }
                                     </td>
                                 </tr>
@@ -125,20 +121,15 @@
             <div class="invoice-closing">
                 <section class="invoice-totals" aria-labelledby="invoice-totals-title">
                     <h2 id="invoice-totals-title">جمع‌بندی فاکتور</h2>
-                    @if (charges.Length > 0)
-                    {
-                        <dl class="invoice-charges" aria-label="اجرت، نرخ‌ها و ارزش سنگ">
-                            @foreach (var (label, value) in charges)
-                            {
-                                <div><dt>@label</dt><dd>@value</dd></div>
-                            }
-                        </dl>
-                    }
                     <dl class="invoice-summary">
+                        @foreach (var (label, value) in GetChargeDisplay())
+                        {
+                            <div class="invoice-summary-charge"><dt>@label</dt><dd>@value</dd></div>
+                        }
                         @foreach (var (label, amount, emphasized) in Totals)
                         {
                             <div class="@(emphasized ? "invoice-total-final" : null)">
-                                <dt>@label</dt><dd><bdi dir="ltr">@Number(amount)</bdi> @Invoice.Unit</dd>
+                                <dt>@label</dt><dd><bdi dir="ltr">@Amount(amount, Invoice.Unit)</bdi> @Invoice.Unit</dd>
                             </div>
                         }
                     </dl>
@@ -147,10 +138,10 @@
                         <div class="amount">
                             @if (Invoice.Remaining != 0)
                             {
-                                <strong><bdi dir="ltr">@Number(Math.Abs(Invoice.Remaining))</bdi> @Invoice.Unit</strong>
+                                <strong><bdi dir="ltr">@Amount(Math.Abs(Invoice.Remaining), Invoice.Unit)</bdi> @Invoice.Unit</strong>
                                 @if (Invoice.SecondaryRemaining is { } equivalent && !string.IsNullOrWhiteSpace(Invoice.SecondaryUnit))
                                 {
-                                    <small>معادل <bdi dir="ltr">@Number(Math.Abs(equivalent))</bdi> @Invoice.SecondaryUnit</small>
+                                    <small>معادل <bdi dir="ltr">@Amount(Math.Abs(equivalent), Invoice.SecondaryUnit)</bdi> @Invoice.SecondaryUnit</small>
                                 }
                             }
                         </div>
@@ -207,13 +198,13 @@
     {
         var charges = Invoice.Charges;
         if (charges.Wage != 0)
-            yield return ("جمع اجرت", $"{Number(charges.Wage)} {Invoice.Unit}");
+            yield return ("جمع اجرت", $"{Amount(charges.Wage, Invoice.Unit)} {Invoice.Unit}");
         if (charges.ProfitRates.Count > 0)
             yield return ("درصد سود", FormatRates(charges.ProfitRates));
         if (charges.TaxRates.Count > 0)
             yield return ("درصد مالیات ارزش افزوده", FormatRates(charges.TaxRates));
         if (charges.Stones != 0)
-            yield return ("ارزش سنگ‌ها", $"{Number(charges.Stones)} {Invoice.Unit}");
+            yield return ("ارزش سنگ‌ها", $"{Amount(charges.Stones, Invoice.Unit)} {Invoice.Unit}");
     }
 
     private static string FormatRates(IReadOnlyList<decimal> rates) => string.Join("، ", rates.Select(rate => $"{Number(rate)}٪"));

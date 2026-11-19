@@ -14,6 +14,19 @@ internal static class InvoicePrintFormat
 
     public static string Number(decimal value) => Digits(value.ToString("#,##0.##########", Numbers));
 
+    public static string Weight(decimal value) => Digits(value.ToString("#,##0.###", Numbers));
+
+    public static string Amount(decimal value, string? unit)
+    {
+        var title = unit?.Trim();
+        if (title is "تومان" or "ریال")
+            return Digits(value.ToString("#,##0", Numbers));
+
+        var isWeight = title == "آبشده نقدی" || title?.Contains("گرم", StringComparison.Ordinal) == true ||
+            title?.Contains("مثقال", StringComparison.Ordinal) == true;
+        return isWeight ? Weight(value) : Number(value);
+    }
+
     public static string Date(DateOnly value) => value < DateOnly.FromDateTime(Persian.Calendar.MinSupportedDateTime)
         ? "—"
         : Digits(value.ToString("yyyy'/'MM'/'dd", Persian));
