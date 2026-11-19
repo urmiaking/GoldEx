@@ -28,13 +28,38 @@
     </nav>
 
     <main class="invoice-sheet">
-        <header class="invoice-letterhead">
-            <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
-            <div class="invoice-brand">
-                <img src="@LogoUrl" width="56" height="56" alt="" />
-                <p class="invoice-store">@StoreName</p>
+        <header class="invoice-header">
+            <div class="invoice-letterhead">
+                <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
+                <div class="invoice-store-identity">
+                    <div class="invoice-brand">
+                        <img src="@LogoUrl" width="56" height="56" alt="" />
+                        <p class="invoice-store">@StoreName</p>
+                    </div>
+                    @if (Setting is { } setting &&
+                         (!string.IsNullOrWhiteSpace(setting.Address) || !string.IsNullOrWhiteSpace(setting.PhoneNumber)))
+                    {
+                        <ul class="invoice-store-contact" aria-label="راه‌های تماس فروشگاه">
+                            @if (!string.IsNullOrWhiteSpace(setting.PhoneNumber))
+                            {
+                                <li><ShellIcon Name="phone" /> <bdi dir="ltr">@Digits(setting.PhoneNumber)</bdi></li>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(setting.Address))
+                            {
+                                <li><ShellIcon Name="pin" /> <span>@Digits(setting.Address)</span></li>
+                            }
+                        </ul>
+                    }
+                </div>
+                @if (ShareUrl is not null && QrImage is not null)
+                {
+                    <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
+                        <img src="@QrImage" width="90" height="90" alt="کد QR نسخهٔ مشتری" />
+                    </a>
+                }
             </div>
-            <div class="invoice-header-tools">
+            <div class="invoice-header-details">
+                <InvoicePrintCounterparty Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
                 <div class="invoice-reference">
                     <div class="invoice-reference-number">
                         <h1>@Title</h1>
@@ -55,23 +80,14 @@
                         }
                     </dl>
                 </div>
-                @if (ShareUrl is not null && QrImage is not null)
-                {
-                    <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
-                        <img src="@QrImage" width="90" height="90" alt="کد QR نسخهٔ مشتری" />
-                    </a>
-                }
             </div>
         </header>
 
         <div class="invoice-body">
-            <section class="invoice-parties" aria-label="طرف‌های معامله">
-                <InvoicePrintPartyCard Role="@(IsSale ? "فروشنده" : "خریدار")" Party="@StoreParty" IsStore="true" />
-                <InvoicePrintPartyCard Role="@(IsSale ? "خریدار" : "فروشنده")" Party="@Invoice.Customer" />
-            </section>
-
-            <InvoicePrintLines Title="اقلام فاکتور" ShowHeading="false" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
-            <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit" Lines="@Invoice.UsedGold" />
+            <InvoicePrintLines Title="اقلام فاکتور" ShowHeading="false" Unit="@Invoice.Unit" Lines="@Invoice.Items"
+                               Subtotal="@(Invoice.Subtotal - (IsSale ? 0 : Invoice.UsedGoldAmount))" StoneAmount="@Invoice.Charges.Stones" />
+            <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit"
+                               Lines="@Invoice.UsedGold" Subtotal="@Invoice.UsedGoldAmount" SubtotalLabel="ارزش طلای دریافتی" />
 
             @if (IsSale && !IsWholesaleSale && Invoice.Items.Any(item => item.ProductType.HasValue))
             {
@@ -124,6 +140,19 @@
                                     </tr>
                                 }
                             </tbody>
+                            @if (Invoice.Received != 0 || Invoice.Paid != 0)
+                            {
+                                <tfoot>
+                                    @if (Invoice.Received != 0)
+                                    {
+                                        <tr><th scope="row" colspan="2">جمع دریافتی</th><td class="amount"><bdi dir="ltr">@Amount(Invoice.Received, Invoice.Unit)</bdi> @Invoice.Unit</td></tr>
+                                    }
+                                    @if (Invoice.Paid != 0)
+                                    {
+                                        <tr><th scope="row" colspan="2">جمع پرداختی</th><td class="amount"><bdi dir="ltr">@Amount(Invoice.Paid, Invoice.Unit)</bdi> @Invoice.Unit</td></tr>
+                                    }
+                                </tfoot>
+                            }
                         </table>
                     </section>
                 }
@@ -179,7 +208,6 @@
     private bool IsSale => Invoice.Type == InvoiceType.Sell;
     private bool IsWholesaleSale => IsSale && Invoice.Scale == TradeScale.Wholesale;
     private string StoreName => string.IsNullOrWhiteSpace(Setting?.InstitutionName) ? "فروشگاه طلا و جواهر" : Setting.InstitutionName;
-    private InvoicePrintParty StoreParty => new(StoreName, Setting?.PhoneNumber, Setting?.Address);
     private string Title => $"فاکتور {Invoice.Type.GetDisplayName()}";
     private string StoreSignature => IsWholesaleSale ? "مهر و امضای تحویل‌دهنده" : IsSale ? "مهر و امضای فروشنده" : "مهر و امضای خریدار";
     private string CustomerSignature => IsWholesaleSale ? "امضای تحویل‌گیرنده" : IsSale ? "امضای خریدار" : "امضای فروشنده";
@@ -203,20 +231,11 @@
     {
         get
         {
-            if (Invoice.Charges.Stones != 0)
-                yield return ("ارزش سنگ‌ها", Invoice.Charges.Stones, false);
-            yield return ("جمع اقلام", Invoice.Subtotal, false);
             if (Invoice.Discount != 0)
                 yield return ("تخفیف", -Invoice.Discount, false);
             if (Invoice.ExtraCost != 0)
                 yield return ("هزینه اضافی", Invoice.ExtraCost, false);
             yield return ("مبلغ نهایی فاکتور", Invoice.Total, true);
-            if (IsSale && Invoice.UsedGoldAmount != 0)
-                yield return ("ارزش طلای دریافتی", Invoice.UsedGoldAmount, false);
-            if (Invoice.Received != 0)
-                yield return ("دریافت از مشتری", Invoice.Received, false);
-            if (Invoice.Paid != 0)
-                yield return ("پرداخت به مشتری", Invoice.Paid, false);
         }
     }
 }

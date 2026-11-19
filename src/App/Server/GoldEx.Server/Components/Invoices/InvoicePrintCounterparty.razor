@@ -1,16 +1,14 @@
-@using GoldEx.Client.Components.Layouts.Components
 @using GoldEx.Server.Application.Reporting
 @using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
 
-<section class="invoice-party-card @(IsStore ? "is-store" : null)">
-    <h2 class="invoice-panel-label">@Role</h2>
-    <div class="invoice-party-heading">
-        <span class="invoice-party-icon"><ShellIcon Name="@(IsStore ? "store" : "user")" /></span>
+<section class="invoice-counterparty" aria-label="@Role">
+    <div class="invoice-counterparty-name">
+        <span>@Role</span>
         <strong>@Party.Name</strong>
     </div>
-    @if (!string.IsNullOrWhiteSpace(Party.Phone) || !string.IsNullOrWhiteSpace(Party.CustomerCode))
+    @if (!string.IsNullOrWhiteSpace(Party.Phone) || !string.IsNullOrWhiteSpace(Party.CustomerCode) || !string.IsNullOrWhiteSpace(Party.Address))
     {
-        <dl class="invoice-party-details">
+        <dl class="invoice-counterparty-details">
             @if (!string.IsNullOrWhiteSpace(Party.Phone))
             {
                 <div>
@@ -25,13 +23,13 @@
                     <dd><bdi dir="ltr">@Digits(Party.CustomerCode)</bdi></dd>
                 </div>
             }
-        </dl>
-    }
-    @if (!string.IsNullOrWhiteSpace(Party.Address))
-    {
-        <dl class="invoice-party-address">
-            <dt>نشانی</dt>
-            <dd title="@(IsStore ? Digits(Party.Address) : null)">@Digits(Party.Address)</dd>
+            @if (!string.IsNullOrWhiteSpace(Party.Address))
+            {
+                <div>
+                    <dt>نشانی</dt>
+                    <dd>@Digits(Party.Address)</dd>
+                </div>
+            }
         </dl>
     }
 </section>
@@ -39,5 +37,4 @@
 @code {
     [Parameter, EditorRequired] public string Role { get; set; } = default!;
     [Parameter, EditorRequired] public InvoicePrintParty Party { get; set; } = default!;
-    [Parameter] public bool IsStore { get; set; }
 }

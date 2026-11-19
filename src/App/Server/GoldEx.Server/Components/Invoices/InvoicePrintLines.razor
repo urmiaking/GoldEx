@@ -1,4 +1,5 @@
 @using GoldEx.Server.Application.Reporting
+@using GoldEx.Shared.Enums
 @using static GoldEx.Server.Components.Invoices.InvoicePrintFormat
 
 @if (Lines.Count > 0)
@@ -16,6 +17,7 @@
                     <th scope="col" role="columnheader" class="line-quantity">تعداد / مقدار</th>
                     <th scope="col" role="columnheader" class="line-weight">وزن کل</th>
                     <th scope="col" role="columnheader" class="line-fineness">عیار</th>
+                    <th scope="col" role="columnheader" class="line-wage">اجرت</th>
                     <th scope="col" role="columnheader" class="line-total">مبلغ کل <small>(@Unit)</small></th>
                 </tr>
             </thead>
@@ -27,7 +29,7 @@
                         <td class="line-index" role="cell"><span>@Number(index + 1)</span></td>
                         <td class="line-name" role="cell">
                             <strong>@(string.IsNullOrWhiteSpace(item.Name) ? "طلا" : item.Name)</strong>
-                            <div class="line-details">
+                            <span class="line-details">
                                 @if (item.ProductType is { } type)
                                 {
                                     <small>@type.GetDisplayName()</small>
@@ -44,7 +46,7 @@
                                 {
                                     <small>ضرب @(Date(new DateOnly(item.MintYear.Value, 3, 21))[..4])</small>
                                 }
-                            </div>
+                            </span>
                         </td>
                         <td class="line-quantity" role="cell">
                             <span class="mobile-label" aria-hidden="true">مقدار</span>
@@ -70,6 +72,21 @@
                                 <small>کسری <bdi dir="ltr">@Number(deduction)</bdi></small>
                             }
                         </td>
+                        <td class="line-wage" role="cell">
+                            <span class="mobile-label" aria-hidden="true">اجرت</span>
+                            @if (item.Wage is { Type: WageType.Percent } percentage)
+                            {
+                                <bdi dir="ltr">@Number(percentage.Amount)٪</bdi>
+                            }
+                            else if (item.Wage is { } wage)
+                            {
+                                <bdi dir="ltr">@Amount(wage.Amount, wage.Unit)</bdi> @wage.Unit
+                            }
+                            else
+                            {
+                                <span class="empty-value">—</span>
+                            }
+                        </td>
                         <td class="line-total" role="cell">
                             <span class="mobile-label" aria-hidden="true">مبلغ کل</span>
                             <span class="line-total-value"><bdi dir="ltr">@Amount(item.Total, Unit)</bdi><span class="mobile-unit">@Unit</span></span>
@@ -77,6 +94,19 @@
                     </tr>
                 }
             </tbody>
+            <tfoot role="rowgroup">
+                @if (StoneAmount != 0)
+                {
+                    <tr role="row">
+                        <th scope="row" colspan="6" role="rowheader">ارزش سنگ‌ها (شامل در جمع)</th>
+                        <td class="line-total" role="cell"><bdi dir="ltr">@Amount(StoneAmount, Unit)</bdi><span class="mobile-unit">@Unit</span></td>
+                    </tr>
+                }
+                <tr role="row">
+                    <th scope="row" colspan="6" role="rowheader">@SubtotalLabel</th>
+                    <td class="line-total" role="cell"><bdi dir="ltr">@Amount(Subtotal, Unit)</bdi><span class="mobile-unit">@Unit</span></td>
+                </tr>
+            </tfoot>
         </table>
     </section>
 }
@@ -86,4 +116,7 @@
     [Parameter] public bool ShowHeading { get; set; } = true;
     [Parameter, EditorRequired] public string Unit { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyList<InvoicePrintLine> Lines { get; set; } = default!;
+    [Parameter, EditorRequired] public decimal Subtotal { get; set; }
+    [Parameter] public string SubtotalLabel { get; set; } = "جمع اقلام";
+    [Parameter] public decimal StoneAmount { get; set; }
 }

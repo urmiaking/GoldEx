@@ -48,6 +48,8 @@ internal class InvoicePrintService(
             .Include(x => x.BasePriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.ProductItems).ThenInclude(x => x.Product)
+            .Include(x => x.ProductItems).ThenInclude(x => x.SaleWagePriceUnit)
+            .Include(x => x.ProductItems).ThenInclude(x => x.PurchaseWagePriceUnit)
             .Include(x => x.CoinItems).ThenInclude(x => x.CoinInstance).ThenInclude(x => x!.Coin)
             .Include(x => x.CurrencyItems).ThenInclude(x => x.Currency)
             .Include(x => x.UsedProducts).ThenInclude(x => x.Product)
@@ -66,7 +68,8 @@ internal class InvoicePrintService(
                 x.Product?.Name ?? "کالا", x.Quantity, x.ItemFinalAmount + x.ItemStoneAmount,
                 ProductType: x.Product?.ProductType, Barcode: x.Product?.Barcode,
                 Weight: x.TotalWeight, WeightUnit: x.Product?.GoldUnitType, Fineness: x.Product?.Fineness,
-                AssayNumber: x.Product?.MoltenGold?.AssayNumber))
+                AssayNumber: x.Product?.MoltenGold?.AssayNumber,
+                Wage: GetPrintWage(x, invoice.InvoiceType, unit)))
             .Concat(invoice.CoinItems.Select(x => new InvoicePrintLine(
                 x.CoinInstance?.Coin?.Title ?? "سکه", x.Quantity, x.ItemFinalAmount,
                 Barcode: x.CoinInstance?.Barcode,
@@ -105,6 +108,19 @@ internal class InvoicePrintService(
             invoice.UnpaidPriceUnit?.Title,
             GetPrintCharges(invoice),
             GetPrintGoldRate(invoice, productItems, usedProducts));
+    }
+
+    private static InvoicePrintWage? GetPrintWage(InvoiceProductItem item, InvoiceType invoiceType, string invoiceUnit)
+    {
+        if (invoiceType == InvoiceType.Purchase)
+            return item.PurchaseWage is { } purchase && item.PurchaseWageType is { } purchaseType
+                ? new(purchase, purchaseType, item.PurchaseWagePriceUnit?.Title)
+                : null;
+
+        if (item.SaleWage is { } sale && item.SaleWageType is { } saleType)
+            return new(sale, saleType, item.SaleWagePriceUnit?.Title);
+
+        return item.ItemWageAmount != 0 ? new(item.ItemWageAmount, WageType.Fixed, invoiceUnit) : null;
     }
 
     private static InvoicePrintGoldRate? GetPrintGoldRate(Invoice invoice,

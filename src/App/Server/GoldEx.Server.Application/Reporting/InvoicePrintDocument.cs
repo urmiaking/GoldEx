@@ -47,7 +47,10 @@ public sealed record InvoicePrintLine(
     decimal? Fineness = null,
     decimal? FinenessDeduction = null,
     string? AssayNumber = null,
-    int? MintYear = null);
+    int? MintYear = null,
+    InvoicePrintWage? Wage = null);
+
+public sealed record InvoicePrintWage(decimal Amount, WageType Type, string? Unit = null);
 
 public sealed record InvoicePrintPayment(
     DateOnly Date,
