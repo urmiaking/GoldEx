@@ -32,20 +32,17 @@
             <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
             <div class="invoice-brand">
                 <img src="@LogoUrl" width="56" height="56" alt="" />
-                <div>
-                    <p class="invoice-store">@StoreName</p>
-                    <h1>@Title</h1>
-                </div>
+                <p class="invoice-store">@StoreName</p>
             </div>
             <div class="invoice-header-tools">
                 <div class="invoice-reference">
-                    <span>شماره فاکتور</span>
+                    <h1>@Title</h1>
                     <strong><bdi dir="ltr">@DocumentNumber</bdi></strong>
                 </div>
                 @if (ShareUrl is not null && QrImage is not null)
                 {
                     <a class="invoice-qr" href="@ShareUrl" target="_blank" rel="noopener noreferrer" aria-label="باز کردن نسخهٔ مشتری فاکتور">
-                        <img src="@QrImage" width="86" height="86" alt="کد QR نسخهٔ مشتری" />
+                        <img src="@QrImage" width="90" height="90" alt="کد QR نسخهٔ مشتری" />
                     </a>
                 }
             </div>
@@ -74,51 +71,50 @@
             <InvoicePrintLines Title="اقلام فاکتور" Unit="@Invoice.Unit" Lines="@Invoice.Items" />
             <InvoicePrintLines Title="@(IsSale ? "طلای دریافتی بابت فاکتور" : "طلای دریافتی در خرید")" Unit="@Invoice.Unit" Lines="@Invoice.UsedGold" />
 
-            @if (Invoice.Payments.Count > 0)
-            {
-                <section class="invoice-section">
-                    <h2>ریز پرداخت و دریافت</h2>
-                    <table class="invoice-table payment-table">
-                        <thead><tr><th scope="col">تاریخ</th><th scope="col">روش و جزئیات</th><th scope="col" class="amount">مبلغ</th></tr></thead>
-                        <tbody>
-                            @foreach (var payment in Invoice.Payments)
-                            {
-                                <tr>
-                                    <td><bdi dir="ltr">@Date(payment.Date)</bdi></td>
-                                    <td>
-                                        <strong>@payment.Side.GetDisplayTitle()</strong> · @(payment.Type == PaymentType.InternalCash ? "نقدی یا بانکی" : payment.Type.GetDisplayName())
-                                        @if (!string.IsNullOrWhiteSpace(payment.Reference))
-                                        {
-                                            <small>شماره پیگیری <bdi>@Digits(payment.Reference)</bdi></small>
-                                        }
-                                        @if (payment.CheckDueDate is { } checkDate)
-                                        {
-                                            <small>سررسید چک <bdi dir="ltr">@Date(checkDate)</bdi></small>
-                                        }
-                                        @if (payment.GoldFineness is > 0)
-                                        {
-                                            <small>عیار <bdi dir="ltr">@Number(payment.GoldFineness.Value)</bdi></small>
-                                        }
-                                        @if (payment.CoinQuantity is > 0)
-                                        {
-                                            <small><bdi dir="ltr">@Number(payment.CoinQuantity.Value)</bdi> عدد @payment.CoinName</small>
-                                        }
-                                    </td>
-                                    <td class="amount">
-                                        <bdi dir="ltr">@Amount(payment.Amount, payment.Unit)</bdi> @payment.Unit
-                                        @if (payment.Unit != Invoice.Unit || payment.InvoiceAmount != payment.Amount)
-                                        {
-                                            <small>معادل <bdi dir="ltr">@Amount(payment.InvoiceAmount, Invoice.Unit)</bdi> @Invoice.Unit</small>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </section>
-            }
-
             <div class="invoice-closing">
+                @if (Invoice.Payments.Count > 0)
+                {
+                    <section class="invoice-section invoice-payments">
+                        <h2>ریز پرداخت و دریافت</h2>
+                        <table class="invoice-table payment-table">
+                            <thead><tr><th scope="col">تاریخ</th><th scope="col">روش و جزئیات</th><th scope="col" class="amount">مبلغ</th></tr></thead>
+                            <tbody>
+                                @foreach (var payment in Invoice.Payments)
+                                {
+                                    <tr>
+                                        <td><bdi dir="ltr">@Date(payment.Date)</bdi></td>
+                                        <td>
+                                            <strong>@payment.Side.GetDisplayTitle()</strong> · @(payment.Type == PaymentType.InternalCash ? "نقدی یا بانکی" : payment.Type.GetDisplayName())
+                                            @if (!string.IsNullOrWhiteSpace(payment.Reference))
+                                            {
+                                                <small>شماره پیگیری <bdi>@Digits(payment.Reference)</bdi></small>
+                                            }
+                                            @if (payment.CheckDueDate is { } checkDate)
+                                            {
+                                                <small>سررسید چک <bdi dir="ltr">@Date(checkDate)</bdi></small>
+                                            }
+                                            @if (payment.GoldFineness is > 0)
+                                            {
+                                                <small>عیار <bdi dir="ltr">@Number(payment.GoldFineness.Value)</bdi></small>
+                                            }
+                                            @if (payment.CoinQuantity is > 0)
+                                            {
+                                                <small><bdi dir="ltr">@Number(payment.CoinQuantity.Value)</bdi> عدد @payment.CoinName</small>
+                                            }
+                                        </td>
+                                        <td class="amount">
+                                            <bdi dir="ltr">@Amount(payment.Amount, payment.Unit)</bdi> @payment.Unit
+                                            @if (payment.Unit != Invoice.Unit || payment.InvoiceAmount != payment.Amount)
+                                            {
+                                                <small>معادل <bdi dir="ltr">@Amount(payment.InvoiceAmount, Invoice.Unit)</bdi> @Invoice.Unit</small>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                }
                 <section class="invoice-totals" aria-labelledby="invoice-totals-title">
                     <h2 id="invoice-totals-title">جمع‌بندی فاکتور</h2>
                     <dl class="invoice-summary">
@@ -160,7 +156,17 @@
                     {
                         <section class="invoice-terms">
                             <h2>شرایط فروش</h2>
-                            <p>کالاهای فوق با اجرت، سود و مالیات ارزش افزودهٔ درج‌شده در جمع‌بندی عرضه شده‌اند. در زمان فروش مجدد، کالا با ارائهٔ فاکتور و به نرخ روز خریداری می‌شود. اجناس فروخته‌شده بدون علت پس گرفته نمی‌شود.</p>
+                            <p>
+                                @if (Invoice.Charges.ProfitRates.Count > 0)
+                                {
+                                    <text>سود فروشنده @FormatRates(Invoice.Charges.ProfitRates) است.</text>
+                                }
+                                @if (Invoice.Charges.TaxRates.Count > 0)
+                                {
+                                    <text> مالیات ارزش افزوده با نرخ @FormatRates(Invoice.Charges.TaxRates) محاسبه شده است.</text>
+                                }
+                                در زمان فروش مجدد، کالا با ارائهٔ فاکتور و به نرخ روز خریداری می‌شود. اجناس فروخته‌شده بدون علت پس گرفته نمی‌شود.
+                            </p>
                         </section>
                     }
                     <div class="invoice-signatures" aria-label="محل امضا">
@@ -199,10 +205,6 @@
         var charges = Invoice.Charges;
         if (charges.Wage != 0)
             yield return ("جمع اجرت", $"{Amount(charges.Wage, Invoice.Unit)} {Invoice.Unit}");
-        if (charges.ProfitRates.Count > 0)
-            yield return ("درصد سود", FormatRates(charges.ProfitRates));
-        if (charges.TaxRates.Count > 0)
-            yield return ("درصد مالیات ارزش افزوده", FormatRates(charges.TaxRates));
         if (charges.Stones != 0)
             yield return ("ارزش سنگ‌ها", $"{Amount(charges.Stones, Invoice.Unit)} {Invoice.Unit}");
     }

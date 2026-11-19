@@ -100,7 +100,7 @@ public sealed class InvoicePrintController(
             : "/apple-touch-icon-180x180.png";
 
         var shareUrl = Url.RouteUrl(nameof(SharedPreviewAsync), new { token }, Request.Scheme)!;
-        var qrSvg = QrCode.EncodeText(shareUrl, QrCode.Ecc.Medium).ToSvgString(4);
+        var qrSvg = QrCode.EncodeText(shareUrl, QrCode.Ecc.Low).ToSvgString(4);
         var qrImage = $"data:image/svg+xml;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(qrSvg))}";
 
         Response.Headers["Referrer-Policy"] = "no-referrer";
