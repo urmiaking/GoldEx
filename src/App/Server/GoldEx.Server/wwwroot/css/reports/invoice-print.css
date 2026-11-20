@@ -66,7 +66,6 @@
     --header-accent: #efd395;
     --table-ink: #f9edcc;
     --table-header: var(--deep-mid);
-    --header-art: url('../../assets/invoices/goldex-engraving.webp') left 47% / cover;
     --soft-surface: color-mix(in srgb, var(--tint) 46%, white);
     --strong-surface: color-mix(in srgb, var(--tint) 80%, var(--gold));
     --panel-surface: color-mix(in srgb, var(--tint) 28%, var(--paper));
@@ -128,7 +127,6 @@
 }
 
 :root:where([data-invoice-theme="deco"]) {
-    --header-art: none;
     --invoice-header-background: repeating-linear-gradient(135deg, transparent 0 17px, #ffffff20 17px 18px),
         linear-gradient(105deg, var(--deep-mid), var(--deep) 64%);
     --deco-paper-art: linear-gradient(135deg, transparent 20px, var(--gold) 20px 21px, transparent 21px 32px, var(--gold) 32px 33px, transparent 33px) top left / 56px 56px no-repeat,
@@ -136,7 +134,6 @@
 }
 
 :root:where([data-invoice-theme="atelier"]) {
-    --header-art: none;
     --invoice-header-background: linear-gradient(116deg, var(--tint) 0 31%, var(--gold) 31% 32%, var(--deep) 32% 100%);
     --table-header: var(--strong-surface);
     --table-ink: var(--ink);
@@ -144,7 +141,6 @@
 }
 
 :root:where([data-invoice-theme="minimal"]) {
-    --header-art: none;
     --invoice-header-background: linear-gradient(var(--paper), var(--paper));
     --header-text: var(--ink);
     --header-accent: var(--gold-ink);
@@ -166,18 +162,25 @@ body {
 h1, h2, p, dl, dd { margin: 0; }
 strong { font-weight: 500; }
 
-.print-preview-brand, .invoice-design-picker { display: none; }
+.print-preview-brand, .invoice-colors, .invoice-design-arrow, .invoice-design-title[hidden] { display: none; }
 
 .print-toolbar {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    width: min(var(--sheet-width), calc(100% - 32px));
+    column-gap: 8px;
+    width: var(--preview-width);
     margin: 17px auto 10px;
 }
-.print-toolbar-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-inline-start: auto; }
+.print-toolbar > a { grid-column: 1; grid-row: 1; justify-self: start; }
+.invoice-design-title {
+    grid-column: 2;
+    grid-row: 1;
+    color: var(--gold-ink);
+    font-size: 1rem;
+    font-weight: 600;
+}
+.print-toolbar-actions { grid-column: 3; grid-row: 1; display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
 
 .print-toolbar button, .print-toolbar a {
     display: inline-flex;
@@ -213,7 +216,31 @@ strong { font-weight: 500; }
     box-shadow: 0 18px 36px #172e281c, inset 0 0 0 4px var(--tint);
 }
 
+.invoice-paper-engraving {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.invoice-paper-engraving img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+    opacity: .31;
+}
+
+.invoice-paper-engraving img + img { transform: rotate(180deg); opacity: .23; }
+:root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"], [data-invoice-theme="minimal"])
+    :is(.invoice-paper-engraving, .invoice-letterhead-art) { display: none; }
+
 @media screen {
+    :root { --preview-width: min(var(--sheet-width), calc(100% - 104px)); }
     body {
         isolation: isolate;
         display: flex;
@@ -242,17 +269,24 @@ strong { font-weight: 500; }
         font: 700 clamp(3rem, 15vw, 14rem)/1 'Cinzel Decorative', Georgia, serif;
         letter-spacing: .065em;
     }
-    .invoice-sheet::before, .invoice-sheet::after {
-        content: '';
+    .invoice-design-frame {
+        position: relative;
+        width: var(--preview-width);
+        margin: 0 auto 24px;
+    }
+    .invoice-design-frame .invoice-sheet {
+        width: 100%;
+        margin: 0;
+        touch-action: pan-y pinch-zoom;
+    }
+    :root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"]) .invoice-sheet::before {
+        content: "";
         position: absolute;
         inset: 0;
         z-index: -1;
         border-radius: inherit;
         pointer-events: none;
-        background: url('../../assets/invoices/goldex-engraving.webp') left top / cover no-repeat;
-        opacity: .31;
     }
-    .invoice-sheet::after { transform: rotate(180deg); opacity: .23; }
 }
 
 .invoice-letterhead {
@@ -513,7 +547,6 @@ strong { font-weight: 500; }
 .invoice-endmark::before, .invoice-endmark::after { content: ''; border-top: 1px solid var(--gold); }
 .invoice-wordmark { color: var(--gold-ink); font: 700 .8em 'Cinzel Decorative', Georgia, serif; }
 
-:root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"], [data-invoice-theme="minimal"]) .invoice-letterhead-art { display: none; }
 :root:where([data-invoice-theme="deco"]) :is(.invoice-letterhead, .invoice-reference, .invoice-totals, .invoice-payments, .invoice-remaining, .invoice-signatures span) {
     border-radius: 0;
 }
@@ -537,8 +570,6 @@ strong { font-weight: 500; }
     }
     :root[data-invoice-theme="deco"] .invoice-sheet::before { background: var(--deco-paper-art); opacity: .66; }
     :root[data-invoice-theme="atelier"] .invoice-sheet::before { background: var(--atelier-paper-art); opacity: .38; }
-    :root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"], [data-invoice-theme="minimal"]) .invoice-sheet::after,
-    :root[data-invoice-theme="minimal"] .invoice-sheet::before { content: none; }
     :root[data-invoice-theme="minimal"] .invoice-sheet {
         border-color: var(--rule);
         border-radius: 3px;
@@ -547,108 +578,46 @@ strong { font-weight: 500; }
 }
 
 @media screen {
-    .invoice-design-picker:not([hidden]) {
-        display: block;
-        padding: 7px 12px max(7px, env(safe-area-inset-bottom));
-        border-top: 1px solid #cfc8b8;
-        background: #fbf9f3;
-        box-shadow: 0 -8px 25px #29261b0b;
-    }
-    .invoice-design-controls {
+    .invoice-design-arrow:not([hidden]) {
+        position: absolute;
+        inset-block-start: min(43%, 260px);
+        z-index: 2;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 16px;
-        align-items: center;
-        width: min(100%, 890px);
-        margin-inline: auto;
-        color: #332b20;
-    }
-    .invoice-design-group { display: flex; gap: 8px; align-items: center; min-width: 0; }
-    .invoice-design-label { flex: none; font-size: .76rem; font-weight: 500; }
-    .invoice-design-carousel {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 3px;
-        min-width: 0;
-        flex: 1;
-    }
-    .invoice-design-picker button {
-        appearance: none;
-        color: inherit;
+        place-items: center;
+        width: 42px;
+        height: 44px;
+        padding: 0;
+        border: 1px solid #cabca3;
+        border-radius: 50%;
+        background: #fffdf7;
+        color: var(--gold-ink);
+        box-shadow: 0 4px 10px #28201310;
+        transform: translateY(-50%);
         cursor: pointer;
-        font: inherit;
         touch-action: manipulation;
     }
-    .invoice-design-picker button:focus-visible { outline: 2px solid #705729; outline-offset: 1px; }
-    .invoice-design-picker .invoice-design-arrow {
-        display: grid;
-        align-content: center;
-        width: 32px;
-        height: 40px;
-        padding: 0;
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
-        text-align: center;
-        font: 25px/1 system-ui, sans-serif;
+    .invoice-design-arrow[data-invoice-step="-1"] { inset-inline-start: -49px; }
+    .invoice-design-arrow[data-invoice-step="1"] { inset-inline-end: -49px; }
+    .invoice-design-arrow svg { width: 25px; height: 25px; }
+    .invoice-design-arrow:hover { background: var(--tint); }
+    .invoice-design-arrow:focus-visible, .invoice-colors button:focus-visible {
+        outline: 2px solid var(--gold-ink);
+        outline-offset: 2px;
     }
-    .invoice-design-picker .invoice-design-arrow:hover { background: #efeade; }
-    .invoice-design-track {
+    .invoice-colors:not([hidden]) {
         display: flex;
-        gap: 6px;
-        padding: 3px;
-        overflow-x: auto;
-        scrollbar-width: none;
-        touch-action: pan-y;
-        user-select: none;
-    }
-    .invoice-design-track button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        flex: 1 0 auto;
-        min-height: 42px;
-        padding: 4px 7px;
-        border: 1px solid #ded6c7;
-        border-radius: 7px;
-        background: white;
-        font-size: .72rem;
-        white-space: nowrap;
-    }
-    .invoice-design-track button:hover { background: #faf4e7; }
-    .invoice-design-track button[aria-pressed="true"] {
-        border-color: #9c7941;
-        background: #f6eddb;
-        box-shadow: inset 0 -2px #9c7941;
-    }
-    .invoice-design-sample {
-        display: block;
         flex: none;
-        width: 23px;
-        height: 17px;
-        border: 1px solid #a88753;
-        border-radius: 2px;
-        background: linear-gradient(90deg, transparent 28%, #39604c 63%) top / 100% 5px no-repeat,
-            repeating-linear-gradient(transparent 0 2px, #c6ac7d 2px 3px) center bottom 2px / 70% 7px no-repeat, #fcf5e7;
+        align-items: center;
+        gap: 2px;
+        align-self: center;
+        margin: 4px 0 max(12px, env(safe-area-inset-bottom));
+        padding: 2px 9px;
+        border: 1px solid #d7cbb8;
+        border-radius: 99px;
+        background: #fbf9f3;
+        box-shadow: 0 4px 18px #29261b0c;
     }
-    [data-invoice-theme-option="deco"] .invoice-design-sample {
-        border: 3px double #9c7941;
-        border-radius: 0;
-        background: repeating-linear-gradient(135deg, #264334 0 4px, #9c7941 4px 5px);
-    }
-    [data-invoice-theme-option="atelier"] .invoice-design-sample {
-        background: linear-gradient(120deg, #e7d7bb 45%, #2a4b40 45%) top / 100% 6px no-repeat,
-            repeating-radial-gradient(ellipse at 0 100%, #fbf6ee 0 3px, #d6c3a2 3px 4px);
-    }
-    [data-invoice-theme-option="minimal"] .invoice-design-sample {
-        border-color: #b3b0a9;
-        background: linear-gradient(#39604c, #39604c) center 4px / 75% 1px no-repeat,
-            repeating-linear-gradient(white 0 2px, #d6d3cc 2px 3px) center bottom 2px / 69% 6px no-repeat, white;
-    }
-    .invoice-colors { gap: 3px; }
-    .invoice-colors .invoice-design-label { margin-inline-end: 4px; }
+    .invoice-color-label { margin-inline: 6px 4px; color: #514637; font-size: .75rem; }
     .invoice-colors button {
         display: grid;
         place-items: center;
@@ -658,6 +627,8 @@ strong { font-weight: 500; }
         border: 0;
         border-radius: 50%;
         background: transparent;
+        cursor: pointer;
+        touch-action: manipulation;
     }
     .invoice-colors button::before {
         content: '';
@@ -676,14 +647,12 @@ strong { font-weight: 500; }
     [data-invoice-color-option="bronze"] { --swatch: #8b553b; }
 }
 
-@media screen and (max-width: 670px) {
-    .invoice-design-controls { grid-template-columns: minmax(0, 1fr); gap: 2px; max-width: 490px; }
-    .invoice-colors { justify-content: center; }
-}
-
-@media screen and (max-width: 405px) {
-    .invoice-design-group:first-child > .invoice-design-label { position: absolute; clip-path: inset(50%); }
-    .invoice-design-track button { min-width: 80px; }
+@media screen and (max-width: 749px) {
+    :root { --preview-width: min(var(--sheet-width), calc(100% - 66px)); }
+    .invoice-design-arrow:not([hidden]) { width: 30px; height: 39px; }
+    .invoice-design-arrow[data-invoice-step="-1"] { inset-inline-start: -32px; }
+    .invoice-design-arrow[data-invoice-step="1"] { inset-inline-end: -32px; }
+    .invoice-design-arrow svg { width: 21px; height: 21px; }
 }
 
 @media print, screen and (min-width: 601px) {
@@ -706,8 +675,10 @@ strong { font-weight: 500; }
 }
 
 @media screen and (max-width: 600px) {
-    .print-toolbar, .invoice-sheet { width: calc(100% - 20px); }
-    .print-toolbar { margin-block-start: 10px; }
+    .print-toolbar { width: calc(100% - 20px); grid-template-columns: auto minmax(0, 1fr); row-gap: 5px; margin-block-start: 7px; }
+    .invoice-design-title { grid-area: 1 / 1 / 2 / -1; justify-self: center; font-size: .9rem; }
+    .print-toolbar > a { grid-row: 2; }
+    .print-toolbar-actions { grid-column: 2; grid-row: 2; }
     .print-toolbar button, .print-toolbar a { padding-inline: 8px; font-size: .82rem; }
     .invoice-sheet { padding: 6px 6px 0; border-radius: 11px; }
     .invoice-body { padding-inline: 4px; }
@@ -797,7 +768,9 @@ strong { font-weight: 500; }
 }
 
 @media screen and (min-width: 960px) {
-    .print-toolbar, .invoice-sheet { zoom: 1.2; }
+    :root { --preview-width: min(calc(var(--sheet-width) * 1.2), calc(100% - 104px)); }
+    .print-toolbar button, .print-toolbar a { min-height: 52px; }
+    .invoice-sheet { zoom: 1.2; }
 }
 
 @media print {
@@ -810,35 +783,28 @@ strong { font-weight: 500; }
         border: 1px solid var(--gold);
         pointer-events: none;
     }
-    body::after, .invoice-letterhead-art {
+    .invoice-paper-engraving,
+    :root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"]) body::after {
         position: fixed;
         inset: 0 auto auto 0;
         /* Printable A5 landscape area after the @page margins. */
         width: 196mm;
         height: 135mm;
-        object-fit: fill;
-        opacity: .3;
         print-color-adjust: exact;
     }
-    body::after {
-        content: url('../../assets/invoices/goldex-engraving.webp');
-        transform: rotate(180deg);
-        opacity: .24;
-    }
+    .invoice-paper-engraving img { print-color-adjust: exact; }
     :root[data-invoice-theme="deco"] body::before { border: 3px double var(--gold); }
     :root:is([data-invoice-theme="deco"], [data-invoice-theme="atelier"]) body::after {
         content: '';
-        transform: none;
     }
     :root[data-invoice-theme="deco"] body::after { background: var(--deco-paper-art); opacity: .66; }
     :root[data-invoice-theme="atelier"] body::after { background: var(--atelier-paper-art); opacity: .38; }
-    :root[data-invoice-theme="minimal"] body::after { content: none; }
     :root[data-invoice-theme="minimal"] body::before { border-color: var(--rule); }
-    .print-toolbar, .invoice-endmark, .invoice-design-picker { display: none; }
+    .print-toolbar, .invoice-endmark, .invoice-colors, .invoice-design-arrow { display: none; }
     /* Leave half a millimeter for page-size rounding in the print engine. */
     .invoice-sheet { z-index: 1; width: auto; min-block-size: 134.5mm; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
     .invoice-body { padding-block-end: 1.5mm; }
-    .invoice-letterhead { isolation: auto; overflow: visible; border-radius: 0; background: transparent; }
+    .invoice-letterhead { border-radius: 0; background: transparent; }
     .invoice-letterhead::after { display: none; }
     .invoice-store-identity { display: flex; flex-direction: column; align-self: stretch; }
     .invoice-brand { flex: 1 0 auto; }
@@ -852,12 +818,7 @@ strong { font-weight: 500; }
     .invoice-table tr { break-inside: avoid; }
 
     html[data-invoice-print-mode="color"] body { print-color-adjust: exact; }
-    html[data-invoice-print-mode="color"] .invoice-letterhead::after {
-        display: block;
-        z-index: 0;
-        background: var(--letterhead-gradient), var(--header-art);
-    }
-    html[data-invoice-print-mode="color"] .invoice-letterhead :is(.invoice-store-identity, .invoice-reference, .invoice-qr) { position: relative; z-index: 1; }
+    html[data-invoice-print-mode="color"] .invoice-letterhead::after { display: block; }
 
     html:not([data-invoice-print-mode="color"]) {
         --ink: #222;
@@ -867,8 +828,9 @@ strong { font-weight: 500; }
         --gold-ink: #444;
         --rule: #c2c2c2;
     }
+    html:not([data-invoice-print-mode="color"]) .invoice-letterhead-art { display: none; }
     html:not([data-invoice-print-mode="color"]) body::after,
-    html:not([data-invoice-print-mode="color"]) :is(.invoice-letterhead-art, .invoice-brand > img) { filter: grayscale(1); }
+    html:not([data-invoice-print-mode="color"]) :is(.invoice-paper-engraving img, .invoice-brand > img) { filter: grayscale(1); }
     html:not([data-invoice-print-mode="color"]) .invoice-store-wordmark { filter: grayscale(1) brightness(.15); }
     html:not([data-invoice-print-mode="color"]) :is(.invoice-store-identity, .invoice-store, .invoice-store-contact svg, .invoice-remaining, .invoice-remaining.is-settled) { color: #222; }
     html:not([data-invoice-print-mode="color"]) .invoice-brand > img { box-shadow: none; background: white; }

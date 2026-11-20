@@ -24,13 +24,22 @@
         {
             <a href="@ClientRoutes.Invoices.List" data-close-invoice><ShellIcon Name="close" /> بستن</a>
         }
+        <span class="invoice-design-title" data-invoice-theme-name aria-live="polite" hidden></span>
         <div class="print-toolbar-actions">
             <button type="button" data-print-invoice="mono" hidden><ShellIcon Name="print" /> چاپ سیاه‌وسفید</button>
             <button type="button" data-print-invoice="color" hidden><ShellIcon Name="print" /> چاپ رنگی</button>
         </div>
     </nav>
 
+    <div class="invoice-design-frame">
+    <button class="invoice-design-arrow" type="button" data-invoice-step="-1" aria-label="طرح قبلی" hidden>
+        <ShellIcon Name="chevron-right" />
+    </button>
     <main class="invoice-sheet">
+        <div class="invoice-paper-engraving" aria-hidden="true">
+            <img src="/assets/invoices/goldex-engraving.webp" alt="" />
+            <img src="/assets/invoices/goldex-engraving.webp" alt="" />
+        </div>
         <header class="invoice-header">
             <div class="invoice-letterhead">
                 <img class="invoice-letterhead-art" src="/assets/invoices/goldex-engraving.webp" alt="" />
@@ -223,6 +232,10 @@
             <div class="invoice-endmark"><span class="invoice-wordmark" dir="ltr">GoldEx</span></div>
         </div>
     </main>
+    <button class="invoice-design-arrow" type="button" data-invoice-step="1" aria-label="طرح بعدی" hidden>
+        <ShellIcon Name="chevron-left" />
+    </button>
+    </div>
     </div>
     <InvoicePrintDesignPicker />
 </body>
