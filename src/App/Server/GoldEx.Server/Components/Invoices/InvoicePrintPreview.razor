@@ -34,7 +34,16 @@
                 <div class="invoice-store-identity">
                     <div class="invoice-brand">
                         <img src="@LogoUrl" width="56" height="56" alt="" />
-                        <p class="invoice-store">@StoreName</p>
+                        <p class="invoice-store">
+                            @if (HasFaniWordmark)
+                            {
+                                <img class="invoice-store-wordmark" src="/assets/invoices/fani-wordmark.webp" width="1888" height="500" alt="@StoreName" />
+                            }
+                            else
+                            {
+                                @StoreName
+                            }
+                        </p>
                     </div>
                     @if (Setting is { } setting &&
                          (!string.IsNullOrWhiteSpace(setting.Address) || !string.IsNullOrWhiteSpace(setting.PhoneNumber)))
@@ -225,6 +234,7 @@
     private bool IsSale => Invoice.Type == InvoiceType.Sell;
     private bool IsWholesaleSale => IsSale && Invoice.Scale == TradeScale.Wholesale;
     private string StoreName => string.IsNullOrWhiteSpace(Setting?.InstitutionName) ? "فروشگاه طلا و جواهر" : Setting.InstitutionName;
+    private bool HasFaniWordmark => StoreName.Trim() == "طلا و جواهری فانی";
     private string Title => $"فاکتور {Invoice.Type.GetDisplayName()}";
     private string StoreSignature => IsWholesaleSale ? "مهر و امضای تحویل‌دهنده" : IsSale ? "مهر و امضای فروشنده" : "مهر و امضای خریدار";
     private string CustomerSignature => IsWholesaleSale ? "امضای تحویل‌گیرنده" : IsSale ? "امضای خریدار" : "امضای فروشنده";
