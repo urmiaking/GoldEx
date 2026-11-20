@@ -81,6 +81,8 @@ body {
 h1, h2, p, dl, dd { margin: 0; }
 strong { font-weight: 500; }
 
+.print-preview-brand { display: none; }
+
 .print-toolbar {
     display: flex;
     align-items: center;
@@ -127,6 +129,25 @@ strong { font-weight: 500; }
 }
 
 @media screen {
+    body {
+        isolation: isolate;
+        background: radial-gradient(ellipse at 50% 0%, #f8f3e6, transparent 65%), #e9e7de;
+    }
+    .print-preview-brand {
+        display: block;
+        position: fixed;
+        inset-inline: 0;
+        inset-block-end: 2vh;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+        color: #795a31;
+        opacity: .13;
+        text-align: center;
+        white-space: nowrap;
+        font: 700 clamp(3rem, 15vw, 14rem)/1 'Cinzel Decorative', Georgia, serif;
+        letter-spacing: .065em;
+    }
     .invoice-sheet::before, .invoice-sheet::after {
         content: '';
         position: absolute;
@@ -457,7 +478,8 @@ strong { font-weight: 500; }
     .invoice-lines .line-fineness { grid-column: 4; }
     .invoice-lines .line-wage { grid-column: 2; }
     .invoice-lines :is(.line-quantity, .line-weight, .line-fineness, .line-wage) { text-align: start; }
-    .invoice-lines tbody .line-total { grid-column: 3 / -1; display: flex; justify-content: space-between; align-items: center; gap: 6px; border-block-start: 1px solid var(--rule); }
+    .invoice-lines tbody .line-total { grid-column: 3 / -1; display: grid; justify-items: end; gap: 2px; border-block-start: 1px solid var(--rule); }
+    .invoice-lines tbody .line-total-value { overflow-wrap: normal; }
     .invoice-lines tfoot tr { display: flex; justify-content: space-between; align-items: baseline; }
     .invoice-lines tfoot .line-subtotal { width: 100%; }
     .mobile-unit { display: inline; margin-inline-start: .3em; }
@@ -505,6 +527,10 @@ strong { font-weight: 500; }
 @media screen and (min-width: 750px) {
     :root { --sheet-width: 196mm; }
     .invoice-sheet { min-block-size: 135mm; }
+}
+
+@media screen and (min-width: 960px) {
+    .print-toolbar, .invoice-sheet { zoom: 1.2; }
 }
 
 @media print {
