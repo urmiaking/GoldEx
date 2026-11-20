@@ -20,7 +20,7 @@
     <nav class="print-toolbar" aria-label="ابزارهای چاپ">
         @if (!IsShared)
         {
-            <a href="@ClientRoutes.Invoices.List">بازگشت به فاکتورها</a>
+            <a href="@ClientRoutes.Invoices.List" data-close-invoice><ShellIcon Name="close" /> بستن</a>
         }
         <div class="print-toolbar-actions">
             <button type="button" data-print-invoice="mono" hidden><ShellIcon Name="print" /> چاپ سیاه‌وسفید</button>

@@ -176,7 +176,7 @@
                                 <td>
                                     <div class="invoice-actions">
                                         <button type="button" class="is-print" title="چاپ فاکتور" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
-                                        <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-enhance-nav="false" title="چاپ جدید فاکتور" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber">
+                                        <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-invoice-print-popup data-enhance-nav="false" title="چاپ جدید فاکتور" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber">
                                             <ShellIcon Name="print" />
                                             <span class="invoice-print-badge" aria-hidden="true">N</span>
                                         </a>
@@ -222,7 +222,7 @@
                             <button type="button" class="invoice-card-expand" aria-expanded="@(invoice.ShowDetails ? "true" : "false")" @onclick="() => ToggleDetails(invoice)"><ShellIcon Name="expand" /> @(invoice.ShowDetails ? "بستن جزئیات" : "جزئیات و مانده مشتری")</button>
                             <div class="invoice-actions">
                                 <button type="button" class="is-print" title="چاپ" aria-label="چاپ فاکتور @invoice.InvoiceNumber" @onclick="() => OnViewInvoice(invoice)"><ShellIcon Name="print" /></button>
-                                <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-enhance-nav="false" title="چاپ جدید فاکتور" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber">
+                                <a class="invoice-print-preview" href="@(ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id = invoice.Id }))" target="_blank" rel="noopener" data-invoice-print-popup data-enhance-nav="false" title="چاپ جدید فاکتور" aria-label="چاپ جدید فاکتور @invoice.InvoiceNumber">
                                     <ShellIcon Name="print" />
                                     <span class="invoice-print-badge" aria-hidden="true">N</span>
                                 </a>

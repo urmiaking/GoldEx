@@ -1,5 +1,17 @@
 const invoicePrintButtons = [...document.querySelectorAll('[data-print-invoice]')];
 const invoiceDocument = document.documentElement;
+const closeInvoice = document.querySelector('[data-close-invoice]');
+
+closeInvoice?.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+        return;
+
+    event.preventDefault();
+    window.close();
+    window.setTimeout(() => {
+        if (!window.closed) window.location.replace(closeInvoice.href);
+    }, 100);
+});
 
 function finishInvoicePrint() {
     delete invoiceDocument.dataset.invoicePrintMode;
