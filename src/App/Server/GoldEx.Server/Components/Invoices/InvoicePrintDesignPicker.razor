@@ -1,0 +1,41 @@
+<section class="invoice-design-picker" aria-label="ظاهر فاکتور" data-invoice-style-picker hidden>
+    <div class="invoice-design-controls">
+        <div class="invoice-design-group" role="group" aria-labelledby="invoice-design-label">
+            <span class="invoice-design-label" id="invoice-design-label">طرح چاپ</span>
+            <div class="invoice-design-carousel">
+                <button class="invoice-design-arrow" type="button" data-invoice-step="-1" aria-label="طرح قبلی">
+                    <span aria-hidden="true" dir="ltr">›</span>
+                </button>
+                <div class="invoice-design-track" data-invoice-design-track>
+                    <button type="button" data-invoice-theme-option="engraved" aria-pressed="true">
+                        <span class="invoice-design-sample" aria-hidden="true"></span>
+                        زرنگار
+                    </button>
+                    <button type="button" data-invoice-theme-option="deco" aria-pressed="false">
+                        <span class="invoice-design-sample" aria-hidden="true"></span>
+                        آرت‌دکو
+                    </button>
+                    <button type="button" data-invoice-theme-option="atelier" aria-pressed="false">
+                        <span class="invoice-design-sample" aria-hidden="true"></span>
+                        ویترین
+                    </button>
+                    <button type="button" data-invoice-theme-option="minimal" aria-pressed="false">
+                        <span class="invoice-design-sample" aria-hidden="true"></span>
+                        مینیمال
+                    </button>
+                </div>
+                <button class="invoice-design-arrow" type="button" data-invoice-step="1" aria-label="طرح بعدی">
+                    <span aria-hidden="true" dir="ltr">‹</span>
+                </button>
+            </div>
+        </div>
+        <div class="invoice-design-group invoice-colors" role="group" aria-labelledby="invoice-color-label">
+            <span class="invoice-design-label" id="invoice-color-label">رنگ</span>
+            <button type="button" data-invoice-color-option="emerald" aria-label="زمردی" title="زمردی" aria-pressed="true"></button>
+            <button type="button" data-invoice-color-option="wine" aria-label="زرشکی" title="زرشکی" aria-pressed="false"></button>
+            <button type="button" data-invoice-color-option="sapphire" aria-label="سرمه‌ای" title="سرمه‌ای" aria-pressed="false"></button>
+            <button type="button" data-invoice-color-option="onyx" aria-label="دودی" title="دودی" aria-pressed="false"></button>
+            <button type="button" data-invoice-color-option="bronze" aria-label="مسی" title="مسی" aria-pressed="false"></button>
+        </div>
+    </div>
+</section>

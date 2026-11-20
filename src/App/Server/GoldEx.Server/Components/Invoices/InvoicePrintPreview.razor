@@ -13,10 +13,12 @@
     <title>@Title @DocumentNumber | GoldEx</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/css/reports/invoice-print.css" />
+    <script src="/js/invoice-style-picker.js" defer></script>
     <script src="/js/invoice-print.js" defer></script>
 </head>
 <body>
     <div class="print-preview-brand" aria-hidden="true" dir="ltr">GOLDEX</div>
+    <div class="invoice-preview-scroll">
     <nav class="print-toolbar" aria-label="ابزارهای چاپ">
         @if (!IsShared)
         {
@@ -221,6 +223,8 @@
             <div class="invoice-endmark"><span class="invoice-wordmark" dir="ltr">GoldEx</span></div>
         </div>
     </main>
+    </div>
+    <InvoicePrintDesignPicker />
 </body>
 </html>
 
