@@ -391,57 +391,59 @@ else
             </div>
             <div id="invoice-review" class="invoice-workspace-footer">
                 <div class="invoice-form-actions">
-                <div class="invoice-form-actions-danger">
-                    @if (IsEditMode)
-                    {
-                        <MudButton Class="invoice-form-action-delete"
-                                   Color="Color.Error" Variant="Variant.Outlined"
-                                   StartIcon="@(_deleting ? null : Icons.Material.Outlined.DeleteOutline)"
-                                   Disabled="@IsBusy" OnClick="OnDelete">
-                            @if (_deleting)
+                    <div class="invoice-form-actions-primary">
+                        @if (IsEditMode)
+                        {
+                            <div class="invoice-form-actions-print" role="group" aria-label="چاپ فاکتور">
+                                <MudButton Class="invoice-form-action-print"
+                                           Color="Color.Success" Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Outlined.Print"
+                                           Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync()">
+                                    چاپ
+                                </MudButton>
+                                <MudButton Class="invoice-form-action-print"
+                                           Color="Color.Success" Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Outlined.Print"
+                                           Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync(useNewPrint: true)">
+                                    چاپ گلدکس
+                                </MudButton>
+                            </div>
+                        }
+                        <MudButton Class="invoice-form-action-save"
+                                   Color="Color.Primary" Variant="Variant.Filled"
+                                   StartIcon="@(_processing ? null : Icons.Material.Outlined.Save)"
+                                   Disabled="@_processing" OnClick="() => SubmitAsync()">
+                            @if (_processing)
                             {
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                                <span>در حال حذف</span>
+                                <span>در حال ذخیره</span>
                             }
                             else
                             {
-                                <span>حذف فاکتور</span>
+                                <span>@(IsEditMode ? "اعمال تغییرات" : "ذخیره فاکتور")</span>
                             }
                         </MudButton>
-                    }
-                </div>
-                <div class="invoice-form-actions-primary">
+                    </div>
                     @if (IsEditMode)
                     {
-                        <MudButton Class="invoice-form-action-print"
-                                   Color="Color.Success" Variant="Variant.Outlined"
-                                   StartIcon="@Icons.Material.Outlined.Print"
-                                   Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync()">
-                            چاپ
-                        </MudButton>
-                        <MudButton Class="invoice-form-action-print"
-                                   Color="Color.Success" Variant="Variant.Outlined"
-                                   StartIcon="@Icons.Material.Outlined.Print"
-                                   Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync(useNewPrint: true)">
-                            چاپ جدید
-                        </MudButton>
+                        <div class="invoice-form-actions-danger">
+                            <MudButton Class="invoice-form-action-delete"
+                                       Color="Color.Error" Variant="Variant.Outlined"
+                                       StartIcon="@(_deleting ? null : Icons.Material.Outlined.DeleteOutline)"
+                                       Disabled="@IsBusy" OnClick="OnDelete">
+                                @if (_deleting)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                    <span>در حال حذف</span>
+                                }
+                                else
+                                {
+                                    <span>حذف فاکتور</span>
+                                }
+                            </MudButton>
+                        </div>
                     }
-                    <MudButton Class="invoice-form-action-save"
-                               Color="Color.Primary" Variant="Variant.Filled"
-                               StartIcon="@(_processing ? null : Icons.Material.Outlined.Save)"
-                               Disabled="@_processing" OnClick="() => SubmitAsync()">
-                        @if (_processing)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                            <span>در حال ذخیره</span>
-                        }
-                        else
-                        {
-                            <span>@(IsEditMode ? "اعمال تغییرات" : "ذخیره فاکتور")</span>
-                        }
-                    </MudButton>
                 </div>
-            </div>
             </div>
         </MudForm>
     </div>

@@ -140,7 +140,9 @@
 
 .invoice-workspace-footer{padding:12px 17px;margin-top:14px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);border-radius:16px}
 .invoice-form-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.invoice-form-actions-primary,.invoice-form-actions-danger{display:flex;align-items:center;gap:8px}
+.invoice-form-actions-primary,.invoice-form-actions-print,.invoice-form-actions-danger{display:flex;align-items:center;gap:8px}
+.invoice-form-actions-primary{margin-inline-start:auto}
+.invoice-form-actions-danger{order:-1}
 .invoice-form-actions ::deep .mud-button-root{min-height:41px;border-radius:999px;padding:6px 15px;font-size:.81rem;font-weight:500;box-shadow:none;letter-spacing:0}
 .invoice-form-actions ::deep .invoice-form-action-save{box-shadow:0 2px 7px rgba(0,0,0,.08)}
 .invoice-form-actions ::deep .invoice-form-action-print{border-color:var(--mud-palette-success);color:var(--mud-palette-success);background:rgba(var(--mud-palette-success-rgb),.045)}
@@ -217,10 +219,13 @@
 .invoice-financial-breakdown{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
 .invoice-item-switch{margin-bottom:11px}
 .invoice-item-switch button{font-size:.73rem}
-.invoice-workspace-footer{padding:10px 11px;margin-top:11px}
-.invoice-form-actions{gap:8px}
-.invoice-form-actions-primary{flex:1;flex-wrap:wrap;justify-content:flex-end}
-.invoice-form-actions ::deep .mud-button-root{min-height:40px;padding:5px 9px;font-size:.73rem}
+.invoice-workspace-footer{padding:12px;margin-top:11px}
+.invoice-form-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.invoice-form-actions-primary{display:contents}
+.invoice-form-actions-print{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-column:1/-1}
+.invoice-form-actions-danger{order:0}
+.invoice-form-actions:not(:has(.invoice-form-actions-danger)) ::deep .invoice-form-action-save{grid-column:1/-1}
+.invoice-form-actions ::deep .mud-button-root{width:100%;min-width:0;min-height:44px;padding:5px 8px;font-size:.8rem;white-space:nowrap}
 .invoice-workspace ::deep .invoice-line-desktop{display:none}
 .invoice-workspace ::deep .invoice-line-mobile{display:grid;gap:8px}
 .invoice-workspace ::deep .invoice-line-toolbar{align-items:stretch}

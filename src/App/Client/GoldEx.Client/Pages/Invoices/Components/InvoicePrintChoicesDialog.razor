@@ -3,13 +3,14 @@
         <MudText>فاکتور ذخیره شد. می‌خواهید آن را چاپ کنید؟</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Default" OnClick="() => Dialog.Cancel()">انصراف</MudButton>
-        <MudSpacer />
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => Dialog.Close(DialogResult.Ok(true))">چاپ</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                   Href="@PreviewUrl" Target="_blank" rel="noopener"
-                   data-invoice-print-popup="true" data-enhance-nav="false"
-                   OnClick="() => Dialog.Close(DialogResult.Ok(false))">چاپ جدید</MudButton>
+        <div class="invoice-print-dialog-actions">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => Dialog.Close(DialogResult.Ok(true))">چاپ</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true"
+                       Href="@PreviewUrl" Target="_blank" rel="noopener"
+                       data-invoice-print-popup="true" data-enhance-nav="false"
+                       OnClick="() => Dialog.Close(DialogResult.Ok(false))">چاپ گلدکس</MudButton>
+            <MudButton Class="invoice-print-dialog-cancel" Color="Color.Default" OnClick="() => Dialog.Cancel()">انصراف</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 
