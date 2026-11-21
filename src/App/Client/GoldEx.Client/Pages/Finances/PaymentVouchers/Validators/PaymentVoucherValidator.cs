@@ -18,8 +18,11 @@ public class PaymentVoucherValidator : AbstractValidator<PaymentVoucherVm>
             .NotEmpty().WithMessage("لطفا تاریخ پرداخت را وارد کنید");
 
         RuleFor(x => x.Amount)
-            .NotEmpty().WithMessage("لطفا مبلغ را وارد کنید")
-            .GreaterThan(0).WithMessage("مبلغ باید بزرگتر از صفر باشد");
+            .NotEmpty().WithMessage("مبلغ یا وزن پرداختی را وارد کنید")
+            .GreaterThan(0).WithMessage("مقدار پرداخت باید بیشتر از صفر باشد");
+
+        RuleFor(x => x.PriceUnit)
+            .NotEmpty().WithMessage("واحد پرداخت را انتخاب کنید");
 
         RuleFor(x => x.SourceFinancialAccount)
             .NotEmpty().WithMessage("لطفا حساب پرداختی را انتخاب کنید");

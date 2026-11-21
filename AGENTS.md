@@ -1266,3 +1266,9 @@ The user explicitly confirmed receiving a real device notification after enablin
 
 - Query the ordered invoice IDs for the requested page once, then load totals and presentation data by those IDs. EF Core split queries otherwise repeat the customer/product text predicate for each invoice collection and load unrelated product details. Keep the tenant filter, substring search, payment and date filters, and existing aggregate/mapping semantics. The page ID order is authoritative and uses invoice ID as the final tie-breaker.
 - Only the latest `InvoicesList` request may commit the rows, loading/error state, or URL changes after the previous request is canceled.
+
+### Payment voucher editor (2026-11-21)
+
+- The payment voucher list and Quick Create use the same `PaymentVouchers/Components/Editor` through `ResponsiveDialogService`. Keep the amount or weight next to the payment unit, show the exchange rate only for a non-default unit, and use `EditorDialogFrame` for the fixed actions.
+- Match the other financial forms with MudBlazor's dense outlined fields and a single-line description. Align the adjacent add buttons to the fields and preserve a 44px touch target on phones.
+- The payment unit filters both account lists and the selected customer filters the optional destination account. Clear both selected accounts and the exchange rate when the unit changes, and clear the destination account when the customer changes. Preserve loaded selections on initial edit and when refreshing the lists after adding an account.

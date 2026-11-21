@@ -118,7 +118,7 @@ public partial class PaymentVouchersList
     }
     public async Task OnCreate()
     {
-        var dialog = ResponsiveDialogs.Show<Editor>("افزودن سند پرداخت جدید", wide: true);
+        var dialog = ResponsiveDialogs.Show<Editor>("ثبت سند پرداخت", wide: true);
         if (await dialog.Result is { Canceled: false })
         {
             AddSuccessToast("سند جدید با موفقیت افزوده شد.");

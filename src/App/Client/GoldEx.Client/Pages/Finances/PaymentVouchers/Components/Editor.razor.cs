@@ -28,22 +28,43 @@ public partial class Editor
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetFinancialAccountTitleResponse> _sourceFinancialAccounts = [];
     private List<GetFinancialAccountTitleResponse> _destinationFinancialAccounts = [];
-    private List<GetCustomerResponse> _suppliers = [];
+    private bool _loading = true;
+    private bool _refreshingAccounts;
     private bool _processing;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault);
+    private bool CanSubmit => !_loading && !_refreshingAccounts && !_processing && (!Id.HasValue || _model.Id == Id);
+
+    private string? SourceAccountHint => _refreshingAccounts ? "در حال دریافت حساب‌ها"
+        : _model.PriceUnit is null ? "ابتدا واحد پرداخت را انتخاب کنید."
+        : _sourceFinancialAccounts.Count == 0 ? "برای این واحد، حساب پرداختی تعریف نشده است."
+        : null;
+
+    private string? DestinationAccountHint => _refreshingAccounts || _model.PriceUnit is null ? null
+        : _model.Customer is null ? "ابتدا طرف حساب را انتخاب کنید."
+        : _destinationFinancialAccounts.Count == 0 ? "برای این طرف حساب، حسابی با این واحد ثبت نشده است."
+        : null;
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Id.HasValue)
-            await LoadPaymentVoucherAsync();
-        else
-            await LoadVoucherNumberAsync();
+        _loading = true;
+        try
+        {
+            if (Id.HasValue)
+                await LoadPaymentVoucherAsync();
+            else
+                await LoadVoucherNumberAsync();
 
-        await LoadPriceUnitsAsync();
-        await LoadSourceFinancialAccountsAsync();
+            await LoadPriceUnitsAsync();
+            await LoadSourceFinancialAccountsAsync();
+            await LoadDestinationFinancialAccountsAsync();
 
-        await base.OnParametersSetAsync();
+            await base.OnParametersSetAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task LoadVoucherNumberAsync()
@@ -65,7 +86,6 @@ public partial class Editor
             {
                 _priceUnits = response;
                 _model.PriceUnit ??= _priceUnits.FirstOrDefault(u => u.IsDefault);
-                StateHasChanged();
             });
     }
 
@@ -73,54 +93,59 @@ public partial class Editor
     {
         await SendRequestAsync<IPaymentVoucherService, GetPaymentVoucherResponse>(
             action: (service, token) => service.GetAsync(Id!.Value, token),
-            afterSend: async response =>
-            {
-                _model = PaymentVoucherVm.CreateFrom(response);
-                await LoadDestinationFinancialAccountsAsync();
-                await LoadSourceFinancialAccountsAsync();
-                StateHasChanged();
-            });
+            afterSend: response => _model = PaymentVoucherVm.CreateFrom(response));
     }
 
-    private void Close() { if (_processing) return; if (Session is not null) Session.Cancel(); else MudDialog.Cancel(); }
-
-    public async Task Submit()
+    private void Close()
     {
         if (_processing)
             return;
 
-        await _form.ValidateAsync();
+        if (Session is not null)
+            Session.Cancel();
+        else
+            MudDialog.Cancel();
+    }
 
-        if (!_form.IsValid)
+    public async Task Submit()
+    {
+        if (!CanSubmit)
             return;
 
         _processing = true;
+        Session?.SetBusy(true);
+        try
+        {
+            await _form.ValidateAsync();
 
-        await SendRequestAsync<IPaymentVoucherService>(
-            action: (service, token) => Id.HasValue
-                ? service.UpdateAsync(Id.Value, PaymentVoucherVm.ToRequest(_model), token)
-                : service.CreateAsync(PaymentVoucherVm.ToRequest(_model), token),
-            afterSend: () =>
+            if (!_form.IsValid)
             {
-                _processing = false;
-                if (Session is not null) Session.Close(true);
-                else MudDialog.Close(DialogResult.Ok(true));
-                return Task.CompletedTask;
-            });
+                AddErrorToast("موارد مشخص‌شده در فرم را بررسی کنید.");
+                return;
+            }
 
-        _processing = false;
+            await SendRequestAsync<IPaymentVoucherService>(
+                action: (service, token) => Id.HasValue
+                    ? service.UpdateAsync(Id.Value, PaymentVoucherVm.ToRequest(_model), token)
+                    : service.CreateAsync(PaymentVoucherVm.ToRequest(_model), token),
+                afterSend: () =>
+                {
+                    if (Session is not null)
+                        Session.Close(true);
+                    else
+                        MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
+        }
+        finally
+        {
+            _processing = false;
+            Session?.SetBusy(false);
+        }
     }
 
     private async Task OnAddSupplier()
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        var parameters = new DialogParameters<Customers.Components.Editor>
-        {
-            { x => x.ReturnModel, true },
-            { x => x.ShowFinancialAccounts, false }
-        };
-
         var dialog = ResponsiveDialogs.Show<Customers.Components.Editor>("افزودن طرف حساب جدید", new Dictionary<string, object> {
             [nameof(Customers.Components.Editor.ReturnModel)] = true,
             [nameof(Customers.Components.Editor.ShowFinancialAccounts)] = false
@@ -129,48 +154,24 @@ public partial class Editor
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CustomerVm customerVm })
-        {
-            _model.Customer = customerVm;
-            await LoadDestinationFinancialAccountsAsync();
-            StateHasChanged();
-        }
+            await OnSupplierChanged(customerVm);
     }
 
     private async Task OnAddFinancialAccount(bool isSourceAccount)
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        DialogParameters<FinancialAccountEditor> parameters;
-
-        if (isSourceAccount)
-        {
-            parameters = new DialogParameters<FinancialAccountEditor>
-            {
-                { x => x.SubmitIndependently, true },
-                { x => x.PriceUnits, _priceUnits },
-            };
-        }
-        else
-        {
-            if (_model.Customer is null)
-                return;
-
-            parameters = new DialogParameters<FinancialAccountEditor>
-            {
-                { x => x.SubmitIndependently, true },
-                { x => x.PriceUnits, _priceUnits },
-                { x => x.CustomerId, _model.Customer.Id },
-                { x => x.AccountHolderName, _model.Customer.FullName }
-            };
-        }
-
         var nativeArgs = new Dictionary<string, object> {
             [nameof(FinancialAccountEditor.SubmitIndependently)] = true,
             [nameof(FinancialAccountEditor.PriceUnits)] = _priceUnits
         };
-        if (!isSourceAccount && _model.Customer is not null)
+        if (_model.PriceUnit is { IsGoldBased: false } unit)
+            nativeArgs[nameof(FinancialAccountEditor.PriceUnit)] = unit;
+
+        if (!isSourceAccount)
         {
-            nativeArgs[nameof(FinancialAccountEditor.CustomerId)] = _model.Customer.Id!;
+            if (_model.Customer?.Id is not Guid customerId)
+                return;
+
+            nativeArgs[nameof(FinancialAccountEditor.CustomerId)] = customerId;
             nativeArgs[nameof(FinancialAccountEditor.AccountHolderName)] = _model.Customer.FullName;
         }
         var dialog = ResponsiveDialogs.Show<FinancialAccountEditor>("افزودن حساب مالی جدید", nativeArgs, wide: true);
@@ -188,90 +189,92 @@ public partial class Editor
 
     private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
+        if (_processing || _refreshingAccounts || _model.PriceUnit == priceUnit)
+            return;
+
         _model.PriceUnit = priceUnit;
+        _model.ExchangeRate = null;
+        _model.SourceFinancialAccount = null;
+        _model.DestinationFinancialAccount = null;
+        _sourceFinancialAccounts = [];
+        _destinationFinancialAccounts = [];
 
-        await LoadSourceFinancialAccountsAsync();
-
-        if (_model.Customer is not null)
+        _refreshingAccounts = true;
+        try
+        {
+            await LoadSourceFinancialAccountsAsync();
             await LoadDestinationFinancialAccountsAsync();
-
-        await LoadExchangeRateAsync();
+            await LoadExchangeRateAsync();
+        }
+        finally
+        {
+            _refreshingAccounts = false;
+        }
     }
 
     private async Task LoadExchangeRateAsync()
     {
-        if (DefaultPriceUnit is null)
+        if (DefaultPriceUnit is not { } defaultUnit)
         {
             AddErrorToast("ارز پیش فرض تعریف نشده است");
             return;
         }
 
-        if (_model.PriceUnit is null)
-        {
-            AddErrorToast("واحد ارزی سند انتخاب نشده است");
+        if (_model.PriceUnit is not { } unit || unit.Id == defaultUnit.Id)
             return;
-        }
-
-        if (_model.PriceUnit.Id == DefaultPriceUnit.Id)
-        {
-            _model.ExchangeRate = null;
-            return;
-        }
-
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-            action: (s, ct) =>
-                s.GetExchangeRateAsync(_model.PriceUnit.Id, DefaultPriceUnit.Id, ct),
+            action: (s, ct) => s.GetExchangeRateAsync(unit.Id, defaultUnit.Id, ct),
             afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
-    private async Task LoadFinancialAccounts(Guid? customerId, Guid? priceUnitId, bool isSourceFinancialAccount)
+    private async Task LoadSourceFinancialAccountsAsync()
     {
-        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
-            action: (service, token) => service.GetTitlesAsync(customerId, priceUnitId, token),
-            afterSend: response =>
-            {
-                if (isSourceFinancialAccount)
-                {
-                    _sourceFinancialAccounts = response;
-
-                    if (!Id.HasValue)
-                        _model.SourceFinancialAccount = null;
-                }
-                else
-                {
-                    _destinationFinancialAccounts = response;
-
-                    if (!Id.HasValue)
-                        _model.DestinationFinancialAccount = null;
-                }
-                StateHasChanged();
-            });
+        if (_model.PriceUnit is { } unit)
+            await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+                action: (service, token) => service.GetTitlesAsync(null, unit.Id, token),
+                afterSend: response => _sourceFinancialAccounts = response);
     }
 
-    private async Task LoadSourceFinancialAccountsAsync() => await LoadFinancialAccounts(null, _model.PriceUnit?.Id, true);
-    private async Task LoadDestinationFinancialAccountsAsync() => await LoadFinancialAccounts(_model.Customer?.Id, _model.PriceUnit?.Id, false);
-
-    private async Task<IEnumerable<CustomerVm>?> SearchSuppliers(string? supplierName, CancellationToken cancellationToken = default)
+    private async Task LoadDestinationFinancialAccountsAsync()
     {
-        if (string.IsNullOrEmpty(supplierName))
-            return null;
+        if (_model.PriceUnit is { } unit && _model.Customer?.Id is Guid customerId)
+            await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+                action: (service, token) => service.GetTitlesAsync(customerId, unit.Id, token),
+                afterSend: response => _destinationFinancialAccounts = response);
+    }
 
-        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
-            action: (s, ct) => s.GetByNameAsync(supplierName, null, ct),
-            afterSend: response =>
+    private async Task<IEnumerable<CustomerVm>> SearchSuppliers(string? supplierName, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(supplierName))
+            return [];
+
+        var customers = await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: async (service, token) =>
             {
-                _suppliers = response;
+                using var search = CancellationTokenSource.CreateLinkedTokenSource(token, cancellationToken);
+                return await service.GetByNameAsync(supplierName.Trim(), null, search.Token);
             },
-            cancelPrevious: true);
-
-        return _suppliers.Select(CustomerVm.CreateFrom);
+            createScope: true);
+        return customers?.Select(CustomerVm.CreateFrom) ?? [];
     }
 
-    private async Task OnSupplierChanged(CustomerVm supplier)
+    private async Task OnSupplierChanged(CustomerVm? supplier)
     {
-        _model.Customer = supplier;
+        if (_processing || _refreshingAccounts || _model.Customer?.Id == supplier?.Id)
+            return;
 
-        await LoadDestinationFinancialAccountsAsync();
+        _model.Customer = supplier;
         _model.DestinationFinancialAccount = null;
+        _destinationFinancialAccounts = [];
+
+        _refreshingAccounts = true;
+        try
+        {
+            await LoadDestinationFinancialAccountsAsync();
+        }
+        finally
+        {
+            _refreshingAccounts = false;
+        }
     }
 }

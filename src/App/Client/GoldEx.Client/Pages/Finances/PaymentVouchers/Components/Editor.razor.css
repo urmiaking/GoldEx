@@ -1,21 +1,209 @@
-.payment-editor-content{min-width:0;color:var(--mud-palette-text-primary)}
-.payment-editor-content ::deep .mud-input-control{min-width:0}
-.payment-editor-content ::deep .payment-editor-top{flex-wrap:wrap;gap:10px}
-.payment-editor-content ::deep .payment-editor-top>.mud-input-control{flex:1 1 210px;min-width:0}
-.payment-editor-content ::deep .payment-editor-customer{gap:8px;min-width:0}
-.payment-editor-content ::deep .payment-editor-customer>.mud-input-control{flex:1 1 auto;min-width:0}
-.payment-editor-content ::deep .payment-editor-customer>.mud-icon-button{flex:none}
-.payment-editor-content ::deep .mud-typography-h6{font-size:.98rem;font-weight:500}
-.payment-editor-content ::deep .mud-typography-body2{font-weight:400}
-.payment-editor-content ::deep .payment-editor-date .mud-input-root{direction:rtl}
-.payment-editor-content ::deep .payment-editor-date .mud-input-adornment{order:-1;margin-inline-start:0;margin-inline-end:7px}
-.payment-editor-content ::deep .mud-grid-item>.mud-stack-row{min-width:0;gap:8px}
-.payment-editor-content ::deep .mud-grid-item>.mud-stack-row>.mud-input-control{min-width:0;flex:1 1 auto}
-.payment-editor-content ::deep .mud-grid-item>.mud-stack-row>.mud-icon-button{flex:none}
-@media(max-width:599px){
- .payment-editor-content ::deep .payment-editor-customer{flex-wrap:wrap;justify-content:flex-start}
- .payment-editor-content ::deep .payment-editor-customer>.mud-input-control{flex-basis:calc(100% - 58px)}
- .payment-editor-content ::deep .payment-editor-top{align-items:stretch}
- .payment-editor-content ::deep .payment-editor-top>.mud-input-control{flex-basis:100%}
- .payment-editor-content ::deep .mud-grid{row-gap:3px}
+.payment-editor-content {
+    min-width: 0;
+    color: var(--mud-palette-text-primary);
+}
+
+.payment-editor-fields {
+    display: grid;
+    gap: 16px;
+    min-inline-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.payment-editor-section {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.payment-editor-section + .payment-editor-section {
+    border-block-start: 1px solid var(--mud-palette-lines-default);
+    padding-block-start: 12px;
+}
+
+.payment-editor-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 500;
+}
+
+.payment-editor-section h3 ::deep .mud-icon-root {
+    color: var(--mud-palette-primary);
+}
+
+.payment-editor-amount {
+    padding: 12px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 6%, var(--mud-palette-surface));
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 12px;
+}
+
+.payment-editor-amount + .payment-editor-section {
+    border-block-start: 0;
+    padding-block-start: 0;
+}
+
+.payment-editor-amount-grid,
+.payment-editor-accounts,
+.payment-editor-document {
+    display: grid;
+    align-items: start;
+    gap: 4px 12px;
+}
+
+.payment-editor-amount-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.payment-editor-document {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.payment-editor-rate,
+.payment-editor-type,
+.payment-editor-description {
+    grid-column: 1 / -1;
+}
+
+.payment-editor-content ::deep .mud-input-control,
+.payment-editor-content ::deep .mud-select {
+    min-width: 0;
+}
+
+.payment-editor-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.payment-editor-picker ::deep .payment-editor-add {
+    inline-size: 40px;
+    block-size: 40px;
+    margin-block-start: 8px;
+    border-radius: var(--mud-default-borderradius);
+}
+
+.payment-editor-customer {
+    padding-inline: 12px;
+    background: var(--mud-palette-background);
+    border-radius: 8px;
+    font-size: .83rem;
+}
+
+.payment-editor-customer summary {
+    min-height: 44px;
+    padding-block: 10px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.payment-editor-customer-type {
+    margin-inline-start: 8px;
+    color: var(--mud-palette-text-secondary);
+}
+
+.payment-editor-customer dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin: 0;
+    padding-block-end: 12px;
+}
+
+.payment-editor-customer dt {
+    color: var(--mud-palette-text-secondary);
+}
+
+.payment-editor-customer dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.payment-editor-address {
+    grid-column: 1 / -1;
+}
+
+.payment-editor-customer summary:focus-visible,
+.payment-editor-picker ::deep button:focus-visible,
+.payment-editor-actions ::deep button:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+.payment-editor-content ::deep .payment-editor-date input {
+    direction: ltr;
+    text-align: end;
+}
+
+.payment-editor-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 68px;
+}
+
+.payment-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+}
+
+.payment-editor-actions ::deep .mud-button {
+    min-height: 44px;
+    margin: 0;
+}
+
+.payment-editor-actions ::deep .mud-button-label {
+    gap: 8px;
+}
+
+@media (min-width: 720px) {
+    .payment-editor-amount-grid:has(.payment-editor-rate) {
+        grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
+    }
+
+    .payment-editor-rate,
+    .payment-editor-type {
+        grid-column: auto;
+    }
+
+    .payment-editor-accounts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .payment-editor-document {
+        grid-template-columns: minmax(0, 1.45fr) repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .payment-editor-picker ::deep .payment-editor-add {
+        inline-size: 44px;
+        block-size: 44px;
+        margin-block-start: 6px;
+    }
+
+    .payment-editor-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr);
+    }
+
+    .payment-editor-actions ::deep .mud-button {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 360px) {
+    .payment-editor-amount-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
