@@ -18,8 +18,8 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     [HttpPost(ApiRoutes.Invoices.Create)]
     public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.CreateAsync(request, cancellationToken);
-        return Created();
+        var id = await service.CreateAsync(request, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, id);
     }
 
     [HttpPut(ApiRoutes.Invoices.Update)]

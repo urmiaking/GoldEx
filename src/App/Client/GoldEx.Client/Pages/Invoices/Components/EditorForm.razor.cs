@@ -50,6 +50,7 @@ public partial class EditorForm
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
     private GetLicenseResponse? _license;
     private bool _processing;
+    private long _savedInvoiceNumber;
     private bool _deleting;
     private bool _showFinancialDetails;
     private int _activeInvoiceStep = 1;
@@ -120,9 +121,12 @@ public partial class EditorForm
 
     private string PrintUrl => ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
     {
-        number = _model.InvoiceNumber,
+        number = _savedInvoiceNumber,
         invoiceType = _model.InvoiceType.ToString()
     });
+
+    private static string GetPrintPreviewUrl(Guid id) =>
+        ClientRoutes.Invoices.PrintPreview.FormatRoute(new { id });
 
     private Color InvoiceColor => _model.InvoiceType switch
     {
@@ -217,6 +221,7 @@ public partial class EditorForm
                 afterSend: response =>
                 {
                     _model = InvoiceVm.CreateFrom(response);
+                    _savedInvoiceNumber = response.InvoiceNumber;
                     _model.CaptureOriginalUnpaidIfNeeded();
                 });
         }
@@ -1275,56 +1280,60 @@ public partial class EditorForm
             afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
-    private async Task SubmitAsync(bool? skipPrint = false)
+    private async Task SubmitAsync()
     {
-        if (_processing)
+        if (await SaveAsync() is not { } id)
             return;
 
-        await _form.ValidateAsync();
+        var dialog = await DialogService.ShowAsync<InvoicePrintChoicesDialog>(
+            "چاپ فاکتور",
+            new DialogParameters<InvoicePrintChoicesDialog> { { x => x.PreviewUrl, GetPrintPreviewUrl(id) } },
+            new DialogOptions { BackdropClick = false, CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        Navigation.NavigateTo(result is { Canceled: false, Data: true } ? PrintUrl : ClientRoutes.Invoices.List);
+    }
 
-        if (!_form.IsValid)
-            return;
+    private async Task<Guid?> SaveAsync()
+    {
+        if (_processing || _deleting)
+            return null;
 
         _processing = true;
-        StateHasChanged();
-
         try
         {
-            InvoiceVm.ToRequest(_model);
+            await _form.ValidateAsync();
+            if (!_form.IsValid)
+                return null;
+
+            var request = InvoiceVm.ToRequest(_model);
+            var savedId = await SendRequestAsync<IInvoiceService, Guid?>(
+                action: async (service, cancellationToken) =>
+                {
+                    if (request.Id is not { } id)
+                        return await service.CreateAsync(request, cancellationToken);
+
+                    await service.UpdateAsync(id, request, cancellationToken);
+                    return id;
+                });
+
+            if (savedId.HasValue)
+            {
+                _model.InvoiceId = savedId.Value;
+                _savedInvoiceNumber = request.InvoiceNumber;
+                AddSuccessToast("فاکتور با موفقیت ذخیره شد");
+            }
+
+            return savedId;
         }
         catch (ValidationException e)
         {
-            _processing = false;
             AddErrorToast(e.Message);
-            return;
+            return null;
         }
-
-        var request = InvoiceVm.ToRequest(_model);
-
-        await SendRequestAsync<IInvoiceService>(
-            action: (s, ct) => request.Id.HasValue ? s.UpdateAsync(request.Id.Value, request, ct) : s.CreateAsync(request, ct),
-            afterSend: async () =>
-            {
-                _processing = false;
-                StateHasChanged();
-                AddSuccessToast("فاکتور با موفقیت ذخیره شد");
-
-                if (skipPrint == true)
-                    return;
-
-                var result = await DialogService.ShowMessageBoxAsync("چاپ فاکتور",
-                    "آیا مایل به پرینت فاکتور هستید؟",
-                    "بله، چاپ کن",
-                    "خیر",
-                    options: new DialogOptions { BackdropClick = false });
-
-                Navigation.NavigateTo(result == true ? PrintUrl : ClientRoutes.Invoices.List);
-            },
-            onFailure: () =>
-            {
-                _processing = false;
-                return Task.CompletedTask;
-            });
+        finally
+        {
+            _processing = false;
+        }
     }
 
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
@@ -1411,19 +1420,30 @@ public partial class EditorForm
         await OnInvoicePriceUnitChanged(priceUnit);
     }
 
-    private async Task OnPrintAsync()
+    private async Task OnPrintAsync(bool useNewPrint = false)
     {
+        if (_processing || _deleting || _model.InvoiceId is not { } id)
+            return;
+
         var result = await DialogService.ShowMessageBoxAsync(
-            "هشدار", "آیا قبل از چاپ مایل به ذخیره تغییرات هستید؟",
-            yesText: "بله",
-            noText: "خیر",
-            options: new DialogOptions { BackdropClick = false });
+            "چاپ فاکتور", "تغییرات فاکتور قبل از چاپ ذخیره شوند؟",
+            yesText: "ذخیره و چاپ",
+            noText: "چاپ بدون ذخیره",
+            cancelText: "انصراف",
+            options: new DialogOptions { BackdropClick = false, CloseOnEscapeKey = true });
 
-        if (result == true) 
-            await SubmitAsync(skipPrint: true);
+        if (result is null || (result == true && await SaveAsync() is null))
+            return;
 
-        // await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");
-        Navigation.NavigateTo(PrintUrl);
+        if (!useNewPrint)
+        {
+            Navigation.NavigateTo(PrintUrl);
+            return;
+        }
+
+        var previewUrl = GetPrintPreviewUrl(id);
+        if (!await JsRuntime.InvokeAsync<bool>("GoldEx.openInvoicePrintPopup", previewUrl))
+            Navigation.NavigateTo(previewUrl, forceLoad: true);
     }
 
     private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? exchangeRate, decimal totalUnpaidSecondaryAmount, string? secondaryUnit)

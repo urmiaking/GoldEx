@@ -416,14 +416,20 @@ else
                         <MudButton Class="invoice-form-action-print"
                                    Color="Color.Success" Variant="Variant.Outlined"
                                    StartIcon="@Icons.Material.Outlined.Print"
-                                   Disabled="@IsBusy" OnClick="OnPrintAsync">
+                                   Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync()">
                             چاپ
+                        </MudButton>
+                        <MudButton Class="invoice-form-action-print"
+                                   Color="Color.Success" Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Outlined.Print"
+                                   Disabled="@(IsBusy || _processing)" OnClick="() => OnPrintAsync(useNewPrint: true)">
+                            چاپ جدید
                         </MudButton>
                     }
                     <MudButton Class="invoice-form-action-save"
                                Color="Color.Primary" Variant="Variant.Filled"
                                StartIcon="@(_processing ? null : Icons.Material.Outlined.Save)"
-                               Disabled="@_processing" OnClick="@(async () => await SubmitAsync())">
+                               Disabled="@_processing" OnClick="() => SubmitAsync()">
                         @if (_processing)
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" />

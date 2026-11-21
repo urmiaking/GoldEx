@@ -219,7 +219,7 @@
 .invoice-item-switch button{font-size:.73rem}
 .invoice-workspace-footer{padding:10px 11px;margin-top:11px}
 .invoice-form-actions{gap:8px}
-.invoice-form-actions-primary{flex:1;justify-content:flex-end}
+.invoice-form-actions-primary{flex:1;flex-wrap:wrap;justify-content:flex-end}
 .invoice-form-actions ::deep .mud-button-root{min-height:40px;padding:5px 9px;font-size:.73rem}
 .invoice-workspace ::deep .invoice-line-desktop{display:none}
 .invoice-workspace ::deep .invoice-line-mobile{display:grid;gap:8px}

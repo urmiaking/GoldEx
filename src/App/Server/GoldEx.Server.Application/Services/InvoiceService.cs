@@ -47,13 +47,14 @@ internal class InvoiceService(
     InvoiceRequestDtoValidator validator,
     DeleteInvoiceValidator deleteValidator) : IInvoiceService, IServerInvoiceService
 {
-    public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         await using var transaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         try
         {
-            await PostAsync(request, cancellationToken);
+            var invoice = await PostAsync(request, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+            return invoice.Id.Value;
         }
         catch (Exception e)
         {
