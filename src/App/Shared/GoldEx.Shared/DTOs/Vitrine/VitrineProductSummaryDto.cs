@@ -22,4 +22,5 @@ public record VitrineProductSummaryDto(
     DateTime CreatedAt = default,
     decimal OriginalWeight = 0,
     decimal RemainingWeight = 0,
-    bool IsPartiallySold = false);
+    bool IsPartiallySold = false,
+    string? WagePriceUnitTitle = null);

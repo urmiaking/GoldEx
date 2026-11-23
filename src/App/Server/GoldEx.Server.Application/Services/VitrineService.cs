@@ -184,6 +184,7 @@ internal class VitrineService(
                     Wage = p.Wage,
                     WageType = p.WageType,
                     WagePriceUnitId = p.WagePriceUnitId != null ? (Guid?)p.WagePriceUnitId.Value.Value : null,
+                    WagePriceUnitTitle = p.WagePriceUnit != null ? p.WagePriceUnit.Title : null,
                     CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
                     CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : null,
                     IsFeatured = p.IsFeatured,
@@ -282,7 +283,8 @@ internal class VitrineService(
                     CreatedAt: p.CreatedAt,
                     OriginalWeight: p.Weight,
                     RemainingWeight: remainingWeight,
-                    IsPartiallySold: isPartiallySold);
+                    IsPartiallySold: isPartiallySold,
+                    WagePriceUnitTitle: p.WagePriceUnitTitle);
             }).ToList();
         }
         finally
@@ -731,6 +733,7 @@ internal sealed class VitrineProductRawProjection : IVitrineWageProjection
     public decimal Wage { get; init; }
     public WageType? WageType { get; init; }
     public Guid? WagePriceUnitId { get; init; }
+    public string? WagePriceUnitTitle { get; init; }
     public Guid? CategoryId { get; init; }
     public string? CategoryTitle { get; init; }
     public bool IsFeatured { get; init; }

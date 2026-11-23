@@ -520,6 +520,15 @@ function initializeVitrineSearch(panel) {
   let request;
   let timer;
 
+  function isCatalogListView() {
+    return document.querySelector('[data-vitrine-catalog]') &&
+      new URLSearchParams(location.search).get('view') === 'list';
+  }
+
+  form.addEventListener('formdata', ({ formData }) => {
+    if (isCatalogListView()) formData.set('view', 'list');
+  });
+
   function element(tag, className, content) {
     const node = document.createElement(tag);
     node.className = className;
@@ -537,6 +546,7 @@ function initializeVitrineSearch(panel) {
     const matchingCategories = categories.filter(category => matches(category.title)).slice(0, 3);
     const matchingProducts = products.filter(product => matches(product.name) || matches(product.barcode) || matches(product.categoryTitle));
     const catalogUrl = new URL(form.action);
+    if (isCatalogListView()) catalogUrl.searchParams.set('view', 'list');
     showStatus(matchingCategories.length || matchingProducts.length ? '' : 'محصولی پیدا نشد.');
     const fragment = document.createDocumentFragment();
 

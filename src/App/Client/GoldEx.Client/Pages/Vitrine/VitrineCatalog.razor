@@ -157,7 +157,7 @@
                         <i class="fa-solid fa-xmark remove-pill"></i>
                     </a>
                 }
-                <a class="catalog-quick-pill clear-all" href="@(CatalogUrl)" data-vitrine-catalog-link>
+                <a class="catalog-quick-pill clear-all" href="@ResetCatalogUrl" data-vitrine-catalog-link>
                     <span>حذف همه</span>
                 </a>
             </div>
@@ -177,15 +177,27 @@
             
             <!-- نوار ابزار بالای محصولات -->
             <div class="shop-toolbar">
-                <div style="font-size: 0.92rem; color: var(--gray-600); font-weight: 700;">
-                    @if (FilteredProducts.Count > PageSize)
-                    {
-                        <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@Math.Min(_visibleCount, FilteredProducts.Count)</strong> از <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
-                    }
-                    else
-                    {
-                        <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
-                    }
+                <div class="catalog-toolbar-summary">
+                    <div style="font-size: 0.92rem; color: var(--gray-600); font-weight: 700;">
+                        @if (FilteredProducts.Count > PageSize)
+                        {
+                            <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@Math.Min(_visibleCount, FilteredProducts.Count)</strong> از <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
+                        }
+                        else
+                        {
+                            <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
+                        }
+                    </div>
+                    <div class="catalog-view-options" role="group" aria-label="نمایش محصولات">
+                        <a href="@(GetCatalogUrl("view", pages: Pages))" data-vitrine-catalog-link
+                           aria-label="نمای شبکه‌ای" aria-current="@(!IsListView ? "true" : null)">
+                            <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                        </a>
+                        <a href="@(GetCatalogUrl("view", "list", pages: Pages))" data-vitrine-catalog-link
+                           aria-label="نمای لیستی" aria-current="@(IsListView ? "true" : null)">
+                            <i class="fa-solid fa-list" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <div class="sort-tabs-container">
@@ -219,7 +231,7 @@
             <!-- وضعیت بارگذاری یا لیست خالی یا محصولات -->
             @if (_isLoading)
             {
-                <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
+                <div class="@CatalogResultsClass animate-fade-in" style="padding-top: 0;">
                     @for (int i = 0; i < 6; i++)
                     {
                         <div class="vitrine-card-skeleton">
@@ -242,14 +254,14 @@
                     <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 24px; font-size: 0.92rem; line-height: 1.8;">
                         لطفاً فیلترهای اعمال‌شده، دسته‌بندی یا عبارت جستجو را تغییر دهید.
                     </p>
-                    <a class="btn-gisu btn-gisu-outline" style="display: inline-flex;" href="@(CatalogUrl)" data-vitrine-catalog-link>
+                    <a class="btn-gisu btn-gisu-outline" style="display: inline-flex;" href="@ResetCatalogUrl" data-vitrine-catalog-link>
                         <span>نمایش تمام محصولات</span>
                     </a>
                 </div>
             }
             else
             {
-                <div class="vitrine-grid animate-catalog-filter" style="padding-top: 0;">
+                <div class="@CatalogResultsClass animate-catalog-filter" style="padding-top: 0;">
                     @foreach (var product in VisibleProducts)
                     {
                         <a @key="product.Id" href="@GetProductUrl(product.Barcode)" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
@@ -297,12 +309,55 @@
 
                             <div class="product-info">
                                 <span class="product-category">@(!string.IsNullOrEmpty(product.CategoryTitle) ? product.CategoryTitle : "زیورآلات طلا")</span>
+                                @if (IsListView)
+                                {
+                                    <span class="catalog-list-fineness">عیار <bdi>@((product.Fineness > 0 ? product.Fineness : 750m).ToString("G29"))</bdi></span>
+                                }
 
                                 <h3 class="product-title" title="@product.Name">@product.Name</h3>
 
+                                @if (IsListView)
+                                {
+                                    <div class="catalog-list-specs">
+                                        <span class="catalog-list-spec">
+                                            @(product.IsPartiallySold ? "وزن باقی‌مانده" : "وزن")
+                                            <strong><bdi>@product.Weight.ToString("G29")</bdi> گرم</strong>
+                                        </span>
+                                        <span class="catalog-list-spec">
+                                            اجرت ساخت
+                                            <strong><bdi>@GetCatalogWage(product)</bdi></strong>
+                                        </span>
+                                    </div>
+                                }
+
                                 <div class="product-price-container">
-                                    <span class="product-price-label">@(product.IsPartiallySold ? "مبلغ بخش باقی‌مانده با مظنه روز:" : "مبلغ با مظنه روز:")</span>
+                                    @if (!IsListView)
+                                    {
+                                        <span class="product-price-label">@(product.IsPartiallySold ? "مبلغ بخش باقی‌مانده با مظنه روز:" : "مبلغ با مظنه روز:")</span>
+                                    }
+                                    else if (!product.IsAvailable || product.IsPartiallySold || product.IsFeatured)
+                                    {
+                                        <div class="catalog-list-states">
+                                            @if (!product.IsAvailable)
+                                            {
+                                                <span class="catalog-list-status">فروخته شد</span>
+                                            }
+                                            else if (product.IsPartiallySold)
+                                            {
+                                                <span class="catalog-list-status">بخشی فروخته شده</span>
+                                            }
+                                            @if (product.IsFeatured)
+                                            {
+                                                <span class="catalog-list-featured">ویژه</span>
+                                            }
+                                        </div>
+                                    }
+
                                     <div class="product-price">
+                                        @if (IsListView && product.IsPartiallySold)
+                                        {
+                                            <span class="catalog-list-price-note">قیمت بخش باقی‌مانده</span>
+                                        }
                                         @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                     </div>
                                 </div>
@@ -376,6 +431,7 @@
     [SupplyParameterFromQuery(Name = "weight")] public string? WeightRange { get; set; }
     [SupplyParameterFromQuery(Name = "wage")] public string? WageRange { get; set; }
     [SupplyParameterFromQuery(Name = "sort")] public string? Sort { get; set; }
+    [SupplyParameterFromQuery(Name = "view")] public string? View { get; set; }
     [SupplyParameterFromQuery(Name = "pages")] public int? Pages { get; set; }
     [SupplyParameterFromQuery(Name = "attribute")] public string[]? Attributes { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
@@ -640,7 +696,7 @@
         <!-- دکمه پاک کردن فیلترها -->
         @if (HasActiveFilters)
         {
-            <a class="btn-gisu btn-gisu-outline" style="width: 100%; justify-content: center; font-size: 0.86rem;" href="@(CatalogUrl)" data-vitrine-catalog-link>
+            <a class="btn-gisu btn-gisu-outline" style="width: 100%; justify-content: center; font-size: 0.86rem;" href="@ResetCatalogUrl" data-vitrine-catalog-link>
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>حذف تمام فیلترها (@ActiveFiltersCount)</span>
             </a>
@@ -662,6 +718,19 @@
         : $"/{EffectiveStoreSlug}/p/{barcode}";
 
     private string CatalogUrl => StoreContext.IsCustomDomain ? "/catalog" : $"/{EffectiveStoreSlug}/catalog";
+    private bool IsListView => View == "list";
+    private string ResetCatalogUrl => IsListView ? $"{CatalogUrl}?view=list" : CatalogUrl;
+    private string CatalogResultsClass => IsListView ? "catalog-list" : "vitrine-grid";
+
+    private static string GetCatalogWage(VitrineProductSummaryDto product) => (product.WageType, product.Wage) switch
+    {
+        (_, 0m) => "ندارد",
+        (WageType.Percent, _) => $"{product.Wage:G29}٪",
+        (WageType.Fixed, _) when !string.IsNullOrWhiteSpace(product.WagePriceUnitTitle) =>
+            $"{product.Wage.ToCurrencyFormat(product.WagePriceUnitTitle)} / گرم",
+        (WageType.Fixed, _) => $"{product.WageAmount.ToCurrencyFormat("تومان")} برای این قطعه",
+        _ => "ندارد"
+    };
 
     protected override async Task OnParametersSetAsync()
     {
@@ -720,7 +789,8 @@
             ["q"] = _searchTerm,
             ["weight"] = _weightFilter == "all" ? null : _weightFilter,
             ["wage"] = _wageFilter == "all" ? null : _wageFilter,
-            ["sort"] = _sortBy == "newest" ? null : _sortBy
+            ["sort"] = _sortBy == "newest" ? null : _sortBy,
+            ["view"] = IsListView ? "list" : null
         };
         if (key != null)
             filters[key] = value is "all" or "newest" ? null : value;
