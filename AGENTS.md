@@ -683,6 +683,7 @@ The user explicitly confirmed receiving a real device notification after enablin
 - The global app stylesheet already styles `.customer-avatar` with an important secondary text color for invoice widgets. Directory initial avatars use the distinct `.directory-avatar` class to avoid that collision. Neutral card surfaces use `--mud-palette-lines-default` and `color-mix` with text-primary; do not assume MudBlazor emits `--mud-palette-action-default-rgb` (it is absent in the live Gold palette).
 
 - The user requested a more compact directory card after the first preview. Cards now use 12px padding, a 40px initial avatar, a single three-column contact/code/registration row, a horizontal balance strip and 44px action targets. Keep registration dates inline instead of restoring the separate bottom date row.
+- Each customer card places «تراکنش‌ها»، «فاکتورها» and «گزارش» in a single row on mobile and desktop. Narrow cards hide the action icons to fit the text labels, and the loading skeleton mirrors the three-button row. The buttons use the existing customer transaction dialog, invoice dialog and comprehensive report route.
 
 - Customer card actions use explicit `customer-action-ledger` and `customer-action-invoices` classes: bordered tonal buttons with inset icon backgrounds, palette-primary for ledger and palette-info for invoices. Keep neutral readable labels, 44px touch targets and the compact card height; both actions still invoke their existing callbacks. Avoid restoring the previous bare text-button appearance.
 

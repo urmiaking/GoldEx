@@ -52,13 +52,13 @@
 
     <div class="customer-card-actions">
         <MudButton Class="customer-action-ledger" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.AccountBalanceWallet"
-                   OnClick="() => OnViewTransaction.InvokeAsync(Customer)" aria-label="@($"گردش حساب {Customer.FullName}")">گردش حساب</MudButton>
+                   OnClick="() => OnViewTransaction.InvokeAsync(Customer)" aria-label="@($"تراکنش‌های {Customer.FullName}")">تراکنش‌ها</MudButton>
         <MudButton Class="customer-action-invoices" Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Material.Outlined.ReceiptLong"
                    OnClick="() => OnViewInvoices.InvokeAsync(Customer)" aria-label="@($"فاکتورهای {Customer.FullName}")">فاکتورها</MudButton>
         <MudButton Class="customer-action-comprehensive" Variant="Variant.Text" Color="Color.Primary"
                    StartIcon="@Icons.Material.Outlined.Assignment"
                    OnClick="() => OnViewComprehensive.InvokeAsync(Customer)"
-                   aria-label="@($"گزارش جامع معاملات {Customer.FullName}")">گزارش جامع مشتری</MudButton>
+                   aria-label="@($"گزارش جامع معاملات {Customer.FullName}")">گزارش</MudButton>
     </div>
 </article>
 

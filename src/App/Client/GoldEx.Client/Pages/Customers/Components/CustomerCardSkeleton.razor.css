@@ -3,7 +3,7 @@
 .skeleton-heading > div { flex: 1; }
 .skeleton-heading ::deep .mud-skeleton-circle { flex: none; }
 .skeleton-details { display: grid; grid-template-columns: 1.2fr .85fr 1fr; gap: 8px; height: 44px; margin: 10px 0; }
-.skeleton-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.skeleton-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
 .skeleton-actions ::deep .mud-skeleton { border-radius: var(--mud-default-borderradius); }
 @media (prefers-reduced-motion: reduce) {
     .customer-card-skeleton ::deep .mud-skeleton,
