@@ -21,7 +21,7 @@ public sealed class DemoAccessService(
     GoldExDbContext db,
     UserManager<AppUser> users,
     IConfiguration configuration,
-    IHttpClientFactory httpClients)
+    DemoCaptchaService captchaService)
 {
     public bool Enabled => configuration.GetValue<bool>("Demo:Enabled");
     public string Host => configuration["Demo:Host"] ?? "demo.goldexsoft.ir";
@@ -97,30 +97,10 @@ public sealed class DemoAccessService(
             && value.All(c => c is >= '0' and <= '9') ? value : null;
     }
 
-    public async Task<bool> VerifyCaptchaAsync(string? token, string host, CancellationToken ct)
-    {
-        var secret = configuration["Turnstile:SecretKey"];
-        if (!Enabled || !IsHost(host) || string.IsNullOrWhiteSpace(secret)
-            || string.IsNullOrWhiteSpace(token) || token.Length > 2048)
-            return false;
-        using var form = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["secret"] = secret,
-            ["response"] = token
-        });
-        using var response = await httpClients.CreateClient().PostAsync(
-            "https://challenges.cloudflare.com/turnstile/v0/siteverify", form, ct);
-        if (!response.IsSuccessStatusCode)
-            return false;
-        var result = await response.Content.ReadFromJsonAsync<CaptchaResult>(cancellationToken: ct);
-        return result?.Success == true && string.Equals(result.Hostname, host, StringComparison.OrdinalIgnoreCase)
-            && result.Action == "demo-register";
-    }
-
-    public async Task<DemoCredentials?> CreateAsync(string? input, string? captcha, string host, CancellationToken ct)
+    public async Task<DemoCredentials?> CreateAsync(string? input, string? captchaId, string? answer, string session, string host, CancellationToken ct)
     {
         var mobile = NormalizeMobile(input);
-        if (mobile is null || !await VerifyCaptchaAsync(captcha, host, ct))
+        if (!Enabled || !IsHost(host) || !captchaService.Verify(captchaId, answer, session, "register") || mobile is null)
             return null;
         var store = await GetStoreAsync(ct);
         if (store is null)
@@ -150,9 +130,4 @@ public sealed class DemoAccessService(
         if (!result.Succeeded)
             throw new InvalidOperationException("Could not provision demo account.");
     }
-
-    private sealed record CaptchaResult(
-        [property: JsonPropertyName("success")] bool Success,
-        [property: JsonPropertyName("hostname")] string? Hostname,
-        [property: JsonPropertyName("action")] string? Action);
 }

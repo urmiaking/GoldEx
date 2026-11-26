@@ -56,4 +56,18 @@ public class DemoAccessTester
         Assert.That(DemoAccess.IsDemo(user), Is.True);
         Assert.That(DemoAccess.GetExpiry(user), Is.Null);
     }
+    [Test]
+    public void LocalCaptcha_IsRasterAndSessionBound()
+    {
+        using var service = new DemoCaptchaService();
+        var challenge = service.Issue("session-one", "register");
+        Assert.That(challenge.Id.Length, Is.EqualTo(48));
+        Assert.That(challenge.Image, Does.StartWith("data:image/png;base64,"));
+        var image = Convert.FromBase64String(challenge.Image.Split(',')[1]);
+        Assert.That(image.Take(8), Is.EqualTo(new byte[] {137,80,78,71,13,10,26,10}));
+        Assert.That(service.Verify(challenge.Id, "123456", "session-two", "register"), Is.False);
+        Assert.That(service.Verify(challenge.Id, "123456", "session-one", "login"), Is.False);
+        Assert.That(service.Verify(challenge.Id, "not-an-answer", "session-one", "register"), Is.False);
+        Assert.That(service.Verify(challenge.Id, "123456", "session-one", "register"), Is.False);
+    }
 }

@@ -7,11 +7,15 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IConfiguration Config
 @inject GoldEx.Server.Application.Services.DemoAccessService Demo
+@inject GoldEx.Server.Application.Services.DemoCaptchaService Captcha
 @layout EmptyBoxLayout
 
 <PageTitle>ورود</PageTitle>
 
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+@if (!IsDemoHost)
+{
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+}
 
 <MudStack AlignItems="AlignItems.Center">
     <MudItem>
@@ -37,7 +41,18 @@
 
         @if (_showCaptcha)
         {
-            <div class="cf-turnstile d-flex justify-center w-100" data-theme="light" data-sitekey="@_siteKey"></div>
+            @if (IsDemoHost && _demoChallenge is { } challenge)
+            {
+                <MudItem xs="12">
+                    <img src="@challenge.Image" alt="کد امنیتی شش رقمی" width="240" height="68" style="max-width:100%;height:auto;border-radius:12px"/>
+                    <input type="hidden" name="Input.CaptchaId" value="@challenge.Id" />
+                    <MudStaticTextField For="@(() => Input.CaptchaAnswer)" @bind-Value="Input.CaptchaAnswer" Label="کد امنیتی" Variant="Variant.Outlined" />
+                </MudItem>
+            }
+            else if (!IsDemoHost)
+            {
+                <div class="cf-turnstile d-flex justify-center w-100" data-theme="light" data-sitekey="@_siteKey"></div>
+            }
         }
 
         @if (!string.IsNullOrEmpty(_errorMessage))
@@ -54,11 +69,14 @@
                     ورود به سامانه
                 </MudStaticButton>
 
+                @if (!IsDemoHost)
+                {
                 <div id="passkey-login-section" style="display: none">
                     <PasskeySubmit Name="Input.Passkey"
                                    Auto="true"
                                    Username="Input.Username"/>
                 </div>
+                }
             </div>
         </MudItem>
     </MudGrid>

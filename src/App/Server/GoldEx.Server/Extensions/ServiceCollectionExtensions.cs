@@ -195,6 +195,7 @@ internal static class ServiceCollectionExtensions
                 opts.KnownProxies.Clear();
             });
 
+            services.AddSingleton<DemoCaptchaService>();
             services.AddScoped<DemoAccessService>();
             services.DiscoverServices();
 

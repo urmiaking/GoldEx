@@ -14,6 +14,14 @@ public partial class Login
     private string? _errorMessage;
     private string _siteKey = string.Empty;
     private bool _showCaptcha;
+    private GoldEx.Server.Application.Services.DemoCaptcha? _demoChallenge;
+
+    private void RefreshDemoCaptcha()
+    {
+        if (!IsDemoHost) return;
+        HttpContext.Session.SetString("DemoCaptchaSession", "1");
+        _demoChallenge = Captcha.Issue(HttpContext.Session.Id, "login");
+    }
 
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
     [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
@@ -25,11 +33,12 @@ public partial class Login
     {
         if (DemoExpired == "1")
             _errorMessage = DemoAccess.ExpiredMessage;
-        _siteKey = Config["Turnstile:SiteKey"] ?? throw new InvalidOperationException("Turnstile:SiteKey is missing");
+        _siteKey = IsDemoHost ? "" : Config["Turnstile:SiteKey"] ?? throw new InvalidOperationException("Turnstile:SiteKey is missing");
 
         // Check failed attempts from session
         var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
-        _showCaptcha = failedAttempts > 5;
+        _showCaptcha = failedAttempts > (IsDemoHost ? 2 : 5);
+        if (_showCaptcha) RefreshDemoCaptcha();
 
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
@@ -42,7 +51,16 @@ public partial class Login
         var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
 
         //If failedAttempts > 5, require CAPTCHA
-        if (_showCaptcha)
+        if (_showCaptcha && IsDemoHost)
+        {
+            if (!Captcha.Verify(Input.CaptchaId, Input.CaptchaAnswer, HttpContext.Session.Id, "login"))
+            {
+                Input.CaptchaAnswer = "";
+                _errorMessage = "کد امنیتی اشتباه است یا منقضی شده است.";
+                return;
+            }
+        }
+        else if (_showCaptcha)
         {
             var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
             if (string.IsNullOrWhiteSpace(captchaResponse))
@@ -131,6 +149,12 @@ public partial class Login
             // increment failed attempts
             failedAttempts++;
             HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
+            if (IsDemoHost && failedAttempts > 2)
+            {
+                _showCaptcha = true;
+                if (_demoChallenge is null) RefreshDemoCaptcha();
+                Input.CaptchaAnswer = "";
+            }
 
             if (result.RequiresTwoFactor)
             {
@@ -191,6 +215,8 @@ public partial class Login
         [Display(Name = "مرا بخاطر بسپار")]
         public bool RememberMe { get; set; }
 
+        public string? CaptchaId { get; set; }
+        public string? CaptchaAnswer { get; set; }
         public PasskeyInputModel? Passkey { get; set; }
     }
 

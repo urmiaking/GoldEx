@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @using GoldEx.Server.Application.Services
 @inject DemoAccessService Demo
+@inject DemoCaptchaService Captcha
 @inject ILogger<DemoRegistration> Logger
 @layout EmptyBoxLayout
 
@@ -61,7 +62,18 @@
                 <ValidationMessage For="() => Input.Mobile" />
             </div>
             <div class="demo-captcha">
-                <div class="cf-turnstile" data-sitekey="@Demo.SiteKey" data-action="demo-register" data-theme="auto" data-size="flexible"></div>
+                @if (Challenge is { } challenge)
+                {
+                    <div class="demo-field">
+                        <label for="demo-answer">کد امنیتی</label>
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                            <img src="@challenge.Image" alt="تصویر کد امنیتی شش رقمی" width="240" height="68" style="max-width:75%;height:auto;border-radius:12px" />
+                            <a href="/Account/Demo" aria-label="تصویر جدید" title="تصویر جدید" data-enhance-nav="false" style="font-size:1.5rem;color:var(--mud-palette-primary)">↻</a>
+                        </div>
+                        <input type="hidden" name="Input.CaptchaId" value="@challenge.Id" />
+                        <InputText id="demo-answer" @bind-Value="Input.Answer" placeholder="کد داخل تصویر" dir="ltr" inputmode="numeric" autocomplete="off" maxlength="6" />
+                    </div>
+                }
             </div>
             @if (!string.IsNullOrWhiteSpace(Error))
             {
@@ -71,7 +83,6 @@
         </EditForm>
         <p class="demo-note">این محیط فقط برای مشاهده و آشنایی با نرم‌افزار است؛ اطلاعات آزمایشی قابل تغییر نیستند. شماره موبایل برای پیگیری درخواست شما ثبت می‌شود.</p>
         <a class="demo-secondary-link" href="/Account/Login">قبلاً حساب آزمایشی گرفته‌اید؟ وارد شوید</a>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     }
 </div>
 
@@ -82,14 +93,19 @@
     private bool Available;
     private string? Error;
     private DemoCredentials? Credentials;
+    private DemoCaptcha? Challenge;
 
     protected override async Task OnInitializedAsync()
     {
         HttpContext.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         HttpContext.Response.Headers.Pragma = "no-cache";
         Available = Demo.Enabled && Demo.IsHost(HttpContext.Request.Host.Host)
-            && !string.IsNullOrWhiteSpace(Demo.SiteKey)
             && await Demo.GetStoreAsync(HttpContext.RequestAborted) is not null;
+        if (Available && HttpContext.User.Identity?.IsAuthenticated != true)
+        {
+            HttpContext.Session.SetString("DemoCaptchaSession", "1");
+            Challenge = Captcha.Issue(HttpContext.Session.Id, "register");
+        }
     }
 
     private async Task CreateAccountAsync()
@@ -103,9 +119,9 @@
         }
         try
         {
-            var form = await HttpContext.Request.ReadFormAsync(HttpContext.RequestAborted);
-            Credentials = await Demo.CreateAsync(Input.Mobile, form["cf-turnstile-response"].ToString(),
+            Credentials = await Demo.CreateAsync(Input.Mobile, Input.CaptchaId, Input.Answer, HttpContext.Session.Id,
                 HttpContext.Request.Host.Host, HttpContext.RequestAborted);
+            Input.Answer = "";
             if (Credentials is null)
                 Error = "تأیید امنیتی ناموفق بود. دوباره تلاش کنید.";
         }
@@ -122,5 +138,7 @@
         [Required(ErrorMessage = "شماره موبایل را وارد کنید.")]
         [StringLength(32, ErrorMessage = "شماره موبایل معتبر نیست.")]
         public string Mobile { get; set; } = "";
+        public string? CaptchaId { get; set; }
+        public string? Answer { get; set; }
     }
 }
