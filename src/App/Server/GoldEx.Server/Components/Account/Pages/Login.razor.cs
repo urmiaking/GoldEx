@@ -142,7 +142,7 @@ public partial class Login
             // reset failed attempts
             HttpContext.Session.SetInt32("FailedLoginCount", 0);
             Logger.LogInformation($"User '{Input.Username}' logged in at {DateTime.Now}");
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo(IsDemoHost && roles.Contains(DemoAccess.Role) ? "/" : ReturnUrl);
         }
         else
         {

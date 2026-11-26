@@ -6,6 +6,7 @@
 
 @if (_expiry is not null)
 {
+    <MudContainer MaxWidth="@BannerMaxWidth" Class="gex-demo-banner-container">
     <div class="gex-demo-banner" role="status" dir="rtl">
         <div class="gex-demo-copy">
             <span class="gex-demo-icon"><MudIcon Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" /></span>
@@ -16,10 +17,13 @@
         </div>
         <a href="https://goldexsoft.ir/#pricing" target="_blank" rel="noopener noreferrer">فعال‌سازی نسخه کامل <span aria-hidden="true">←</span></a>
     </div>
+    </MudContainer>
 }
 
 @code {
     private DateTimeOffset? _expiry;
+    private MaxWidth BannerMaxWidth => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].TrimEnd('/').Equals("dashboard", StringComparison.OrdinalIgnoreCase)
+        ? MaxWidth.ExtraExtraLarge : MaxWidth.ExtraLarge;
     private Timer? _timer;
 
     private string RemainingText

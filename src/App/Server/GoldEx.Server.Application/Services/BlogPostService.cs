@@ -1,5 +1,6 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common;
+using GoldEx.Shared.Constants;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Server.Application.Exceptions;
@@ -44,7 +45,7 @@ internal sealed class BlogPostService(
             .Get(new BlogPostsBySlugSpecification(slug))
             .FirstOrDefaultAsync(cancellationToken);
 
-        return item == null ? null : mapper.Map<BlogPostResponse>(item);
+        return item == null || (DemoAccess.IsDemo(_httpContext?.User) && !item.IsActive) ? null : mapper.Map<BlogPostResponse>(item);
     }
 
     public async Task CreateAsync(BlogPostRequest request, CancellationToken cancellationToken = default)
@@ -110,6 +111,8 @@ internal sealed class BlogPostService(
 
     public Task<bool> ExistsAsync(string slug, CancellationToken cancellationToken = default)
     {
+        if (DemoAccess.IsDemo(_httpContext?.User))
+            return repository.Get(new BlogPostsBySlugSpecification(slug)).AnyAsync(x => x.IsActive, cancellationToken);
         return repository.ExistsAsync(new BlogPostsBySlugSpecification(slug), cancellationToken);
     }
 

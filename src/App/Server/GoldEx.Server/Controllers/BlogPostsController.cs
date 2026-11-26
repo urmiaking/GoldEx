@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Shared.DTOs.Blogs.BlogPosts;
@@ -24,6 +25,7 @@ public class BlogPostsController(
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.BlogPosts.GetSlug)]
+    [DemoRead]
     public async Task<IActionResult> GetBySlugAsync([FromRoute] string slug, CancellationToken cancellationToken)
     {
         var result = await service.GetAsync(slug, cancellationToken);
@@ -112,6 +114,7 @@ public class BlogPostsController(
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.BlogPosts.Exists)]
+    [DemoRead]
     public async Task<IActionResult> ExistsAsync([FromRoute] string slug, CancellationToken cancellationToken)
     {
         var exists = await service.ExistsAsync(slug, cancellationToken);

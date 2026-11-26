@@ -1,4 +1,7 @@
-﻿using GoldEx.Sdk.Server.Api;
+using GoldEx.Sdk.Server.Api;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Shared.Constants;
+using GoldEx.Shared.Services.Abstractions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
@@ -8,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Icons.Base)]
-public class IconsController(IIconService iconService) : ApiControllerBase
+public class IconsController(IIconService iconService, IStoreContext storeContext) : ApiControllerBase
 {
     //[AllowAnonymous]
     //[HttpGet(ApiRoutes.Icons.GetIcon)]
@@ -23,11 +26,18 @@ public class IconsController(IIconService iconService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Icons.GetIcon)]
+    [DemoRead]
     public IActionResult GetIcon(
         IconType iconType,
         Guid id,
         CancellationToken cancellationToken = default)
     {
+        if (DemoAccess.IsDemo(User) && iconType == IconType.App)
+        {
+            if (storeContext.StoreId is not { } ownStore || (id != Guid.Empty && id != ownStore))
+                return NotFound();
+            id = ownStore;
+        }
         var iconPath = iconService.GetIconPath(iconType, id);
 
         if (iconPath == null || !System.IO.File.Exists(iconPath))
@@ -49,4 +59,3 @@ public class IconsController(IIconService iconService) : ApiControllerBase
         return PhysicalFile(iconPath, "image/png");
     }
 }
-

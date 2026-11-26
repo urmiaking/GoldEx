@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using GoldEx.Server.Application.Services;
+using GoldEx.Server.Common.Middlewares;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.Constants;
@@ -69,5 +70,34 @@ public class DemoAccessTester
         Assert.That(service.Verify(challenge.Id, "123456", "session-one", "login"), Is.False);
         Assert.That(service.Verify(challenge.Id, "not-an-answer", "session-one", "register"), Is.False);
         Assert.That(service.Verify(challenge.Id, "123456", "session-one", "register"), Is.False);
+    }
+    [TestCase("POST", "/hubs/prices/negotiate", true)]
+    [TestCase("GET", "/hubs/prices", true)]
+    [TestCase("POST", "/hubs/prices", true)]
+    [TestCase("DELETE", "/hubs/prices", true)]
+    [TestCase("POST", "/hubs/smart-trays/negotiate", false)]
+    [TestCase("POST", "/api/invoices", false)]
+    [TestCase("POST", "/hubs/prices/anything-else", false)]
+    public void PriceTransport_IsRestrictedToPublicPriceHub(string method, string path, bool expected)
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Method = method;
+        http.Request.Path = path;
+        Assert.That(DemoAccessMiddleware.IsPriceTransport(http), Is.EqualTo(expected));
+    }
+
+    [TestCase("GET", "/api/Account/Logout", true)]
+    [TestCase("GET", "/Account/Login", true)]
+    [TestCase("POST", "/Account/Login", true)]
+    [TestCase("POST", "/api/Account/Logout", false)]
+    [TestCase("POST", "/api/Account/Login", false)]
+    [TestCase("POST", "/Account/Demo", false)]
+    [TestCase("POST", "/api/invoices", false)]
+    public void SessionExit_DoesNotPermitBusinessWrites(string method, string path, bool expected)
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Method = method;
+        http.Request.Path = path;
+        Assert.That(DemoAccessMiddleware.IsDemoSessionExit(http), Is.EqualTo(expected));
     }
 }
