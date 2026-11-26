@@ -89,15 +89,24 @@
         <NavLink href="@ClientRoutes.Invoices.Index"><ShellIcon Name="file" /><span>فاکتورها</span></NavLink>
         <NavLink href="@ClientRoutes.InventoryStocks.Index"><ShellIcon Name="package" /><span>مدیریت انبار</span></NavLink>
         <NavLink href="@ClientRoutes.Customers.Index"><ShellIcon Name="users" /><span>مشتریان</span></NavLink>
-        @if (_currentStore is not null)
+        @if (_currentStore is not null && !GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
         {
             <a href="@VitrineUrlHelper.BuildVitrineHomeUrl(_currentStore.CustomDomain, Navigation.BaseUri, _currentStore.Slug)" target="_blank" rel="noopener noreferrer"><ShellIcon Name="store" /><span>ویترین گالری</span><ShellIcon Name="external" /></a>
         }
         <NavLink href="@ClientRoutes.Reporting.Index"><ShellIcon Name="chart-bar" /><span>گزارش‌ها</span></NavLink>
         <NavLink href="@ClientRoutes.Finances.Index"><ShellIcon Name="wallet" /><span>اسناد مالی</span></NavLink>
-        <NavLink href="@ClientRoutes.UserAccounts.Index"><ShellIcon Name="user" /><span>مدیریت حساب</span></NavLink>
-        <NavLink href="@ClientRoutes.Settings.Index"><ShellIcon Name="settings" /><span>تنظیمات</span></NavLink>
-        <NavLink href="@ClientRoutes.Blogs.Index"><ShellIcon Name="help" /><span>راهنما</span></NavLink>
+        @if (!GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
+        {
+            <NavLink href="@ClientRoutes.UserAccounts.Index"><ShellIcon Name="user" /><span>مدیریت حساب</span></NavLink>
+        }
+        @if (!GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
+        {
+            <NavLink href="@ClientRoutes.Settings.Index"><ShellIcon Name="settings" /><span>تنظیمات</span></NavLink>
+        }
+        @if (!GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
+        {
+            <NavLink href="@ClientRoutes.Blogs.Index"><ShellIcon Name="help" /><span>راهنما</span></NavLink>
+        }
         <ReleaseNotesMenuItem />
     </AuthorizeView>
     <NavLink href="@ClientRoutes.About.Index"><ShellIcon Name="info" /><span>دربارهٔ گلدکس</span></NavLink>

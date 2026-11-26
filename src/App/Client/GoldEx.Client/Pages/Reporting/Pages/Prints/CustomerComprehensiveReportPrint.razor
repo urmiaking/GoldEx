@@ -1,6 +1,6 @@
 @using GoldEx.Client.Pages.Reporting.Components
 @attribute [Route(ClientRoutes.Reporting.Print.CustomerComprehensive)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 @layout PrintLayout
 @inherits ReportPrintBase
 

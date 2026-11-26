@@ -41,7 +41,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             INotificationPushRepository subscriptions,
             [FromQuery] string? returnUrl = null) =>
         {
-            if (Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            if (!GoldEx.Shared.Constants.DemoAccess.IsDemo(context.User) &&
+                Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 await subscriptions.RevokeUserAsync(userId, context.RequestAborted);
             await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl ?? ""}");

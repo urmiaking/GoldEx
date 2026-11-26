@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Products.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class ProductsController(IProductService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Products.GetListByName)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromRoute] ProductType productType, [FromQuery] string name, CancellationToken cancellationToken)
     {
         var list = await service.GetListAsync(name, productType, cancellationToken);
@@ -21,6 +23,7 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Products.GetByBarcode)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var product = await service.GetAsync(barcode, cancellationToken);
@@ -28,6 +31,7 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.Products.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] ProductRequestDto request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);

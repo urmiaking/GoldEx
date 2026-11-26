@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Routings;
@@ -9,10 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.PriceUnits.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.PriceUnits.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync(CancellationToken cancellationToken = default)
     {
         var list = await service.GetListAsync(cancellationToken);
@@ -20,6 +22,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.PriceUnits.GetAll)]
+    [DemoRead]
     public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var list = await service.GetAllAsync(cancellationToken);
@@ -27,6 +30,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.PriceUnits.GetTitles)]
+    [DemoRead]
     public async Task<IActionResult> GetTitlesAsync(CancellationToken cancellationToken = default)
     {
         var list = await service.GetTitlesAsync(cancellationToken);
@@ -34,6 +38,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.PriceUnits.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var priceUnit = await service.GetAsync(id, cancellationToken);
@@ -42,6 +47,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.PriceUnits.GetDefault)]
+    [DemoRead]
     public async Task<IActionResult> GetDefaultAsync(CancellationToken cancellationToken = default)
     {
         var item = await service.GetDefaultAsync(cancellationToken);
@@ -49,6 +55,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpPost(ApiRoutes.PriceUnits.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
         await service.CreateAsync(request, cancellationToken);
@@ -57,6 +64,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
 
     [RequestSizeLimit(2_000_000)]
     [HttpPut(ApiRoutes.PriceUnits.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
         await service.UpdateAsync(id, request, cancellationToken);
@@ -64,6 +72,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.PriceUnits.UpdateStatus)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default)
     {
         await service.UpdateStatusAsync(id, request, cancellationToken);
@@ -71,6 +80,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.PriceUnits.SetAsDefault)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> SetAsDefaultAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.SetAsDefaultAsync(id, cancellationToken);

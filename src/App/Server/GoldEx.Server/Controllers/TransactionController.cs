@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -11,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Transactions.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class TransactionController(ITransactionService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Transactions.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] TransactionFilter transactionFilter,
         [FromQuery] RequestFilter requestFilter, CancellationToken cancellationToken = default)
     {
@@ -23,6 +25,7 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetRemainingList)]
+    [DemoRead]
     public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, [FromQuery] DateTime? untilDate = null, [FromQuery] Guid? invoiceId = null, CancellationToken cancellationToken = default)
     {
         var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, untilDate, invoiceId, cancellationToken);
@@ -30,6 +33,7 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetFinancialAccountBalance)]
+    [DemoRead]
     public async Task<IActionResult> GetFinancialAccountBalanceAsync(Guid financialAccountId, CancellationToken cancellationToken = default)
     {
         var item = await service.GetFinancialAccountBalanceAsync(financialAccountId, cancellationToken);
@@ -37,6 +41,7 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetAccountBalance)]
+    [DemoRead]
     public async Task<IActionResult> GetAccountBalanceAsync(CancellationToken cancellationToken = default)
     {
         var items = await service.GetAccountBalanceAsync(cancellationToken);
@@ -44,6 +49,7 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetAvailablePriceUnits)]
+    [DemoRead]
     public async Task<IActionResult> GetAvailablePriceUnitsAsync([FromQuery] TransactionFilter transactionFilter, CancellationToken cancellationToken = default)
     {
         var items = await service.GetAvailablePriceUnitsAsync(transactionFilter, cancellationToken);
@@ -51,6 +57,7 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetTopCustomers)]
+    [DemoRead]
     public async Task<IActionResult> GetTopCustomersAsync(TransactionType transactionType, [FromQuery] Guid? priceUnitId, 
         CancellationToken cancellationToken = default)
     {

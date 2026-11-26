@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Shared.Constants;
+using GoldEx.Sdk.Common;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
@@ -17,9 +18,13 @@ public partial class Login
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
     [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "demoExpired")] private string? DemoExpired { get; set; }
+    private bool IsDemoHost => Demo.Enabled && Demo.IsHost(HttpContext.Request.Host.Host);
 
     protected override async Task OnInitializedAsync()
     {
+        if (DemoExpired == "1")
+            _errorMessage = DemoAccess.ExpiredMessage;
         _siteKey = Config["Turnstile:SiteKey"] ?? throw new InvalidOperationException("Turnstile:SiteKey is missing");
 
         // Check failed attempts from session
@@ -105,7 +110,8 @@ public partial class Login
 
             var roles = await SignInManager.UserManager.GetRolesAsync(user);
             var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { BuiltinRoles.Owners, BuiltinRoles.Administrators };
-            var onlyAllowedRoles = roles.Count > 0 && roles.All(r => allowedRoles.Contains(r));
+            var onlyAllowedRoles = (roles.Count == 1 && roles.Contains(DemoAccess.Role))
+                || (roles.Count > 0 && roles.All(r => allowedRoles.Contains(r)));
             if (!onlyAllowedRoles)
             {
                 failedAttempts++;
@@ -138,7 +144,8 @@ public partial class Login
             }
             else
             {
-                _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+                _errorMessage = IsDemoHost && result.IsNotAllowed && Input.Username.StartsWith("demo_", StringComparison.OrdinalIgnoreCase)
+                    ? DemoAccess.ExpiredMessage : "خطا: اطلاعات ورودی معتبر نیست";
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.Enums;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.LedgerAccounts.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class LedgerAccountsController(ILedgerAccountService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.LedgerAccounts.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] Guid? customerId, CancellationToken cancellationToken)
     {
         var list = await service.GetListAsync(customerId, cancellationToken);
@@ -21,6 +23,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpGet(ApiRoutes.LedgerAccounts.GetTitles)]
+    [DemoRead]
     public async Task<IActionResult> GetTitlesAsync([FromQuery] FinancialAccountType? financialAccountType, CancellationToken cancellationToken)
     {
         var titles = await service.GetTitlesAsync(financialAccountType, cancellationToken);
@@ -28,6 +31,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpGet(ApiRoutes.LedgerAccounts.GetParentList)]
+    [DemoRead]
     public async Task<IActionResult> GetParentListAsync(CancellationToken cancellationToken)
     {
         var titles = await service.GetParentLedgerAccountsAsync(cancellationToken);
@@ -35,6 +39,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpGet(ApiRoutes.LedgerAccounts.GetActiveList)]
+    [DemoRead]
     public async Task<IActionResult> GetActiveListAsync(CancellationToken cancellationToken)
     {
         var titles = await service.GetActiveLedgerAccountsAsync(cancellationToken);
@@ -42,6 +47,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpGet(ApiRoutes.LedgerAccounts.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var item = await service.GetAsync(id, cancellationToken);
@@ -49,6 +55,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpPost(ApiRoutes.LedgerAccounts.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(LedgerAccountRequestDto request, CancellationToken cancellationToken)
     {
         await service.CreateAsync(request, cancellationToken);
@@ -56,6 +63,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpPut(ApiRoutes.LedgerAccounts.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, LedgerAccountRequestDto request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);
@@ -63,6 +71,7 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     }
 
     [HttpDelete(ApiRoutes.LedgerAccounts.Delete)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         await service.DeleteAsync(id, cancellationToken);

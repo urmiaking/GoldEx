@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.DTOs.Settings.Barcodes;
@@ -13,6 +14,7 @@ namespace GoldEx.Server.Controllers;
 public class SettingsController(ISettingService service, IBarcodePrintSettingsService barcodePrintSettingsService) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Settings.Get)]
+    [DemoRead]
     [AllowAnonymous]
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
     {
@@ -30,7 +32,8 @@ public class SettingsController(ISettingService service, IBarcodePrintSettingsSe
     }
 
     [HttpGet(ApiRoutes.Settings.GetBarcodePrintSettings)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    [DemoRead]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
     public async Task<IActionResult> GetBarcodePrintSettingsAsync(CancellationToken cancellationToken = default)
     {
         var result = await barcodePrintSettingsService.GetAsync(cancellationToken);

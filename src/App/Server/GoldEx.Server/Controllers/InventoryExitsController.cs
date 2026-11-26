@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.Routings;
@@ -9,10 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.InventoryExits.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class InventoryExitsController(IInventoryExitService service) : Controller
 {
     [HttpGet(ApiRoutes.InventoryExits.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken = default)
     {
         var list = await service.GetListAsync(filter, cancellationToken);
@@ -20,6 +22,7 @@ public class InventoryExitsController(IInventoryExitService service) : Controlle
     }
 
     [HttpPost(ApiRoutes.InventoryExits.Exit)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> ExitAsync([FromBody] CreateInventoryExitRequest request, CancellationToken cancellationToken = default)
     {
         await service.ExitAsync(request, cancellationToken);

@@ -1,0 +1,126 @@
+@page "/Account/Demo"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@attribute [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("demo-register")]
+@using System.ComponentModel.DataAnnotations
+@using GoldEx.Server.Application.Services
+@inject DemoAccessService Demo
+@inject ILogger<DemoRegistration> Logger
+@layout EmptyBoxLayout
+
+<PageTitle>دموی رایگان گلدکس</PageTitle>
+
+<div class="demo-signup" dir="rtl">
+    <header class="demo-signup-heading">
+        <span class="brand-text" dir="ltr">GoldEx</span>
+        <span class="demo-label">نسخه آزمایشی رایگان</span>
+        <h1>@(Credentials is null ? "گلدکس را تجربه کنید" : "حساب آزمایشی شما آماده است!")</h1>
+        <p>@(Credentials is null ? "با محیط واقعی مدیریت طلافروشی آشنا شوید؛ بدون نیاز به خرید یا ارسال پیامک." : "اطلاعات زیر را برای ورود به فروشگاه آزمایشی نگه دارید.")</p>
+    </header>
+
+    @if (!Available)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">دریافت دموی رایگان در حال حاضر امکان‌پذیر نیست.</MudAlert>
+        <a class="demo-secondary-link" href="https://goldexsoft.ir/">بازگشت به سایت گلدکس</a>
+    }
+    else if (HttpContext.User.Identity?.IsAuthenticated == true)
+    {
+        <a class="demo-primary" href="/">ورود به گلدکس</a>
+    }
+    else if (Credentials is { } credentials)
+    {
+        <div class="demo-credentials">
+            <div class="demo-credential">
+                <label for="demo-username">نام کاربری</label>
+                <input id="demo-username" readonly value="@credentials.UserName" dir="ltr" onclick="this.select()" />
+            </div>
+            <div class="demo-credential">
+                <label for="demo-password">رمز عبور موقت</label>
+                <input id="demo-password" readonly value="@credentials.Password" dir="ltr" onclick="this.select()" />
+            </div>
+            <div class="demo-validity">
+                <span>مدت اعتبار حساب</span>
+                <strong>@Demo.DurationDays روز</strong>
+            </div>
+            <small>رمز عبور فقط در همین صفحه نمایش داده می‌شود. آن را کپی کنید.</small>
+        </div>
+        <a class="demo-primary" href="/Account/Login">ورود به محیط آزمایشی <span aria-hidden="true">←</span></a>
+        <a class="demo-secondary-link" href="https://goldexsoft.ir/#pricing">مشاهده طرح‌های گلدکس</a>
+    }
+    else
+    {
+        <div class="demo-features">
+            <span>✓ بدون خرید</span>
+            <span>✓ @Demo.DurationDays روز دسترسی</span>
+            <span>✓ اطلاعات نمونه</span>
+        </div>
+        <EditForm Model="Input" method="post" OnValidSubmit="CreateAccountAsync" FormName="demo-register">
+            <DataAnnotationsValidator />
+            <div class="demo-field">
+                <label for="demo-mobile">شماره موبایل</label>
+                <InputText id="demo-mobile" @bind-Value="Input.Mobile" placeholder="09123456789" dir="ltr" inputmode="tel" autocomplete="tel" maxlength="32" />
+                <ValidationMessage For="() => Input.Mobile" />
+            </div>
+            <div class="demo-captcha">
+                <div class="cf-turnstile" data-sitekey="@Demo.SiteKey" data-action="demo-register" data-theme="auto" data-size="flexible"></div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Error))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3">@Error</MudAlert>
+            }
+            <button class="demo-primary" type="submit">دریافت دموی رایگان <span aria-hidden="true">←</span></button>
+        </EditForm>
+        <p class="demo-note">این محیط فقط برای مشاهده و آشنایی با نرم‌افزار است؛ اطلاعات آزمایشی قابل تغییر نیستند. شماره موبایل برای پیگیری درخواست شما ثبت می‌شود.</p>
+        <a class="demo-secondary-link" href="/Account/Login">قبلاً حساب آزمایشی گرفته‌اید؟ وارد شوید</a>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    }
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    private bool Available;
+    private string? Error;
+    private DemoCredentials? Credentials;
+
+    protected override async Task OnInitializedAsync()
+    {
+        HttpContext.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        HttpContext.Response.Headers.Pragma = "no-cache";
+        Available = Demo.Enabled && Demo.IsHost(HttpContext.Request.Host.Host)
+            && !string.IsNullOrWhiteSpace(Demo.SiteKey)
+            && await Demo.GetStoreAsync(HttpContext.RequestAborted) is not null;
+    }
+
+    private async Task CreateAccountAsync()
+    {
+        if (!Available || HttpContext.User.Identity?.IsAuthenticated == true)
+            return;
+        if (DemoAccessService.NormalizeMobile(Input.Mobile) is null)
+        {
+            Error = "شماره موبایل معتبر وارد کنید.";
+            return;
+        }
+        try
+        {
+            var form = await HttpContext.Request.ReadFormAsync(HttpContext.RequestAborted);
+            Credentials = await Demo.CreateAsync(Input.Mobile, form["cf-turnstile-response"].ToString(),
+                HttpContext.Request.Host.Host, HttpContext.RequestAborted);
+            if (Credentials is null)
+                Error = "تأیید امنیتی ناموفق بود. دوباره تلاش کنید.";
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested) { }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Demo registration failed ({ErrorType})", ex.GetType().Name);
+            Error = "ایجاد حساب آزمایشی امکان‌پذیر نبود. لطفاً دوباره تلاش کنید.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "شماره موبایل را وارد کنید.")]
+        [StringLength(32, ErrorMessage = "شماره موبایل معتبر نیست.")]
+        public string Mobile { get; set; } = "";
+    }
+}

@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.MeltingBatches;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.MeltingBatches.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class MeltingBatchesController(IMeltingBatchService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.MeltingBatches.GetList)]
+    [DemoRead]
     public async Task<ActionResult> GetListAsync([FromQuery] RequestFilter requestFilter, [FromQuery] MeltingBatchFilter filter,
         CancellationToken cancellationToken = default)
     {
@@ -22,6 +24,7 @@ public class MeltingBatchesController(IMeltingBatchService service) : ApiControl
     }
 
     [HttpGet(ApiRoutes.MeltingBatches.Get)]
+    [DemoRead]
     public async Task<ActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await service.GetAsync(id, cancellationToken);
@@ -29,6 +32,7 @@ public class MeltingBatchesController(IMeltingBatchService service) : ApiControl
     }
 
     [HttpPost(ApiRoutes.MeltingBatches.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<ActionResult> CreateAsync([FromBody] MeltingBatchRequestDto request, CancellationToken cancellationToken = default)
     {
         var result = await service.CreateAsync(request, cancellationToken);
@@ -36,6 +40,7 @@ public class MeltingBatchesController(IMeltingBatchService service) : ApiControl
     }
 
     [HttpPut(ApiRoutes.MeltingBatches.SendToLab)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<ActionResult> SendToLabAsync(Guid id, [FromBody] SendToLabRequestDto request, CancellationToken cancellationToken = default)
     {
         await service.SendToLabAsync(id, request, cancellationToken);
@@ -43,6 +48,7 @@ public class MeltingBatchesController(IMeltingBatchService service) : ApiControl
     }
 
     [HttpPut(ApiRoutes.MeltingBatches.CompleteMelting)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<ActionResult> CompleteMeltingAsync(Guid id, [FromBody] CompleteMeltingRequestDto request, CancellationToken cancellationToken = default)
     {
         await service.CompleteMeltingAsync(id, request, cancellationToken);

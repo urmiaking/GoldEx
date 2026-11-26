@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Api;
@@ -15,6 +16,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 {
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync([FromQuery] bool? isPinned = null, CancellationToken cancellationToken = default)
     {
         var list = await priceService.GetListAsync(isPinned, cancellationToken);
@@ -24,6 +26,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetTitles)]
+    [DemoRead]
     public async Task<IActionResult> GetTitlesAsync([FromQuery] MarketType[] marketTypes, CancellationToken cancellationToken = default)
     {
         var list = await priceService.GetTitlesAsync(marketTypes, cancellationToken);
@@ -33,6 +36,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetMarket)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
         var list = await priceService.GetListAsync(marketType, cancellationToken);
@@ -42,6 +46,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetUnit)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(GoldUnitType unitType, Guid? priceUnitId, [FromQuery] bool applySafetyMargin, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(unitType, priceUnitId, applySafetyMargin, cancellationToken);
@@ -50,6 +55,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetExchange)]
+    [DemoRead]
     public async Task<IActionResult> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId, CancellationToken cancellationToken = default)
     {
         var exchangeRate = await priceService.GetExchangeRateAsync(primaryPriceUnitId, secondaryPriceUnitId, cancellationToken);
@@ -58,6 +64,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetByPriceUnit)]
+    [DemoRead]
     public async Task<IActionResult> GetByPriceUnitAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(priceUnitId, cancellationToken);
@@ -66,6 +73,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetByCatalog)]
+    [DemoRead]
     public async Task<IActionResult> GetByCatalogAsync(PriceCatalog priceCatalog, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(priceCatalog, cancellationToken);
@@ -74,6 +82,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetSettings)]
+    [DemoRead]
     public async Task<IActionResult> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
         var settings = await priceService.GetSettingsAsync(cancellationToken);

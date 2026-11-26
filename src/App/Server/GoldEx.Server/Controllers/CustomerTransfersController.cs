@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.CustomerTransfers.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class CustomerTransfersController(ICustomerTransferVoucherService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.CustomerTransfers.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync(
         [FromQuery] RequestFilter filter,
         [FromQuery] CustomerTransferVoucherFilter voucherFilter,
@@ -24,6 +26,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpGet(ApiRoutes.CustomerTransfers.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var voucher = await service.GetAsync(id, cancellationToken);
@@ -31,6 +34,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpGet(ApiRoutes.CustomerTransfers.GetByNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(long voucherNumber, CancellationToken cancellationToken = default)
     {
         var voucher = await service.GetAsync(voucherNumber, cancellationToken);
@@ -38,6 +42,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpPost(ApiRoutes.CustomerTransfers.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(CreateCustomerTransferVoucherRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -46,6 +51,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpPut(ApiRoutes.CustomerTransfers.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdateCustomerTransferVoucherRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -54,6 +60,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpDelete(ApiRoutes.CustomerTransfers.Delete)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.DeleteAsync(id, cancellationToken);
@@ -61,6 +68,7 @@ public class CustomerTransfersController(ICustomerTransferVoucherService service
     }
 
     [HttpGet(ApiRoutes.CustomerTransfers.GetLastNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {
         var lastNumber = await service.GetLastNumberAsync(cancellationToken);

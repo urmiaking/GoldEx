@@ -1,0 +1,53 @@
+@using GoldEx.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Navigation
+
+@if (_expiry is not null)
+{
+    <div class="gex-demo-banner" role="status" dir="rtl">
+        <div class="gex-demo-copy">
+            <span class="gex-demo-icon"><MudIcon Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" /></span>
+            <div>
+                <strong>نسخه آزمایشی</strong>
+                <span> @RemainingText · ثبت اطلاعات غیرفعال است</span>
+            </div>
+        </div>
+        <a href="https://goldexsoft.ir/#pricing" target="_blank" rel="noopener noreferrer">فعال‌سازی نسخه کامل <span aria-hidden="true">←</span></a>
+    </div>
+}
+
+@code {
+    private DateTimeOffset? _expiry;
+    private Timer? _timer;
+
+    private string RemainingText
+    {
+        get
+        {
+            var remaining = (_expiry ?? DateTimeOffset.UtcNow) - DateTimeOffset.UtcNow;
+            if (remaining <= TimeSpan.Zero) return "پایان مهلت";
+            if (remaining.TotalDays >= 1) return $"{(int)remaining.TotalDays} روز و {remaining.Hours} ساعت باقی‌مانده";
+            if (remaining.TotalHours >= 1) return $"{(int)remaining.TotalHours} ساعت باقی‌مانده";
+            return $"{Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes))} دقیقه باقی‌مانده";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        if (!DemoAccess.IsDemo(user)) return;
+        _expiry = DemoAccess.GetExpiry(user);
+        if (_expiry is null) return;
+        _timer = new Timer(_ => _ = InvokeAsync(() =>
+        {
+            if (_expiry <= DateTimeOffset.UtcNow)
+                Navigation.NavigateTo("/Account/Login?demoExpired=1", forceLoad: true);
+            else
+                StateHasChanged();
+        }), null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

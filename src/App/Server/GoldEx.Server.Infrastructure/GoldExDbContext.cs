@@ -1,3 +1,5 @@
+using GoldEx.Shared.Constants;
+using Microsoft.AspNetCore.Http;
 using System.Reflection;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure;
@@ -16,7 +18,8 @@ namespace GoldEx.Server.Infrastructure;
 
 public class GoldExDbContext(
     DbContextOptions<GoldExDbContext> options,
-    IStoreContext? storeContext = null)
+    IStoreContext? storeContext = null,
+    IHttpContextAccessor? httpContextAccessor = null)
     : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken, AppUserPasskey>(
         options)
 {
@@ -73,15 +76,28 @@ public class GoldExDbContext(
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => SaveChangesAsync(true, cancellationToken);
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
+        EnsureWritable();
         ApplyStoreIdToAddedEntities();
-        return base.SaveChangesAsync(cancellationToken);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
-    public override int SaveChanges()
+    public override int SaveChanges() => SaveChanges(true);
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        EnsureWritable();
         ApplyStoreIdToAddedEntities();
-        return base.SaveChanges();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    private void EnsureWritable()
+    {
+        if (DemoAccess.IsDemo(httpContextAccessor?.HttpContext?.User) && ChangeTracker.HasChanges())
+            throw new UnauthorizedAccessException(DemoAccess.ReadOnlyMessage);
     }
 
     private void ApplyStoreIdToAddedEntities()

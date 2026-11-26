@@ -21,6 +21,17 @@ public class LicenseResolutionMiddleware(RequestDelegate next)
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
+        // A demo license is scoped to the explicitly configured store only.
+        if (configuration.GetValue<bool>("Demo:Enabled")
+            && Guid.TryParse(configuration["Demo:StoreId"], out var demoStoreId)
+            && demoStoreId != Guid.Empty && storeContext.StoreId == demoStoreId
+            && storeContext.StoreSlug == "demo")
+        {
+            productLicense.UpdateLicense(demoStoreId, LicensePlan.Regular, DateTime.Today, DateTime.MaxValue);
+            await next(context);
+            return;
+        }
+
         if (environment.IsDevelopment())
         {
             // Local development never reads or changes tenant license records.

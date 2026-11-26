@@ -16,8 +16,8 @@
                 @if (NotificationCount > 0) { <span class="gex-unread-dot" aria-hidden="true"></span> }
             </button>
         </AuthorizeView>
-        <AuthorizeView><Authorized><Settings /></Authorized></AuthorizeView>
-        <AuthorizeView><Authorized><LicenseIndicator /></Authorized></AuthorizeView>
+        <AuthorizeView Roles="Administrators,Owners"><Authorized><Settings /></Authorized></AuthorizeView>
+        <AuthorizeView Roles="Administrators,Owners"><Authorized><LicenseIndicator /></Authorized></AuthorizeView>
     </div>
     <div class="gex-topbar-date"><Clock /></div>
 </header>

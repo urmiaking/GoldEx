@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -12,10 +13,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Invoices.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class InvoicesController(IInvoiceService service, IServerInvoiceService serverService) : ApiControllerBase
 {
     [HttpPost(ApiRoutes.Invoices.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         var id = await service.CreateAsync(request, cancellationToken);
@@ -23,6 +25,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpPut(ApiRoutes.Invoices.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         await service.UpdateAsync(id, request, cancellationToken);
@@ -30,6 +33,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpDelete(ApiRoutes.Invoices.Delete)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.DeleteAsync(id, cancellationToken);
@@ -37,6 +41,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] InvoiceFilter invoiceFilter,
         [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
     {
@@ -45,6 +50,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.GetCustomerInvoices)]
+    [DemoRead]
     public async Task<IActionResult> GetCustomerInvoicesAsync(Guid customerId, [FromQuery] RequestFilter filter,
         CancellationToken cancellationToken = default)
     {
@@ -53,6 +59,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(id, cancellationToken);
@@ -60,6 +67,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.GetByNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(invoiceNumber, invoiceType, cancellationToken);
@@ -67,6 +75,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.GetLastNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
         var lastNumber = await service.GetLastNumberAsync(invoiceType, cancellationToken);
@@ -74,6 +83,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpPost(ApiRoutes.Invoices.SendReminder)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> SendReminderAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.SendReminderAsync(id, cancellationToken);
@@ -81,6 +91,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     }
 
     [HttpGet(ApiRoutes.Invoices.GetOverviewStats)]
+    [DemoRead]
     public async Task<IActionResult> GetOverviewStatsAsync(CancellationToken cancellationToken = default)
     {
         var stats = await service.GetOverviewStatsAsync(cancellationToken);
@@ -89,6 +100,7 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Invoices.DownloadPdf)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DownloadPdfAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var pdfBytes = await serverService.GeneratePdfAsync(id, cancellationToken);

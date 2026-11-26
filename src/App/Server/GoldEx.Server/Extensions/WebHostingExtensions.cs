@@ -200,6 +200,7 @@ public static class WebHostingExtensions
 
             app.UseAuthentication();
             app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
+            app.UseMiddleware<DemoAccessMiddleware>();
             app.UseAuthorization();
             app.UseMiddleware<StoreResolutionMiddleware>();
             app.UseMiddleware<LicenseResolutionMiddleware>();

@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Shared.Constants;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
@@ -29,6 +30,7 @@ internal class UserDbSeeder(
         foreach (var item in BuiltinRoles.Roles)
             await accountService.EnsureRoleAsync(item, cancellationToken);
 
+        await accountService.EnsureRoleAsync(DemoAccess.Role, cancellationToken);
         await PopulateAdministratorClaimsAsync(policyProviders, accountService);
 
         var admin = await accountService.FindUserAsync(_userSetting.UserName);

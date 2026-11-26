@@ -94,6 +94,18 @@ internal static class ServiceCollectionExtensions
                         });
                 });
 
+                // Public signup: CAPTCHA is mandatory; this per-IP budget is only an abuse backstop.
+                options.AddPolicy("demo-register", httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        $"demo_{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0,
+                            AutoReplenishment = true
+                        }));
+
                 // MCP Policy: Soft rate limiting (180 requests / 1 minute)
                 options.AddPolicy(RateLimitPolicies.Mcp, httpContext =>
                 {
@@ -183,6 +195,7 @@ internal static class ServiceCollectionExtensions
                 opts.KnownProxies.Clear();
             });
 
+            services.AddScoped<DemoAccessService>();
             services.DiscoverServices();
 
             return services;
@@ -281,7 +294,7 @@ internal static class ServiceCollectionExtensions
                 })
                 .AddEntityFrameworkStores<GoldExDbContext>()
                 .AddDefaultTokenProviders()
-                .AddSignInManager<GoldExSignInManager<AppUser>>();
+                .AddSignInManager<DemoSignInManager>();
 
             // 2. Configure External Providers (Google)
             // AddIdentity registers authentication services, so we can access the builder here.

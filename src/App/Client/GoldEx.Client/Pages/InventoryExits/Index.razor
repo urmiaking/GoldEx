@@ -1,8 +1,8 @@
-﻿@using GoldEx.Client.Pages.InventoryExits.Components
+@using GoldEx.Client.Pages.InventoryExits.Components
 
 @inherits GoldExComponentBase
 @attribute [Route(ClientRoutes.InventoryStocks.InventoryExits.Index)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 
 <PageTitle>خروج دستی اجناس</PageTitle>
 

@@ -2,7 +2,7 @@
 
 @attribute [Route(ClientRoutes.Invoices.SetInvoice)]
 @attribute [Route(ClientRoutes.Invoices.Create)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 
 <PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>
 

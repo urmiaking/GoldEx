@@ -54,6 +54,9 @@ public partial class App
 
     private IComponentRenderMode GetRenderMode()
     {
+        if (GoldEx.Shared.Constants.DemoAccess.IsDemo(HttpContext.User))
+            return new InteractiveWebAssemblyRenderMode(prerender: false);
+
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
 

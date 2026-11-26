@@ -3,7 +3,7 @@
         <nav class="gex-bottom-nav" aria-label="ناوبری موبایل">
             <NavLink href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"><ShellIcon Name="home" /><span>خانه</span></NavLink>
             <NavLink href="@ClientRoutes.Calculator.Index"><ShellIcon Name="calculator" /><span>محاسبه‌گر</span></NavLink>
-            <AuthorizeView Roles="@($"{BuiltinRoles.Administrators},{BuiltinRoles.Owners}")" Context="createAccess">
+            <AuthorizeView Roles="@($"{BuiltinRoles.Administrators},{BuiltinRoles.Owners},Demo")" Context="createAccess">
                 <Authorized><QuickCreateMenu /></Authorized>
                 <NotAuthorized><a href="@ClientRoutes.UserAccounts.Index" class="gex-bottom-create"><span class="gex-create-circle"><ShellIcon Name="user" /></span><span>حساب من</span></a></NotAuthorized>
             </AuthorizeView>

@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Components.Constants
+@using GoldEx.Client.Components.Constants
 @attribute [Route(ClientRoutes.Accounts.Login)]
 
 @inject SignInManager<AppUser> SignInManager
@@ -6,6 +6,7 @@
 @inject IdentityRedirectManager RedirectManager
 @inject IHttpClientFactory HttpClientFactory
 @inject IConfiguration Config
+@inject GoldEx.Server.Application.Services.DemoAccessService Demo
 @layout EmptyBoxLayout
 
 <PageTitle>ورود</PageTitle>
@@ -63,6 +64,17 @@
     </MudGrid>
 </EditForm>
 
+@if (IsDemoHost)
+{
+    <MudStack AlignItems="AlignItems.Center" Class="mt-4">
+        <MudText Typo="Typo.body2">هنوز حساب آزمایشی ندارید؟</MudText>
+        <MudButton Href="/Account/Demo" Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true">
+            دریافت دموی رایگان
+        </MudButton>
+    </MudStack>
+}
+else
+{
 <MudGrid Class="mt-1">
     <MudItem xs="6">
         <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true"
@@ -78,6 +90,7 @@
         <MudLink Href="@ClientRoutes.Accounts.ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
     </MudItem>
 </MudGrid>
+}
 
 <script>
     function initPasskeyAutoOpen() {

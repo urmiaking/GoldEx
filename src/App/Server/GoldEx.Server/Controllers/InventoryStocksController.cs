@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -11,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.InventoryStocks.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class InventoryStocksController(IInventoryStockService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.InventoryStocks.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] InventoryFilter inventoryFilter,
         CancellationToken cancellationToken = default)
     {
@@ -23,6 +25,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.Overview)]
+    [DemoRead]
     public async Task<IActionResult> GetInventoryOverviewAsync(CancellationToken cancellationToken = default)
     {
         var overview = await service.GetInventoryOverviewAsync(cancellationToken);
@@ -30,6 +33,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetAvailableProducts)]
+    [DemoRead]
     public async Task<IActionResult> GetAvailableProductsAsync([FromQuery] CalculatorFilterRequest calculatorFilter, [FromQuery] RequestFilter requestFilter,
         CancellationToken cancellationToken = default)
     {
@@ -38,6 +42,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetInventoryWeightChart)]
+    [DemoRead]
     public async Task<IActionResult> GetInventoryWeightChartAsync(WarehouseActionType actionType, CancellationToken cancellationToken = default)
     {
         var list = await service.GetInventoryWeightChartAsync(actionType, cancellationToken);
@@ -45,6 +50,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetInvoiceInventoryItems)]
+    [DemoRead]
     public async Task<IActionResult> GetInvoiceInventoryItemsAsync(Guid invoiceId,
         [FromQuery] RequestFilter requestFilter, CancellationToken cancellationToken = default)
     {
@@ -53,6 +59,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetTraces)]
+    [DemoRead]
     public async Task<IActionResult> GetInventoryStockTracesAsync(Guid itemId, ItemType itemType,
         [FromQuery] RequestFilter requestFilter, CancellationToken cancellationToken = default)
     {
@@ -61,6 +68,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetAvailableItemAmount)]
+    [DemoRead]
     public async Task<IActionResult> GetAvailableItemAmountAsync(Guid itemId, ItemType itemType, CancellationToken cancellationToken = default)
     {
         var result = await service.GetAvailableItemAmountAsync(itemId, itemType, cancellationToken);
@@ -68,6 +76,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetTitle)]
+    [DemoRead]
     public async Task<IActionResult> GetTitleAsync(ItemType itemType, Guid id, CancellationToken cancellationToken = default)
     {
         var result = await service.GetTitleAsync(itemType, id, cancellationToken);
@@ -75,6 +84,7 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpDelete(ApiRoutes.InventoryStocks.DeleteProduct)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         await service.DeleteProductAsync(productId, cancellationToken);

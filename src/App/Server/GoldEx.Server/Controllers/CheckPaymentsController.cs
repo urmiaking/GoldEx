@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.CheckPayments.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class CheckPaymentsController(ICheckPaymentService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.CheckPayments.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync(
         [FromQuery] RequestFilter filter,
         [FromQuery] CheckPaymentFilter checkPaymentFilter,
@@ -24,6 +26,7 @@ public class CheckPaymentsController(ICheckPaymentService service) : ApiControll
     }
 
     [HttpPost(ApiRoutes.CheckPayments.Accept)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> AcceptAsync(
         [FromRoute] Guid id,
         [FromBody] AcceptCheckPaymentRequest request,
@@ -34,6 +37,7 @@ public class CheckPaymentsController(ICheckPaymentService service) : ApiControll
     }
 
     [HttpPost(ApiRoutes.CheckPayments.Return)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> ReturnAsync(
         [FromRoute] Guid id,
         [FromBody] ReturnCheckPaymentRequest request,

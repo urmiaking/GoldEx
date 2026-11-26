@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.PaymentVouchers;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.PaymentVouchers.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class PaymentVouchersController(IPaymentVoucherService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.PaymentVouchers.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync(
         [FromQuery] RequestFilter filter,
         [FromQuery] PaymentVoucherFilter voucherFilter,
@@ -25,6 +27,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.PaymentVouchers.GetPendingList)]
+    [DemoRead]
     public async Task<IActionResult> GetPendingListAsync(Guid customerId, CancellationToken cancellationToken = default)
     {
         var list = await service.GetPendingListAsync(customerId, cancellationToken);
@@ -32,6 +35,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.PaymentVouchers.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var voucher = await service.GetAsync(id, cancellationToken);
@@ -39,6 +43,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.PaymentVouchers.GetByNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(long voucherNumber, CancellationToken cancellationToken = default)
     {
         var voucher = await service.GetAsync(voucherNumber, cancellationToken);
@@ -46,6 +51,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpPost(ApiRoutes.PaymentVouchers.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(PaymentVoucherRequestDto request,
         CancellationToken cancellationToken = default)
     {
@@ -54,6 +60,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpPut(ApiRoutes.PaymentVouchers.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, PaymentVoucherRequestDto request,
         CancellationToken cancellationToken = default)
     {
@@ -62,6 +69,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpDelete(ApiRoutes.PaymentVouchers.Delete)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.DeleteAsync(id, cancellationToken);
@@ -69,6 +77,7 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.PaymentVouchers.GetLastNumber)]
+    [DemoRead]
     public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {
         var lastNumber = await service.GetLastNumberAsync(cancellationToken);

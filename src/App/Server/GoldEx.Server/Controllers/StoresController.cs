@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
@@ -21,6 +22,7 @@ public class StoresController(IStoreService storeService) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Stores.GetUserStores)]
+    [DemoRead]
     public async Task<IActionResult> GetUserStoresAsync(CancellationToken cancellationToken)
     {
         var result = await storeService.GetUserStoresAsync(cancellationToken);

@@ -15,6 +15,12 @@ public class StoreResolutionMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, StoreContext storeContext, GoldExDbContext dbContext)
     {
+        if (context.Items.ContainsKey(DemoAccessMiddleware.PinnedStoreKey))
+        {
+            await next(context);
+            return;
+        }
+
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -220,4 +226,3 @@ public class StoreResolutionMiddleware(RequestDelegate next)
         return false;
     }
 }
-

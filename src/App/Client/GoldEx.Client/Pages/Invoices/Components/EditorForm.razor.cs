@@ -587,6 +587,19 @@ public partial class EditorForm
 
     private async Task AssignReservedBarcodeIfNeeded(BarcodeType barcodeType, ProductItemVm? productItem, CoinItemVm? coinItem)
     {
+        if (GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
+        {
+            // A local placeholder lets the visitor complete the form without reserving a real barcode.
+            var preview = Random.Shared.NextInt64(900000000000L, 999999999999L).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (barcodeType == BarcodeType.Product && productItem is not null && !productItem.Product.Id.HasValue
+                && string.IsNullOrWhiteSpace(productItem.Product.Barcode))
+                productItem.Product.Barcode = preview;
+            if (barcodeType == BarcodeType.Coin && coinItem is not null && !coinItem.CoinInstance.Id.HasValue
+                && string.IsNullOrWhiteSpace(coinItem.CoinInstance.Barcode))
+                coinItem.CoinInstance.Barcode = preview;
+            return;
+        }
+
         switch (barcodeType)
         {
             case BarcodeType.Product:
@@ -652,6 +665,9 @@ public partial class EditorForm
 
     private async Task ReleaseReservedBarcodeIfNeeded(BarcodeType barcodeType, ProductItemVm? productItem, CoinItemVm? coinItem)
     {
+        if (GoldEx.Shared.Constants.DemoAccess.IsDemo(User))
+            return;
+
         switch (barcodeType)
         {
             case BarcodeType.Product:

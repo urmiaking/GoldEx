@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
@@ -468,6 +468,12 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
                 break;
             case OperationCanceledException:
                 // Operation was canceled, do nothing
+                break;
+            case HttpRequestAuthorizationFailedException when GoldEx.Shared.Constants.DemoAccess.IsDemo(User):
+                AddWarningToast(GoldEx.Shared.Constants.DemoAccess.ReadOnlyMessage);
+                break;
+            case HttpRequestAuthenticationFailedException when GoldEx.Shared.Constants.DemoAccess.IsDemo(User):
+                Navigation.NavigateTo("/Account/Login?demoExpired=1", forceLoad: true);
                 break;
             case HttpRequestFailedException or HttpRequestException:
                 AddErrorToast("عدم امکان برقراری ارتباط با سرور");

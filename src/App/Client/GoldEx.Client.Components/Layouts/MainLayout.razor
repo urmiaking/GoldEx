@@ -22,7 +22,10 @@ else
         <div class="gex-workspace">
             <AppBar @bind-DrawerOpen="_drawerOpen" NotificationCount="_unreadCount" OnNotificationsRequested="OpenNotificationsAsync" />
             <main id="gex-main-content" class="goldex-main-content" tabindex="-1">
-                <div class="goldex-page-container page-transition">@Body</div>
+                <div class="goldex-page-container page-transition">
+                    <DemoBanner />
+                    @Body
+                </div>
             </main>
         </div>
         <MobileNav />

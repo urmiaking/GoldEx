@@ -1,3 +1,4 @@
+using GoldEx.Server.Common.Authorization;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.StoneTypes;
@@ -12,10 +13,11 @@ using System.Threading.Tasks;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.StoneTypes.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class StoneTypesController(IStoneTypeService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.StoneTypes.GetList)]
+    [DemoRead]
     public async Task<IActionResult> GetListAsync([FromQuery] StoneTypeRequestFilter filter, CancellationToken cancellationToken = default)
     {
         var list = await service.GetListAsync(filter, cancellationToken);
@@ -23,6 +25,7 @@ public class StoneTypesController(IStoneTypeService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.StoneTypes.Get)]
+    [DemoRead]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var item = await service.GetAsync(id, cancellationToken);
@@ -30,6 +33,7 @@ public class StoneTypesController(IStoneTypeService service) : ApiControllerBase
     }
 
     [HttpPost(ApiRoutes.StoneTypes.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(CreateStoneTypeRequest request, CancellationToken cancellationToken)
     {
         await service.CreateAsync(request, cancellationToken);
@@ -37,6 +41,7 @@ public class StoneTypesController(IStoneTypeService service) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.StoneTypes.Update)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdateStoneTypeRequest request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);
@@ -44,6 +49,7 @@ public class StoneTypesController(IStoneTypeService service) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.StoneTypes.ToggleStatus)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> ToggleStatusAsync(Guid id, CancellationToken cancellationToken)
     {
         await service.ToggleStatusAsync(id, cancellationToken);

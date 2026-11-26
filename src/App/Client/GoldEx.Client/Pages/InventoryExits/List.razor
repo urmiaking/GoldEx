@@ -1,5 +1,5 @@
-﻿@attribute [Route(ClientRoutes.InventoryStocks.InventoryExits.List)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@attribute [Route(ClientRoutes.InventoryStocks.InventoryExits.List)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 @using GoldEx.Client.Pages.InventoryExits.Components
 @inherits GoldExComponentBase
 

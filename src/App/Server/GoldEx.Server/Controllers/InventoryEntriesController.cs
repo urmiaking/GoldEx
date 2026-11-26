@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Server.Common.Authorization;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.InventoryEntries;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.InventoryEntries.Base)]
-[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 public class InventoryEntriesController(IInventoryEntryService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.InventoryEntries.GetList)]
+    [DemoRead]
     public async Task<ActionResult<List<InventoryEntryResponse>>> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken = default)
     {
         var result = await service.GetListAsync(filter, cancellationToken);
@@ -21,6 +23,7 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
     }
 
     [HttpPost(ApiRoutes.InventoryEntries.Create)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
     {
         await service.CreateAsync(request);
@@ -29,6 +32,7 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
 
     [RequestSizeLimit(15_000_000)]
     [HttpPost(ApiRoutes.InventoryEntries.ProcessExcel)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<ActionResult<List<GetProductItemEntryResponse>>> ProcessExcelAsync([FromBody] ProcessExcelRequest request, CancellationToken cancellationToken = default)
     {
         var result = await service.ProcessExcelAsync(request, cancellationToken);
@@ -36,6 +40,7 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
     }
 
     [HttpDelete(ApiRoutes.InventoryEntries.Rollback)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> RollbackAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
     {
         await service.RollbackAsync(id, cancellationToken);
