@@ -145,8 +145,8 @@ public sealed class DemoAccessMiddleware(RequestDelegate next)
             return true;
         if (path == "/" || path == "/Account/Login")
             return true;
-        // Block server-rendered/report-sharing and designer routes until separately audited.
-        if (path.StartsWithSegments("/invoices/shared") || path.StartsWithSegments("/invoices/print")
+        // Shared invoice links and designer routes are not part of the demo.
+        if (path.StartsWithSegments("/invoices/shared")
             || path.StartsWithSegments("/reporting/designer"))
             return false;
         return PagePrefixes.Any(p => path.StartsWithSegments(p));

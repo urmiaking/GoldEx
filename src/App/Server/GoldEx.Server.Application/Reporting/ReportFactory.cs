@@ -7,6 +7,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,10 @@ internal class ReportFactory(
         var parts = id.Split(['?'], 2);
         var reportName = parts[0];
         var queryString = parts.Length > 1 ? parts[1] : string.Empty;
+
+        var isDemo = DemoAccess.IsDemo(httpContextAccessor.HttpContext?.User);
+        if (isDemo && (reportName != "InvoiceReport" || storeContext.StoreId is null || storeContext.StoreSlug != "demo"))
+            throw new NotFoundException();
 
         var reportPath = string.Empty;
         if (!string.IsNullOrWhiteSpace(storeContext.StoreSlug))
@@ -62,7 +67,7 @@ internal class ReportFactory(
             {
                 var response = await invoicePrintService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
 
-                var reportUrl = GenerateInvoiceUrl(response.Invoice.Id);
+                var reportUrl = isDemo ? string.Empty : GenerateInvoiceUrl(response.Invoice.Id);
 
                 var dataSource = new ObjectDataSource
                 {
@@ -98,7 +103,8 @@ internal class ReportFactory(
                 if (report.Parameters["invoiceNumber"] != null)
                 {
                     report.Parameters["invoiceNumber"].Value = invoiceNumber;
-                    report.Parameters["invoiceUrl"].Value = reportUrl;
+                    if (report.Parameters["invoiceUrl"] != null)
+                        report.Parameters["invoiceUrl"].Value = reportUrl;
                 }
             }
         }

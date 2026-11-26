@@ -1,4 +1,5 @@
 @inherits GoldExComponentBase
+@using GoldEx.Shared.Constants
 @attribute [Route(ClientRoutes.Invoices.ViewInvoice)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}, Demo")]
 
@@ -11,6 +12,19 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
+    @if (DemoAccess.IsDemo(User))
+    {
+        var pdfUrl = $"/invoices/demo-report/{Number}/{_invoiceType}";
+        <MudStack Spacing="3">
+            <MudPaper Class="pa-3 d-flex justify-space-between align-center flex-wrap gap-2" Elevation="0" Outlined="true">
+                <MudText>پیش‌نمایش فاکتور</MudText>
+                <MudButton Href="@pdfUrl" Target="_blank" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Print">باز کردن و چاپ PDF</MudButton>
+            </MudPaper>
+            <iframe src="@pdfUrl" title="پیش‌نمایش فاکتور" style="width:100%;height:80vh;min-height:500px;border:0;border-radius:12px;"></iframe>
+        </MudStack>
+    }
+    else
+    {
     <div class="gex-report-mobile-hint" aria-hidden="true">برای دیدن ابزارهای بیشتر، نوار ابزار را بکشید <span>⇆</span></div>
     <div class="gex-report-viewer" role="region" aria-label="پیش‌نمایش و چاپ فاکتور">
         <DxWasmDocumentViewer ReportName="@_reportUrl" Height="1000px" Width="100%">
@@ -24,6 +38,7 @@
             <DxDocumentViewerCallbacks BeforeRender="reportingCustomization.onBeforeRender" CustomizeMenuActions="reportingCustomization.onCustomizeMenuActions" CustomizeLocalization="reportingCustomization.onCustomizeLocalization" />
         </DxWasmDocumentViewer>
     </div>
+    }
 </MudContainer>
 
 <script src="@Assets["js/reporting-customization.js"]"></script>
